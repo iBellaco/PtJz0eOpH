@@ -15,6 +15,13 @@ class DraftSlotLifecycleTest {
         assertEquals(FINISHED, lifecycle.observe(false, true))
     }
 
+    @Test fun lateNinthConfirmationStillFinishesAfterTwoMissingFrames() {
+        val lifecycle = DraftSlotLifecycle()
+        assertEquals(ACTIVE, lifecycle.observe(true, false))
+        assertEquals(DISAPPEARING, lifecycle.observe(false, true))
+        assertEquals(FINISHED, lifecycle.observe(false, true))
+    }
+
     @Test fun singleMissingFrameDoesNotFinishAndNewDraftResetsTheTracker() {
         val lifecycle = DraftSlotLifecycle()
         lifecycle.observe(true, true)

@@ -1,6 +1,7 @@
 """Check real name-band OCR on the installed release, without accepting an OCR fallback."""
 from pathlib import Path
 import subprocess
+import re
 
 report = Path('app/build/reports/spanish-device')
 report.mkdir(parents=True, exist_ok=True)
@@ -20,3 +21,6 @@ except subprocess.TimeoutExpired as failure:
 (report / 'draft-rival-name-instrumentation.txt').write_text(result.stdout + result.stderr)
 assert result.returncode == 0 and 'OK (11 tests)' in result.stdout, result.stdout[-24000:]
 print('DRAFT_RIVAL_NAME_AUDIT: exact allied names and observed lanes survive selection, OCR gaps and champion trades in ES/PT; both Vi portraits fill jungle', flush=True)
+
+for evidence in re.findall(r"DRAFT_FAST_NAME_AUDIT: [^\r\n]+", result.stdout):
+    print(evidence, flush=True)

@@ -103,8 +103,11 @@ class DraftRivalNameInstalledTest {
             scanner.publishScreenDiagnosticText((0 until masks.length()).map {physical(masks.getJSONArray(it))},2712,1220)
             scanner.publishScreenOverlay(physical(fixture.getJSONArray("overlayRect")),2712,1220)
             var latest:com.example.service.screen.DraftScanResult?=null
+            var fullReadMs=0L
             repeat(2) {
+                val started=android.os.SystemClock.elapsedRealtime()
                 latest=scanner.scanDraftFromBitmap(bitmap,ctx,null,com.example.model.LaneRole.JUNGLE,detectBannedPortraits=true)
+                fullReadMs+=android.os.SystemClock.elapsedRealtime()-started
                 assertTrue(latest!!.statusMessage,latest!!.isSuccessful)
                 hud.syncScannedAllies(latest!!);hud.syncScannedEnemies(latest!!)
                 kotlinx.coroutines.delay(1550)
@@ -115,6 +118,24 @@ class DraftRivalNameInstalledTest {
             assertTrue("Poco bans=${scanner.detectedBannedChampionIds}; slots=${scanner.banSlotsFlow.value}",scanner.detectedBannedChampionIds.containsAll(setOf("hwei","varus","kayn","nocturne","zyra","norra","k_sante")))
             assertEquals(listOf("hwei","varus","kayn","nocturne",null),scanner.banSlotsFlow.value.filter {it.side==com.example.service.screen.BanSide.ALLY}.sortedBy {it.index}.map {it.championId})
             assertEquals(listOf("zyra","norra","hwei","k_sante",null),scanner.banSlotsFlow.value.filter {it.side==com.example.service.screen.BanSide.ENEMY}.sortedBy {it.index}.map {it.championId})
+            val confirmedBans=scanner.detectedBannedChampionIds
+            scanner.resetSlotMemory(preserveBans=true)
+            scanner.publishScreenDiagnosticText((0 until masks.length()).map {physical(masks.getJSONArray(it))},2712,1220)
+            scanner.publishScreenOverlay(physical(fixture.getJSONArray("overlayRect")),2712,1220)
+            var fastReadMs=0L
+            repeat(2) {
+                val started=android.os.SystemClock.elapsedRealtime()
+                latest=scanner.scanDraftFromBitmap(bitmap,ctx,null,com.example.model.LaneRole.JUNGLE,namesOnly=true)
+                fastReadMs+=android.os.SystemClock.elapsedRealtime()-started
+            }
+            assertEquals("Fast Poco allied titles",setOf("senna","aurora","rell"),latest!!.alliesBySlot.values.map {it.id}.toSet())
+            assertEquals("Fast Poco rival titles",setOf("viktor","miss_fortune","darius","pyke"),latest!!.enemiesBySlot.values.map {it.id}.toSet())
+            assertNull(latest!!.alliesBySlot[3]);assertNull(latest!!.alliesBySlot[4]);assertNull(latest!!.enemiesBySlot[4])
+            assertEquals("Fast title scan preserves bans",confirmedBans,scanner.detectedBannedChampionIds)
+            assertTrue("Fast title processing=$fastReadMs ms, full processing=$fullReadMs ms",fastReadMs<fullReadMs)
+            InstrumentationRegistry.getInstrumentation().sendStatus(2,android.os.Bundle().apply {
+                putString("stream","DRAFT_FAST_NAME_AUDIT: two frames full=$fullReadMs ms fast=$fastReadMs ms; exact Poco titles; bans retained")
+            })
             assertTrue("Active Poco scan must create a diagnostic crop",com.example.service.screen.TenthPickDiagnosticManager.cacheStatsFlow.value.totalFiles>0)
             hud.clearDraftAndCrops(ctx)
             assertTrue(com.example.service.screen.TenthPickDiagnosticManager.savedFramesFlow.value.isEmpty())
@@ -203,13 +224,16 @@ class DraftRivalNameInstalledTest {
             val finalPortrait = com.example.service.screen.LiteRTVisionClassifier.finishLastVisibleSelection()
             assertEquals("fiddlesticks", finalPortrait?.pickedChampion?.id)
             assertTrue(finalPortrait?.isConfirmed == true)
+            assertTrue(finalPortrait?.isSelectionFinalized == true)
             val hud = com.example.service.OverlayState().apply {
                 ninth.alliesBySlot.forEach { (slot, champion) -> allies[slot] = champion }
                 ninth.enemiesBySlot.forEach { (slot, champion) -> enemies[slot] = champion }
+                autoScanEnabled = true
             }
-            hud.applyConfirmedLastPick(ninth.copy(isLastPickConfirmed = true,
+            hud.applyConfirmedLastPick(ninth.copy(isLastPickConfirmed = true, isLastPickFinalized = true,
                 lastPickChampion = finalPortrait?.pickedChampion))
             assertEquals(10, (hud.allies + hud.enemies).filterNotNull().size)
+            assertFalse(hud.autoScanEnabled)
         } finally { bitmap.recycle(); scanner.resetSlotMemory(); scanner.updateCalibration(context, original) }
     }
 

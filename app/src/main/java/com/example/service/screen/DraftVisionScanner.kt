@@ -90,6 +90,7 @@ data class DraftScanResult(
     val detectedFirstPick: Boolean? = null,
     val isLastPickImageRecognized: Boolean = false,
     val isLastPickConfirmed: Boolean = false,
+    val isLastPickFinalized: Boolean = false,
     val lastPickChampion: Champion? = null,
     val tenthPickIsAlly: Boolean? = null,
     val tenthPickSlotIndex: Int? = null,
@@ -341,12 +342,9 @@ object DraftVisionScanner {
             old.allyBanYRatio != newConfig.allyBanYRatio || old.enemyBanYRatio != newConfig.enemyBanYRatio ||
             old.banDiameterRatio != newConfig.banDiameterRatio || old.manualAllyBans != newConfig.manualAllyBans ||
             old.manualEnemyBans != newConfig.manualEnemyBans) {
-            val active = banDetectionActiveFlow.value
-            clearDetectedBans()
-            banDetectionActiveFlow.value = active
-            banSlotsFlow.value = emptyBanSlots().map { slot ->
-                slot.copy(region = newConfig.banRegions(slot.side == BanSide.ALLY)[slot.index])
-            }
+            // Calibration moves the viewer regions, never revokes a confirmed ban.
+            bannedPortraitScanner.recalibrate(newConfig)
+            banSlotsFlow.value = bannedPortraitScanner.slots
         }
         calibrationConfig = newConfig
         calibrationConfigFlow.value = newConfig
@@ -379,10 +377,11 @@ object DraftVisionScanner {
     fun resetSlotLifecycle() = slotLifecycle.reset()
 
     fun observeSelectionSlots(bitmap: Bitmap, confirmedPicksCount: Int): DraftSlotLifecycle.Observation {
-        if (bitmap.isRecycled || bitmap.width < bitmap.height) return DraftSlotLifecycle.Observation.DISAPPEARING
+        if (bitmap.isRecycled) return DraftSlotLifecycle.Observation.DISAPPEARING
+        if (bitmap.width < bitmap.height) return slotLifecycle.observe(false,confirmedPicksCount>=9)
         val config = AdaptiveScreenLayoutEngine.computeAdaptiveConfig(bitmap.width, bitmap.height, calibrationConfig)
-        val visible = listOf(true, false).any { isAlly ->
-            (0..4).any { index ->
+        val visibleSlots = listOf(true, false).sumOf { isAlly ->
+            (0..4).count { index ->
                 val crop = AdaptiveScreenLayoutEngine.extractSlotAvatarBitmap(
                     bitmap, bitmap.width, bitmap.height, isAlly, index, config)
                 try {
@@ -390,6 +389,8 @@ object DraftVisionScanner {
                 } finally { crop?.recycle() }
             }
         }
+        // One circular decoration in the loading screen is not a visible draft.
+        val visible = visibleSlots >= 3
         return slotLifecycle.observe(visible, confirmedPicksCount >= 9)
     }
 
@@ -425,7 +426,7 @@ object DraftVisionScanner {
     private val allySlotFilters = Array(5) { SlotTemporalFilter() }
     private val enemySlotFilters = Array(5) { SlotTemporalFilter() }
 
-    fun resetSlotMemory() {
+    fun resetSlotMemory(preserveBans: Boolean = false) {
         titleConfirmation.reset()
         lastVisualPick = null
         slotLifecycle.reset()
@@ -441,7 +442,7 @@ object DraftVisionScanner {
         enemySlotConfirmedChampions.fill(null)
         allySlotNameConfirmed.fill(false)
         enemySlotNameConfirmed.fill(false)
-        clearDetectedBans()
+        if (!preserveBans) clearDetectedBans()
         allySlotFilters.forEach { it.reset() }
         enemySlotFilters.forEach { it.reset() }
         LiteRTVisionClassifier.reset()
@@ -466,7 +467,8 @@ object DraftVisionScanner {
         currentIsFirstPick: Boolean? = null,
         currentActiveRole: LaneRole? = null,
         confirmedHudPicks: List<Champion> = emptyList(),
-        detectBannedPortraits: Boolean = false
+        detectBannedPortraits: Boolean = false,
+        namesOnly: Boolean = false
     ): DraftScanResult {
         if (bitmap.isRecycled || bitmap.width < bitmap.height) {
             return DraftScanResult(emptyList(), emptyList(), isSuccessful = false, statusMessage = "Orientación no horizontal")
@@ -511,7 +513,7 @@ object DraftVisionScanner {
         // -----------------------------------------------------------------------------------------
         // PASO 1: OCR DIRECTO CON MÁXIMA FIDELIDAD ÓPTICA
         // -----------------------------------------------------------------------------------------
-        var isLegendaryRanked = false
+        var isLegendaryRanked = if (namesOnly) isLegendaryRankedCache else false
         var isPreparationPhase = false
         var isActiveSelectionDetected = false
         var isPreparationBannerDetected = false
@@ -520,72 +522,46 @@ object DraftVisionScanner {
             // Las etiquetas laterales del diagnóstico se dibujan fuera de la ventana central.
             // Deben excluirse siempre; de lo contrario el OCR puede leer "Pantheon" del propio overlay.
             val exclusions = frameDiagnosticTexts
-            val ocrBitmap = if (exclusions.isEmpty()) bitmap else bitmap.copy(Bitmap.Config.ARGB_8888, true) ?: bitmap
-            val visionText = try {
-                if (ocrBitmap !== bitmap) {
-                    val canvas = android.graphics.Canvas(ocrBitmap)
-                    val paint = android.graphics.Paint().apply { color = android.graphics.Color.BLACK }
-                    exclusions.forEach { canvas.drawRect(it, paint) }
-                }
-                recognizer.process(InputImage.fromBitmap(ocrBitmap, 0)).await()
-            } finally {
-                if (ocrBitmap !== bitmap) ocrBitmap.recycle()
+            val visionText = if (namesOnly) null else {
+                val ocrBitmap = if (exclusions.isEmpty()) bitmap else bitmap.copy(Bitmap.Config.ARGB_8888, true) ?: bitmap
+                try {
+                    if (ocrBitmap !== bitmap) {
+                        val canvas = android.graphics.Canvas(ocrBitmap)
+                        val paint = android.graphics.Paint().apply { color = android.graphics.Color.BLACK }
+                        exclusions.forEach { canvas.drawRect(it, paint) }
+                    }
+                    recognizer.process(InputImage.fromBitmap(ocrBitmap, 0)).await()
+                } finally { if (ocrBitmap !== bitmap) ocrBitmap.recycle() }
             }
 
-            // Read the same isolated name band on both teams. Full-screen OCR can
-            // miss a small rival name and otherwise keep an earlier preview forever.
-            for (isAlly in listOf(true, false)) for (i in 0..4) {
-                val nameRect = AdaptiveScreenLayoutEngine.calculateSlotNameRect(width, height, isAlly, i, calib)
-                if (frameOverlay?.let { Rect.intersects(it, nameRect) } == true) continue
-                var crop: Bitmap? = null
-                var scaled: Bitmap? = null
-                try {
-                    val original = Bitmap.createBitmap(bitmap, nameRect.left, nameRect.top, nameRect.width(), nameRect.height())
-                    crop = original.copy(Bitmap.Config.ARGB_8888, true) ?: error("Name crop unavailable")
-                    if (original !== bitmap && original !== crop) original.recycle()
-                    val canvas = android.graphics.Canvas(crop)
-                    val paint = android.graphics.Paint().apply { color = android.graphics.Color.BLACK }
-                    exclusions.forEach { excluded ->
-                        val local = Rect(excluded).apply { offset(-nameRect.left, -nameRect.top) }
-                        canvas.drawRect(local, paint)
+            // Read every player title in one request, including the visible portion
+            // of a name band partly covered by the central assistant window.
+            val atlas = DraftNameAtlas.create(bitmap,calib,exclusions+listOfNotNull(frameOverlay))
+            try {
+                val text = recognizer.process(InputImage.fromBitmap(atlas.bitmap,0)).await()
+                val lines = text.textBlocks.flatMap { it.lines }
+                for (tile in atlas.tiles) {
+                    val selected = lines.filter { line ->
+                        line.boundingBox?.let { tile.region.contains(it.centerX(),it.centerY()) } == true
                     }
-                    if (isAlly) DraftImagePreprocessor.suppressLeadingMasteryBadge(crop)
-                    scaled = Bitmap.createScaledBitmap(crop, (crop.width * 3).coerceAtMost(1400), (crop.height * 3).coerceAtMost(420), true)
-                    val slotText = recognizer.process(InputImage.fromBitmap(scaled, 0)).await()
-                    if (isAlly) {
-                        val titleRows = slotText.textBlocks.flatMap { it.lines }.filterNot { line ->
-                            val box = line.boundingBox
-                            box != null && box.right < scaled.width * .12f &&
-                                AllyDraftNameReader.read(listOf(line.text), allChamps).let {
-                                    it.champion == null && it.lane == null && !it.ambiguous
-                                }
-                        }
-                        targetedAllyReadings[i] = AllyDraftNameReader.readTitleRows(titleRows.map {
-                            it.text to (it.boundingBox?.centerY() ?: scaled.height / 2)
-                        }, (scaled.height * 0.30f).toInt(), allChamps,
-                            ((height * (calib.allySlotYRatios[i] + 0.005f) - nameRect.top) * scaled.height / nameRect.height()).toInt())
-                    }
-                    val centerY = scaled.height / 2
-                    val candidates = slotText.textBlocks.flatMap { it.lines }.mapNotNull { line ->
-                        ChampionNameResolver.findChampionInText(line.text, allChamps)?.let { candidate ->
-                            candidate to kotlin.math.abs((line.boundingBox?.centerY() ?: centerY) - centerY)
-                        }
-                    }
-                    // Conflicting champion names inside one band are not a confirmed pick.
-                    val best = candidates.takeIf { it.map { c -> c.first.id }.distinct().size == 1 }
-                        ?.minByOrNull { it.second }?.first
-                    if (!isAlly) targetedEnemyChampions[i] = best
-                } catch (_: Throwable) {
-                    // A missing cropped reading is a gap, not a fabricated champion.
-                } finally {
-                    try { if (scaled != null && scaled !== crop) scaled.recycle() } catch (_: Throwable) {}
-                    try { crop?.recycle() } catch (_: Throwable) {}
+                    val titleLines = if (tile.ally) selected.filterNot { line ->
+                        val box=line.boundingBox!!
+                        box.right-tile.region.left < tile.region.width()*.12f &&
+                            AllyDraftNameReader.read(listOf(line.text),allChamps).let {
+                                it.champion==null && it.lane==null && !it.ambiguous
+                            }
+                    } else selected
+                    val reading = AllyDraftNameReader.readTitleRows(titleLines.map {
+                        it.text to (it.boundingBox!!.centerY()-tile.region.top)
+                    },(tile.region.height()*.30f).toInt(),allChamps,tile.titleMaxY)
+                    if (tile.ally) targetedAllyReadings[tile.slot]=reading
+                    else targetedEnemyChampions[tile.slot]=reading.champion.takeUnless { reading.ambiguous }
                 }
-            }
+            } finally { atlas.bitmap.recycle() }
 
             // Detección proactiva de Clasificatoria Legendaria en pantalla completa
-            isLegendaryRanked = DraftValidationLayer.isLegendaryRankedDraft(
-                fullOcrText = visionText.text,
+            if (!namesOnly) isLegendaryRanked = DraftValidationLayer.isLegendaryRankedDraft(
+                fullOcrText = visionText?.text.orEmpty(),
                 hasRealSummonerNames = allySummonerNamesCache.isNotEmpty()
             )
             isLegendaryRankedCache = isLegendaryRanked
@@ -594,7 +570,7 @@ object DraftVisionScanner {
                 allySummonerNamesCache.clear()
             }
 
-            for (block in visionText.textBlocks) {
+            for (block in visionText?.textBlocks.orEmpty()) {
                 for (line in block.lines) {
                     val text = line.text.trim()
                     if (text.isBlank() || text.length < 2) continue
@@ -762,7 +738,7 @@ object DraftVisionScanner {
             }
 
             userExplicitlyConfirmed = false
-            val currentUserNameClean = if (!isLegendaryRanked) {
+            val currentUserNameClean = if (!namesOnly && !isLegendaryRanked) {
                 try {
                     val u1 = com.example.util.SubscriptionManager.userName.value.trim().lowercase(Locale.ROOT).replace(" ", "")
                     val u2 = com.example.util.AuthManager.getAuth()?.currentUser?.displayName?.trim()?.lowercase(Locale.ROOT)?.replace(" ", "") ?: ""
@@ -1171,7 +1147,7 @@ object DraftVisionScanner {
         val allySpellsMap = mutableMapOf<Int, MutableList<String>>()
         val detectedSpellsList = mutableListOf<com.example.util.SummonerSpellDetector.SpellMatch>()
 
-        for (i in 0..4) {
+        if (!namesOnly) for (i in 0..4) {
             val yCenter = (height * (allySlotYRatios[i] + calib.spellYOffsetRatio)).toInt()
 
             val spell1Top = (yCenter - spellSize - (height * 0.003f).toInt()).coerceIn(0, height - spellSize)
@@ -1244,16 +1220,13 @@ object DraftVisionScanner {
 
         val draftVisible = allyOcrChampions.any { it != null } || enemyOcrChampions.any { it != null } ||
             currentScanFrameOcrLanes.isNotEmpty() || isActiveSelectionDetected || isPreparationPhase
-        banDetectionActiveFlow.value = detectBannedPortraits
-        if (!detectBannedPortraits) clearDetectedBans()
-        else if (draftVisible) {
+        if (detectBannedPortraits) banDetectionActiveFlow.value = true
+        if (!namesOnly && detectBannedPortraits && draftVisible) {
             val exclusions = frameDiagnosticTexts + listOfNotNull(frameOverlay)
             val pickedIds = (allyOcrChampions.filterNotNull() + enemyOcrChampions.filterNotNull()).map { it.id }.toSet()
             bannedChampionIdsFlow.value = bannedPortraitScanner.scan(bitmap, context,
-                android.os.SystemClock.elapsedRealtime(), exclusions, calib) - pickedIds
-            banSlotsFlow.value = bannedPortraitScanner.slots.map { slot ->
-                if (slot.championId in pickedIds) slot.copy(championId = null, state = BanState.UNKNOWN) else slot
-            }
+                android.os.SystemClock.elapsedRealtime(), exclusions, calib, pickedIds)
+            banSlotsFlow.value = bannedPortraitScanner.slots
         }
 
         val otherPicks = getConfirmedPicksExcept(tenthTurn, confirmedHudPicks)
@@ -1270,7 +1243,7 @@ object DraftVisionScanner {
 
         // EXTRACCIÓN Y ANÁLISIS EN VIVO CONTINUO DEL 10º PICK (Reconocimiento visual local):
         // Se extrae el recorte del slot en cada fotograma para alimentar el visor en tiempo real y permitir pruebas del usuario en todo momento.
-        val tenthCrop: Bitmap? = AdaptiveScreenLayoutEngine.extractSlotAvatarBitmap(
+        val tenthCrop: Bitmap? = if (namesOnly) null else AdaptiveScreenLayoutEngine.extractSlotAvatarBitmap(
             sourceBitmap = bitmap,
             width = width,
             height = height,
@@ -1289,7 +1262,7 @@ object DraftVisionScanner {
             )
         }
 
-        val liteRTDecision = LiteRTVisionClassifier.executeTenthPickInference(
+        val liteRTDecision = if (namesOnly) null else LiteRTVisionClassifier.executeTenthPickInference(
             cropBitmap = tenthCrop,
             isAlly = tenthIsAlly,
             confirmedChampionIds = confirmedChampIds,
@@ -1463,6 +1436,9 @@ object DraftVisionScanner {
             detectedFirstPick = detectedFirstPick,
             isLastPickImageRecognized = detectedTenthChampion != null,
             isLastPickConfirmed = isTenthConfirmed,
+            isLastPickFinalized = isTenthConfirmed && (targetAlreadyConfirmed ||
+                (LiteRTVisionClassifier.reportFlow.value.isSelectionFinalized &&
+                 LiteRTVisionClassifier.reportFlow.value.pickedChampion?.id == detectedTenthChampion?.id)),
             lastPickChampion = detectedTenthChampion,
             tenthPickIsAlly = tenthIsAlly,
             tenthPickSlotIndex = tenthSlotIndex,
