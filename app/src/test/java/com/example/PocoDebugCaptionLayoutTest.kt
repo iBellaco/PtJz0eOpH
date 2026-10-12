@@ -26,7 +26,7 @@ import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
 
 @RunWith(RobolectricTestRunner::class)
-@Config(sdk=[34],application=Application::class,qualifiers="w1280dp-h576dp-mdpi-land")
+@Config(sdk=[34],application=Application::class,qualifiers="w1280dp-h576dp-land-mdpi")
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class PocoDebugCaptionLayoutTest {
     @get:Rule val compose=createComposeRule()
