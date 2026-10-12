@@ -332,7 +332,7 @@ fun LiteRTEngineViewerDialog(
                                             imageVector = Icons.Default.AutoAwesome,
                                             contentDescription = null,
                                             tint = Color(0xFF475569),
-                                            modifier = Modifier.size(48.dp).testTag("vision_crop_copy_path")
+                                            modifier = Modifier.size(28.dp)
                                         )
                                     }
                                 }
