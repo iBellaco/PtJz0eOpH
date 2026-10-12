@@ -112,7 +112,7 @@ class DraftRivalNameInstalledTest {
             assertEquals("Poco ally names",setOf("senna","aurora","rell"),latest!!.alliesBySlot.values.map {it.id}.toSet())
             assertEquals("Poco rival names",setOf("viktor","miss_fortune","darius","pyke"),latest!!.enemiesBySlot.values.map {it.id}.toSet())
             assertNull(latest!!.alliesBySlot[3]);assertNull(latest!!.alliesBySlot[4]);assertNull(latest!!.enemiesBySlot[4])
-            assertTrue("Poco bans=${scanner.detectedBannedChampionIds}; slots=${scanner.banSlotsFlow.value}; catalogNorra=${com.example.data.WildRiftRepository.champions.any {it.id=="norra"}}",scanner.detectedBannedChampionIds.containsAll(setOf("hwei","varus","kayn","nocturne","zyra","norra","k_sante")))
+            assertTrue("Poco bans=${scanner.detectedBannedChampionIds}; slots=${scanner.banSlotsFlow.value}",scanner.detectedBannedChampionIds.containsAll(setOf("hwei","varus","kayn","nocturne","zyra","norra","k_sante")))
             assertEquals(listOf("hwei","varus","kayn","nocturne",null),scanner.banSlotsFlow.value.filter {it.side==com.example.service.screen.BanSide.ALLY}.sortedBy {it.index}.map {it.championId})
             assertEquals(listOf("zyra","norra","hwei","k_sante",null),scanner.banSlotsFlow.value.filter {it.side==com.example.service.screen.BanSide.ENEMY}.sortedBy {it.index}.map {it.championId})
             assertTrue("Active Poco scan must create a diagnostic crop",com.example.service.screen.TenthPickDiagnosticManager.cacheStatsFlow.value.totalFiles>0)
