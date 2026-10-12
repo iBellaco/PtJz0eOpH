@@ -9,6 +9,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.test.captureToImage
+import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
@@ -47,9 +49,10 @@ class PocoDebugCaptionLayoutTest {
                     Box(Modifier.requiredSize(1280.dp,576.dp)) { ScannerDebugOverlay(overlayRect=null) }
                 }
             }
+            compose.onRoot().captureToImage()
             compose.runOnIdle {
                 val masks=DraftVisionScanner.debugTextRects
-                assertTrue(masks.size>=20)
+                assertTrue("Rendered diagnostic masks: $masks",masks.size>=20)
                 assertTrue("Test must draw at Poco screenshot width",masks.any {it.right>1000})
                 val allyCaption=masks[10];val rivalCaption=masks[11]
                 assertTrue(masks.take(5).none { Rect.intersects(it,allyCaption) })
