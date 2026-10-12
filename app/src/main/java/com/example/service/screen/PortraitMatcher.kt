@@ -73,11 +73,19 @@ internal object PortraitMatcher {
         references.maxOfOrNull { correlation(input, it) } ?: 0f
 
     /** Only these pixels are sampled (plus bilinear neighbours); border captions cannot alter a descriptor. */
-    internal fun sampledRect(crop: android.graphics.Rect): android.graphics.Rect =
-        android.graphics.Rect(crop).apply {
-            val paddingPixels = ((minOf(width(), height()) / 2f) * .20f).toInt().minus(1).coerceAtLeast(0)
-            inset(paddingPixels, paddingPixels)
+    internal fun sampledRect(crop: android.graphics.Rect): android.graphics.Rect {
+        // Use the actual descriptor positions, including each bilinear neighbour.
+        // A broad approximation incorrectly excludes valid small header crops when
+        // a diagnostic caption is adjacent to, but outside, sampled portrait pixels.
+        fun limits(size: Int, axis: (Pair<Float,Float>) -> Float): Pair<Int,Int> {
+            val first = samples.minOf { ((.5f + axis(it))*size-.5f).coerceIn(0f,(size-1).toFloat()).toInt() }
+            val last = samples.maxOf { ((.5f + axis(it))*size-.5f).coerceIn(0f,(size-1).toFloat()).toInt() }
+            return first to (last+2).coerceAtMost(size)
         }
+        val (left,right) = limits(crop.width()) { it.first }
+        val (top,bottom) = limits(crop.height()) { it.second }
+        return android.graphics.Rect(crop.left+left,crop.top+top,crop.left+right,crop.top+bottom)
+    }
 
     /** Fine reference alignment is used only for an unresolved header portrait. */
     fun fineSimilarity(input: FloatArray, pixels: IntArray, width: Int, height: Int): Float {
