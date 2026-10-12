@@ -62,7 +62,7 @@ object LiteRTVisionClassifier {
     /** The last unambiguous visible portrait is authoritative at draft departure. */
     fun finishLastVisibleSelection(): LiteRTInferenceReport? {
         val last = lastVisibleSelection ?: return null
-        return last.copy(status = EngineStatus.COMPLETED, isConfirmed = true,
+        return last.copy(status = EngineStatus.COMPLETED, isConfirmed = true, isSelectionFinalized = true,
             decisionReason = "Último retrato válido antes de desaparecer los slots.").also {
             _reportFlow.value = it
         }
@@ -101,6 +101,7 @@ object LiteRTVisionClassifier {
         val tensorDimensions: String = "${TENSOR_INPUT_SIZE}x${TENSOR_INPUT_SIZE}x3 (Float32)",
         val evaluatedPicksCount: Int = 0,
         val isConfirmed: Boolean = false,
+        val isSelectionFinalized: Boolean = false,
         val stableFramesCount: Int = 0,
         val requiredStableFrames: Int = REQUIRED_STABLE_FRAMES,
         val minConfidenceThreshold: Float = DEFAULT_CONFIDENCE_THRESHOLD
@@ -406,7 +407,7 @@ object LiteRTVisionClassifier {
         if (confirmedTargetChampion != null) {
             _reportFlow.value = LiteRTInferenceReport(
                 status = EngineStatus.COMPLETED, pickedChampion = confirmedTargetChampion,
-                confidencePercent = 100, isConfirmed = true, requiredStableFrames = 0,
+                confidencePercent = 100, isConfirmed = true, isSelectionFinalized = true, requiredStableFrames = 0,
                 slotDescription = slotDesc, evaluatedPicksCount = confirmedPicksCount,
                 decisionReason = "Nombre confirmado por texto: ${confirmedTargetChampion.name}",
                 minConfidenceThreshold = threshold
@@ -423,7 +424,7 @@ object LiteRTVisionClassifier {
         }
         manuallyConfirmedChampion?.takeIf { it.id !in confirmedChampionIds }?.let { champion ->
             _reportFlow.value = _reportFlow.value.copy(status = EngineStatus.COMPLETED,
-                pickedChampion = champion, confidencePercent = 100, isConfirmed = true,
+                pickedChampion = champion, confidencePercent = 100, isConfirmed = true, isSelectionFinalized = true,
                 slotDescription = slotDesc, evaluatedPicksCount = confirmedPicksCount)
             lastVisibleSelection = _reportFlow.value
             return@withContext champion to 100
@@ -558,7 +559,7 @@ object LiteRTVisionClassifier {
     fun manuallyConfirmTenthPick(champion: Champion) {
         manuallyConfirmedChampion = champion
         _reportFlow.value = _reportFlow.value.copy(status = EngineStatus.COMPLETED,
-            pickedChampion = champion, confidencePercent = 100, isConfirmed = true,
+            pickedChampion = champion, confidencePercent = 100, isConfirmed = true, isSelectionFinalized = true,
             decisionReason = "Confirmado manualmente: ${champion.name}")
         lastVisibleSelection = _reportFlow.value
     }

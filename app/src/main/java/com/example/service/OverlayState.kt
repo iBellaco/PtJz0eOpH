@@ -43,13 +43,20 @@ class OverlayState {
         // Resume a populated draft; a blank hub cannot own old parser evidence.
         if (remembered.isNotEmpty() && (displayed.isEmpty() || remembered.none { it in represented })) {
             trackedLastPick = null
-            scanner.resetSlotMemory()
+            scanner.resetSlotMemory(preserveBans=true)
         } else if (displayed.isEmpty()) {
             // No player evidence: discard captions, retaining a live ban-only phase.
             scanner.debugVisualMatches.value = emptyMap()
         }
         scanner.resetSlotLifecycle()
         autoScanEnabled = true
+    }
+    internal fun stopAutomaticScanIfComplete(finalized: Boolean = false): Boolean {
+        val picks=(allies+enemies).filterNotNull()
+        if (!finalized || !autoScanEnabled || picks.size!=10 || picks.map {it.id}.distinct().size!=10) return false
+        autoScanEnabled=false
+        scanNoticeMessage="10/10 Campeones confirmados"
+        return true
     }
     internal fun clearDraftAndCrops(context: android.content.Context) {
         autoScanEnabled = false

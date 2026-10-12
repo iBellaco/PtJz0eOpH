@@ -19,15 +19,27 @@ internal class BannedPortraitScanner {
     }
 
     @Synchronized fun scan(bitmap: Bitmap, context: Context?, nowMs: Long,
-                           exclusions: List<Rect> = emptyList(), config: VisionCalibrationConfig = VisionCalibrationConfig()): Set<String> {
+                           exclusions: List<Rect> = emptyList(), config: VisionCalibrationConfig = VisionCalibrationConfig(),
+                           pickedIds: Set<String> = emptySet()): Set<String> {
         if (bitmap.isRecycled || bitmap.width < bitmap.height || nowMs - lastScanAt < 1500L) return confirmedIds()
         lastScanAt = nowMs
-        update(LiteRTVisionClassifier.findHeaderBanObservations(bitmap, context, exclusions, config),
+        update(LiteRTVisionClassifier.findHeaderBanObservations(bitmap, context, exclusions, config).map { observation ->
+            if (observation.championId in pickedIds) observation.copy(championId=null,empty=false) else observation
+        },
             bitmap.width.toFloat() / bitmap.height)
         if (config.manualAllyBans || config.manualEnemyBans) slots = slots.map {
             it.copy(region = it.region?.copy(radius = config.banDiameterRatio / 2f))
         }
         return confirmedIds()
+    }
+
+    @Synchronized fun recalibrate(config: VisionCalibrationConfig) {
+        previous=emptyMap()
+        lastScanAt=-1500L
+        slots=slots.map { slot ->
+            val manual=if(slot.side==BanSide.ALLY) config.manualAllyBans else config.manualEnemyBans
+            if(manual) slot.copy(region=config.banRegions(slot.side==BanSide.ALLY)[slot.index]) else slot
+        }
     }
 
     private fun confirmedIds(): Set<String> = slots.filter { it.state == BanState.CONFIRMED }
@@ -36,7 +48,8 @@ internal class BannedPortraitScanner {
     /** Public to module tests so disappearance, replacement and team assignment are deterministic. */
     @Synchronized internal fun update(observations: List<BanObservation>, aspect: Float) {
         if (lastAspect != 0f && abs(aspect - lastAspect) > .02f) {
-            previous = emptyMap(); slots = emptyBanSlots()
+            previous = emptyMap()
+            slots = slots.map { if(it.state==BanState.CONFIRMED) it else it.copy(region=null) }
         }
         lastAspect = aspect
         val assigned = mutableMapOf<Pair<BanSide, Int>, BanObservation>()
@@ -71,6 +84,7 @@ internal class BannedPortraitScanner {
             val observation = assigned[key]
             val old = previous[key]
             when {
+                slot.state == BanState.CONFIRMED -> slot // Latched until explicit draft clear.
                 observation == null -> slot // no evidence of an empty slot, preserve last confirmation
                 observation.championId == null && !observation.empty ->
                     if (slot.state == BanState.CONFIRMED) slot else slot.copy(region = observation.region,

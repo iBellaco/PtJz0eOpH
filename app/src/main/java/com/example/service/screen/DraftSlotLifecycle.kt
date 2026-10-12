@@ -7,8 +7,8 @@ class DraftSlotLifecycle {
     private var missingFrames = 0
 
     fun observe(slotsVisible: Boolean, previousPicksReady: Boolean): Observation {
+        observedFinalSelection = observedFinalSelection || previousPicksReady
         if (slotsVisible) {
-            observedFinalSelection = observedFinalSelection || previousPicksReady
             missingFrames = 0
             return Observation.ACTIVE
         }

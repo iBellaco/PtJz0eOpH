@@ -6,11 +6,13 @@ import org.junit.Assert.*
 import org.junit.Test
 
 class CoachRoutineRegressionTest {
-    @Test fun `nine confirmed picks cannot starve the reconciliation while portrait is pending`() {
-        val cycles = (1L..120L).filter { DraftSyncCadence.globalCycle(9, true, true, it) }
-        assertEquals(10, cycles.size)
-        assertTrue(cycles.zipWithNext().all { (a, b) -> b - a <= 12 })
-        assertTrue(DraftSyncCadence.globalCycle(10, false, true, 1))
+    @Test fun `metadata leaves time for fast title frames even after a slow scan`() {
+        assertFalse(DraftSyncCadence.metadataDue(1000,1000))
+        assertFalse(DraftSyncCadence.metadataDue(2499,1000))
+        assertTrue(DraftSyncCadence.metadataDue(2500,1000))
+        // A slow scan finishes at 5000, so title frames have the next interval.
+        assertFalse(DraftSyncCadence.metadataDue(5001,5000))
+        assertTrue(DraftSyncCadence.metadataDue(6500,5000))
     }
     @Test fun `CPM respects thousands fractional rates and invalid inputs`() {
         assertEquals(3.75, CpmPolicy.revenue(1500, 2.50), 0.0001)

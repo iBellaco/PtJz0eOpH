@@ -184,7 +184,7 @@ internal fun FloatingOverlayContent(
                 (report.slotDescription.startsWith("Aliado") || report.slotDescription.startsWith("Rival"))) {
                 state.applyConfirmedLastPick(com.example.service.screen.DraftScanResult(
                     allies = allies.filterNotNull(), enemies = enemies.filterNotNull(),
-                    isLastPickConfirmed = true, lastPickChampion = report.pickedChampion,
+                    isLastPickConfirmed = true, isLastPickFinalized=report.isSelectionFinalized, lastPickChampion = report.pickedChampion,
                     tenthPickIsAlly = report.slotDescription.startsWith("Aliado"), tenthPickSlotIndex = 4,
                     allyRolesBySlot = DraftVisionScanner.allyRolesBySlotFlow.value,
                     isSuccessful = true, statusMessage = ""
@@ -245,7 +245,7 @@ internal fun FloatingOverlayContent(
 
         withContext(Dispatchers.Default) {
             val isProcessingFrame = java.util.concurrent.atomic.AtomicBoolean(false)
-            var loopCycleCounter = 0L
+            var lastGlobalSyncFinishedAt = android.os.SystemClock.elapsedRealtime()
             var fpsLastTime = System.currentTimeMillis()
             var framesInSecond = 0
 
@@ -264,7 +264,6 @@ internal fun FloatingOverlayContent(
                     continue
                 }
 
-                loopCycleCounter++
                 val cycleStartTime = System.currentTimeMillis()
 
                 // Medición de fotogramas de escaneo por segundo (Scan FPS)
@@ -294,8 +293,8 @@ internal fun FloatingOverlayContent(
                     val hasActiveTurns = activeTurns.isNotEmpty()
                     val isTenthPickActive = activeTurns.any { it.turnNumber == 10 } || confirmedPicksCount >= 8
                     // La navegación y las cajas de diagnóstico no cambian la cadencia del escaneo.
-                    val isGlobalSyncCycle = com.example.service.screen.DraftSyncCadence.globalCycle(
-                        confirmedPicksCount, hasActiveTurns, isTenthPickActive, loopCycleCounter)
+                    val isGlobalSyncCycle = com.example.service.screen.DraftSyncCadence.metadataDue(
+                        android.os.SystemClock.elapsedRealtime(),lastGlobalSyncFinishedAt)
 
 
                     val dynamicLoopDelay = when {
@@ -326,7 +325,7 @@ internal fun FloatingOverlayContent(
                                             if (finalReport?.pickedChampion != null) {
                                                 state.applyConfirmedLastPick(com.example.service.screen.DraftScanResult(
                                                     allies = allies.filterNotNull(), enemies = enemies.filterNotNull(),
-                                                    isLastPickConfirmed = true, lastPickChampion = finalReport.pickedChampion,
+                                                    isLastPickConfirmed = true, isLastPickFinalized=true, lastPickChampion = finalReport.pickedChampion,
                                                     tenthPickIsAlly = finalReport.slotDescription.startsWith("Aliado"),
                                                     tenthPickSlotIndex = 4,
                                                     allyRolesBySlot = DraftVisionScanner.allyRolesBySlotFlow.value,
@@ -335,6 +334,19 @@ internal fun FloatingOverlayContent(
                                             }
                                             autoScanEnabled = false
                                         }
+                                    }
+                                } else if (!isGlobalSyncCycle && confirmedPicksCount<9) {
+                                    val result=DraftVisionScanner.scanDraftFromBitmap(bitmap,context,
+                                        if(state.isFirstPickManuallySelected) isFirstPick else null,activeRole,
+                                        confirmedHudPicks(),namesOnly=true)
+                                    if(result.isSuccessful) withContext(Dispatchers.Main) {
+                                        if(!autoScanEnabled) return@withContext
+                                        if(result.detectedFirstPick!=null && !state.isFirstPickManuallySelected)
+                                            isFirstPick=result.detectedFirstPick
+                                        syncAlliedHud(result)
+                                        syncEnemyHud(result)
+                                        commitLastPickToHud(result)
+                                        state.stopAutomaticScanIfComplete(result.isLastPickFinalized)
                                     }
                                 } else if (!isGlobalSyncCycle && hasActiveTurns) {
                                     // -----------------------------------------------------------------
@@ -357,7 +369,9 @@ internal fun FloatingOverlayContent(
                                                 val before = (allies + enemies).count { it != null }
                                                 val scan = com.example.service.screen.DraftScanResult(
                                                     allies = allies.filterNotNull(), enemies = enemies.filterNotNull(),
-                                                    isLastPickConfirmed = true, lastPickChampion = champ,
+                                                    isLastPickConfirmed = true,
+                                                    isLastPickFinalized=com.example.service.screen.LiteRTVisionClassifier.reportFlow.value.isSelectionFinalized,
+                                                    lastPickChampion = champ,
                                                     tenthPickIsAlly = turn.isAlly, tenthPickSlotIndex = turn.slotIndex,
                                                     allyRolesBySlot = DraftVisionScanner.allyRolesBySlotFlow.value,
                                                     isSuccessful = true, statusMessage = ""
@@ -373,7 +387,7 @@ internal fun FloatingOverlayContent(
                                                 val totalAllies = allies.filterNotNull().size
                                                 val totalEnemies = enemies.filterNotNull().size
                                                 if (totalAllies == 5 && totalEnemies == 5) {
-                                                    scanNoticeMessage = "10/10 Campeones confirmados"
+                                                    state.stopAutomaticScanIfComplete(com.example.service.screen.LiteRTVisionClassifier.reportFlow.value.isSelectionFinalized)
                                                 }
                                             }
                                         }
@@ -383,6 +397,7 @@ internal fun FloatingOverlayContent(
                                     // RUTA DE BAJA FRECUENCIA: SINCRONIZACIÓN GLOBAL Y SLOTS INACTIVOS
                                     // -----------------------------------------------------------------
                                     val result = DraftVisionScanner.scanDraftFromBitmap(bitmap, context, if (state.isFirstPickManuallySelected) isFirstPick else null, activeRole, confirmedHudPicks(), detectBannedPortraits = true)
+                                    lastGlobalSyncFinishedAt = android.os.SystemClock.elapsedRealtime()
                                     if (result.isSuccessful) {
                                         withContext(Dispatchers.Main) {
                                             if (!autoScanEnabled) return@withContext
@@ -435,6 +450,7 @@ internal fun FloatingOverlayContent(
                                             val finalAlliesPicked = allies.filterNotNull().size
                                             val finalEnemiesPicked = enemies.filterNotNull().size
                                             val isDraftFullyConfirmed = (finalAlliesPicked == 5 && finalEnemiesPicked == 5)
+                                            if(isDraftFullyConfirmed) state.stopAutomaticScanIfComplete(result.isLastPickFinalized)
 
                                             if (result.userExplicitlyDetectedRole != null && activeRole != result.userExplicitlyDetectedRole) {
                                                 activeRole = result.userExplicitlyDetectedRole
@@ -442,7 +458,7 @@ internal fun FloatingOverlayContent(
                                                 scanNoticeMessage = "Auto-Scan: Tu rol detectado (${result.userExplicitlyDetectedRole.shortName})"
                                             } else if (isDraftFullyConfirmed) {
                                                 scanNoticeMessage = "10/10 Campeones confirmados"
-                                                AppLogger.i("FloatingService", "10/10 confirmados: seguimiento de intercambios activo.")
+                                                AppLogger.i("FloatingService", if(autoScanEnabled) "Último retrato visible: esperando cierre de selección." else "10/10 confirmados: escáner automático detenido.")
                                             } else if (result.isPreparationPhase && (finalAlliesPicked < 5 || finalEnemiesPicked < 5)) {
                                                 scanNoticeMessage = "Fase de Preparación: completando selección ($finalAlliesPicked/5 vs $finalEnemiesPicked/5)..."
                                             } else if (newAlliesAdded > 0 || newEnemiesAdded > 0) {

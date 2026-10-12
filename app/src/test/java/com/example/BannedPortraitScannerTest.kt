@@ -189,7 +189,7 @@ class BannedPortraitScannerTest {
         bitmap.recycle()
     }
 
-    @Test fun emptyEvidenceClearsABanButAmbiguousOrHiddenFramesDoNot() {
+    @Test fun confirmedBanSurvivesEmptyReplacementAndViewportUntilDraftClear() {
         val scanner = BannedPortraitScanner()
         val side = com.example.service.screen.BanSide.ALLY
         val region = com.example.service.screen.BanRegion(.05f,.05f,.03f)
@@ -204,14 +204,19 @@ class BannedPortraitScannerTest {
         scanner.update(listOf(empty), 2f)
         assertEquals("ahri",scanner.slots.first().championId)
         scanner.update(listOf(empty), 2f)
-        assertEquals(com.example.service.screen.BanState.EMPTY,scanner.slots.first().state)
-        assertNull(scanner.slots.first().championId)
+        assertEquals(com.example.service.screen.BanState.CONFIRMED,scanner.slots.first().state)
+        assertEquals("ahri",scanner.slots.first().championId)
         val replacement = portrait.copy(championId="sona")
         scanner.update(listOf(replacement),2f)
         scanner.update(listOf(replacement),2f)
-        assertEquals("sona",scanner.slots.first().championId)
+        assertEquals("ahri",scanner.slots.first().championId)
+        scanner.update(listOf(replacement),3f)
+        assertEquals("ahri",scanner.slots.first().championId)
         scanner.reset()
         assertTrue(scanner.slots.all { it.state == com.example.service.screen.BanState.UNKNOWN })
+        scanner.update(listOf(replacement),3f)
+        scanner.update(listOf(replacement),3f)
+        assertEquals("sona",scanner.slots.first().championId)
     }
 
     @Test fun bannedChampionsNeverAppearAsRecommendationsIncludingWhenAllChoicesAreBanned() {
