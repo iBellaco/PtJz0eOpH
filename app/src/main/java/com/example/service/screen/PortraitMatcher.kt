@@ -14,6 +14,10 @@ internal object PortraitMatcher {
         }
     }
 
+    // The circular sample grid is symmetric on both axes; cache its extents once.
+    private val minimumSampleCoordinate = samples.minOf { it.first }
+    private val maximumSampleCoordinate = samples.maxOf { it.first }
+
     fun descriptor(pixels: IntArray, width: Int, height: Int,
                    scale: Float = 1f, dx: Float = 0f, dy: Float = 0f): FloatArray {
         require(width > 0 && height > 0 && pixels.size == width * height)
@@ -77,13 +81,13 @@ internal object PortraitMatcher {
         // Use the actual descriptor positions, including each bilinear neighbour.
         // A broad approximation incorrectly excludes valid small header crops when
         // a diagnostic caption is adjacent to, but outside, sampled portrait pixels.
-        fun limits(size: Int, axis: (Pair<Float,Float>) -> Float): Pair<Int,Int> {
-            val first = samples.minOf { ((.5f + axis(it))*size-.5f).coerceIn(0f,(size-1).toFloat()).toInt() }
-            val last = samples.maxOf { ((.5f + axis(it))*size-.5f).coerceIn(0f,(size-1).toFloat()).toInt() }
+        fun limits(size: Int): Pair<Int,Int> {
+            val first = ((.5f + minimumSampleCoordinate)*size-.5f).coerceIn(0f,(size-1).toFloat()).toInt()
+            val last = ((.5f + maximumSampleCoordinate)*size-.5f).coerceIn(0f,(size-1).toFloat()).toInt()
             return first to (last+2).coerceAtMost(size)
         }
-        val (left,right) = limits(crop.width()) { it.first }
-        val (top,bottom) = limits(crop.height()) { it.second }
+        val (left,right) = limits(crop.width())
+        val (top,bottom) = limits(crop.height())
         return android.graphics.Rect(crop.left+left,crop.top+top,crop.left+right,crop.top+bottom)
     }
 
