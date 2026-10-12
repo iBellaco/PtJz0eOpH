@@ -111,11 +111,25 @@ data class DraftScanResult(
 
 object DraftVisionScanner {
     private const val TAG = "DraftVisionScanner"
-    var overlayRect: android.graphics.Rect? = null
+    @Volatile private var overlayMasks = CaptureMaskSnapshot(emptyList())
+    @Volatile private var diagnosticMasks = CaptureMaskSnapshot(emptyList())
+    var overlayRect: Rect?
+        get() = overlayMasks.rects.firstOrNull()?.let { Rect(it) }
+        set(value) { overlayMasks = CaptureMaskSnapshot(listOfNotNull(value?.let { Rect(it) })) }
+    fun publishScreenOverlay(rect: Rect, screenWidth: Int, screenHeight: Int) {
+        overlayMasks = CaptureMaskSnapshot(listOf(Rect(rect)), screenWidth, screenHeight)
+    }
+    fun publishScreenDiagnosticText(rects: List<Rect>, screenWidth: Int, screenHeight: Int) {
+        diagnosticMasks = CaptureMaskSnapshot(rects.map { Rect(it) }, screenWidth, screenHeight)
+    }
+    internal fun overlayForFrame(width: Int, height: Int): Rect? = overlayMasks.forFrame(width, height).firstOrNull()
+    internal fun diagnosticTextForFrame(width: Int, height: Int): List<Rect> = diagnosticMasks.forFrame(width, height)
     val showCalibrationBoxes = kotlinx.coroutines.flow.MutableStateFlow(false)
     val debugVisualMatches = kotlinx.coroutines.flow.MutableStateFlow<Map<String, String>>(emptyMap())
     val allyRolesBySlotFlow = kotlinx.coroutines.flow.MutableStateFlow<Map<Int, LaneRole>>(emptyMap())
-    @Volatile var debugTextRects: List<Rect> = emptyList()
+    var debugTextRects: List<Rect>
+        get() = diagnosticMasks.rects.map { Rect(it) }
+        set(value) { diagnosticMasks = CaptureMaskSnapshot(value.map { Rect(it) }) }
 
     val isVisionEngineBusy = kotlinx.coroutines.flow.MutableStateFlow(false)
     val liveScanFps = kotlinx.coroutines.flow.MutableStateFlow(0f)
@@ -463,6 +477,8 @@ object DraftVisionScanner {
 
         val width = bitmap.width
         val height = bitmap.height
+        val frameOverlay = overlayForFrame(width, height)
+        val frameDiagnosticTexts = diagnosticTextForFrame(width, height)
         if (context != null) {
             TenthPickDiagnosticManager.init(context)
         }
@@ -503,7 +519,7 @@ object DraftVisionScanner {
             // Diagnostic labels are our output, never evidence about the game.
             // Las etiquetas laterales del diagnóstico se dibujan fuera de la ventana central.
             // Deben excluirse siempre; de lo contrario el OCR puede leer "Pantheon" del propio overlay.
-            val exclusions = debugTextRects
+            val exclusions = frameDiagnosticTexts
             val ocrBitmap = if (exclusions.isEmpty()) bitmap else bitmap.copy(Bitmap.Config.ARGB_8888, true) ?: bitmap
             val visionText = try {
                 if (ocrBitmap !== bitmap) {
@@ -520,7 +536,7 @@ object DraftVisionScanner {
             // miss a small rival name and otherwise keep an earlier preview forever.
             for (isAlly in listOf(true, false)) for (i in 0..4) {
                 val nameRect = AdaptiveScreenLayoutEngine.calculateSlotNameRect(width, height, isAlly, i, calib)
-                if (overlayRect?.let { Rect.intersects(it, nameRect) } == true) continue
+                if (frameOverlay?.let { Rect.intersects(it, nameRect) } == true) continue
                 var crop: Bitmap? = null
                 var scaled: Bitmap? = null
                 try {
@@ -584,8 +600,8 @@ object DraftVisionScanner {
                     if (text.isBlank() || text.length < 2) continue
 
                     val box = line.boundingBox
-                    if (box != null && overlayRect != null) {
-                        if (android.graphics.Rect.intersects(box, overlayRect!!)) {
+                    if (box != null && frameOverlay != null) {
+                        if (android.graphics.Rect.intersects(box, frameOverlay)) {
                             continue // Ignorar texto que cae dentro de la ventana flotante
                         }
                     }
@@ -630,7 +646,7 @@ object DraftVisionScanner {
                     }
 
                     // EXCLUSIÓN DEL OVERLAY FLOTANTE DEL ASISTENTE
-                    if (box != null && overlayRect != null && android.graphics.Rect.intersects(box, overlayRect!!)) {
+                    if (box != null && frameOverlay != null && android.graphics.Rect.intersects(box, frameOverlay)) {
                         continue
                     }
 
@@ -1231,7 +1247,7 @@ object DraftVisionScanner {
         banDetectionActiveFlow.value = detectBannedPortraits
         if (!detectBannedPortraits) clearDetectedBans()
         else if (draftVisible) {
-            val exclusions = debugTextRects + listOfNotNull(overlayRect)
+            val exclusions = frameDiagnosticTexts + listOfNotNull(frameOverlay)
             val pickedIds = (allyOcrChampions.filterNotNull() + enemyOcrChampions.filterNotNull()).map { it.id }.toSet()
             bannedChampionIdsFlow.value = bannedPortraitScanner.scan(bitmap, context,
                 android.os.SystemClock.elapsedRealtime(), exclusions, calib) - pickedIds

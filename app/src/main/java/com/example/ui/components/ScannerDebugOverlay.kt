@@ -359,6 +359,6 @@ fun ScannerDebugOverlay(
             hudY,
             hudPaint
         )
-        DraftVisionScanner.debugTextRects = textRects.toList()
+        DraftVisionScanner.publishScreenDiagnosticText(textRects, w.toInt(), h.toInt())
     }
 }
