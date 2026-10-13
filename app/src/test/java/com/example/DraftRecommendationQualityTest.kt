@@ -116,7 +116,7 @@ class DraftRecommendationQualityTest {
         val plan = result.recommendations.first().draftBuilds
         assertTrue("A known lane rival must produce a 1v1 plan", plan.oneVsOne != null)
         assertTrue("Five enemy champions must produce a complete-team plan", plan.fullTeam != null)
-        val antiShield = DraftBuildPolicy.create(ahri, LaneRole.MID, emptyList(), listOf(lulu))
+        val antiShield = DraftBuildPolicy.create(ahri, LaneRole.MID, emptyList(), listOf(laneRival))
         assertTrue("AP champions need the catalog anti-shield item", antiShield.situationalItems.any { it.equals("Tridente de Oceánida", true) })
     }
 }
