@@ -202,7 +202,6 @@ internal fun FloatingOverlayContent(
     var isNearCloseThreshold by state::isNearCloseThreshold
 
     var selectedChampionDetail by state::selectedChampionDetail
-    var selectedDraftBuildPlans by remember { mutableStateOf<com.example.model.DraftBuildPlanBundle?>(null) }
     var showChampionPickerForSlot by state::showChampionPickerForSlot
     var isLoadingScreenMode by state::isLoadingScreenMode
     var isOverlayTabsMinimized by state::isOverlayTabsMinimized
@@ -224,7 +223,6 @@ internal fun FloatingOverlayContent(
     }
 
     val openChampionDetails: (com.example.model.Champion) -> Unit = { champion ->
-        selectedDraftBuildPlans = analysis.recommendations.firstOrNull { it.champion.id == champion.id }?.draftBuilds
         selectedChampionDetail = champion
     }
 
@@ -1135,9 +1133,8 @@ internal fun FloatingOverlayContent(
                                 com.example.ui.screens.ChampionDetailSheet(
                                     isOverlay = true,
                                     champion = selectedChampionDetail,
-                                    onDismiss = { selectedChampionDetail = null; selectedDraftBuildPlans = null },
-                                    onChampionSelected = { openChampionDetails(it) },
-                                    draftBuildPlans = selectedDraftBuildPlans
+                                    onDismiss = { selectedChampionDetail = null },
+                                    onChampionSelected = { openChampionDetails(it) }
                                 )
                             } else {
                                 when (overlayHubTab) {
@@ -1205,14 +1202,14 @@ internal fun FloatingOverlayContent(
                                     OverlayHubTab.TIER_LIST -> {
                                         com.example.ui.screens.TierListTab(
                                             isOverlay = true,
-                                            onSelectChampion = { haptic.performHapticFeedback(HapticFeedbackType.LongPress); selectedDraftBuildPlans = null; selectedChampionDetail = it },
+                                            onSelectChampion = { haptic.performHapticFeedback(HapticFeedbackType.LongPress); selectedChampionDetail = it },
                                             isPremium = isPremium
                                         )
                                     }
                                     OverlayHubTab.CHAMPIONS -> {
                                         com.example.ui.screens.ChampionsCatalogTab(
                                             isOverlay = true,
-                                            onSelectChampion = { haptic.performHapticFeedback(HapticFeedbackType.LongPress); selectedDraftBuildPlans = null; selectedChampionDetail = it }
+                                            onSelectChampion = { haptic.performHapticFeedback(HapticFeedbackType.LongPress); selectedChampionDetail = it }
                                         )
                                     }
                                     OverlayHubTab.HISTORY -> {

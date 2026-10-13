@@ -63,7 +63,6 @@ import com.example.data.WildRiftRepository
 import com.example.model.Champion
 import com.example.util.SubscriptionManager
 import com.example.model.DraftSlot
-import com.example.model.DraftBuildPlanBundle
 import com.example.model.LaneRole
 import com.example.ui.theme.HextechCardBorder
 import com.example.ui.theme.HextechCyan
@@ -165,7 +164,6 @@ fun MetaAndDraftScreen(
     var selectedDetailChampion by remember { mutableStateOf<Champion?>(
         initialChampionId?.let { id -> WildRiftRepository.getChampionById(id) }
     ) }
-    var selectedDraftBuildPlans by remember { mutableStateOf<DraftBuildPlanBundle?>(null) }
     var isFirstPick by remember { mutableStateOf(false) }
     var showDraftHistoryScreen by remember { mutableStateOf(false) }
 
@@ -173,7 +171,6 @@ fun MetaAndDraftScreen(
         when {
             selectedDetailChampion != null -> {
                 selectedDetailChampion = null
-                selectedDraftBuildPlans = null
             }
             pickingForTeam != null -> {
                 pickingForTeam = null
@@ -233,12 +230,7 @@ fun MetaAndDraftScreen(
         )
     }
 
-    fun plansForChampion(champion: Champion): DraftBuildPlanBundle? = when {
-        analysis.draftBuild != null && myChampion?.id == champion.id -> analysis.draftBuilds
-        else -> analysis.recommendations.firstOrNull { it.champion.id == champion.id }?.draftBuilds
-    }
     val openChampionDetails: (Champion) -> Unit = { champion ->
-        selectedDraftBuildPlans = plansForChampion(champion)
         selectedDetailChampion = champion
     }
 
@@ -714,9 +706,8 @@ fun MetaAndDraftScreen(
     if (selectedDetailChampion != null) {
         ChampionDetailSheet(
             champion = selectedDetailChampion,
-            onDismiss = { selectedDetailChampion = null; selectedDraftBuildPlans = null },
-            onChampionSelected = { openChampionDetails(it) },
-            draftBuildPlans = selectedDraftBuildPlans
+            onDismiss = { selectedDetailChampion = null },
+            onChampionSelected = { openChampionDetails(it) }
         )
     }
 
