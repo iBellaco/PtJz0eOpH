@@ -47,7 +47,8 @@ internal fun fillHeaderPositions(observations: List<BanObservation>, aspect: Flo
     }
     // Template similarity alone can match a textured background outside the row.
     // Select the five circles with consistent spacing before latching identities.
-    if (row.size <= 5) row else row.windowed(5).minBy { window ->
+    if (row.size <= 5) row else {
+      val windows = row.windowed(5).map { window ->
         val gaps = window.zipWithNext { a, b -> b.region.x-a.region.x }.sorted()
         val step = (gaps[1]+gaps[2])/2f
         val nominal = .080f/aspect
@@ -57,6 +58,11 @@ internal fun fillHeaderPositions(observations: List<BanObservation>, aspect: Flo
         }
         val scaleError = if(step in nominal*.65f..nominal*1.4f) 0.0 else 10.0
         val y = window.map { it.region.y }.average()
-        spacingError+scaleError+window.sumOf { (it.region.y-y)*(it.region.y-y) }
+        window to (spacingError+scaleError+window.sumOf { (it.region.y-y)*(it.region.y-y) })
+      }
+      val minimum = windows.minOf { it.second }
+      val regular = windows.filter { it.second<=minimum+.02 }
+      // Equally regular adjacent profiles belong toward the centre of the screen.
+      (if(side==BanSide.ALLY) regular.first() else regular.last()).first
     }
 }

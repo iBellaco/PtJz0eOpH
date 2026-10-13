@@ -242,7 +242,7 @@ object LiteRTVisionClassifier {
         // only from a regular row of at least four observed circles near the screen edge,
         // and require a uniform interior. A textured unknown portrait stays unknown.
         val rivalRow = observations.filter { it.side == BanSide.ENEMY }.sortedBy { it.region.x }
-        val finalEmpty = if (rivalRow.size == 4) {
+        val finalEmpty = if (rivalRow.size >= 4) {
             val gaps = rivalRow.zipWithNext { a, b -> b.region.x - a.region.x }.sorted()
             val step = gaps[gaps.size / 2]
             val last = rivalRow.last().region
@@ -271,7 +271,8 @@ object LiteRTVisionClassifier {
                     val mean = values.average()
                     values.sumOf { (it-mean)*(it-mean) } / values.size
                 } / 3.0
-                if (variance < 36.0) BanObservation(BanSide.ENEMY,region,empty=true) else null
+                if (variance < 36.0 && hasHeaderCircleRing(bitmap,region))
+                    BanObservation(BanSide.ENEMY,region,empty=true) else null
             } else null
         } else null
         val positioned = fillHeaderPositions(observations + listOfNotNull(finalEmpty), width.toFloat() / height) { region ->
@@ -377,6 +378,24 @@ object LiteRTVisionClassifier {
             }
             refined
         }
+    }
+
+    /** An unused ban has a real rim; uniform background after five bans has none. */
+    private fun hasHeaderCircleRing(bitmap: Bitmap, region: BanRegion): Boolean {
+        val radius = region.radius*bitmap.height
+        fun light(distance: Float, angle: Double): Float {
+            val x=(region.x*bitmap.width+radius*distance*kotlin.math.cos(angle)).toInt().coerceIn(0,bitmap.width-1)
+            val y=(region.y*bitmap.height+radius*distance*kotlin.math.sin(angle)).toInt().coerceIn(0,bitmap.height-1)
+            val pixel=bitmap.getPixel(x,y)
+            return Color.red(pixel)*.299f+Color.green(pixel)*.587f+Color.blue(pixel)*.114f
+        }
+        var visibleArcs=0
+        for(index in 0 until 32) {
+            val angle=index*2.0*Math.PI/32
+            val border=floatArrayOf(.90f,1f,1.10f,1.20f).maxOf { light(it,angle) }
+            if(border>maxOf(light(.5f,angle),light(1.4f,angle))+12f) visibleArcs++
+        }
+        return visibleArcs>=8
     }
 
     /** Keep only evidence from a visible draft slot, never from the loading background. */
