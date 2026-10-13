@@ -12,3 +12,4 @@
 - `DraftRecommendationQualityTest` verifica que los dos planes reciban conjuntos de rivales distintos y con etiquetas de contexto distintas.
 - La auditoría renderizada conserva el detalle dentro de la ficha del campeón.
 - La versión Android se incrementó a `versionCode 988`.
+- El plan contra composición completa conserva los cinco rivales en el orden recibido.
