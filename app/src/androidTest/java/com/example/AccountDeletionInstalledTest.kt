@@ -23,6 +23,7 @@ class AccountDeletionInstalledTest {
     @get:Rule val compose = createAndroidComposeRule<MainActivity>()
     private fun content(body: @Composable () -> Unit) {
         compose.activityRule.scenario.onActivity { it.setContent(content = body) }
+        compose.waitForIdle()
     }
     private fun language(value: String) {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
@@ -38,6 +39,9 @@ class AccountDeletionInstalledTest {
     }
     private fun frame() { compose.mainClock.advanceTimeBy(300); compose.waitForIdle() }
     private fun click(tag: String) {
+        compose.waitUntil(timeoutMillis = 5_000) {
+            compose.onAllNodesWithTag(tag).fetchSemanticsNodes().isNotEmpty()
+        }
         compose.onNodeWithTag(tag).performClick()
         if (!compose.mainClock.autoAdvance) frame()
     }
