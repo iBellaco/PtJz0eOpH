@@ -125,7 +125,7 @@ object DraftScoringPolicy {
         if (enemyFrontlineCount >= 2) {
             score += when {
                 champion.isIn(antiTank) -> 8.0
-                DraftScoringPolicy.profile(champion).trueDamage >= 10.0 -> 4.0
+                profile(champion).trueDamage >= 10.0 -> 4.0
                 else -> 0.0
             }
         }
