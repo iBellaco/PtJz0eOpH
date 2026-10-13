@@ -13,6 +13,12 @@ class InboxSynchronizationTest {
         assertEquals(listOf(messages.last()), remaining)
         assertEquals(setOf("message:other"), InboxNotificationPolicy.unreadKeys(remaining))
     }
+
+    @Test fun legacySupportReportCanBeMatchedByUidOrEmail() {
+        assertTrue(UserMessageDeleteRepository.reportBelongsToUser(mapOf("userId" to "u1"), "u1"))
+        assertTrue(UserMessageDeleteRepository.reportBelongsToUser(mapOf("userEmail" to "User@Test.com"), "u1", "user@test.com"))
+        assertFalse(UserMessageDeleteRepository.reportBelongsToUser(mapOf("userEmail" to "other@test.com"), "u1", "user@test.com"))
+    }
     @Test fun readAcknowledgementDoesNotApplyToANewReply() {
         val observed = mapOf<String, Any>("id" to "one", "timestamp" to 10L, "isRead" to false)
         assertTrue(UserMessageReadRepository.canAcknowledge(listOf(observed), observed))

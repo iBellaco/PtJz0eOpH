@@ -27,6 +27,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.sp
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.FieldValue
+import com.google.firebase.firestore.QuerySnapshot
+import com.google.android.gms.tasks.Tasks
 import java.util.UUID
 import kotlinx.coroutines.launch
 import androidx.compose.ui.platform.testTag
@@ -337,11 +339,13 @@ fun AdminPrivateMessageDialog(
 
 data class UserDirectMessageItem(
     val id: String = "",
+    val reportId: String = "",
     val title: String = "",
     val content: String = "",
     val tag: String = "aviso",
     val timestamp: Long = 0L,
-    val isRead: Boolean = false
+    val isRead: Boolean = false,
+    val isSupportTicket: Boolean = false
 )
 
 @Composable
@@ -364,71 +368,87 @@ fun AdminUserMessagesViewerDialog(
         val db = FirebaseFirestore.getInstance()
         val userDocRef = db.collection("users").document(userUid)
 
+        val resultMessages = mutableMapOf<String, UserDirectMessageItem>()
+
+        fun addDirectMessage(id: String, data: Map<String, Any>) {
+            resultMessages[id] = UserDirectMessageItem(
+                id = id,
+                reportId = (data["reportId"] as? String).orEmpty(),
+                title = data["title"] as? String ?: "",
+                content = data["content"] as? String ?: data["description"] as? String ?: "",
+                tag = data["tag"] as? String ?: "aviso",
+                timestamp = (data["timestamp"] as? Number)?.toLong()
+                    ?: (data["timestampMillis"] as? Number)?.toLong() ?: 0L,
+                isRead = (data["isRead"] as? Boolean) ?: (data["userRead"] as? Boolean) ?: false
+            )
+        }
+
+        fun addSupportReports(reports: List<QuerySnapshot>) {
+            reports.flatMap { it.documents }.distinctBy { it.id }.forEach { doc ->
+                val report = com.example.data.SupportReportDecoder.decode(doc.id, doc.data.orEmpty()) ?: return@forEach
+                val reportId = report.id ?: doc.id
+                resultMessages[reportId] = UserDirectMessageItem(
+                    id = reportId,
+                    reportId = reportId,
+                    title = report.title,
+                    content = report.description,
+                    tag = report.type.ifBlank { "soporte" },
+                    timestamp = report.lastActivityAtMillis.takeIf { it > 0 }
+                        ?: com.example.data.SupportReportDecoder.timestampMillis(report.createdAt) ?: 0L,
+                    isRead = com.example.data.SupportConversationPolicy.userHasRead(doc.data.orEmpty()),
+                    isSupportTicket = true
+                )
+            }
+        }
+
+        fun finishLoading() {
+            messages = resultMessages.values.sortedByDescending { it.timestamp }
+            isLoading = false
+        }
+
+        fun loadSupportReports(email: String) {
+            val queries = mutableListOf(
+                db.collection("support_reports").whereEqualTo("userId", userUid).get()
+            )
+            if (email.isNotBlank()) {
+                queries += db.collection("support_reports").whereEqualTo("userEmail", email).get()
+            }
+            Tasks.whenAllSuccess<QuerySnapshot>(queries)
+                .addOnSuccessListener { snapshots ->
+                    addSupportReports(snapshots)
+                    finishLoading()
+                }
+                .addOnFailureListener {
+                    // Mensajes directos siguen siendo válidos aunque una consulta histórica no esté disponible.
+                    finishLoading()
+                }
+        }
+
+        fun loadSubcollection(email: String) {
+            userDocRef.collection("messages").get()
+                .addOnSuccessListener { subSnap ->
+                    subSnap.documents.forEach { doc -> addDirectMessage(doc.id, doc.data.orEmpty()) }
+                    loadSupportReports(email)
+                }
+                .addOnFailureListener {
+                    loadSupportReports(email)
+                }
+        }
+
         userDocRef.get()
             .addOnSuccessListener { userDoc ->
-                val resultMessages = mutableMapOf<String, UserDirectMessageItem>()
-
-                // 1. Extraer del array 'privateMessages' del documento del usuario (siempre accesible para administradores)
+                // El gestor debe consultar las mismas fuentes que la bandeja: mensajes directos y tickets de soporte.
                 @Suppress("UNCHECKED_CAST")
                 val pMsgs = userDoc.get("privateMessages") as? List<Map<String, Any>>
-                if (pMsgs != null) {
-                    for (m in pMsgs) {
-                        val id = m["id"] as? String ?: continue
-                        resultMessages[id] = UserDirectMessageItem(
-                            id = id,
-                            title = m["title"] as? String ?: "",
-                            content = m["content"] as? String ?: "",
-                            tag = m["tag"] as? String ?: "aviso",
-                            timestamp = (m["timestamp"] as? Long) ?: 0L,
-                            isRead = (m["isRead"] as? Boolean) ?: false
-                        )
-                    }
+                pMsgs.orEmpty().forEach { data ->
+                    (data["id"] as? String)?.let { id -> addDirectMessage(id, data) }
                 }
-
-                // 2. Intentar también leer de la subcolección 'messages' si está permitida y complementar
-                userDocRef.collection("messages").get()
-                    .addOnSuccessListener { subSnap ->
-                        for (doc in subSnap.documents) {
-                            val id = doc.id
-                            resultMessages[id] = UserDirectMessageItem(
-                                id = id,
-                                title = doc.getString("title") ?: "",
-                                content = doc.getString("content") ?: "",
-                                tag = doc.getString("tag") ?: "aviso",
-                                timestamp = doc.getLong("timestamp") ?: 0L,
-                                isRead = doc.getBoolean("isRead") ?: false
-                            )
-                        }
-                        messages = resultMessages.values.sortedByDescending { it.timestamp }
-                        isLoading = false
-                    }
-                    .addOnFailureListener {
-                        // Si la subcolección tiene restricción de reglas de seguridad, usamos con éxito los datos de 'privateMessages'
-                        messages = resultMessages.values.sortedByDescending { it.timestamp }
-                        isLoading = false
-                    }
+                val email = (userDoc.getString("email") ?: userDoc.getString("userEmail")).orEmpty()
+                loadSubcollection(email)
             }
             .addOnFailureListener { e ->
-                // Si falla el documento de usuario, intentamos consultar directamente la subcolección
-                userDocRef.collection("messages").get()
-                    .addOnSuccessListener { subSnap ->
-                        val list = subSnap.documents.map { doc ->
-                            UserDirectMessageItem(
-                                id = doc.id,
-                                title = doc.getString("title") ?: "",
-                                content = doc.getString("content") ?: "",
-                                tag = doc.getString("tag") ?: "aviso",
-                                timestamp = doc.getLong("timestamp") ?: 0L,
-                                isRead = doc.getBoolean("isRead") ?: false
-                            )
-                        }
-                        messages = list.sortedByDescending { it.timestamp }
-                        isLoading = false
-                    }
-                    .addOnFailureListener { subErr ->
-                        errorMessage = "Error cargando mensajes: ${e.message ?: subErr.message}"
-                        isLoading = false
-                    }
+                loadSubcollection("")
+                if (e.message.isNullOrBlank()) errorMessage = null
             }
     }
 
@@ -457,7 +477,7 @@ fun AdminUserMessagesViewerDialog(
                         Spacer(modifier = Modifier.width(8.dp))
                         Column {
                             Text(
-                                tr("Mensajes Enviados"),
+                                tr("Mensajes del usuario"),
                                 color = Color(0xFFF59E0B),
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 15.sp
@@ -608,7 +628,13 @@ fun AdminUserMessagesViewerDialog(
                                                 onClick = {
                                                     isDeletingId = msg.id
                                                     deletionScope.launch {
-                                                        runCatching { com.example.data.UserMessageDeleteRepository.delete(userUid, msg.id) }
+                                                        runCatching {
+                                                            com.example.data.UserMessageDeleteRepository.delete(
+                                                                uid = userUid,
+                                                                id = msg.id,
+                                                                reportId = msg.reportId
+                                                            )
+                                                        }
                                                             .onSuccess {
                                                                 messages = messages.filterNot { it.id == msg.id }
                                                                 Toast.makeText(context, com.example.util.appTr("Mensaje eliminado."), Toast.LENGTH_SHORT).show()
