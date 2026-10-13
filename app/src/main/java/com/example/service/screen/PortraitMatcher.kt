@@ -76,6 +76,21 @@ internal object PortraitMatcher {
     fun similarity(input: FloatArray, references: List<FloatArray>): Float =
         references.maxOfOrNull { correlation(input, it) } ?: 0f
 
+    /** Normalizing nearly flat background amplifies JPEG noise into a false template match. */
+    internal fun hasSpatialContrast(pixels: IntArray, width: Int, height: Int): Boolean {
+        val sums = DoubleArray(3); val squares = DoubleArray(3)
+        for((x,y) in samples) {
+            val px=((.5f+x)*width).toInt().coerceIn(0,width-1)
+            val py=((.5f+y)*height).toInt().coerceIn(0,height-1)
+            val pixel=pixels[py*width+px]
+            for(c in 0..2) {
+                val value=((pixel ushr (16-c*8)) and 255).toDouble()
+                sums[c]+=value; squares[c]+=value*value
+            }
+        }
+        return (0..2).sumOf { squares[it]/samples.size-(sums[it]/samples.size)*(sums[it]/samples.size) }/3>=144.0
+    }
+
     /** Only these pixels are sampled (plus bilinear neighbours); border captions cannot alter a descriptor. */
     internal fun sampledRect(crop: android.graphics.Rect): android.graphics.Rect {
         // Use the actual descriptor positions, including each bilinear neighbour.

@@ -209,7 +209,7 @@ object LiteRTVisionClassifier {
                         val score = PortraitMatcher.similarity(input, emptyReferences)
                         if (score >= .90f) emptyProposals.add(Proposal(x, y, radius, score, input, emptyList()))
                     }
-                    if (coarse.first().second >= .60f) {
+                    if (coarse.first().second >= .60f && PortraitMatcher.hasSpatialContrast(cropPixels,diameter,diameter)) {
                         proposals.add(Proposal(x, y, radius, coarse.first().second, input, coarse.take(8).map { it.first }))
                     }
                 }
@@ -328,6 +328,7 @@ object LiteRTVisionClassifier {
                 val pixels = IntArray(diameter * diameter)
                 for (row in 0 until diameter) System.arraycopy(header,
                     (y-radius+row)*width+x-radius, pixels, row*diameter, diameter)
+                if(!PortraitMatcher.hasSpatialContrast(pixels,diameter,diameter)) continue
                 val descriptor = PortraitMatcher.descriptor(pixels, diameter, diameter)
                 val candidates = catalog.map { champion ->
                     val references = championEmbeddingCache.getValue(champion.id)
