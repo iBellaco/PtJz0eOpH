@@ -1170,7 +1170,10 @@ internal fun FloatingOverlayContent(
                                             enemySpells = state.enemySpells,
                                             analysis = analysis,
                                             selectedChampionDetail = selectedChampionDetail,
-                                            onSelectChampion = { haptic.performHapticFeedback(HapticFeedbackType.LongPress); openChampionDetails(it) },
+                                            onSelectChampion = { champion ->
+                                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                                champion?.let(openChampionDetails)
+                                            },
                                             onOpenChampionPicker = { isAlly, idx ->
                                                 autoScanEnabled = false
                                                 showChampionPickerForSlot = Pair(isAlly, idx)
