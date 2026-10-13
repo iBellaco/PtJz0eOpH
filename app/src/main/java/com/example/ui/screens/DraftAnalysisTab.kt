@@ -1091,9 +1091,11 @@ fun DraftAnalysisTab(
             Spacer(Modifier.height(16.dp))
         }
 
-        // Blind Pick has no portraits yet, but it still has a lane and a full
-        // catalog from which to rank safe picks and create a draft build.
-        if (activeRole != null) {
+        // Blind Pick can rank a lane as soon as a champion or draft slot is
+        // present. An entirely empty draft keeps the empty-state guidance.
+        val hasDraftSelection = selectedOwnChampion != null || selectedEnemyChampion != null ||
+            selectedAllySlots.isNotEmpty() || selectedEnemySlots.isNotEmpty()
+        if (activeRole != null && hasDraftSelection) {
             // Live Recommendations Header
             Row(modifier = Modifier.testTag("draft_recommendations"), verticalAlignment = Alignment.CenterVertically) {
                 Image(
