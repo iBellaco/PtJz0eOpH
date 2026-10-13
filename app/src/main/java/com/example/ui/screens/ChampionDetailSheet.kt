@@ -101,6 +101,45 @@ private data class RuneDetailSelection(
 )
 
 @Composable
+private fun DraftBuildIconRow(
+    names: List<String>,
+    isCompact: Boolean,
+    iconFor: (String) -> String,
+    kind: String
+) {
+    if (names.isEmpty()) return
+    Row(
+        modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+        horizontalArrangement = Arrangement.spacedBy(if (isCompact) 4.dp else 6.dp)
+    ) {
+        names.forEach { name ->
+            Column(
+                modifier = Modifier.width(if (isCompact) 42.dp else 54.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(2.dp)
+            ) {
+                AppAssetImage(
+                    url = iconFor(name),
+                    contentDescription = name,
+                    fallbackText = name,
+                    modifier = Modifier.size(if (isCompact) 30.dp else 42.dp),
+                    borderColor = if (kind == "situational") HextechCyan else HextechGold
+                )
+                Text(
+                    text = name,
+                    color = TextSecondary,
+                    fontSize = if (isCompact) 6.5.sp else 7.5.sp,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                    textAlign = TextAlign.Center,
+                    lineHeight = if (isCompact) 7.sp else 8.sp
+                )
+            }
+        }
+    }
+}
+
+@Composable
 private fun DraftBuildPlansSection(plans: DraftBuildPlanBundle, isCompact: Boolean) {
     val lang = com.example.util.currentAppLanguage()
     val itemNames = { names: List<String> -> names.map { WildRiftItemsData.getItemByName(it)?.getLocalizedName(lang) ?: it } }
@@ -125,6 +164,7 @@ private fun DraftBuildPlansSection(plans: DraftBuildPlanBundle, isCompact: Boole
             )
             planEntries.forEachIndexed { index, (label, plan) ->
                 Card(
+                    modifier = Modifier.testTag("draft_custom_build_$index"),
                     colors = CardDefaults.cardColors(containerColor = HextechSurface),
                     shape = RoundedCornerShape(8.dp),
                     border = androidx.compose.foundation.BorderStroke(1.dp, HextechCardBorder)
@@ -132,21 +172,55 @@ private fun DraftBuildPlansSection(plans: DraftBuildPlanBundle, isCompact: Boole
                     Column(modifier = Modifier.padding(if (isCompact) 6.dp else 8.dp), verticalArrangement = Arrangement.spacedBy(3.dp)) {
                         Text(label, color = HextechGold, fontSize = if (isCompact) 9.sp else 11.sp, fontWeight = FontWeight.Bold)
                         Text(tr(plan.title), color = TextPrimary, fontSize = if (isCompact) 8.5.sp else 10.sp, fontWeight = FontWeight.SemiBold)
+                        val matchupNames = plan.matchupChampions
+                            .map { name -> WildRiftRepository.getChampionByName(name)?.getLocalizedName(lang) ?: name }
+                        if (matchupNames.isNotEmpty()) {
+                            Text(
+                                text = if (plan.matchupChampions.size == 1) {
+                                    "${tr("Rival")}: ${matchupNames.first()}"
+                                } else {
+                                    "${tr("Composición completa")}: ${matchupNames.joinToString(" • ")}"
+                                },
+                                color = HextechCyan,
+                                fontSize = if (isCompact) 7.5.sp else 9.sp,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        }
                         if (plan.coreItems.isNotEmpty()) {
                             Text(tr("3 objetos principales"), color = TextPrimary, fontSize = if (isCompact) 8.sp else 9.5.sp, fontWeight = FontWeight.SemiBold)
-                            Text(itemNames(plan.coreItems).joinToString(" • "), color = TextPrimary, fontSize = if (isCompact) 8.sp else 9.5.sp)
+                            DraftBuildIconRow(
+                                names = itemNames(plan.coreItems),
+                                isCompact = isCompact,
+                                iconFor = { WildRiftItemsData.getItemIconByName(it) },
+                                kind = "core"
+                            )
                         }
                         if (plan.situationalItems.isNotEmpty()) {
                             Text(tr("Situacionales"), color = TextSecondary, fontSize = if (isCompact) 8.sp else 9.5.sp, fontWeight = FontWeight.SemiBold)
-                            Text(itemNames(plan.situationalItems).joinToString(" • "), color = TextSecondary, fontSize = if (isCompact) 8.sp else 9.5.sp)
+                            DraftBuildIconRow(
+                                names = itemNames(plan.situationalItems),
+                                isCompact = isCompact,
+                                iconFor = { WildRiftItemsData.getItemIconByName(it) },
+                                kind = "situational"
+                            )
                         }
                         if (plan.runes.isNotEmpty()) {
                             Text(tr("Runas"), color = TextPrimary, fontSize = if (isCompact) 8.sp else 9.5.sp, fontWeight = FontWeight.SemiBold)
-                            Text(plan.runes.map { WildRiftSpellsAndRunes.getRuneByName(it)?.getLocalizedName(lang) ?: it }.joinToString(" • "), color = TextPrimary, fontSize = if (isCompact) 8.sp else 9.5.sp)
+                            DraftBuildIconRow(
+                                names = plan.runes.map { WildRiftSpellsAndRunes.getRuneByName(it)?.getLocalizedName(lang) ?: it },
+                                isCompact = isCompact,
+                                iconFor = { WildRiftSpellsAndRunes.getRuneIconByName(it) },
+                                kind = "rune"
+                            )
                         }
                         if (plan.spells.isNotEmpty()) {
                             Text(tr("Hechizos"), color = TextPrimary, fontSize = if (isCompact) 8.sp else 9.5.sp, fontWeight = FontWeight.SemiBold)
-                            Text(plan.spells.map { WildRiftSpellsAndRunes.getSpellByName(it)?.getLocalizedName(lang) ?: it }.joinToString(" + "), color = TextPrimary, fontSize = if (isCompact) 8.sp else 9.5.sp)
+                            DraftBuildIconRow(
+                                names = plan.spells.map { WildRiftSpellsAndRunes.getSpellByName(it)?.getLocalizedName(lang) ?: it },
+                                isCompact = isCompact,
+                                iconFor = { WildRiftSpellsAndRunes.getSpellIconByName(it) },
+                                kind = "spell"
+                            )
                         }
                         plan.reasons.take(2).forEach { reason ->
                             Text("• ${tr(reason)}", color = TextMuted, fontSize = if (isCompact) 7.8.sp else 9.sp, lineHeight = if (isCompact) 10.sp else 12.sp)

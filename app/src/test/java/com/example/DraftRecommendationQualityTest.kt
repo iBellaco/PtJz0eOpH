@@ -11,6 +11,7 @@ import com.example.data.WildRiftRepository
 import com.example.model.LaneRole
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -116,6 +117,11 @@ class DraftRecommendationQualityTest {
         val plan = result.recommendations.first().draftBuilds
         assertTrue("A known lane rival must produce a 1v1 plan", plan.oneVsOne != null)
         assertTrue("Five enemy champions must produce a complete-team plan", plan.fullTeam != null)
+        assertEquals(listOf("lulu"), plan.oneVsOne!!.matchupChampions.map { WildRiftRepository.getChampionByName(it)?.id ?: it })
+        assertEquals(fullEnemies.map { it.id }, plan.fullTeam!!.matchupChampions.map { WildRiftRepository.getChampionByName(it)?.id ?: it })
+        assertTrue("The lane build must identify its 1v1 scope", plan.oneVsOne.title.contains("Enfrentamiento 1v1"))
+        assertTrue("The second build must identify the complete enemy draft", plan.fullTeam.title.contains("Composición completa"))
+        assertNotEquals("The two plans must remain independently calculated", plan.oneVsOne.title, plan.fullTeam.title)
         val antiShield = DraftBuildPolicy.create(ahri, LaneRole.MID, emptyList(), listOf(laneRival))
         assertTrue("AP champions need the catalog anti-shield item", antiShield.situationalItems.any { it.equals("Tridente de Oceánida", true) })
     }

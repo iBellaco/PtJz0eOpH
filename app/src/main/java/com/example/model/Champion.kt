@@ -318,7 +318,9 @@ data class DraftBuildPlan(
     val situationalItems: List<String> = emptyList(),
     val runes: List<String> = emptyList(),
     val spells: List<String> = emptyList(),
-    val reasons: List<String> = emptyList()
+    val reasons: List<String> = emptyList(),
+    /** Champions used to calculate this plan, kept visible so the user can verify its scope. */
+    val matchupChampions: List<String> = emptyList()
 )
 
 /** Separate plans prevent a lane matchup from being confused with a team-wide plan. */
