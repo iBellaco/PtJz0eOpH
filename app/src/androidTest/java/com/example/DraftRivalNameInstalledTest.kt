@@ -24,6 +24,36 @@ import org.junit.runner.RunWith
 /** Real pixels from the reported name bands, without account/player names. */
 @RunWith(AndroidJUnit4::class)
 class DraftRivalNameInstalledTest {
+    @Test fun tester8067NeverConfirmsBackgroundAsCaitlynBan() = kotlinx.coroutines.runBlocking<Unit> {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val scanner = com.example.service.screen.DraftVisionScanner
+        val config = scanner.calibrationConfig
+        val fixture = InstrumentationRegistry.getInstrumentation().context.assets.open("draft/poco-8067-header.json")
+            .bufferedReader().use { org.json.JSONObject(it.readText()).getString("pngBase64") }
+        val bytes = android.util.Base64.decode(fixture,android.util.Base64.DEFAULT)
+        val bitmap = BitmapFactory.decodeByteArray(bytes,0,bytes.size)!!
+        try {
+            scanner.resetSlotMemory()
+            scanner.updateCalibration(context,com.example.service.screen.VisionCalibrationConfig())
+            repeat(2) {
+                val frame=scanner.captureBanFrame(bitmap,emptySet())
+                try { scanner.processBanFrame(frame,context) { true } } finally { frame.bitmap.recycle() }
+                if(it==0) kotlinx.coroutines.delay(1550)
+            }
+            val ids = scanner.banSlotsFlow.value.map { it.championId }
+            assertEquals(listOf("lulu","senna","morgana","nocturne","hwei",
+                "lee_sin","cho_gath","senna","kassadin","yunara"),ids)
+            assertFalse(ids.contains("caitlyn"))
+            val stale = scanner.captureBanFrame(bitmap,emptySet())
+            scanner.clearDetectedBans()
+            try { scanner.processBanFrame(stale,context) { true } } finally { stale.bitmap.recycle() }
+            assertTrue(scanner.detectedBannedChampionIds.isEmpty())
+            InstrumentationRegistry.getInstrumentation().sendStatus(2,android.os.Bundle().apply {
+                putString("stream","\nDRAFT_BAN_8067_AUDIT: exact ten visible circles; no Caitlyn; clear rejects stale background work\n")
+            })
+        } finally { bitmap.recycle(); scanner.resetSlotMemory(); scanner.updateCalibration(context,config) }
+    }
+
     @Test fun liveRedMagicCapturesWithMasteryBadgesAndViewerMasksFillTheActualHub() = kotlinx.coroutines.runBlocking {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
         val scanner = com.example.service.screen.DraftVisionScanner

@@ -67,6 +67,7 @@ class OverlayState {
         allySummonerNames.clear(); enemySummonerNames.clear()
         allySpells.clear(); enemySpells.clear()
         isRoleManuallySelected = false; isFirstPickManuallySelected = false
+        isFirstPick = false
         com.example.service.screen.DraftVisionScanner.resetSlotMemory()
         com.example.service.screen.TenthPickDiagnosticManager.clearAllCaches(context)
     }

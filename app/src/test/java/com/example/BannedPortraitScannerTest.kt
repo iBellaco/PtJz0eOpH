@@ -23,6 +23,27 @@ class BannedPortraitScannerTest {
     private val context get() = RuntimeEnvironment.getApplication()
     @Before fun prepare() { WildRiftRepository.initChampions(context, forceReload = true) }
 
+    @Test fun tester8067UsesTheFiveActualBansAndNeverBackgroundCaitlyn() {
+        val path = listOf(java.io.File("src/androidTest/assets/draft/poco-8067-header.json"),
+            java.io.File("app/src/androidTest/assets/draft/poco-8067-header.json")).first { it.isFile }
+        val bytes = android.util.Base64.decode(org.json.JSONObject(path.readText()).getString("pngBase64"),android.util.Base64.DEFAULT)
+        val original = BitmapFactory.decodeByteArray(bytes,0,bytes.size)!!
+        val expected = listOf("lulu","senna","morgana","nocturne","hwei",
+            "lee_sin","cho_gath","senna","kassadin","yunara")
+        try { for(scale in listOf(1f,1.5f)) {
+            val bitmap = if(scale==1f) original else Bitmap.createScaledBitmap(original,
+                (original.width*scale).toInt(),(original.height*scale).toInt(),true)
+            try {
+                val scanner = BannedPortraitScanner()
+                scanner.scan(bitmap,context,0)
+                scanner.scan(bitmap,context,1500)
+                assertEquals("Actual circles at scale $scale",expected,scanner.slots.map { it.championId })
+                assertFalse(scanner.slots.any { it.championId=="caitlyn" })
+                assertTrue(scanner.slots.all { it.state==com.example.service.screen.BanState.CONFIRMED })
+            } finally { if(bitmap!==original) bitmap.recycle() }
+        } } finally { original.recycle() }
+    }
+
     @Test fun liveHeaderAndItsOwnCaptionMasksRecognizeAllBansAtCaptureAndPhysicalResolution() {
         for (name in listOf("live-7394", "live-7395")) {
             val original = javaClass.classLoader!!.getResourceAsStream("bans/$name.png")!!.use { BitmapFactory.decodeStream(it)!! }

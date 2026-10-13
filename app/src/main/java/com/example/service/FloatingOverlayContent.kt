@@ -245,11 +245,15 @@ internal fun FloatingOverlayContent(
 
         withContext(Dispatchers.Default) {
             val isProcessingFrame = java.util.concurrent.atomic.AtomicBoolean(false)
+            val banWorker = com.example.service.screen.DraftBanWorker(this) { frame, job ->
+                DraftVisionScanner.processBanFrame(frame,context) { job.isActive && state.autoScanEnabled }
+            }
+            var quickReadCount = 0
             var lastGlobalSyncFinishedAt = android.os.SystemClock.elapsedRealtime()
             var fpsLastTime = System.currentTimeMillis()
             var framesInSecond = 0
 
-            while (autoScanEnabled) {
+            try { while (autoScanEnabled) {
                 // 1. REGLA DE SALTO: Arrastre o interacción de usuario
                 if (isDraggingBubble || showSaveDraftDialog || showRoleChangeDialog) {
                     DraftVisionScanner.recordFrameSkipped()
@@ -294,7 +298,7 @@ internal fun FloatingOverlayContent(
                     val isTenthPickActive = activeTurns.any { it.turnNumber == 10 } || confirmedPicksCount >= 8
                     // La navegación y las cajas de diagnóstico no cambian la cadencia del escaneo.
                     val isGlobalSyncCycle = com.example.service.screen.DraftSyncCadence.metadataDue(
-                        android.os.SystemClock.elapsedRealtime(),lastGlobalSyncFinishedAt)
+                        android.os.SystemClock.elapsedRealtime(),lastGlobalSyncFinishedAt) && quickReadCount>=2
 
 
                     val dynamicLoopDelay = when {
@@ -316,6 +320,9 @@ internal fun FloatingOverlayContent(
                             DraftVisionScanner.recordFrameSkipped()
                         } else {
                             try {
+                                banWorker.offer(android.os.SystemClock.elapsedRealtime()) {
+                                    DraftVisionScanner.captureBanFrame(bitmap,confirmedHudPicks().map { it.id }.toSet())
+                                }
                                 val slotObservation = DraftVisionScanner.observeSelectionSlots(bitmap, confirmedPicksCount)
                                 if (slotObservation != com.example.service.screen.DraftSlotLifecycle.Observation.ACTIVE) {
                                     if (slotObservation == com.example.service.screen.DraftSlotLifecycle.Observation.FINISHED) {
@@ -336,6 +343,7 @@ internal fun FloatingOverlayContent(
                                         }
                                     }
                                 } else if (!isGlobalSyncCycle && confirmedPicksCount<9) {
+                                    quickReadCount++
                                     val result=DraftVisionScanner.scanDraftFromBitmap(bitmap,context,
                                         if(state.isFirstPickManuallySelected) isFirstPick else null,activeRole,
                                         confirmedHudPicks(),namesOnly=true)
@@ -349,6 +357,7 @@ internal fun FloatingOverlayContent(
                                         state.stopAutomaticScanIfComplete(result.isLastPickFinalized)
                                     }
                                 } else if (!isGlobalSyncCycle && hasActiveTurns) {
+                                    quickReadCount++
                                     // -----------------------------------------------------------------
                                     // RUTA DE ALTA PRIORIDAD: ESCANEO DIRIGIDO DEL SLOT ACTIVO (<30ms)
                                     // -----------------------------------------------------------------
@@ -396,8 +405,9 @@ internal fun FloatingOverlayContent(
                                     // -----------------------------------------------------------------
                                     // RUTA DE BAJA FRECUENCIA: SINCRONIZACIÓN GLOBAL Y SLOTS INACTIVOS
                                     // -----------------------------------------------------------------
-                                    val result = DraftVisionScanner.scanDraftFromBitmap(bitmap, context, if (state.isFirstPickManuallySelected) isFirstPick else null, activeRole, confirmedHudPicks(), detectBannedPortraits = true)
+                                    val result = DraftVisionScanner.scanDraftFromBitmap(bitmap, context, if (state.isFirstPickManuallySelected) isFirstPick else null, activeRole, confirmedHudPicks(), detectBannedPortraits = false)
                                     lastGlobalSyncFinishedAt = android.os.SystemClock.elapsedRealtime()
+                                    quickReadCount = 0
                                     if (result.isSuccessful) {
                                         withContext(Dispatchers.Main) {
                                             if (!autoScanEnabled) return@withContext
@@ -409,16 +419,6 @@ internal fun FloatingOverlayContent(
                                             val newEnemiesAdded = syncEnemyHud(result)
 
                                             commitLastPickToHud(result)
-
-                                            val currentAllyPicks = allies.count { it != null }
-                                            val currentEnemyPicks = enemies.count { it != null }
-                                            if (!state.isFirstPickManuallySelected) {
-                                                if (currentEnemyPicks > 0 && currentAllyPicks == 0) {
-                                                    isFirstPick = false
-                                                } else if (currentAllyPicks > 0 && currentEnemyPicks == 0) {
-                                                    isFirstPick = true
-                                                }
-                                            }
 
                                             if (result.isLegendaryRanked) {
                                                 if (!isLegendaryQueue) {
@@ -497,7 +497,7 @@ internal fun FloatingOverlayContent(
                     isProcessingFrame.set(false)
                     DraftVisionScanner.isVisionEngineBusy.value = false
                 }
-            }
+            } } finally { banWorker.close() }
         }
     }
 
@@ -535,17 +535,6 @@ internal fun FloatingOverlayContent(
                         syncEnemyHud(result)
 
                         commitLastPickToHud(result)
-
-                        // Verificación complementaria: si el rival ya tiene picks y aliados no, rival eligió 1º
-                        val currentAllyPicks = allies.count { it != null }
-                        val currentEnemyPicks = enemies.count { it != null }
-                        if (!state.isFirstPickManuallySelected) {
-                            if (currentEnemyPicks > 0 && currentAllyPicks == 0) {
-                                isFirstPick = false
-                            } else if (currentAllyPicks > 0 && currentEnemyPicks == 0) {
-                                isFirstPick = true
-                            }
-                        }
 
                         // Sincronizar nombres de invocador aliados y hechizos
                         if (result.isLegendaryRanked) {

@@ -27,7 +27,7 @@ object AdaptiveScreenLayoutEngine {
         val top = (center - height * 0.05f).toInt().coerceIn(0, height - 1)
         // The ally's next line is the summoner name, which can itself contain a
         // champion name. Read only the title that switches from lane to champion.
-        val bottom = (center + height * if (isAlly) 0.005f else 0.05f).toInt().coerceIn(top + 1, height)
+        val bottom = (center + height * 0.005f).toInt().coerceIn(top + 1, height)
         return Rect(left, top, right, bottom)
     }
 

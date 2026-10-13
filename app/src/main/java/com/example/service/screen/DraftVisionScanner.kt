@@ -145,8 +145,31 @@ object DraftVisionScanner {
     internal val banSlotsFlow = kotlinx.coroutines.flow.MutableStateFlow(emptyBanSlots())
     val bannedChampionIdsFlow = kotlinx.coroutines.flow.MutableStateFlow<Set<String>>(emptySet())
     val detectedBannedChampionIds: Set<String> get() = bannedChampionIdsFlow.value
+    private val banPublicationLock = Any()
+    private var banGeneration = 0L
 
-    fun clearDetectedBans() {
+    internal fun captureBanFrame(bitmap: Bitmap, pickedIds: Set<String>): DraftBanFrame = synchronized(banPublicationLock) {
+        banDetectionActiveFlow.value=true
+        DraftBanFrame(bitmap.copy(Bitmap.Config.ARGB_8888,false) ?: error("Ban frame unavailable"),
+            diagnosticTextForFrame(bitmap.width,bitmap.height)+listOfNotNull(overlayForFrame(bitmap.width,bitmap.height)),
+            AdaptiveScreenLayoutEngine.computeAdaptiveConfig(bitmap.width,bitmap.height,calibrationConfig),
+            pickedIds,banGeneration)
+    }
+
+    internal fun processBanFrame(frame: DraftBanFrame, context: Context, canPublish: () -> Boolean) {
+        if(!synchronized(banPublicationLock) { frame.generation==banGeneration } || !canPublish()) return
+        val ids = bannedPortraitScanner.scan(frame.bitmap,context,android.os.SystemClock.elapsedRealtime(),
+            frame.masks,frame.config,frame.pickedIds)
+        synchronized(banPublicationLock) {
+            if(frame.generation!=banGeneration || !canPublish()) return
+            banDetectionActiveFlow.value=true
+            bannedChampionIdsFlow.value=ids
+            banSlotsFlow.value=bannedPortraitScanner.slots
+        }
+    }
+
+    fun clearDetectedBans() = synchronized(banPublicationLock) {
+        banGeneration++
         banDetectionActiveFlow.value = false
         bannedPortraitScanner.reset()
         banSlotsFlow.value = emptyBanSlots()
@@ -418,7 +441,9 @@ object DraftVisionScanner {
 
     private var observedFirstPick: Boolean? = null
     internal fun recoverFirstPick(allies: Int, rivals: Int, indicator: Boolean? = null): Boolean? {
-        val observed = DraftPickOrderPolicy.inferFirstPick(allies, rivals) ?: indicator ?: observedFirstPick
+        // Partial OCR counts are not a new draft order. The tenth-side evidence below
+        // remains authoritative; a manual choice is handled by currentIsFirstPick.
+        val observed = observedFirstPick ?: indicator ?: DraftPickOrderPolicy.inferFirstPick(allies, rivals)
         if (observed != null) observedFirstPick = observed
         return observed
     }

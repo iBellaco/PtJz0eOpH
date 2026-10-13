@@ -12,13 +12,14 @@ internal class DraftNameAtlas private constructor(val bitmap: Bitmap, val tiles:
 
     companion object {
         private const val GUTTER = 32
+        private const val SCALE = 2
 
         fun create(source: Bitmap, config: VisionCalibrationConfig, masks: List<Rect>): DraftNameAtlas {
             val bands = (0..4).flatMap { slot -> listOf(true, false).map { ally ->
                 Triple(ally, slot, AdaptiveScreenLayoutEngine.calculateSlotNameRect(source.width,source.height,ally,slot,config))
             } }
-            val cellWidth = bands.maxOf { (it.third.width()*3).coerceAtMost(1400) } + GUTTER*2
-            val cellHeight = bands.maxOf { (it.third.height()*3).coerceAtMost(420) } + GUTTER*2
+            val cellWidth = bands.maxOf { (it.third.width()*SCALE).coerceAtMost(1400) } + GUTTER*2
+            val cellHeight = bands.maxOf { (it.third.height()*SCALE).coerceAtMost(420) } + GUTTER*2
             val bitmap = Bitmap.createBitmap(cellWidth*2,cellHeight*5,Bitmap.Config.ARGB_8888)
             val canvas = Canvas(bitmap)
             canvas.drawColor(Color.BLACK)
@@ -31,8 +32,8 @@ internal class DraftNameAtlas private constructor(val bitmap: Bitmap, val tiles:
                         localCanvas.drawBitmap(source,band,Rect(0,0,crop.width,crop.height),null)
                         masks.forEach { mask -> localCanvas.drawRect(Rect(mask).apply { offset(-band.left,-band.top) },paint) }
                         if (ally) DraftImagePreprocessor.suppressLeadingMasteryBadge(crop)
-                        val width=(crop.width*3).coerceAtMost(1400)
-                        val height=(crop.height*3).coerceAtMost(420)
+                        val width=(crop.width*SCALE).coerceAtMost(1400)
+                        val height=(crop.height*SCALE).coerceAtMost(420)
                         val left=(if(ally) 0 else cellWidth)+GUTTER
                         val top=slot*cellHeight+GUTTER
                         val region=Rect(left,top,left+width,top+height)

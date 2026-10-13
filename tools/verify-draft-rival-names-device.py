@@ -19,8 +19,8 @@ except subprocess.TimeoutExpired as failure:
     print(partial[-8000:], flush=True)
     raise
 (report / 'draft-rival-name-instrumentation.txt').write_text(result.stdout + result.stderr)
-assert result.returncode == 0 and 'OK (11 tests)' in result.stdout, result.stdout[-24000:]
+assert result.returncode == 0 and 'OK (12 tests)' in result.stdout, result.stdout[-24000:]
 print('DRAFT_RIVAL_NAME_AUDIT: exact allied names and observed lanes survive selection, OCR gaps and champion trades in ES/PT; both Vi portraits fill jungle', flush=True)
 
-for evidence in re.findall(r"DRAFT_FAST_NAME_AUDIT: [^\r\n]+", result.stdout):
+for evidence in re.findall(r"(?:DRAFT_FAST_NAME_AUDIT|DRAFT_BAN_8067_AUDIT): [^\r\n]+", result.stdout):
     print(evidence, flush=True)
