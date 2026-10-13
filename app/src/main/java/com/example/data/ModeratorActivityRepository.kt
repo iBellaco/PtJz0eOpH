@@ -62,6 +62,8 @@ object ModeratorActivityRepository {
             check(account.exists() && account.getString("role") !in setOf("admin", "moderador", "banned")) {
                 "Esta cuenta no está disponible para moderación."
             }
+            if (action == "SECONDARY_ROLE" && account.getString("secondaryRole").orEmpty() == value) return@runTransaction
+            if (action == "VERIFICATION" && account.getBoolean("isVerified") == (value == "true")) return@runTransaction
             transaction.update(target, changes + ("lastModeratorActionId" to event.id))
             transaction.set(event, mapOf(
                 "actorUid" to actor.uid, "targetUid" to uid, "action" to action,

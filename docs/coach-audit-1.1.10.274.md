@@ -15,5 +15,5 @@
 
 ## Validación
 
-- Reglas de seguridad: 59 escenarios existentes y nuevos ejecutados en el emulador, incluyendo consulta global de actividad.
+- Reglas de seguridad: 60 escenarios existentes y nuevos ejecutados en el emulador, incluyendo consulta global de actividad y cierre atómico de verificación.
 - Compilación Android y suite unitaria: pendientes de GitHub Actions porque el entorno local no pudo descargar Gradle.

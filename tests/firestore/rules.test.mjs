@@ -219,6 +219,22 @@ try {
     await assertSucceeds(getDocs(collectionGroup(admin, 'events')));
     await assertFails(getDocs(collectionGroup(moderator, 'events')));
   });
+  await test('verification review closes the request and verifies the account atomically', async () => {
+    const reportId = 'other-verification';
+    const report = { ...ticket(reportId, 'VERIFICAR'), userId:'other', userEmail:'other@test.invalid',
+      conversation:[{ id:'other-initial', senderRole:'USER', senderUid:'other', text:'Verificar', timestampMillis:100 }, { id:'other-system', senderRole:'SYSTEM', senderUid:'', text:greeting, timestampMillis:101 }], photos:['a','b','c'] };
+    await assertSucceeds(setDoc(doc(other, 'support_reports', reportId), report));
+    const batch = writeBatch(moderator);
+    batch.update(doc(moderator, 'users/other'), { isVerified:true, verified:true, lastModeratorActionId:'other-verified' });
+    batch.set(doc(moderator, 'moderator_activity/mod/events/other-verified'), { actorUid:'mod', targetUid:'other', action:'VERIFICATION', value:'true', createdAt:serverTimestamp() });
+    const state = { status:'ACCEPTED', isCompleted:true, staffRead:true, userRead:true, lastModeratorActionId:'other-reviewed' };
+    batch.update(doc(moderator, 'support_reports', reportId), state);
+    batch.set(doc(moderator, `moderator_activity/mod/events/other-reviewed`), { actorUid:'mod', targetUid:'other', reportId, action:'SUPPORT_STATUS', value:'ACCEPTED', createdAt:serverTimestamp() });
+    batch.set(doc(moderator, `users/other/messages/${reportId}`), state, { merge:true });
+    await assertSucceeds(batch.commit());
+    assert.equal((await getDoc(doc(other, 'users/other'))).data().isVerified, true);
+    assert.equal((await getDoc(doc(other, 'support_reports', reportId))).data().status, 'ACCEPTED');
+  });
   await test('staff appends repeated answers and syncs recipient mirror', async () => {
     for (let i = 0; i < 2; i++) await assertSucceeds(runTransaction(moderator, async transaction => {
       const ref = doc(moderator, 'support_reports', 'ticket'), snap = await transaction.get(ref);
