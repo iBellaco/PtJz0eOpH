@@ -15360,5 +15360,7 @@
   "🤝 SINERGIA DE EQUIPO (+{0})": "⌀ SINERGIA DE EQUIPE (+{0})",
   "🥈 2° Lugar": "🥈 2º Lugar",
   "🥉 3° Lugar": "🥉 3º Lugar",
-  "🥊 **Mejor Desempeño 1v1 Calculado:** Tu rival más favorable es **{0}** con un **{1}% de Win Rate** ({2}V - {3}D en {4} partidas).": "⌀ ** Melhor Desempenho 1v1 Calculado:** Seu rival mais favorável é **{0}** com um **{1}% de Win Rate** ({2}V - {3}D em {4} partidas)."
+  "🥊 **Mejor Desempeño 1v1 Calculado:** Tu rival más favorable es **{0}** con un **{1}% de Win Rate** ({2}V - {3}D en {4} partidas).": "⌀ ** Melhor Desempenho 1v1 Calculado:** Seu rival mais favorável é **{0}** com um **{1}% de Win Rate** ({2}V - {3}D em {4} partidas).",
+  "Build adaptada a tu campeón": "Build adaptada ao seu campeão",
+  "Build sugerida para este draft": "Build sugerida para este draft"
 }
