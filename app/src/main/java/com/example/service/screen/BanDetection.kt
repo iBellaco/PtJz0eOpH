@@ -45,6 +45,24 @@ internal fun fillHeaderPositions(observations: List<BanObservation>, aspect: Flo
         while (row.size < 5 && addAt(row.first().region.x - step, row.first().region.y)) { /* visible leading slots */ }
         while (row.size < 5 && addAt(row.last().region.x + step, row.last().region.y)) { /* visible trailing slots */ }
     }
-    // Fill interior gaps before excluding an adjacent profile toward the center.
-    if (side == BanSide.ALLY) row.take(5) else row.takeLast(5)
+    // Template similarity alone can match a textured background outside the row.
+    // Select the five circles with consistent spacing before latching identities.
+    if (row.size <= 5) row else {
+      val windows = row.windowed(5).map { window ->
+        val gaps = window.zipWithNext { a, b -> b.region.x-a.region.x }.sorted()
+        val step = (gaps[1]+gaps[2])/2f
+        val nominal = .080f/aspect
+        val spacingError = gaps.sumOf { gap ->
+            val relative = (gap-step)/nominal
+            (relative*relative).toDouble()
+        }
+        val scaleError = if(step in nominal*.65f..nominal*1.4f) 0.0 else 10.0
+        val y = window.map { it.region.y }.average()
+        window to (spacingError+scaleError+window.sumOf { (it.region.y-y)*(it.region.y-y) })
+      }
+      val minimum = windows.minOf { it.second }
+      val regular = windows.filter { it.second<=minimum+.02 }
+      // Equally regular adjacent profiles belong toward the centre of the screen.
+      (if(side==BanSide.ALLY) regular.first() else regular.last()).first
+    }
 }

@@ -13,27 +13,37 @@ internal class BannedPortraitScanner {
         private set
     private var lastAspect = 0f
     private var lastScanAt = -1500L
+    private var revision = 0L
 
     @Synchronized fun reset() {
+        revision++
         previous = emptyMap(); slots = emptyBanSlots(); lastScanAt = -1500L; lastAspect = 0f
     }
 
-    @Synchronized fun scan(bitmap: Bitmap, context: Context?, nowMs: Long,
+    fun scan(bitmap: Bitmap, context: Context?, nowMs: Long,
                            exclusions: List<Rect> = emptyList(), config: VisionCalibrationConfig = VisionCalibrationConfig(),
-                           pickedIds: Set<String> = emptySet()): Set<String> {
-        if (bitmap.isRecycled || bitmap.width < bitmap.height || nowMs - lastScanAt < 1500L) return confirmedIds()
-        lastScanAt = nowMs
-        update(LiteRTVisionClassifier.findHeaderBanObservations(bitmap, context, exclusions, config).map { observation ->
-            if (observation.championId in pickedIds) observation.copy(championId=null,empty=false) else observation
-        },
-            bitmap.width.toFloat() / bitmap.height)
-        if (config.manualAllyBans || config.manualEnemyBans) slots = slots.map {
-            it.copy(region = it.region?.copy(radius = config.banDiameterRatio / 2f))
+                           pickedIds: Set<String> = emptySet(), isCurrent: () -> Boolean = { true }): Set<String> {
+        val capturedRevision = synchronized(this) {
+            if (!isCurrent() || bitmap.isRecycled || bitmap.width < bitmap.height || nowMs - lastScanAt < 1500L ||
+                slots.all { it.state == BanState.CONFIRMED }) return confirmedIds()
+            lastScanAt = nowMs
+            revision
         }
-        return confirmedIds()
+        val observations = LiteRTVisionClassifier.findHeaderBanObservations(bitmap, context, exclusions, config).map { observation ->
+            if (observation.championId in pickedIds) observation.copy(championId=null,empty=false) else observation
+        }
+        return synchronized(this) {
+            if(revision != capturedRevision || !isCurrent()) return@synchronized confirmedIds()
+            update(observations, bitmap.width.toFloat() / bitmap.height)
+            if (config.manualAllyBans || config.manualEnemyBans) slots = slots.map {
+                it.copy(region = it.region?.copy(radius = config.banDiameterRatio / 2f))
+            }
+            confirmedIds()
+        }
     }
 
     @Synchronized fun recalibrate(config: VisionCalibrationConfig) {
+        revision++
         previous=emptyMap()
         lastScanAt=-1500L
         slots=slots.map { slot ->
