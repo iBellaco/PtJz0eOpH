@@ -95,9 +95,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.data.WildRiftRepository
+import com.example.data.WildRiftItemsData
+import com.example.data.WildRiftSpellsAndRunes
 import kotlinx.coroutines.launch
 import com.example.model.Champion
 import com.example.util.SubscriptionManager
+import com.example.util.currentAppLanguage
 import com.example.model.DraftAnalysisResult
 import com.example.model.DraftBuildPlan
 import com.example.model.DraftSlot
@@ -131,6 +134,10 @@ data class PendingSaveData(
 
 @Composable
 private fun DraftBuildPlanCard(plan: DraftBuildPlan, isForOwnChampion: Boolean) {
+    val lang = currentAppLanguage()
+    val itemNames = { names: List<String> -> names.map { WildRiftItemsData.getItemByName(it)?.getLocalizedName(lang) ?: it } }
+    val runeNames = plan.runes.map { WildRiftSpellsAndRunes.getRuneByName(it)?.getLocalizedName(lang) ?: it }
+    val spellNames = plan.spells.map { WildRiftSpellsAndRunes.getSpellByName(it)?.getLocalizedName(lang) ?: it }
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -149,16 +156,20 @@ private fun DraftBuildPlanCard(plan: DraftBuildPlan, isForOwnChampion: Boolean) 
             )
             Text(text = tr(plan.title), color = HextechGoldLight, fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
             if (plan.coreItems.isNotEmpty()) {
-                Text(text = tr("3 objetos principales: ${plan.coreItems.joinToString(" • ")}"), color = TextPrimary, fontSize = 10.5.sp)
+                Text(text = tr("3 objetos principales"), color = TextPrimary, fontSize = 10.5.sp, fontWeight = FontWeight.SemiBold)
+                Text(text = itemNames(plan.coreItems).joinToString(" • "), color = TextPrimary, fontSize = 10.5.sp)
             }
             if (plan.situationalItems.isNotEmpty()) {
-                Text(text = tr("Situacionales: ${plan.situationalItems.joinToString(" • ")}"), color = TextSecondary, fontSize = 10.5.sp)
+                Text(text = tr("Situacionales"), color = TextSecondary, fontSize = 10.5.sp, fontWeight = FontWeight.SemiBold)
+                Text(text = itemNames(plan.situationalItems).joinToString(" • "), color = TextSecondary, fontSize = 10.5.sp)
             }
             if (plan.runes.isNotEmpty()) {
-                Text(text = tr("Runas: ${plan.runes.joinToString(" • ")}"), color = TextPrimary, fontSize = 10.5.sp)
+                Text(text = tr("Runas"), color = TextPrimary, fontSize = 10.5.sp, fontWeight = FontWeight.SemiBold)
+                Text(text = runeNames.joinToString(" • "), color = TextPrimary, fontSize = 10.5.sp)
             }
             if (plan.spells.isNotEmpty()) {
-                Text(text = tr("Hechizos: ${plan.spells.joinToString(" + ")}"), color = TextPrimary, fontSize = 10.5.sp)
+                Text(text = tr("Hechizos"), color = TextPrimary, fontSize = 10.5.sp, fontWeight = FontWeight.SemiBold)
+                Text(text = spellNames.joinToString(" + "), color = TextPrimary, fontSize = 10.5.sp)
             }
             plan.reasons.take(2).forEach { reason ->
                 Text(text = "• ${tr(reason)}", color = TextMuted, fontSize = 10.sp, lineHeight = 13.sp)

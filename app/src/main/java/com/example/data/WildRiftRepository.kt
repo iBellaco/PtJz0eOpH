@@ -341,7 +341,7 @@ object WildRiftRepository {
             advantageBadge=badge,tacticalReason=reasons.joinToString(" "),runes=champ.recommendedRunes,
             synergyDetails=synergyText,counterDetails=counterText,
             draftFitScore=DraftScoringPolicy.score(champ,myRole,activeAllies,activeEnemies,lane,false,champions),
-            draftBuild=DraftBuildPolicy.create(champ, myRole, activeAllies, activeEnemies))
+            draftBuild=DraftBuildPolicy.create(champ, myRole, activeAllies, activeEnemies, lang = lang))
     }
 
     fun analyzeDraft(
@@ -462,7 +462,7 @@ object WildRiftRepository {
 
         val draftBuildForMyChampion = activeAllies
             .firstOrNull { myRole != null && (it.primaryRole == myRole || myRole in it.secondaryRoles) }
-            ?.let { own -> DraftBuildPolicy.create(own, myRole ?: own.primaryRole, activeAllies.filterNot { it.id == own.id }, activeEnemies, isFirstPickEffective) }
+            ?.let { own -> DraftBuildPolicy.create(own, myRole ?: own.primaryRole, activeAllies.filterNot { it.id == own.id }, activeEnemies, blindPick = isFirstPickEffective, lang = lang) }
 
         val recommendations = rankedCandidates.map { champ ->
             val effectiveRole = myRole ?: champ.primaryRole
@@ -535,7 +535,7 @@ object WildRiftRepository {
                     runes = champ.recommendedRunes,
                     synergyDetails = synergyText,
                     counterDetails = counterText,
-                    draftBuild = DraftBuildPolicy.create(champ, effectiveRole, activeAllies, activeEnemies, isFirstPickEffective)
+                    draftBuild = DraftBuildPolicy.create(champ, effectiveRole, activeAllies, activeEnemies, blindPick = isFirstPickEffective, lang = lang)
                 )
             } else {
                 // REACTIVE / COUNTER & SYNERGY DRAFT CALCULATION
@@ -616,7 +616,7 @@ object WildRiftRepository {
                     runes = champ.recommendedRunes,
                     synergyDetails = synergyText,
                     counterDetails = counterText,
-                    draftBuild = DraftBuildPolicy.create(champ, effectiveRole, activeAllies, activeEnemies, isFirstPickEffective)
+                    draftBuild = DraftBuildPolicy.create(champ, effectiveRole, activeAllies, activeEnemies, blindPick = isFirstPickEffective, lang = lang)
                 )
             }
         }.sortedByDescending { it.draftFitScore }

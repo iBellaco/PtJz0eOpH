@@ -52,6 +52,8 @@ import androidx.compose.ui.unit.sp
 import com.example.model.Champion
 import com.example.model.DraftSlot
 import com.example.model.LaneRole
+import com.example.data.WildRiftItemsData
+import com.example.data.WildRiftSpellsAndRunes
 import com.example.ui.components.AppAssetImage
 import com.example.ui.components.ChampionAvatar
 import com.example.ui.components.WomboComboSynergyDetector
@@ -895,6 +897,9 @@ private fun CoachContent(
         // resolved from the same local item, rune and spell catalogs.
         val draftPlan = analysis.draftBuild ?: analysis.bestOverallPick?.draftBuild
         if (draftPlan != null) {
+            val localizedItems = { names: List<String> -> names.map { WildRiftItemsData.getItemByName(it)?.getLocalizedName(currentLanguage) ?: it } }
+            val localizedRunes = draftPlan.runes.map { WildRiftSpellsAndRunes.getRuneByName(it)?.getLocalizedName(currentLanguage) ?: it }
+            val localizedSpells = draftPlan.spells.map { WildRiftSpellsAndRunes.getSpellByName(it)?.getLocalizedName(currentLanguage) ?: it }
             Spacer(modifier = Modifier.height(4.dp))
             Card(
                 modifier = Modifier.fillMaxWidth(),
@@ -910,11 +915,16 @@ private fun CoachContent(
                         fontWeight = FontWeight.Bold
                     )
                     Text(text = tr(draftPlan.title), color = HextechGoldLight, fontSize = 8.sp, fontWeight = FontWeight.SemiBold)
-                    Text(text = tr("Core: ${draftPlan.coreItems.joinToString(" • ")}"), color = TextPrimary, fontSize = 7.8.sp, maxLines = 2)
+                    Text(text = tr("Core"), color = TextPrimary, fontSize = 7.8.sp, fontWeight = FontWeight.SemiBold)
+                    Text(text = localizedItems(draftPlan.coreItems).joinToString(" • "), color = TextPrimary, fontSize = 7.8.sp, maxLines = 2)
                     if (draftPlan.situationalItems.isNotEmpty()) {
-                        Text(text = tr("Situacionales: ${draftPlan.situationalItems.joinToString(" • ")}"), color = TextSecondary, fontSize = 7.8.sp, maxLines = 2)
+                        Text(text = tr("Situacionales"), color = TextSecondary, fontSize = 7.8.sp, fontWeight = FontWeight.SemiBold)
+                        Text(text = localizedItems(draftPlan.situationalItems).joinToString(" • "), color = TextSecondary, fontSize = 7.8.sp, maxLines = 2)
                     }
-                    Text(text = tr("Runas: ${draftPlan.runes.joinToString(" • ")} • Hechizos: ${draftPlan.spells.joinToString(" + ")}"), color = TextPrimary, fontSize = 7.8.sp, maxLines = 2)
+                    Text(text = tr("Runas"), color = TextPrimary, fontSize = 7.8.sp, fontWeight = FontWeight.SemiBold)
+                    Text(text = localizedRunes.joinToString(" • "), color = TextPrimary, fontSize = 7.8.sp, maxLines = 2)
+                    Text(text = tr("Hechizos"), color = TextPrimary, fontSize = 7.8.sp, fontWeight = FontWeight.SemiBold)
+                    Text(text = localizedSpells.joinToString(" + "), color = TextPrimary, fontSize = 7.8.sp, maxLines = 2)
                 }
             }
         }

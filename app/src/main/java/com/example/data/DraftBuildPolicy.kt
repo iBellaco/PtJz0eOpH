@@ -84,25 +84,29 @@ object DraftBuildPolicy {
         hasShields: Boolean,
         hasTanks: Boolean,
         hasAssassins: Boolean,
-        blindPick: Boolean
+        blindPick: Boolean,
+        lang: String
     ): String {
         val focus = when {
-            hasHealing -> "Respuesta anti-curación"
-            hasShields -> "Respuesta anti-escudos"
-            hasTanks -> "Presión contra tanques"
-            hasAssassins -> "Protección contra asesinos"
-            blindPick -> "Plan seguro de Blind Pick"
-            else -> "Plan de composición"
+            hasHealing -> if (lang == "pt") "Resposta anti-cura" else "Respuesta anti-curación"
+            hasShields -> if (lang == "pt") "Resposta a escudos" else "Respuesta anti-escudos"
+            hasTanks -> if (lang == "pt") "Pressão contra tanques" else "Presión contra tanques"
+            hasAssassins -> if (lang == "pt") "Proteção contra assassinos" else "Protección contra asesinos"
+            blindPick -> if (lang == "pt") "Plano seguro de Blind Pick" else "Plan seguro de Blind Pick"
+            else -> if (lang == "pt") "Plano de composição" else "Plan de composición"
         }
-        return "${champion.name} • ${role.displayName} • $focus"
+        return "${champion.getLocalizedName(lang)} • ${role.getLocalizedName(lang)} • $focus"
     }
+
+    private fun reason(es: String, pt: String, lang: String): String = if (lang == "pt") pt else es
 
     fun create(
         champion: Champion,
         role: LaneRole,
         allies: List<Champion>,
         enemies: List<Champion>,
-        blindPick: Boolean = false
+        blindPick: Boolean = false,
+        lang: String = "es"
     ): DraftBuildPlan {
         val ids = enemyIds(enemies)
         val hasHealing = ids.any { it in healingThreats }
@@ -150,17 +154,17 @@ object DraftBuildPolicy {
         }
 
         val reasons = buildList {
-            if (hasHealing) add("Incluye una respuesta del catálogo contra la curación rival.")
-            if (hasShields && !isMagic) add("Incluye reducción de escudos para que el daño físico atraviese la protección rival.")
-            if (hasTanks) add("Incluye penetración contra la vida y resistencias de la primera línea rival.")
-            if (hasAssassins) add("Prioriza supervivencia y control del ritmo contra entradas explosivas.")
-            if (allies.any { it.isFrontline } && champion.isRanged) add("Aprovecha la primera línea aliada para jugar a distancia.")
-            if (isMagic && hasShields) add("El catálogo no tiene un anti-escudos AP equivalente; la prioridad sigue siendo el daño y la supervivencia.")
-            if (isPhysical && !hasHealing && !hasTanks && !hasAssassins && !hasShields) add("Mantiene el pico de poder propio del campeón y su función principal.")
+            if (hasHealing) add(reason("Incluye una respuesta del catálogo contra la curación rival.", "Inclui uma resposta do catálogo contra a cura inimiga.", lang))
+            if (hasShields && !isMagic) add(reason("Incluye reducción de escudos para que el daño físico atraviese la protección rival.", "Inclui redução de escudos para que o dano físico atravesse a proteção inimiga.", lang))
+            if (hasTanks) add(reason("Incluye penetración contra la vida y resistencias de la primera línea rival.", "Inclui penetração contra a vida e as resistências da linha de frente inimiga.", lang))
+            if (hasAssassins) add(reason("Prioriza supervivencia y control del ritmo contra entradas explosivas.", "Prioriza sobrevivência e controle do ritmo contra entradas explosivas.", lang))
+            if (allies.any { it.isFrontline } && champion.isRanged) add(reason("Aprovecha la primera línea aliada para jugar a distancia.", "Aproveita a linha de frente aliada para jogar à distância.", lang))
+            if (isMagic && hasShields) add(reason("El catálogo no tiene un anti-escudos AP equivalente; la prioridad sigue siendo el daño y la supervivencia.", "O catálogo não tem um anti-escudos AP equivalente; a prioridade continua sendo dano e sobrevivência.", lang))
+            if (isPhysical && !hasHealing && !hasTanks && !hasAssassins && !hasShields) add(reason("Mantiene el pico de poder propio del campeón y su función principal.", "Mantém o pico de poder do campeão e sua função principal.", lang))
         }
 
         return DraftBuildPlan(
-            title = titleFor(champion, role, hasHealing, hasShields, hasTanks, hasAssassins, blindPick),
+            title = titleFor(champion, role, hasHealing, hasShields, hasTanks, hasAssassins, blindPick, lang),
             coreItems = core,
             situationalItems = situational,
             runes = runes,
