@@ -897,9 +897,10 @@ private fun CoachContent(
         // resolved from the same local item, rune and spell catalogs.
         val draftPlan = analysis.draftBuild ?: analysis.bestOverallPick?.draftBuild
         if (draftPlan != null) {
-            val localizedItems = { names: List<String> -> names.map { WildRiftItemsData.getItemByName(it)?.getLocalizedName(currentLanguage) ?: it } }
-            val localizedRunes = draftPlan.runes.map { WildRiftSpellsAndRunes.getRuneByName(it)?.getLocalizedName(currentLanguage) ?: it }
-            val localizedSpells = draftPlan.spells.map { WildRiftSpellsAndRunes.getSpellByName(it)?.getLocalizedName(currentLanguage) ?: it }
+            val planLanguage = com.example.util.currentAppLanguage()
+            val localizedItems = { names: List<String> -> names.map { WildRiftItemsData.getItemByName(it)?.getLocalizedName(planLanguage) ?: it } }
+            val localizedRunes = draftPlan.runes.map { WildRiftSpellsAndRunes.getRuneByName(it)?.getLocalizedName(planLanguage) ?: it }
+            val localizedSpells = draftPlan.spells.map { WildRiftSpellsAndRunes.getSpellByName(it)?.getLocalizedName(planLanguage) ?: it }
             Spacer(modifier = Modifier.height(4.dp))
             Card(
                 modifier = Modifier.fillMaxWidth(),
