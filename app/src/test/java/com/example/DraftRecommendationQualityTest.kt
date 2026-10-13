@@ -120,7 +120,7 @@ class DraftRecommendationQualityTest {
         assertEquals(listOf("lulu"), plan.oneVsOne!!.matchupChampions.map { WildRiftRepository.getChampionByName(it)?.id ?: it })
         assertEquals(fullEnemies.map { it.id }, plan.fullTeam!!.matchupChampions.map { WildRiftRepository.getChampionByName(it)?.id ?: it })
         assertTrue("The lane build must identify its 1v1 scope", plan.oneVsOne.title.contains("Enfrentamiento 1v1"))
-        assertTrue("The second build must identify the complete enemy draft", plan.fullTeam.title.contains("Composição completa"))
+        assertTrue("The second build must identify the complete enemy draft", plan.fullTeam.title.contains("Composición completa"))
         assertNotEquals("The two plans must remain independently calculated", plan.oneVsOne.title, plan.fullTeam.title)
         val antiShield = DraftBuildPolicy.create(ahri, LaneRole.MID, emptyList(), listOf(laneRival))
         assertTrue("AP champions need the catalog anti-shield item", antiShield.situationalItems.any { it.equals("Tridente de Oceánida", true) })
