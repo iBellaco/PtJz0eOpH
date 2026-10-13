@@ -376,7 +376,13 @@ object WildRiftRepository {
             else -> "¡Alerta! Falta Frontline e Iniciación aliada"
         }
 
-        val isFirstPickEffective = isFirstPick && activeEnemies.isEmpty() && enemyLaneOpponent?.takeIf { it.id != "empty" } == null
+        // A caller can omit the explicit lane slot while still providing a
+        // complete enemy roster. Infer the one natural-lane opponent in that
+        // case so the one-versus-one rule is never replaced by global tier.
+        val lane = enemyLaneOpponent?.takeIf { it.id != "empty" } ?: myRole?.let { role ->
+            activeEnemies.filter { it.primaryRole == role }.singleOrNull()
+        }
+        val isFirstPickEffective = isFirstPick && activeEnemies.isEmpty() && lane == null
 
         var directMatchupWarning: String? = null
         var directCounterBestPick: String? = null
@@ -386,8 +392,8 @@ object WildRiftRepository {
         val enemyRangedAdvantage = activeEnemies.filter { it.id in listOf("caitlyn", "lux", "xerath", "varus", "ezreal", "ziggs", "corki") }
         val enemyDashHeavy = activeEnemies.filter { it.id in listOf("yasuo", "yone", "irelia", "riven", "lee_sin", "akali", "katarina", "fizz") }
 
-        if (enemyLaneOpponent != null && enemyLaneOpponent.id != "empty") {
-            val opponent = enemyLaneOpponent
+        if (lane != null) {
+            val opponent = lane
             if (myRole == LaneRole.TOP && opponent.isRanged) {
                 val topAlert = when (lang) {
                     "pt" -> "Alerta no Top! Enfrentando oponente com alcance/ADC (${opponent.name}). Priorize sustentação (Ventos Revigorantes), controle de onda e espere o caçador."
@@ -437,14 +443,17 @@ object WildRiftRepository {
         }
 
         val candidates = if (myRole != null) {
-            availableChampions.filter { champ ->
+            val naturalLane = availableChampions.filter { it.primaryRole == myRole }
+            // The main draft answer must represent the selected lane. Flex picks
+            // are useful only as a fallback for a damaged or incomplete catalog;
+            // otherwise a jungle primary should never appear as a mid answer.
+            if (naturalLane.size >= 5) naturalLane else availableChampions.filter { champ ->
                 champ.primaryRole == myRole || champ.secondaryRoles.contains(myRole)
             }
         } else {
             availableChampions
         }
 
-        val lane = enemyLaneOpponent?.takeIf { it.id != "empty" }
         val uniqueCandidates = candidates.groupBy { it.id }.values.map { profiles -> profiles.firstOrNull { it.primaryRole == myRole } ?: profiles.first() }
         val compatible = if (lane != null) uniqueCandidates.filter { MatchupKnowledge.relation(it,lane,myRole ?: it.primaryRole) != MatchupRelation.UNFAVORABLE } else uniqueCandidates
         val rankedCandidates = compatible.ifEmpty { uniqueCandidates }
@@ -558,6 +567,15 @@ object WildRiftRepository {
                 }
                 if (activeAllies.isNotEmpty() && frontlineAllies == 0 && champ.isFrontline) {
                     reasonParts.add(t(lang, "Garante a iniciação e resistência que sua equipe precisa.", "Garantiza la iniciación y resistencia que tu equipo necesita."))
+                }
+                if (activeAllies.isNotEmpty() && activeAllies.none { it.isFrontline } && champ.isFrontline) {
+                    reasonParts.add(t(lang, "Completa a linha de frente para a equipe entrar e sair da luta.", "Completa la primera línea para que el equipo pueda entrar y salir de la pelea."))
+                }
+                if (activeEnemies.count { it.isFrontline } >= 2 && champ.id in setOf("darius", "fiora", "gwen", "kaisa", "lillia", "master_yi", "vayne", "varus")) {
+                    reasonParts.add(t(lang, "Tem ferramentas para punir uma composição inimiga resistente.", "Tiene herramientas para castigar una composición rival resistente."))
+                }
+                if (activeEnemies.count { it.id in setOf("akali", "diana", "ekko", "evelynn", "fizz", "katarina", "kayn", "khazix", "rengar", "talon", "zed") } >= 2 && (champ.isFrontline || champ.id in setOf("braum", "janna", "lulu", "milio", "morgana", "nami", "thresh", "yuumi", "soraka"))) {
+                    reasonParts.add(t(lang, "Protege a equipe contra a entrada de vários assassinos.", "Protege al equipo contra la entrada de varios asesinos."))
                 }
                 if (reasonParts.isEmpty()) {
                     reasonParts.add(roleContextAdvice)

@@ -79,24 +79,57 @@ object DraftDamagePolicy {
 }
 
 object DraftScoringPolicy {
+    private val assassins = setOf("akali", "diana", "ekko", "evelynn", "fizz", "katarina", "kayn", "khazix", "rengar", "talon", "zed")
+    private val engage = setOf("amumu", "alistar", "jarvan_iv", "leona", "malphite", "nautilus", "rell", "vi", "wukong", "hecarim", "rakan")
+    private val peel = setOf("braum", "janna", "lulu", "milio", "morgana", "nami", "thresh", "yuumi", "soraka")
+    private val areaControl = setOf("amumu", "diana", "galio", "hwei", "kennen", "malphite", "miss_fortune", "orianna", "seraphine", "wukong", "yasuo")
+    private val antiTank = setOf("darius", "fiora", "gwen", "kaisa", "lillia", "master_yi", "vayne", "varus")
+
+    private fun Champion.isIn(ids: Set<String>) = id.lowercase().replace("-", "_") in ids
+
     fun score(champion: Champion, role: LaneRole, allies: List<Champion>, enemies: List<Champion>,
         opponent: Champion?, firstPick: Boolean, roster: List<Champion>): Double {
         val activeAllies = allies.filter { it.id != "empty" && it.id != champion.id }.distinctBy { it.id }
         val activeEnemies = enemies.filter { it.id != "empty" }.distinctBy { it.id }
         var score = 50.0 + (champion.winrate.takeIf { it.isFinite() }?.coerceIn(0.0,100.0)?.minus(50.0) ?: 0.0) * 0.5
-        score += when { champion.primaryRole == role -> 3.0; role in champion.secondaryRoles -> 1.0; else -> -18.0 }
+        // A natural lane is a prerequisite for the main draft list. A flex pick
+        // remains scoreable for explicit callers, but cannot win on raw tier alone.
+        score += when { champion.primaryRole == role -> 8.0; role in champion.secondaryRoles -> -2.0; else -> -36.0 }
         score += when (champion.tier) { "S+" -> 2.0; "S" -> 1.2; "A+" -> 0.7; "A" -> 0.3; else -> 0.0 }
         val lane = opponent?.takeIf { it.id != "empty" }
         score += when (lane?.let { MatchupKnowledge.relation(champion,it,role) }) {
-            MatchupRelation.FAVORABLE -> 12.0; MatchupRelation.UNFAVORABLE -> -14.0; MatchupRelation.VARIABLE -> -2.0; else -> 0.0
+            MatchupRelation.FAVORABLE -> 30.0
+            MatchupRelation.UNFAVORABLE -> -36.0
+            MatchupRelation.VARIABLE -> -8.0
+            else -> 0.0
         }
         val others = activeEnemies.filter { it.id != lane?.id }
-        score += others.count { MatchupKnowledge.relation(champion,it,role) == MatchupRelation.FAVORABLE } * 1.5
-        score -= others.count { MatchupKnowledge.relation(champion,it,role) == MatchupRelation.UNFAVORABLE } * 2.0
-        score += (MatchupKnowledge.synergies(champion,activeAllies).size * 1.8).coerceAtMost(5.0)
+        score += others.count { MatchupKnowledge.relation(champion,it,role) == MatchupRelation.FAVORABLE } * 5.0
+        score -= others.count { MatchupKnowledge.relation(champion,it,role) == MatchupRelation.UNFAVORABLE } * 6.0
+        score += (MatchupKnowledge.synergies(champion,activeAllies).size * 5.0).coerceAtMost(15.0)
         score += DraftDamagePolicy.balanceGain(champion,activeAllies)
-        if (activeAllies.isNotEmpty() && activeAllies.none { it.isFrontline } && champion.isFrontline) score += 2.0
-        if (activeEnemies.count { it.isFrontline } >= 2) score += (DraftDamagePolicy.profile(champion).trueDamage / 10).coerceAtMost(3.0)
+        val allyHasEngage = activeAllies.any { it.isIn(engage) }
+        val allyHasAreaControl = activeAllies.any { it.isIn(areaControl) }
+        val enemyAssassinCount = activeEnemies.count { it.isIn(assassins) }
+        val enemyFrontlineCount = activeEnemies.count { it.isFrontline }
+        val enemyPokeCount = activeEnemies.count { it.isRanged && !it.isIn(assassins) }
+        if (activeAllies.isNotEmpty() && activeAllies.none { it.isFrontline }) {
+            score += if (champion.isFrontline) 8.0 else -4.0
+        }
+        if (activeAllies.isNotEmpty() && !allyHasEngage && champion.isIn(engage)) score += 6.0
+        if (allyHasEngage && champion.isIn(areaControl)) score += 5.0
+        if (enemyAssassinCount >= 2) {
+            if (champion.isFrontline || champion.isIn(peel)) score += 8.0
+            if (champion.isRanged && !champion.isFrontline && !champion.isIn(peel)) score -= 4.0
+        }
+        if (enemyFrontlineCount >= 2) {
+            score += when {
+                champion.isIn(antiTank) -> 8.0
+                DraftDamagePolicy.profile(champion).trueDamage >= 10.0 -> 4.0
+                else -> 0.0
+            }
+        }
+        if (enemyPokeCount >= 2 && champion.isIn(engage)) score += 5.0
         if (firstPick && activeEnemies.isEmpty() && lane == null) {
             val possible = roster.filter { it.primaryRole == role || role in it.secondaryRoles }.distinctBy { it.id }
             val losses = possible.count { MatchupKnowledge.relation(champion,it,role) == MatchupRelation.UNFAVORABLE }

@@ -407,7 +407,10 @@ object ReviewedLaneMatchups {
             LaneRole.MID to MatchupRoleResult(listOf("Veigar", "Akali", "Zed", "Fizz", "Riven", "Morgana"), listOf("Brand", "Zoe", "Kayle", "Lucian", "Annie", "Akshan"), emptyList())
         ),
         "orianna" to mapOf(
-            LaneRole.MID to MatchupRoleResult(listOf("Annie", "Lux", "Kayle", "Fizz", "Akali", "Yasuo"), listOf("Diana", "Gragas", "Ziggs", "Ahri", "Zed", "Syndra"), emptyList()),
+            // Akali can bypass the ball's spacing with her shroud and repeated dashes.
+            // Keep this lane relationship explicit so a high global win rate cannot
+            // recommend Orianna into a clearly bad one-versus-one.
+            LaneRole.MID to MatchupRoleResult(listOf("Annie", "Lux", "Kayle", "Fizz", "Kassadin", "Yasuo"), listOf("Diana", "Gragas", "Ziggs", "Ahri", "Zed", "Akali"), emptyList()),
             LaneRole.TOP to MatchupRoleResult(listOf("Varus", "Aatrox", "Urgot", "Yone", "Kennen", "Nasus"), listOf("Ornn", "Wukong", "Jax", "Riven", "Sett", "Garen"), emptyList()),
             LaneRole.ADC to MatchupRoleResult(listOf("Ezreal", "Ashe", "Jinx", "Twitch", "Varus"), listOf("Miss Fortune", "Tristana", "Lucian", "Jhin", "Draven", "Caitlyn"), emptyList()),
             LaneRole.SUPPORT to MatchupRoleResult(listOf("Braum", "Karma", "Lux", "Nautilus", "Seraphine", "Lulu"), listOf("Sona", "Rakan", "Alistar", "Thresh", "Zyra", "Pyke"), emptyList())
