@@ -99,4 +99,24 @@ class DraftRecommendationQualityTest {
         assertTrue(supportPlan.coreItems.any { it.equals("Escudo reliquia", true) })
         assertTrue(supportPlan.spells.any { it.equals("Destello", true) })
     }
+
+    @Test
+    fun `draft exposes separate lane and complete team plans and uses AP anti shield`() {
+        val ahri = WildRiftRepository.champions.first { it.id == "ahri" }
+        val laneRival = WildRiftRepository.champions.first { it.id == "lulu" }
+        val fullEnemies = listOf("lulu", "braum", "shen", "karma", "sett").map { id ->
+            WildRiftRepository.champions.first { it.id == id }
+        }
+        val result = WildRiftRepository.analyzeDraft(
+            myRole = LaneRole.MID,
+            allies = listOf(ahri),
+            enemies = fullEnemies,
+            enemyLaneOpponent = laneRival
+        )
+        val plan = result.recommendations.first().draftBuilds
+        assertTrue("A known lane rival must produce a 1v1 plan", plan.oneVsOne != null)
+        assertTrue("Five enemy champions must produce a complete-team plan", plan.fullTeam != null)
+        val antiShield = DraftBuildPolicy.create(ahri, LaneRole.MID, emptyList(), listOf(lulu))
+        assertTrue("AP champions need the catalog anti-shield item", antiShield.situationalItems.any { it.equals("Tridente de Oceánida", true) })
+    }
 }

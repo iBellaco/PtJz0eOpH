@@ -893,43 +893,6 @@ private fun CoachContent(
             }
         }
 
-        // Keep the floating coach in sync with the hub: one contextual plan,
-        // resolved from the same local item, rune and spell catalogs.
-        val draftPlan = analysis.draftBuild ?: analysis.bestOverallPick?.draftBuild
-        if (draftPlan != null) {
-            val planLanguage = com.example.util.currentAppLanguage()
-            val localizedItems = { names: List<String> -> names.map { WildRiftItemsData.getItemByName(it)?.getLocalizedName(planLanguage) ?: it } }
-            val localizedRunes = draftPlan.runes.map { WildRiftSpellsAndRunes.getRuneByName(it)?.getLocalizedName(planLanguage) ?: it }
-            val localizedSpells = draftPlan.spells.map { WildRiftSpellsAndRunes.getSpellByName(it)?.getLocalizedName(planLanguage) ?: it }
-            Spacer(modifier = Modifier.height(4.dp))
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = HextechDarkBg.copy(alpha = 0.72f)),
-                border = BorderStroke(0.8.dp, HextechCyan.copy(alpha = 0.65f)),
-                shape = RoundedCornerShape(6.dp)
-            ) {
-                Column(modifier = Modifier.padding(5.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                    Text(
-                        text = tr(if (analysis.draftBuild != null) "Build adaptada a tu campeón" else "Build sugerida para este draft"),
-                        color = HextechCyan,
-                        fontSize = 8.5.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Text(text = tr(draftPlan.title), color = HextechGoldLight, fontSize = 8.sp, fontWeight = FontWeight.SemiBold)
-                    Text(text = tr("Core"), color = TextPrimary, fontSize = 7.8.sp, fontWeight = FontWeight.SemiBold)
-                    Text(text = localizedItems(draftPlan.coreItems).joinToString(" • "), color = TextPrimary, fontSize = 7.8.sp, maxLines = 2)
-                    if (draftPlan.situationalItems.isNotEmpty()) {
-                        Text(text = tr("Situacionales"), color = TextSecondary, fontSize = 7.8.sp, fontWeight = FontWeight.SemiBold)
-                        Text(text = localizedItems(draftPlan.situationalItems).joinToString(" • "), color = TextSecondary, fontSize = 7.8.sp, maxLines = 2)
-                    }
-                    Text(text = tr("Runas"), color = TextPrimary, fontSize = 7.8.sp, fontWeight = FontWeight.SemiBold)
-                    Text(text = localizedRunes.joinToString(" • "), color = TextPrimary, fontSize = 7.8.sp, maxLines = 2)
-                    Text(text = tr("Hechizos"), color = TextPrimary, fontSize = 7.8.sp, fontWeight = FontWeight.SemiBold)
-                    Text(text = localizedSpells.joinToString(" + "), color = TextPrimary, fontSize = 7.8.sp, maxLines = 2)
-                }
-            }
-        }
-
         Spacer(modifier = Modifier.height(6.dp))
 
         // Acciones del draft; la lista de tiers se abre desde la navegación del hub.

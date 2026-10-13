@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.widthIn
 import com.example.utils.parseHtmlColorToAnnotatedString
 import com.example.data.WildRiftItemsData
+import com.example.data.WildRiftSpellsAndRunes
 import com.example.model.WildRiftItem
 import com.example.ui.theme.TextSecondary
 import androidx.compose.foundation.background
@@ -71,6 +72,7 @@ import com.example.data.SituationalItemAdvisor
 import com.example.data.SynergyAdvisor
 import com.example.data.WildRiftRepository
 import com.example.model.Champion
+import com.example.model.DraftBuildPlanBundle
 import com.example.util.SubscriptionManager
 import androidx.compose.runtime.collectAsState
 import com.example.model.LaneRole
@@ -98,13 +100,73 @@ private data class RuneDetailSelection(
     val advice: String
 )
 
+@Composable
+private fun DraftBuildPlansSection(plans: DraftBuildPlanBundle, isCompact: Boolean) {
+    val lang = com.example.util.currentAppLanguage()
+    val itemNames = { names: List<String> -> names.map { WildRiftItemsData.getItemByName(it)?.getLocalizedName(lang) ?: it } }
+    val planEntries = listOfNotNull(
+        plans.oneVsOne?.let { tr("Build 1 contra 1") to it },
+        plans.fullTeam?.let { tr("Build para composición completa") to it },
+        if (plans.oneVsOne == null && plans.fullTeam == null) plans.general?.let { tr("Build del draft actual") to it } else null
+    )
+    if (planEntries.isEmpty()) return
+    Card(
+        modifier = Modifier.fillMaxWidth().testTag("draft_custom_build"),
+        colors = CardDefaults.cardColors(containerColor = HextechDarkBg.copy(alpha = 0.72f)),
+        shape = RoundedCornerShape(10.dp),
+        border = androidx.compose.foundation.BorderStroke(1.dp, HextechCyan.copy(alpha = 0.7f))
+    ) {
+        Column(modifier = Modifier.padding(if (isCompact) 7.dp else 10.dp), verticalArrangement = Arrangement.spacedBy(7.dp)) {
+            Text(
+                text = tr("Build adaptada al draft"),
+                color = HextechCyan,
+                fontSize = if (isCompact) 10.sp else 13.sp,
+                fontWeight = FontWeight.Bold
+            )
+            planEntries.forEachIndexed { index, (label, plan) ->
+                Card(
+                    colors = CardDefaults.cardColors(containerColor = HextechSurface),
+                    shape = RoundedCornerShape(8.dp),
+                    border = androidx.compose.foundation.BorderStroke(1.dp, HextechCardBorder)
+                ) {
+                    Column(modifier = Modifier.padding(if (isCompact) 6.dp else 8.dp), verticalArrangement = Arrangement.spacedBy(3.dp)) {
+                        Text(label, color = HextechGold, fontSize = if (isCompact) 9.sp else 11.sp, fontWeight = FontWeight.Bold)
+                        Text(tr(plan.title), color = TextPrimary, fontSize = if (isCompact) 8.5.sp else 10.sp, fontWeight = FontWeight.SemiBold)
+                        if (plan.coreItems.isNotEmpty()) {
+                            Text(tr("3 objetos principales"), color = TextPrimary, fontSize = if (isCompact) 8.sp else 9.5.sp, fontWeight = FontWeight.SemiBold)
+                            Text(itemNames(plan.coreItems).joinToString(" • "), color = TextPrimary, fontSize = if (isCompact) 8.sp else 9.5.sp)
+                        }
+                        if (plan.situationalItems.isNotEmpty()) {
+                            Text(tr("Situacionales"), color = TextSecondary, fontSize = if (isCompact) 8.sp else 9.5.sp, fontWeight = FontWeight.SemiBold)
+                            Text(itemNames(plan.situationalItems).joinToString(" • "), color = TextSecondary, fontSize = if (isCompact) 8.sp else 9.5.sp)
+                        }
+                        if (plan.runes.isNotEmpty()) {
+                            Text(tr("Runas"), color = TextPrimary, fontSize = if (isCompact) 8.sp else 9.5.sp, fontWeight = FontWeight.SemiBold)
+                            Text(plan.runes.map { WildRiftSpellsAndRunes.getRuneByName(it)?.getLocalizedName(lang) ?: it }.joinToString(" • "), color = TextPrimary, fontSize = if (isCompact) 8.sp else 9.5.sp)
+                        }
+                        if (plan.spells.isNotEmpty()) {
+                            Text(tr("Hechizos"), color = TextPrimary, fontSize = if (isCompact) 8.sp else 9.5.sp, fontWeight = FontWeight.SemiBold)
+                            Text(plan.spells.map { WildRiftSpellsAndRunes.getSpellByName(it)?.getLocalizedName(lang) ?: it }.joinToString(" + "), color = TextPrimary, fontSize = if (isCompact) 8.sp else 9.5.sp)
+                        }
+                        plan.reasons.take(2).forEach { reason ->
+                            Text("• ${tr(reason)}", color = TextMuted, fontSize = if (isCompact) 7.8.sp else 9.sp, lineHeight = if (isCompact) 10.sp else 12.sp)
+                        }
+                    }
+                }
+                if (index < planEntries.lastIndex) Spacer(modifier = Modifier.height(1.dp))
+            }
+        }
+    }
+}
+
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun ChampionDetailSheet(
     isOverlay: Boolean = false,
     champion: Champion?,
     onDismiss: () -> Unit,
-    onChampionSelected: (Champion) -> Unit = {}
+    onChampionSelected: (Champion) -> Unit = {},
+    draftBuildPlans: DraftBuildPlanBundle? = null
 ) {
     val isPremium by SubscriptionManager.isPremium.collectAsState()
     if (champion == null) return
@@ -317,6 +379,11 @@ fun ChampionDetailSheet(
                         Icon(Icons.Default.Close, contentDescription = tr("Cerrar"), tint = TextMuted)
                     }
                 }
+            }
+
+            if (draftBuildPlans != null && draftBuildPlans.preferred() != null) {
+                DraftBuildPlansSection(plans = draftBuildPlans, isCompact = isCompact)
+                Spacer(modifier = Modifier.height(12.dp))
             }
 
             Spacer(modifier = Modifier.height(14.dp))

@@ -305,7 +305,9 @@ data class DraftAnalysisResult(
     val bestOverallPick: DraftRecommendation? = null,
     val recommendations: List<DraftRecommendation>,
     /** Build calculated for the champion already assigned to the user's lane. */
-    val draftBuild: DraftBuildPlan? = null
+    val draftBuild: DraftBuildPlan? = null,
+    /** Context-specific plans shown inside the selected champion detail. */
+    val draftBuilds: DraftBuildPlanBundle = DraftBuildPlanBundle()
 )
 
 /** A single, draft-specific plan. Names are resolved from the in-app catalogs before display. */
@@ -319,6 +321,16 @@ data class DraftBuildPlan(
     val reasons: List<String> = emptyList()
 )
 
+/** Separate plans prevent a lane matchup from being confused with a team-wide plan. */
+@Serializable
+data class DraftBuildPlanBundle(
+    val oneVsOne: DraftBuildPlan? = null,
+    val fullTeam: DraftBuildPlan? = null,
+    val general: DraftBuildPlan? = null
+) {
+    fun preferred(): DraftBuildPlan? = fullTeam ?: oneVsOne ?: general
+}
+
 @Serializable
 data class DraftRecommendation(
     val champion: Champion,
@@ -329,7 +341,8 @@ data class DraftRecommendation(
     val synergyDetails: String = "",
     val counterDetails: String = "",
     val draftFitScore: Double = estimatedWinrate,
-    val draftBuild: DraftBuildPlan? = null
+    val draftBuild: DraftBuildPlan? = null,
+    val draftBuilds: DraftBuildPlanBundle = DraftBuildPlanBundle()
 )
 
 @Serializable
