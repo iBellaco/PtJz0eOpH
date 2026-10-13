@@ -340,7 +340,8 @@ object WildRiftRepository {
         return DraftRecommendation(champion=champ,estimatedWinrate=champ.winrate.coerceIn(0.0,100.0),
             advantageBadge=badge,tacticalReason=reasons.joinToString(" "),runes=champ.recommendedRunes,
             synergyDetails=synergyText,counterDetails=counterText,
-            draftFitScore=DraftScoringPolicy.score(champ,myRole,activeAllies,activeEnemies,lane,false,champions))
+            draftFitScore=DraftScoringPolicy.score(champ,myRole,activeAllies,activeEnemies,lane,false,champions),
+            draftBuild=DraftBuildPolicy.create(champ, myRole, activeAllies, activeEnemies))
     }
 
     fun analyzeDraft(
@@ -459,6 +460,10 @@ object WildRiftRepository {
         val rankedCandidates = compatible.ifEmpty { uniqueCandidates }
         val serverLabel = "Global Meta"
 
+        val draftBuildForMyChampion = activeAllies
+            .firstOrNull { myRole != null && (it.primaryRole == myRole || myRole in it.secondaryRoles) }
+            ?.let { own -> DraftBuildPolicy.create(own, myRole ?: own.primaryRole, activeAllies.filterNot { it.id == own.id }, activeEnemies, isFirstPickEffective) }
+
         val recommendations = rankedCandidates.map { champ ->
             val effectiveRole = myRole ?: champ.primaryRole
             var synergyText = ""
@@ -529,7 +534,8 @@ object WildRiftRepository {
                     tacticalReason = reason,
                     runes = champ.recommendedRunes,
                     synergyDetails = synergyText,
-                    counterDetails = counterText
+                    counterDetails = counterText,
+                    draftBuild = DraftBuildPolicy.create(champ, effectiveRole, activeAllies, activeEnemies, isFirstPickEffective)
                 )
             } else {
                 // REACTIVE / COUNTER & SYNERGY DRAFT CALCULATION
@@ -609,7 +615,8 @@ object WildRiftRepository {
                     tacticalReason = reasonParts.joinToString(" "),
                     runes = champ.recommendedRunes,
                     synergyDetails = synergyText,
-                    counterDetails = counterText
+                    counterDetails = counterText,
+                    draftBuild = DraftBuildPolicy.create(champ, effectiveRole, activeAllies, activeEnemies, isFirstPickEffective)
                 )
             }
         }.sortedByDescending { it.draftFitScore }
@@ -635,7 +642,8 @@ object WildRiftRepository {
             directCounterBestPick = directCounterBestPick,
             isFirstPickMode = isFirstPickEffective,
             bestOverallPick = bestOverall,
-            recommendations = recommendations
+            recommendations = recommendations,
+            draftBuild = draftBuildForMyChampion
         )
     }
 }

@@ -303,7 +303,20 @@ data class DraftAnalysisResult(
     val directCounterBestPick: String?,
     val isFirstPickMode: Boolean = false,
     val bestOverallPick: DraftRecommendation? = null,
-    val recommendations: List<DraftRecommendation>
+    val recommendations: List<DraftRecommendation>,
+    /** Build calculated for the champion already assigned to the user's lane. */
+    val draftBuild: DraftBuildPlan? = null
+)
+
+/** A single, draft-specific plan. Names are resolved from the in-app catalogs before display. */
+@Serializable
+data class DraftBuildPlan(
+    val title: String,
+    val coreItems: List<String> = emptyList(),
+    val situationalItems: List<String> = emptyList(),
+    val runes: List<String> = emptyList(),
+    val spells: List<String> = emptyList(),
+    val reasons: List<String> = emptyList()
 )
 
 @Serializable
@@ -315,7 +328,8 @@ data class DraftRecommendation(
     val runes: String,
     val synergyDetails: String = "",
     val counterDetails: String = "",
-    val draftFitScore: Double = estimatedWinrate
+    val draftFitScore: Double = estimatedWinrate,
+    val draftBuild: DraftBuildPlan? = null
 )
 
 @Serializable
