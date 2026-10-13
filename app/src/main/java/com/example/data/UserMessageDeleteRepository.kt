@@ -11,7 +11,18 @@ object UserMessageDeleteRepository {
         it["id"] in ids || it["reportId"] in ids
     }
 
-    suspend fun delete(uid: String, id: String, reportId: String = "") {
+    /** A support ticket may be stored with the user's id or only with their email in legacy data. */
+    fun reportBelongsToUser(data: Map<String, Any>, uid: String, email: String = ""): Boolean {
+        val reportUid = (data["userId"] as? String).orEmpty()
+        val reportEmail = (data["userEmail"] as? String)
+            ?: (data["user_email"] as? String)
+            ?: (data["contactEmail"] as? String)
+            ?: (data["email"] as? String)
+            ?: ""
+        return reportUid == uid || (email.isNotBlank() && reportEmail.equals(email, ignoreCase = true))
+    }
+
+    suspend fun delete(uid: String, id: String, reportId: String = "", email: String = "") {
         val actor = AuthManager.getAuth()?.currentUser ?: error(appTr("Inicia sesión"))
         check(actor.getIdToken(true).await().claims["admin"] == true) { appTr("No tienes permisos para esta operación") }
         val db = FirebaseFirestore.getInstance()
@@ -23,7 +34,9 @@ object UserMessageDeleteRepository {
             val legacy = (snapshot.get("privateMessages") as? List<*>).orEmpty().filterIsInstance<Map<String, Any>>()
             val reports = ids.map { tx.get(db.collection("support_reports").document(it)) }
             val updated = remaining(legacy, ids)
-            reports.filter { it.exists() && it.getString("userId") == uid }.forEach { tx.delete(it.reference) }
+            val ownerEmail = snapshot.getString("email").orEmpty().ifBlank { email }
+            reports.filter { it.exists() && reportBelongsToUser(it.data.orEmpty(), uid, ownerEmail) }
+                .forEach { tx.delete(it.reference) }
             ids.forEach { tx.delete(profile.collection("messages").document(it)) }
             tx.update(profile, mapOf("privateMessages" to updated,
                 "hasUnreadMessages" to InboxNotificationPolicy.unreadKeys(updated).isNotEmpty(),
