@@ -2,8 +2,11 @@ package com.example
 
 import android.app.Application
 import com.example.data.DraftScoringPolicy
+import com.example.data.DraftBuildPolicy
 import com.example.data.MatchupKnowledge
 import com.example.data.MatchupRelation
+import com.example.data.WildRiftItemsData
+import com.example.data.WildRiftSpellsAndRunes
 import com.example.data.WildRiftRepository
 import com.example.model.LaneRole
 import org.junit.Assert.assertEquals
@@ -62,5 +65,38 @@ class DraftRecommendationQualityTest {
         val frontlineScore = DraftScoringPolicy.score(braum, LaneRole.SUPPORT, emptyList(), enemies, null, false, roster)
         val exposedScore = DraftScoringPolicy.score(senna, LaneRole.SUPPORT, emptyList(), enemies, null, false, roster)
         assertTrue("The support recommendation must account for assassin access", frontlineScore > exposedScore)
+    }
+
+    @Test
+    fun `blind pick returns ranked picks and a catalog-only custom build`() {
+        val result = WildRiftRepository.analyzeDraft(
+            myRole = LaneRole.MID,
+            allies = emptyList(),
+            enemies = emptyList(),
+            isFirstPick = true
+        )
+        assertTrue("Blind Pick must not be a no-op", result.isFirstPickMode)
+        assertTrue(result.recommendations.isNotEmpty())
+        val plan = result.bestOverallPick?.draftBuild
+        assertTrue(plan != null)
+        assertEquals(3, plan!!.coreItems.size)
+        assertTrue(plan.coreItems.all { WildRiftItemsData.getItemByName(it) != null })
+        assertTrue(plan.situationalItems.all { WildRiftItemsData.getItemByName(it) != null })
+        assertTrue(plan.runes.all { WildRiftSpellsAndRunes.getRuneByName(it) != null })
+        assertTrue(plan.spells.all { WildRiftSpellsAndRunes.getSpellByName(it) != null })
+    }
+
+    @Test
+    fun `draft build changes for healing and tanks and keeps support starter`() {
+        val orianna = WildRiftRepository.champions.first { it.id == "orianna" }
+        val soraka = WildRiftRepository.champions.first { it.id == "soraka" }
+        val malphite = WildRiftRepository.champions.first { it.id == "malphite" }
+        val antiHealing = DraftBuildPolicy.create(orianna, LaneRole.MID, emptyList(), listOf(soraka))
+        assertTrue(antiHealing.situationalItems.any { it.equals("Morellonomicón", true) })
+
+        val braum = WildRiftRepository.champions.first { it.id == "braum" }
+        val supportPlan = DraftBuildPolicy.create(braum, LaneRole.SUPPORT, emptyList(), listOf(malphite))
+        assertTrue(supportPlan.coreItems.any { it.equals("Escudo reliquia", true) })
+        assertTrue(supportPlan.spells.any { it.equals("Destello", true) })
     }
 }
