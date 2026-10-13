@@ -25,7 +25,7 @@ internal class BannedPortraitScanner {
                            pickedIds: Set<String> = emptySet()): Set<String> {
         val capturedRevision = synchronized(this) {
             if (bitmap.isRecycled || bitmap.width < bitmap.height || nowMs - lastScanAt < 1500L ||
-                slots.all { it.state == BanState.CONFIRMED || it.state == BanState.EMPTY }) return confirmedIds()
+                slots.all { it.state == BanState.CONFIRMED }) return confirmedIds()
             lastScanAt = nowMs
             revision
         }

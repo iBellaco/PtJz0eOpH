@@ -35,6 +35,13 @@ class BannedPortraitScannerTest {
                 (original.width*scale).toInt(),(original.height*scale).toInt(),true)
             try {
                 val scanner = BannedPortraitScanner()
+                if(scale==1f) {
+                    val emptyPhase = LiteRTVisionClassifier.findHeaderBanObservations(bitmap,context,emptyList())
+                        .map { it.copy(championId=null,empty=true) }
+                    repeat(2) { scanner.update(emptyPhase,bitmap.width.toFloat()/bitmap.height) }
+                    assertTrue("Empty ban slots can still be filled",scanner.slots.all {
+                        it.state==com.example.service.screen.BanState.EMPTY })
+                }
                 scanner.scan(bitmap,context,0)
                 scanner.scan(bitmap,context,1500)
                 assertEquals("Actual circles at scale $scale",expected,scanner.slots.map { it.championId })
