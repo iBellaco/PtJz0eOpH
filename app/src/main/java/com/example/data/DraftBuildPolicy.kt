@@ -99,7 +99,7 @@ object DraftBuildPolicy {
             else -> if (lang == "pt") "Plano de composição" else "Plan de composición"
         }
         val contextLabel = when (context) {
-            DraftBuildContext.ONE_VS_ONE -> if (lang == "pt") "Confronto 1v1" else "Confronto 1v1"
+            DraftBuildContext.ONE_VS_ONE -> if (lang == "pt") "Confronto 1v1" else "Enfrentamiento 1v1"
             DraftBuildContext.FULL_TEAM -> if (lang == "pt") "Composição completa" else "Composición completa"
             DraftBuildContext.GENERAL -> ""
         }
@@ -180,7 +180,11 @@ object DraftBuildPolicy {
             situationalItems = situational,
             runes = runes,
             spells = spells,
-            reasons = reasons
+            reasons = reasons,
+            matchupChampions = enemies
+                .filter { it.id != "empty" }
+                .distinctBy { it.id }
+                .map { it.getLocalizedName(lang) }
         )
     }
 }
