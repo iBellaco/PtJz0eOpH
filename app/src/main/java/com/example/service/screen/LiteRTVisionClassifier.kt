@@ -242,7 +242,7 @@ object LiteRTVisionClassifier {
         // only from a regular row of at least four observed circles near the screen edge,
         // and require a uniform interior. A textured unknown portrait stays unknown.
         val rivalRow = observations.filter { it.side == BanSide.ENEMY }.sortedBy { it.region.x }
-        val finalEmpty = if (rivalRow.size >= 4) {
+        val finalEmpty = if (rivalRow.size == 4) {
             val gaps = rivalRow.zipWithNext { a, b -> b.region.x - a.region.x }.sorted()
             val step = gaps[gaps.size / 2]
             val last = rivalRow.last().region
