@@ -1504,6 +1504,7 @@
   "Build Protegida para Suscriptores": "Build Protegida para Assinantes",
   "Build Soporte (Meta Soberano)": "Build de Suporte (Meta Soberano)",
   "Build Táctica Oficial": "Build Tática Oficial",
+  "Build adaptada a tu campeón": "Build adaptada ao seu campeão",
   "Build calculada estadísticamente y con IA para el meta actual de Wild Rift.": "Build recomendada pelo coach para o meta atual de Wild Rift.",
   "Build de": "Build de",
   "Build eliminada": "Build excluída",
@@ -1514,6 +1515,7 @@
   "Build oficial de alto rendimiento para {0}: 3 Core Items indispensables, opciones situacionales y botas de Nivel 3 adaptadas.": "Build oficial de alto desempenho para {0}: 3 Core Items indispensáveis, opções situacionais e botas de Nível 3 adaptadas.",
   "Build personalizada creada y verificada por el creador oficial {0}.": "Build personalizada criada e verificada pelo criador oficial {0}.",
   "Build recomendada por el coach para el meta actual de Wild Rift.": "Build recomendada pelo coach para o meta atual de Wild Rift.",
+  "Build sugerida para este draft": "Build sugerida para este draft",
   "Build y Runas de": "Build e Runas de",
   "Build y Tácticas": "Build e Táticas",
   "Build {0} • Criterio Coach": "Build {0} • Critério Coach",
@@ -15360,7 +15362,5 @@
   "🤝 SINERGIA DE EQUIPO (+{0})": "⌀ SINERGIA DE EQUIPE (+{0})",
   "🥈 2° Lugar": "🥈 2º Lugar",
   "🥉 3° Lugar": "🥉 3º Lugar",
-  "🥊 **Mejor Desempeño 1v1 Calculado:** Tu rival más favorable es **{0}** con un **{1}% de Win Rate** ({2}V - {3}D en {4} partidas).": "⌀ ** Melhor Desempenho 1v1 Calculado:** Seu rival mais favorável é **{0}** com um **{1}% de Win Rate** ({2}V - {3}D em {4} partidas).",
-  "Build adaptada a tu campeón": "Build adaptada ao seu campeão",
-  "Build sugerida para este draft": "Build sugerida para este draft"
+  "🥊 **Mejor Desempeño 1v1 Calculado:** Tu rival más favorable es **{0}** con un **{1}% de Win Rate** ({2}V - {3}D en {4} partidas).": "⌀ ** Melhor Desempenho 1v1 Calculado:** Seu rival mais favorável é **{0}** com um **{1}% de Win Rate** ({2}V - {3}D em {4} partidas)."
 }
