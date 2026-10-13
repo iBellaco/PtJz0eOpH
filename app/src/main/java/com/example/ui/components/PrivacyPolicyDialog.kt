@@ -33,7 +33,6 @@ import androidx.compose.ui.window.DialogProperties
 import com.example.ui.theme.*
 import com.example.util.tr
 import com.example.util.localizedString
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 
 enum class LegalTab(@androidx.annotation.StringRes val titleRes: Int) {
@@ -267,13 +266,6 @@ private fun PrivacyPolicyContent() {
         body = localizedString(R.string.legal_todas_las_comunicaciones_entre_la_aplicacion_y_los_servicios_de_b)
     )
     PolicySection(title = localizedString(R.string.legal_deletion_title), body = localizedString(R.string.legal_deletion_body))
-    PolicySection(title = localizedString(R.string.legal_contact_title), body = localizedString(R.string.legal_contact_body))
-    val context = LocalContext.current
-    OutlinedButton(onClick = {
-        com.example.util.PrivacyContact.open(context)
-    }, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp).testTag("legal_privacy_contact")) {
-        Text(localizedString(R.string.legal_contact_action))
-    }
 }
 
 @Composable

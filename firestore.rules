@@ -161,8 +161,28 @@ service cloud.firestore {
         && (removed ? next.premiumUntil == 0 : next.premiumUntil >= base + days * 86400000 - 300000 && next.premiumUntil <= base + days * 86400000 + 300000)
         && administrativePremiumReceipt();
     }
+    function moderatorAccountChange(userId) {
+      let old = resource.data;
+      let next = request.resource.data;
+      let id = next.get('lastModeratorActionId', '');
+      let event = getAfter(/databases/$(database)/documents/moderator_activity/$(request.auth.uid)/events/$(id)).data;
+      let rank = next.get('secondaryRole', '');
+      let roleChange = next.diff(old).affectedKeys().hasOnly(['secondaryRole','last_secondary_role_update','lastModeratorActionId'])
+        && rank in ['', 'esmeralda', 'diamante', 'maestro', 'gran_maestro', 'aspirante', 'soberano']
+        && rank != old.get('secondaryRole', '') && event.action == 'SECONDARY_ROLE' && event.value == rank;
+      let verificationChange = next.diff(old).affectedKeys().hasOnly(['isVerified','verified','lastModeratorActionId'])
+        && next.get('isVerified', false) == next.get('verified', false)
+        && next.get('isVerified', false) != old.get('isVerified', false)
+        && event.action == 'VERIFICATION' && event.value == (next.isVerified ? 'true' : 'false');
+      return isModerator() && request.auth.uid != userId
+        && old.get('role', '') in ['free','premium','streamer','patrocinador','creador','creador_lvl2','creador_lvl3','creador_lvl4','creador_lvl5']
+        && old.get('banned', false) == false
+        && id is string && id.size() > 0 && id != old.get('lastModeratorActionId', '')
+        && event.actorUid == request.auth.uid && event.targetUid == userId
+        && (roleChange || verificationChange);
+    }
     match /users/{userId} {
-      allow read: if signedIn() && (request.auth.uid == userId || isAdmin());
+      allow read: if signedIn() && (request.auth.uid == userId || isAdmin() || isModerator());
       allow create: if signedIn() && request.auth.uid == userId && request.resource.data.role == 'free'
         && !request.resource.data.keys().hasAny(['banned','premiumUntil','secondaryRole','isVerified','verified','admin','subscriptionHistory','subscriptionPlan','lastPremiumChangedAt','lastPremiumChangedBy','lastPremiumDays','lastPremiumExtend','lastPremiumOperationId','lastModifiedByAdmin','lastEconomyOperation','subscribedCreators','creatorSubscriberCount','last_role_update','lastRoleChangedBy','bannedTimestamp'])
         && request.resource.data.get('blueEssence', 0) == 0 && request.resource.data.get('orangeEssence', 0) == 0
@@ -171,8 +191,8 @@ service cloud.firestore {
       allow update: if signedIn()
         && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['blueEssence','orangeEssence','premiumUntil','subscriptionPlan','subscriptionHistory','lastPremiumChangedAt','lastPremiumChangedBy','lastPremiumDays','lastPremiumExtend','lastPremiumOperationId','lastEconomyOperation','subscribedCreators','creatorSubscriberCount','role','banned','bannedTimestamp','last_role_update','lastRoleChangedBy'])
         && (isAdmin() || (request.auth.uid == userId
-          && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role','secondaryRole','banned','isVerified','verified','admin','lastModifiedByAdmin'])
-          && request.resource.data.get('registeredDevices', []).size() <= 2)) || administrativeRoleChange(userId) || administrativePremiumChange(userId);
+          && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role','secondaryRole','banned','isVerified','verified','admin','lastModifiedByAdmin','lastModeratorActionId'])
+          && request.resource.data.get('registeredDevices', []).size() <= 2)) || administrativeRoleChange(userId) || administrativePremiumChange(userId) || moderatorAccountChange(userId);
       allow delete: if false;
       match /messages/{messageId} {
         function source() { return getAfter(/databases/$(database)/documents/support_reports/$(messageId)).data; }
@@ -281,8 +301,27 @@ service cloud.firestore {
     }
 
     match /support_reports/{reportId} {
+      function auditedModeratorTicketChange() {
+        let id = request.resource.data.get('lastModeratorActionId', '');
+        let event = getAfter(/databases/$(database)/documents/moderator_activity/$(request.auth.uid)/events/$(id)).data;
+        return id is string && id.size() > 0 && id != resource.data.get('lastModeratorActionId', '')
+          && event.actorUid == request.auth.uid && event.targetUid == resource.data.get('userId', '')
+          && event.reportId == reportId
+          && (request.resource.data.diff(resource.data).affectedKeys().hasAny(['conversation'])
+            ? event.action == 'SUPPORT_REPLY' && staffReply()
+            : event.action == 'SUPPORT_STATUS' && event.value == request.resource.data.get('status', '')
+              && request.resource.data.get('status', '') != resource.data.get('status', ''));
+      }
+      function validVerificationPhotos() {
+        let images = request.resource.data.get('photos', []);
+        return images is list && images.size() == 3
+          && images[0] is string && images[0].size() > 0 && images[0].size() <= 275000
+          && images[1] is string && images[1].size() > 0 && images[1].size() <= 275000
+          && images[2] is string && images[2].size() > 0 && images[2].size() <= 275000;
+      }
       allow create: if isAdmin() || (signedIn() && request.resource.data.get('category', '') == 'MODERATOR_REQUEST' && isModerator()) ||
         (signedIn() && request.resource.data.userId == request.auth.uid && (request.resource.data.get('userEmail', '').lower() == request.auth.token.get('email', '').lower() || request.resource.data.get('userEmail', '') == '')
+          && (request.resource.data.get('tag', '') != 'VERIFICAR' || validVerificationPhotos())
           && request.resource.data.staffVisible == !sponsor(request.resource.data)
           && request.resource.data.status == 'PENDING' && request.resource.data.get('adminReply', '') == ''
           && request.resource.data.get('userCanReply', false) == false
@@ -295,7 +334,8 @@ service cloud.firestore {
       allow update: if isAdmin() || (staffTicket(resource.data)
         && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['userId','userEmail','tag','type','staffVisible'])
         && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['conversation']) || staffReply())
-        && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['userCanReply']) || (staffReply() && request.resource.data.userCanReply == true))) ||
+        && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['userCanReply']) || (staffReply() && request.resource.data.userCanReply == true))
+        && auditedModeratorTicketChange()) ||
         (ownsTicket(resource.data) && (userReadUpdate() || userReply()));
       allow delete: if isAdmin();
     }
@@ -455,6 +495,45 @@ service cloud.firestore {
     match /moderator_requests/{id} {
       allow read, update, delete: if isAdmin();
       allow create: if isModerator() && request.resource.data.status == 'PENDIENTE';
+    }
+    match /moderator_activity/{actorUid}/events/{eventId} {
+      function accountEvent() {
+        let target = request.resource.data.targetUid;
+        let before = get(/databases/$(database)/documents/users/$(target)).data;
+        let after = getAfter(/databases/$(database)/documents/users/$(target)).data;
+        return after.get('lastModeratorActionId', '') == eventId
+          && (request.resource.data.action == 'SECONDARY_ROLE'
+            && after.get('secondaryRole', '') != before.get('secondaryRole', '')
+            && request.resource.data.value == after.get('secondaryRole', '')
+            || request.resource.data.action == 'VERIFICATION'
+            && after.get('isVerified', false) != before.get('isVerified', false)
+            && request.resource.data.value == (after.get('isVerified', false) ? 'true' : 'false'));
+      }
+      function supportEvent() {
+        let report = request.resource.data.get('reportId', '');
+        let before = get(/databases/$(database)/documents/support_reports/$(report)).data;
+        let after = getAfter(/databases/$(database)/documents/support_reports/$(report)).data;
+        return report is string && report.size() > 0 && after.get('lastModeratorActionId', '') == eventId
+          && before.get('userId', '') == request.resource.data.targetUid
+          && (request.resource.data.action == 'SUPPORT_REPLY'
+            && after.get('conversation', []).size() == before.get('conversation', []).size() + 1
+            && after.get('conversation', [])[after.get('conversation', []).size() - 1].get('id', '') == request.resource.data.value
+            || request.resource.data.action == 'SUPPORT_STATUS'
+            && after.get('status', '') != before.get('status', '')
+            && after.get('status', '') == request.resource.data.value);
+      }
+      allow read: if isAdmin();
+      allow create: if (isModerator() || isAdmin()) && actorUid == request.auth.uid
+        && request.resource.data.keys().hasOnly(['actorUid','targetUid','reportId','action','value','createdAt'])
+        && request.resource.data.actorUid == actorUid
+        && request.resource.data.targetUid is string && request.resource.data.targetUid != actorUid
+        && request.resource.data.value is string && request.resource.data.value.size() <= 80
+        && request.resource.data.createdAt == request.time
+        && (request.resource.data.action in ['SECONDARY_ROLE','VERIFICATION'] ? accountEvent() : supportEvent());
+      allow update, delete: if false;
+    }
+    match /{path=**}/events/{eventId} {
+      allow read: if isAdmin();
     }
   }
 }

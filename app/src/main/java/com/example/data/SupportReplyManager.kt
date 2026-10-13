@@ -242,6 +242,7 @@ object SupportReplyManager {
                 fallbackUid = db.collection("users").whereEqualTo("email", userEmail.trim()).limit(1).get().await().documents.firstOrNull()?.id.orEmpty()
             }
             val entry = SupportMessageEntry(senderName = author, senderRole = "SUPPORT", senderEmail = null, text = replyText.trim())
+            val auditId = if (SupportTicketAccess.isAdmin()) null else db.collection("moderator_activity").document().id
             val history = db.runTransaction { transaction ->
                 val snapshot = transaction.get(ref)
                 check(snapshot.exists() || (SupportTicketAccess.isAdmin() && fallbackUid.isNotBlank())) { "Ticket no disponible" }
@@ -272,6 +273,14 @@ object SupportReplyManager {
                     "isRead" to false, "userRead" to false, "hasNewAdminReply" to true, "hasNewReply" to true,
                     "staffRead" to markAsRead, "userCanReply" to true, "tag" to actualTag, "type" to (snapshot.getString("type") ?: actualTag),
                     "staffVisible" to !SupportConversationPolicy.isAdministratorOnly(actualTag))
+                if (auditId != null) {
+                    data["lastModeratorActionId"] = auditId
+                    transaction.set(ModeratorActivityRepository.eventReference(db, auth.uid, auditId), mapOf(
+                        "actorUid" to auth.uid, "targetUid" to owner, "reportId" to reportId,
+                        "action" to "SUPPORT_REPLY", "value" to entry.id,
+                        "createdAt" to com.google.firebase.firestore.FieldValue.serverTimestamp()
+                    ))
+                }
                 if (!snapshot.exists()) data["createdAt"] = Timestamp.now()
                 transaction.set(ref, data, com.google.firebase.firestore.SetOptions.merge())
                 transaction.set(db.collection("users").document(owner).collection("messages").document(reportId),
@@ -358,13 +367,23 @@ object SupportReplyManager {
         try {
             val db = FirebaseFirestore.getInstance()
             val ref = db.collection("support_reports").document(reportId)
+            val auth = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser ?: error("Sesión no disponible")
+            val auditId = if (SupportTicketAccess.isAdmin()) null else db.collection("moderator_activity").document().id
             db.runTransaction { transaction ->
                 val snapshot = transaction.get(ref)
                 check(snapshot.exists()) { "Ticket no disponible" }
-                val data = mapOf<String, Any>("status" to newStatus, "isCompleted" to SupportConversationPolicy.isClosed(newStatus),
-                    "staffRead" to true, "updatedAt" to Timestamp.now())
-                transaction.update(ref, data)
                 val owner = snapshot.getString("userId").orEmpty()
+                val data = mutableMapOf<String, Any>("status" to newStatus, "isCompleted" to SupportConversationPolicy.isClosed(newStatus),
+                    "staffRead" to true, "updatedAt" to Timestamp.now())
+                if (auditId != null) {
+                    data["lastModeratorActionId"] = auditId
+                    transaction.set(ModeratorActivityRepository.eventReference(db, auth.uid, auditId), mapOf(
+                        "actorUid" to auth.uid, "targetUid" to owner, "reportId" to reportId,
+                        "action" to "SUPPORT_STATUS", "value" to newStatus,
+                        "createdAt" to com.google.firebase.firestore.FieldValue.serverTimestamp()
+                    ))
+                }
+                transaction.update(ref, data)
                 if (owner.isNotBlank()) transaction.set(db.collection("users").document(owner).collection("messages").document(reportId),
                     data, com.google.firebase.firestore.SetOptions.merge())
             }.await()

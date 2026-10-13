@@ -65,6 +65,7 @@ import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.RestartAlt
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.VerifiedUser
 import androidx.compose.material.icons.filled.ZoomIn
 import androidx.compose.material.icons.filled.ZoomOut
 import androidx.compose.material3.AlertDialog
@@ -136,6 +137,7 @@ enum class FeedbackCategoryTab(val titleKey: String, val icon: ImageVector) {
     SUGGESTIONS("Sugerencias", Icons.Default.Lightbulb),
     BUILDS("Builds", Icons.Default.SportsEsports),
     SUPPORT("Soporte", Icons.Default.SupportAgent),
+    VERIFY("Verificar", Icons.Default.VerifiedUser),
     SPONSOR("Patrocinador", Icons.Default.Star)
 }
 
@@ -152,6 +154,7 @@ fun getFeedbackCategory(report: FeedbackReport): String {
         com.example.data.SupportConversationPolicy.isSponsor(rawType) -> "PATROCINADOR"
         rawType in listOf("BUG", "ERROR", "BUG_REPORT", "BUG / ERROR") -> "BUG"
         rawType in listOf("BUILD_SUGGESTION", "BUILD", "SUGERIR BUILD", "SUGERENCIA DE BUILD") || parseBuildSuggestionFromText(desc, title) != null -> "BUILD"
+        rawType == "VERIFICAR" -> "VERIFY"
         rawType in listOf("SOPORTE", "SUPPORT", "TICKET", "AYUDA", "REPORTE", "REPORT") -> "SUPPORT"
         else -> "SUGGESTION"
     }
@@ -193,6 +196,8 @@ fun AdminFeedbackBottomSheet(
     var previewImageBitmap by remember { mutableStateOf<Bitmap?>(null) }
     var itemForDetail by remember { mutableStateOf<WildRiftItem?>(null) }
     var reportToReply by remember { mutableStateOf<FeedbackReport?>(null) }
+    var verificationReview by remember { mutableStateOf<Pair<FeedbackReport, Boolean>?>(null) }
+    var verificationBusy by remember { mutableStateOf(false) }
 
     fun refreshStatusMap(list: List<FeedbackReport>) {
         statusMap.clear()
@@ -268,15 +273,17 @@ fun AdminFeedbackBottomSheet(
     val suggestionList = remember(visibleReports) { visibleReports.filter { getFeedbackCategory(it) == "SUGGESTION" } }
     val buildList = remember(visibleReports) { visibleReports.filter { getFeedbackCategory(it) == "BUILD" } }
     val supportList = remember(visibleReports) { visibleReports.filter { getFeedbackCategory(it) == "SUPPORT" } }
+    val verifyList = remember(visibleReports) { visibleReports.filter { getFeedbackCategory(it) == "VERIFY" } }
     val sponsorList = remember(visibleReports) { visibleReports.filter { getFeedbackCategory(it) == "PATROCINADOR" } }
 
-    val currentCategoryItems = remember(visibleReports, currentCategoryTab, bugList, suggestionList, buildList, supportList, sponsorList) {
+    val currentCategoryItems = remember(visibleReports, currentCategoryTab, bugList, suggestionList, buildList, supportList, verifyList, sponsorList) {
         when (currentCategoryTab) {
             FeedbackCategoryTab.ALL -> visibleReports
             FeedbackCategoryTab.BUGS -> bugList
             FeedbackCategoryTab.SUGGESTIONS -> suggestionList
             FeedbackCategoryTab.BUILDS -> buildList
             FeedbackCategoryTab.SUPPORT -> supportList
+            FeedbackCategoryTab.VERIFY -> verifyList
             FeedbackCategoryTab.SPONSOR -> sponsorList
         }
     }
@@ -331,6 +338,7 @@ fun AdminFeedbackBottomSheet(
                 FeedbackCategoryTab.SUGGESTIONS -> cat == "SUGGESTION"
                 FeedbackCategoryTab.BUILDS -> cat == "BUILD"
                 FeedbackCategoryTab.SUPPORT -> cat == "SUPPORT"
+                FeedbackCategoryTab.VERIFY -> cat == "VERIFY"
                 FeedbackCategoryTab.SPONSOR -> cat == "PATROCINADOR"
             }
 
@@ -509,6 +517,7 @@ fun AdminFeedbackBottomSheet(
                         FeedbackCategoryTab.SUGGESTIONS -> suggestionList.size
                         FeedbackCategoryTab.BUILDS -> buildList.size
                         FeedbackCategoryTab.SUPPORT -> supportList.size
+                        FeedbackCategoryTab.VERIFY -> verifyList.size
                         FeedbackCategoryTab.SPONSOR -> sponsorList.size
                     }
                     Tab(
@@ -558,6 +567,7 @@ fun AdminFeedbackBottomSheet(
                             FeedbackCategoryTab.SUGGESTIONS -> suggestionList.size
                             FeedbackCategoryTab.BUILDS -> buildList.size
                             FeedbackCategoryTab.SUPPORT -> supportList.size
+                            FeedbackCategoryTab.VERIFY -> verifyList.size
                             FeedbackCategoryTab.SPONSOR -> sponsorList.size
                         },
                         isSelected = selectedSubFilter == "ALL",
@@ -796,6 +806,7 @@ fun AdminFeedbackBottomSheet(
                                     }
                                 },
                                 onReply = { reportToReply = report },
+                                onReviewVerification = if (getFeedbackCategory(report) == "VERIFY") ({ approved -> verificationReview = report to approved }) else null,
                                 onDelete = if (isAdmin) ({ reportToDelete = report }) else null,
                                 onCopy = {
                                     val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
@@ -820,6 +831,36 @@ fun AdminFeedbackBottomSheet(
         }
     }
 
+    verificationReview?.let { (report, approved) ->
+        AlertDialog(
+            onDismissRequest = { if (!verificationBusy) verificationReview = null },
+            title = { Text(tr(if (approved) "¿Verificar este perfil?" else "¿Rechazar la verificación?")) },
+            text = { Text(tr("Confirma tu decisión después de revisar las tres imágenes del perfil.")) },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        val reportId = report.id ?: return@TextButton
+                        verificationBusy = true
+                        scope.launch {
+                            val result = runCatching {
+                                require(report.photosBase64.size == 3 && report.userId.isNotBlank())
+                                com.example.data.ModeratorActivityRepository.reviewVerification(reportId, report.userId, approved)
+                            }
+                            verificationBusy = false
+                            result.onSuccess {
+                                statusMap[reportId] = if (approved) FeedbackRepository.STATUS_ACCEPTED else FeedbackRepository.STATUS_REJECTED
+                                verificationReview = null
+                            }.onFailure { Toast.makeText(context, com.example.util.appTr(it.message ?: "No se pudo completar la revisión."), Toast.LENGTH_LONG).show() }
+                        }
+                    },
+                    enabled = !verificationBusy,
+                    modifier = Modifier.heightIn(min = 48.dp).testTag("confirm_profile_verification_review")
+                ) { Text(tr("Confirmar")) }
+            },
+            dismissButton = { TextButton(onClick = { verificationReview = null }, enabled = !verificationBusy) { Text(tr("Cancelar")) } }
+        )
+    }
+
     // Diálogo para responder al usuario
     if (reportToReply != null) {
         val rep = reportToReply!!
@@ -836,7 +877,7 @@ fun AdminFeedbackBottomSheet(
             userName = rep.parsedUserName ?: "",
             userId = rep.userId,
             initialReply = "",
-            tag = if (rep.type.uppercase() in setOf("PAGO", "PAYMENT", "PAGAMENTO")) "PAGO" else if (isSponsorItem) "PATROCINADOR" else "SOPORTE",
+            tag = if (getFeedbackCategory(rep) == "VERIFY") "VERIFICAR" else if (rep.type.uppercase() in setOf("PAGO", "PAYMENT", "PAGAMENTO")) "PAGO" else if (isSponsorItem) "PATROCINADOR" else "SOPORTE",
             isFirestoreDoc = false,
             onDismiss = { reportToReply = null },
             onReplySent = { newReply, markedAsRead ->

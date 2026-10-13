@@ -52,7 +52,7 @@ object FeedbackRepository {
             // 2. Preparar el nuevo reporte
             val baseDeviceInfo = "${Build.MANUFACTURER} ${Build.MODEL} (Android ${Build.VERSION.RELEASE}, API ${Build.VERSION.SDK_INT})"
             var deviceInfo = baseDeviceInfo
-            if (imagesBase64.isNotEmpty()) {
+            if (imagesBase64.isNotEmpty() && type != "VERIFICAR") {
                 for (img in imagesBase64) {
                     deviceInfo += "\n\n[IMAGE_BASE64]\n$img"
                 }
@@ -66,6 +66,11 @@ object FeedbackRepository {
             // 3. Guardar en almacenamiento en la nube (support_reports) para garantizar sincronización multidispositivo
             val db = FirebaseFirestore.getInstance()
             val account = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser ?: error("Inicia sesión para enviar un mensaje")
+            if (type == "VERIFICAR") {
+                require(imagesBase64.size == 3 && imagesBase64.all { android.util.Base64.decode(it, android.util.Base64.DEFAULT).size <= 200 * 1024 }) {
+                    "La verificación requiere tres imágenes de hasta 1 MB cada una."
+                }
+            }
             val now = System.currentTimeMillis()
             val history = SupportConversationPolicy.initial(reportId, userName ?: "Invocador", description.trim(), now)
             val firestoreMap = hashMapOf<String, Any>(

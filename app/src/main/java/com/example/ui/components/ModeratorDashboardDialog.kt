@@ -12,6 +12,8 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import com.example.ui.components.coachClickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -35,6 +37,7 @@ import androidx.compose.ui.window.DialogProperties
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
+import kotlinx.coroutines.launch
 import com.example.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -462,6 +465,7 @@ fun ModeratorUserProposalDialog(
     var targetVerified by remember { mutableStateOf(currentVerified) }
     var targetSecondaryRole by remember { mutableStateOf(currentSecondaryRole) }
     var isSending by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
 
     Dialog(
         onDismissRequest = onDismiss
@@ -474,7 +478,7 @@ fun ModeratorUserProposalDialog(
             shape = RoundedCornerShape(16.dp),
             border = androidx.compose.foundation.BorderStroke(1.2.dp, HextechGold)
         ) {
-            Column(modifier = Modifier.padding(20.dp)) {
+            Column(modifier = Modifier.heightIn(max = 680.dp).verticalScroll(rememberScrollState()).padding(20.dp)) {
                 // Header
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -482,7 +486,7 @@ fun ModeratorUserProposalDialog(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = tr("Proponer Modificación"),
+                        text = tr("Gestionar perfil"),
                         color = HextechGold,
                         fontWeight = FontWeight.Bold,
                         fontSize = 16.sp
@@ -615,7 +619,7 @@ fun ModeratorUserProposalDialog(
 
                 // Section 2: Secondary Role proposal
                 Text(
-                    text = tr("Rol Secundario Propuesto (Marco):"),
+                    text = tr("Rol secundario:"),
                     color = Color.White,
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 12.5.sp
@@ -681,7 +685,7 @@ fun ModeratorUserProposalDialog(
                         Icon(Icons.Default.HourglassEmpty, contentDescription = null, tint = HextechGold, modifier = Modifier.size(16.dp))
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = tr("Estas modificaciones requieren la aprobacion del Administrador principal antes de verse reflejadas en el perfil."),
+                            text = tr("Los cambios se aplican al confirmar y quedan registrados en la actividad de moderación."),
                             color = HextechGold,
                             fontSize = 10.sp,
                             fontWeight = FontWeight.Medium,
@@ -720,51 +724,15 @@ fun ModeratorUserProposalDialog(
                                 return@Button
                             }
 
-                            if (isVerifiedChanged && isSecondaryRoleChanged) {
-                                createModeratorApprovalRequest(
-                                    context = context,
-                                    requestType = "VERIFICATION",
-                                    targetUid = uid,
-                                    targetName = name,
-                                    targetEmail = email,
-                                    newValue = targetVerified.toString()
-                                ) {
-                                    createModeratorApprovalRequest(
-                                        context = context,
-                                        requestType = "SECONDARY_ROLE",
-                                        targetUid = uid,
-                                        targetName = name,
-                                        targetEmail = email,
-                                        newValue = targetSecondaryRole
-                                    ) {
-                                        isSending = false
-                                        onDismiss()
-                                    }
-                                }
-                            } else if (isVerifiedChanged) {
-                                createModeratorApprovalRequest(
-                                    context = context,
-                                    requestType = "VERIFICATION",
-                                    targetUid = uid,
-                                    targetName = name,
-                                    targetEmail = email,
-                                    newValue = targetVerified.toString()
-                                ) {
-                                    isSending = false
+                            scope.launch {
+                                runCatching {
+                                    if (isVerifiedChanged) com.example.data.ModeratorActivityRepository.changeVerification(uid, targetVerified)
+                                    if (isSecondaryRoleChanged) com.example.data.ModeratorActivityRepository.changeSecondaryRole(uid, targetSecondaryRole)
+                                }.onSuccess {
+                                    Toast.makeText(context, com.example.util.appTr("Cambios guardados"), Toast.LENGTH_SHORT).show()
                                     onDismiss()
-                                }
-                            } else {
-                                createModeratorApprovalRequest(
-                                    context = context,
-                                    requestType = "SECONDARY_ROLE",
-                                    targetUid = uid,
-                                    targetName = name,
-                                    targetEmail = email,
-                                    newValue = targetSecondaryRole
-                                ) {
-                                    isSending = false
-                                    onDismiss()
-                                }
+                                }.onFailure { Toast.makeText(context, com.example.util.appTr(it.message ?: "No se pudieron guardar los cambios"), Toast.LENGTH_LONG).show() }
+                                isSending = false
                             }
                         },
                         enabled = !isSending,
@@ -775,68 +743,11 @@ fun ModeratorUserProposalDialog(
                         if (isSending) {
                             CircularProgressIndicator(color = HextechDarkBg, modifier = Modifier.size(16.dp))
                         } else {
-                            Text(tr("Enviar Propuesta"), fontSize = 12.sp, fontWeight = FontWeight.ExtraBold)
+                            Text(tr("Guardar cambios"), fontSize = 12.sp, fontWeight = FontWeight.ExtraBold)
                         }
                     }
                 }
             }
         }
     }
-}
-
-private fun createModeratorApprovalRequest(
-    context: Context,
-    requestType: String,
-    targetUid: String,
-    targetName: String,
-    targetEmail: String,
-    newValue: String,
-    onSuccess: () -> Unit
-) {
-    val db = FirebaseFirestore.getInstance()
-    val auth = FirebaseAuth.getInstance()
-    val moderator = auth.currentUser
-
-    val reqId = "mod_req_" + System.currentTimeMillis() + "_" + java.util.UUID.randomUUID().toString().take(6)
-    val payload = hashMapOf<String, Any>(
-        "id" to reqId,
-        "reportId" to reqId,
-        "type" to "MODERATOR_REQUEST",
-        "reportType" to "MODERATOR_REQUEST",
-        "category" to "MODERATOR_REQUEST",
-        "title" to "Propuesta de Moderación para $targetName",
-        "message" to "Propuesta de cambio: $requestType -> $newValue para usuario $targetName",
-        "requestType" to requestType,
-        "targetUid" to targetUid,
-        "targetName" to targetName,
-        "targetEmail" to targetEmail,
-        "newValue" to newValue,
-        "requestedByUid" to (moderator?.uid ?: ""),
-        "requestedByName" to (moderator?.displayName?.takeUnless { it.contains("@") } ?: "Moderador"),
-        "status" to "PENDIENTE",
-        "timestamp" to System.currentTimeMillis(),
-        "createdAt" to com.google.firebase.Timestamp.now()
-    )
-
-    // Escribir en support_reports garantizando acceso permitido
-    db.collection("support_reports").document(reqId)
-        .set(payload)
-        .addOnSuccessListener {
-            // Intentar también en moderator_requests como respaldo
-            try { db.collection("moderator_requests").document(reqId).set(payload) } catch (_: Exception) {}
-            Toast.makeText(context, com.example.util.appTr("Solicitud enviada para aprobación del Administrador"), Toast.LENGTH_LONG).show()
-            onSuccess()
-        }
-        .addOnFailureListener {
-            // Reintento con merge
-            db.collection("support_reports").document(reqId)
-                .set(payload, com.google.firebase.firestore.SetOptions.merge())
-                .addOnSuccessListener {
-                    Toast.makeText(context, com.example.util.appTr("Solicitud enviada para aprobación del Administrador"), Toast.LENGTH_LONG).show()
-                    onSuccess()
-                }
-                .addOnFailureListener { e ->
-                    Toast.makeText(context, com.example.util.appTr("Error al enviar solicitud: ${e.message}"), Toast.LENGTH_LONG).show()
-                }
-        }
 }

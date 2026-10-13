@@ -1356,7 +1356,14 @@ fun UserDetailManagementDialog(
                 if (isAdmin) updateUserVerification(context, uid, newStatus) {
                     currentVerified = newStatus
                     onUserUpdated(user.toMutableMap().apply { put("isVerified", newStatus); put("verified", newStatus) })
-                } else if (isMod) createUserManagementApprovalRequest(context, "VERIFICATION", uid, currentName, email, newStatus.toString()) {}
+                } else if (isMod) managementScope.launch {
+                    runCatching { com.example.data.ModeratorActivityRepository.changeVerification(uid, newStatus) }
+                        .onSuccess {
+                            currentVerified = newStatus
+                            onUserUpdated(user + mapOf("isVerified" to newStatus, "verified" to newStatus))
+                            onReloadAll()
+                        }.onFailure { Toast.makeText(context, com.example.util.appTr(it.message ?: "No se pudo verificar el perfil."), Toast.LENGTH_LONG).show() }
+                }
             }, modifier = Modifier.testTag("confirm_verification_change"), colors = ButtonDefaults.buttonColors(containerColor = HextechCyan)) { Text(tr("Confirmar"), color = HextechDarkBg) } },
             dismissButton = { TextButton(onClick = { verificationToConfirm = null }, modifier = Modifier.testTag("cancel_verification_change")) { Text(tr("Cancelar"), color = TextSecondary) } },
             containerColor = HextechSurfaceBg
@@ -1469,17 +1476,17 @@ fun UserDetailManagementDialog(
                                 })
                                 onReloadAll()
                             }
-                        } else if (isMod) {
-                            createUserManagementApprovalRequest(
-                                context = context,
-                                requestType = "SECONDARY_ROLE",
-                                targetUid = uid,
-                                targetName = currentName,
-                                targetEmail = email,
-                                newValue = targetRoleId
-                            ) {
+                        } else if (isMod) managementScope.launch {
+                            runCatching { com.example.data.ModeratorActivityRepository.changeSecondaryRole(uid, targetRoleId) }
+                                .onSuccess {
                                 isChangingSecondaryRole = false
                                 secondaryRoleToConfirm = null
+                                currentSecondaryRole = targetRoleId
+                                onUserUpdated(user + ("secondaryRole" to targetRoleId))
+                                onReloadAll()
+                            }.onFailure {
+                                isChangingSecondaryRole = false
+                                Toast.makeText(context, com.example.util.appTr(it.message ?: "No se pudo cambiar el rol secundario."), Toast.LENGTH_LONG).show()
                             }
                         }
                     },

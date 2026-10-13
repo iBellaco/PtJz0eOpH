@@ -12,7 +12,7 @@ object SupportConversationPolicy {
         val tags = listOf("tag", "type", "category").mapNotNull { (data[it] as? String)?.takeIf(String::isNotBlank) }
         return tags.firstOrNull(::isAdministratorOnly) ?: tags.firstOrNull() ?: fallback
     }
-    fun isClosed(status: String): Boolean = status.trim().uppercase(Locale.ROOT) in setOf("SOLVED", "SOLUCIONADO", "RESUELTO", "CLOSED", "CERRADO", "COMPLETED", "COMPLETADO")
+    fun isClosed(status: String): Boolean = status.trim().uppercase(Locale.ROOT) in setOf("SOLVED", "SOLUCIONADO", "RESUELTO", "CLOSED", "CERRADO", "COMPLETED", "COMPLETADO", "ACCEPTED", "REJECTED")
     fun canView(role: String, tag: String): Boolean = role == "admin" || (role == "moderador" && !isAdministratorOnly(tag))
     fun hasStaffAnswer(messages: List<SupportMessageEntry>): Boolean = messages.any {
         it.senderRole.uppercase(Locale.ROOT) in setOf("SUPPORT", "ADMIN", "MODERATOR", "MODERADOR") &&
