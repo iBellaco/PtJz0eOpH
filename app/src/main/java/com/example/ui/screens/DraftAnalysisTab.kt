@@ -95,14 +95,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.data.WildRiftRepository
-import com.example.data.WildRiftItemsData
-import com.example.data.WildRiftSpellsAndRunes
 import kotlinx.coroutines.launch
 import com.example.model.Champion
 import com.example.util.SubscriptionManager
 import com.example.util.currentAppLanguage
 import com.example.model.DraftAnalysisResult
-import com.example.model.DraftBuildPlan
 import com.example.model.DraftSlot
 import com.example.model.LaneRole
 import com.example.ui.components.ChampionAvatar
@@ -131,52 +128,6 @@ data class PendingSaveData(
     val matchMode: String = if (isLegendaryMatch) "LEGENDARY" else "RANKED",
     val myScore: String = ""
 )
-
-@Composable
-private fun DraftBuildPlanCard(plan: DraftBuildPlan, isForOwnChampion: Boolean) {
-    val lang = currentAppLanguage()
-    val itemNames = { names: List<String> -> names.map { WildRiftItemsData.getItemByName(it)?.getLocalizedName(lang) ?: it } }
-    val runeNames = plan.runes.map { WildRiftSpellsAndRunes.getRuneByName(it)?.getLocalizedName(lang) ?: it }
-    val spellNames = plan.spells.map { WildRiftSpellsAndRunes.getSpellByName(it)?.getLocalizedName(lang) ?: it }
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = 8.dp)
-            .testTag("draft_custom_build"),
-        shape = RoundedCornerShape(10.dp),
-        colors = CardDefaults.cardColors(containerColor = HextechDarkBg.copy(alpha = 0.75f)),
-        border = BorderStroke(1.dp, HextechCyan.copy(alpha = 0.65f))
-    ) {
-        Column(modifier = Modifier.padding(9.dp), verticalArrangement = Arrangement.spacedBy(5.dp)) {
-            Text(
-                text = tr(if (isForOwnChampion) "Build adaptada a tu campeón" else "Build sugerida para este draft"),
-                color = HextechCyan,
-                fontSize = 11.5.sp,
-                fontWeight = FontWeight.Bold
-            )
-            Text(text = tr(plan.title), color = HextechGoldLight, fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
-            if (plan.coreItems.isNotEmpty()) {
-                Text(text = tr("3 objetos principales"), color = TextPrimary, fontSize = 10.5.sp, fontWeight = FontWeight.SemiBold)
-                Text(text = itemNames(plan.coreItems).joinToString(" • "), color = TextPrimary, fontSize = 10.5.sp)
-            }
-            if (plan.situationalItems.isNotEmpty()) {
-                Text(text = tr("Situacionales"), color = TextSecondary, fontSize = 10.5.sp, fontWeight = FontWeight.SemiBold)
-                Text(text = itemNames(plan.situationalItems).joinToString(" • "), color = TextSecondary, fontSize = 10.5.sp)
-            }
-            if (plan.runes.isNotEmpty()) {
-                Text(text = tr("Runas"), color = TextPrimary, fontSize = 10.5.sp, fontWeight = FontWeight.SemiBold)
-                Text(text = runeNames.joinToString(" • "), color = TextPrimary, fontSize = 10.5.sp)
-            }
-            if (plan.spells.isNotEmpty()) {
-                Text(text = tr("Hechizos"), color = TextPrimary, fontSize = 10.5.sp, fontWeight = FontWeight.SemiBold)
-                Text(text = spellNames.joinToString(" + "), color = TextPrimary, fontSize = 10.5.sp)
-            }
-            plan.reasons.take(2).forEach { reason ->
-                Text(text = "• ${tr(reason)}", color = TextMuted, fontSize = 10.sp, lineHeight = 13.sp)
-            }
-        }
-    }
-}
 
 @Composable
 fun DraftAnalysisTab(
@@ -1142,14 +1093,6 @@ fun DraftAnalysisTab(
                                 color = HextechCyan,
                                 fontSize = 12.5.sp,
                                 fontWeight = FontWeight.Bold
-                            )
-                        }
-
-                        val draftPlan = analysis.draftBuild ?: topPick.draftBuild
-                        if (draftPlan != null) {
-                            DraftBuildPlanCard(
-                                plan = draftPlan,
-                                isForOwnChampion = analysis.draftBuild != null
                             )
                         }
 

@@ -5,6 +5,8 @@ import com.example.model.DamageType
 import com.example.model.DraftBuildPlan
 import com.example.model.LaneRole
 
+enum class DraftBuildContext { GENERAL, ONE_VS_ONE, FULL_TEAM }
+
 /**
  * Selects one build for the current draft. Every value returned by this policy is
  * first looked up in the local Coach catalogs, so a missing or stale catalog entry
@@ -85,7 +87,8 @@ object DraftBuildPolicy {
         hasTanks: Boolean,
         hasAssassins: Boolean,
         blindPick: Boolean,
-        lang: String
+        lang: String,
+        context: DraftBuildContext
     ): String {
         val focus = when {
             hasHealing -> if (lang == "pt") "Resposta anti-cura" else "Respuesta anti-curación"
@@ -95,7 +98,14 @@ object DraftBuildPolicy {
             blindPick -> if (lang == "pt") "Plano seguro de Blind Pick" else "Plan seguro de Blind Pick"
             else -> if (lang == "pt") "Plano de composição" else "Plan de composición"
         }
-        return "${champion.getLocalizedName(lang)} • ${role.getLocalizedName(lang)} • $focus"
+        val contextLabel = when (context) {
+            DraftBuildContext.ONE_VS_ONE -> if (lang == "pt") "Confronto 1v1" else "Confronto 1v1"
+            DraftBuildContext.FULL_TEAM -> if (lang == "pt") "Composição completa" else "Composición completa"
+            DraftBuildContext.GENERAL -> ""
+        }
+        return listOf("${champion.getLocalizedName(lang)} • ${role.getLocalizedName(lang)}", contextLabel, focus)
+            .filter { it.isNotBlank() }
+            .joinToString(" • ")
     }
 
     private fun reason(es: String, pt: String, lang: String): String = if (lang == "pt") pt else es
@@ -106,7 +116,8 @@ object DraftBuildPolicy {
         allies: List<Champion>,
         enemies: List<Champion>,
         blindPick: Boolean = false,
-        lang: String = "es"
+        lang: String = "es",
+        context: DraftBuildContext = DraftBuildContext.GENERAL
     ): DraftBuildPlan {
         val ids = enemyIds(enemies)
         val hasHealing = ids.any { it in healingThreats }
@@ -125,7 +136,7 @@ object DraftBuildPolicy {
 
         val situationalCandidates = buildList {
             if (hasHealing) add(if (isMagic) "Morellonomicón" else "Recordatorio letal")
-            if (hasShields && !isMagic) add("Colmillo de serpiente")
+            if (hasShields) add(if (isMagic) "Tridente de Oceánida" else "Colmillo de serpiente")
             if (hasTanks) add(if (isMagic) "Bastón del Vacío" else "Recuerdos de Lord Dominik")
             if (hasAssassins) add(if (isMagic) "Reloj de Arena de Zhonya" else "Ángel de la guarda")
             addAll(champion.situationalItems)
@@ -159,12 +170,12 @@ object DraftBuildPolicy {
             if (hasTanks) add(reason("Incluye penetración contra la vida y resistencias de la primera línea rival.", "Inclui penetração contra a vida e as resistências da linha de frente inimiga.", lang))
             if (hasAssassins) add(reason("Prioriza supervivencia y control del ritmo contra entradas explosivas.", "Prioriza sobrevivência e controle do ritmo contra entradas explosivas.", lang))
             if (allies.any { it.isFrontline } && champion.isRanged) add(reason("Aprovecha la primera línea aliada para jugar a distancia.", "Aproveita a linha de frente aliada para jogar à distância.", lang))
-            if (isMagic && hasShields) add(reason("El catálogo no tiene un anti-escudos AP equivalente; la prioridad sigue siendo el daño y la supervivencia.", "O catálogo não tem um anti-escudos AP equivalente; a prioridade continua sendo dano e sobrevivência.", lang))
+            if (isMagic && hasShields) add(reason("Incluye Tridente de Oceánida, el anti-escudos AP del catálogo, para reducir las barreras antes del daño principal.", "Inclui o Tridente de Oceânida, o anti-escudos AP do catálogo, para reduzir as barreiras antes do dano principal.", lang))
             if (isPhysical && !hasHealing && !hasTanks && !hasAssassins && !hasShields) add(reason("Mantiene el pico de poder propio del campeón y su función principal.", "Mantém o pico de poder do campeão e sua função principal.", lang))
         }
 
         return DraftBuildPlan(
-            title = titleFor(champion, role, hasHealing, hasShields, hasTanks, hasAssassins, blindPick, lang),
+            title = titleFor(champion, role, hasHealing, hasShields, hasTanks, hasAssassins, blindPick, lang, context),
             coreItems = core,
             situationalItems = situational,
             runes = runes,

@@ -12,6 +12,8 @@ import com.example.model.ChampionSkill
 import com.example.model.DamageType
 import com.example.model.DraftAnalysisResult
 import com.example.model.DraftRecommendation
+import com.example.model.DraftBuildPlan
+import com.example.model.DraftBuildPlanBundle
 import com.example.model.LaneRole
 import com.example.model.MapObjectiveItem
 import com.example.model.RuneItem
@@ -20,6 +22,49 @@ import com.example.model.WildRiftItem
 import com.example.model.MetaDataSource
 
 object WildRiftRepository {
+
+    private fun buildPlansForDraft(
+        champion: Champion,
+        role: LaneRole,
+        allies: List<Champion>,
+        enemies: List<Champion>,
+        laneOpponent: Champion?,
+        blindPick: Boolean,
+        lang: String
+    ): DraftBuildPlanBundle {
+        val oneVsOne = laneOpponent?.takeUnless { it.id == "empty" }?.let { opponent ->
+            DraftBuildPolicy.create(
+                champion = champion,
+                role = role,
+                allies = allies,
+                enemies = listOf(opponent),
+                blindPick = false,
+                lang = lang,
+                context = DraftBuildContext.ONE_VS_ONE
+            )
+        }
+        val fullTeam = enemies.takeIf { it.count { enemy -> enemy.id != "empty" } >= 5 }?.let { completeEnemies ->
+            DraftBuildPolicy.create(
+                champion = champion,
+                role = role,
+                allies = allies,
+                enemies = completeEnemies.filter { it.id != "empty" },
+                blindPick = blindPick,
+                lang = lang,
+                context = DraftBuildContext.FULL_TEAM
+            )
+        }
+        val general = DraftBuildPolicy.create(
+            champion = champion,
+            role = role,
+            allies = allies,
+            enemies = enemies.filter { it.id != "empty" },
+            blindPick = blindPick,
+            lang = lang,
+            context = DraftBuildContext.GENERAL
+        )
+        return DraftBuildPlanBundle(oneVsOne = oneVsOne, fullTeam = fullTeam, general = general)
+    }
 
     // Versión canónica oficial de Wild Rift
     var CURRENT_PATCH_VERSION = "Parche 7.3a"
@@ -337,11 +382,12 @@ object WildRiftRepository {
         }.joinToString(" ").ifBlank { t(lang,"Nenhuma vantagem direta confirmada.","No hay una ventaja directa confirmada.") }
         val synergyText = if (synergies.isNotEmpty()) t(lang,"Combina com: ${names(synergies)}.","Combina con: ${names(synergies)}.")
             else t(lang,"Ajuste sua função aos aliados selecionados.","Ajusta tu función a los aliados seleccionados.")
+        val buildPlans = buildPlansForDraft(champ, myRole, activeAllies, activeEnemies, lane, false, lang)
         return DraftRecommendation(champion=champ,estimatedWinrate=champ.winrate.coerceIn(0.0,100.0),
             advantageBadge=badge,tacticalReason=reasons.joinToString(" "),runes=champ.recommendedRunes,
             synergyDetails=synergyText,counterDetails=counterText,
             draftFitScore=DraftScoringPolicy.score(champ,myRole,activeAllies,activeEnemies,lane,false,champions),
-            draftBuild=DraftBuildPolicy.create(champ, myRole, activeAllies, activeEnemies, lang = lang))
+            draftBuild=buildPlans.preferred(), draftBuilds=buildPlans)
     }
 
     fun analyzeDraft(
@@ -460,9 +506,9 @@ object WildRiftRepository {
         val rankedCandidates = compatible.ifEmpty { uniqueCandidates }
         val serverLabel = "Global Meta"
 
-        val draftBuildForMyChampion = activeAllies
+        val draftBuildsForMyChampion = activeAllies
             .firstOrNull { myRole != null && (it.primaryRole == myRole || myRole in it.secondaryRoles) }
-            ?.let { own -> DraftBuildPolicy.create(own, myRole ?: own.primaryRole, activeAllies.filterNot { it.id == own.id }, activeEnemies, blindPick = isFirstPickEffective, lang = lang) }
+            ?.let { own -> buildPlansForDraft(own, myRole ?: own.primaryRole, activeAllies.filterNot { it.id == own.id }, activeEnemies, lane, isFirstPickEffective, lang) }
 
         val recommendations = rankedCandidates.map { champ ->
             val effectiveRole = myRole ?: champ.primaryRole
@@ -526,6 +572,7 @@ object WildRiftRepository {
                     "Posibles enfrentamientos difíciles: ${possibleWeaknesses.joinToString { it.getLocalizedName(lang) }}.")
                     else t(lang,"O rival ainda não foi revelado. Reavalie quando ele selecionar.","El rival aún no se ha revelado. Reevalúa cuando seleccione.")
 
+                val buildPlans = buildPlansForDraft(champ, effectiveRole, activeAllies, activeEnemies, lane, isFirstPickEffective, lang)
                 DraftRecommendation(
                     champion = champ,
                     estimatedWinrate = champ.winrate.coerceIn(0.0,100.0),
@@ -535,7 +582,8 @@ object WildRiftRepository {
                     runes = champ.recommendedRunes,
                     synergyDetails = synergyText,
                     counterDetails = counterText,
-                    draftBuild = DraftBuildPolicy.create(champ, effectiveRole, activeAllies, activeEnemies, blindPick = isFirstPickEffective, lang = lang)
+                    draftBuild = buildPlans.preferred(),
+                    draftBuilds = buildPlans
                 )
             } else {
                 // REACTIVE / COUNTER & SYNERGY DRAFT CALCULATION
@@ -607,6 +655,7 @@ object WildRiftRepository {
                     t(lang, "Confronto parelho", "Enfrentamiento parejo")
                 }
 
+                val buildPlans = buildPlansForDraft(champ, effectiveRole, activeAllies, activeEnemies, lane, isFirstPickEffective, lang)
                 DraftRecommendation(
                     champion = champ,
                     estimatedWinrate = champ.winrate.coerceIn(0.0,100.0),
@@ -616,7 +665,8 @@ object WildRiftRepository {
                     runes = champ.recommendedRunes,
                     synergyDetails = synergyText,
                     counterDetails = counterText,
-                    draftBuild = DraftBuildPolicy.create(champ, effectiveRole, activeAllies, activeEnemies, blindPick = isFirstPickEffective, lang = lang)
+                    draftBuild = buildPlans.preferred(),
+                    draftBuilds = buildPlans
                 )
             }
         }.sortedByDescending { it.draftFitScore }
@@ -643,7 +693,8 @@ object WildRiftRepository {
             isFirstPickMode = isFirstPickEffective,
             bestOverallPick = bestOverall,
             recommendations = recommendations,
-            draftBuild = draftBuildForMyChampion
+            draftBuild = draftBuildsForMyChampion?.preferred(),
+            draftBuilds = draftBuildsForMyChampion ?: DraftBuildPlanBundle()
         )
     }
 }
