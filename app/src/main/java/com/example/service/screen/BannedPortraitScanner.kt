@@ -22,9 +22,9 @@ internal class BannedPortraitScanner {
 
     fun scan(bitmap: Bitmap, context: Context?, nowMs: Long,
                            exclusions: List<Rect> = emptyList(), config: VisionCalibrationConfig = VisionCalibrationConfig(),
-                           pickedIds: Set<String> = emptySet()): Set<String> {
+                           pickedIds: Set<String> = emptySet(), isCurrent: () -> Boolean = { true }): Set<String> {
         val capturedRevision = synchronized(this) {
-            if (bitmap.isRecycled || bitmap.width < bitmap.height || nowMs - lastScanAt < 1500L ||
+            if (!isCurrent() || bitmap.isRecycled || bitmap.width < bitmap.height || nowMs - lastScanAt < 1500L ||
                 slots.all { it.state == BanState.CONFIRMED }) return confirmedIds()
             lastScanAt = nowMs
             revision
@@ -33,7 +33,7 @@ internal class BannedPortraitScanner {
             if (observation.championId in pickedIds) observation.copy(championId=null,empty=false) else observation
         }
         return synchronized(this) {
-            if(revision != capturedRevision) return@synchronized confirmedIds()
+            if(revision != capturedRevision || !isCurrent()) return@synchronized confirmedIds()
             update(observations, bitmap.width.toFloat() / bitmap.height)
             if (config.manualAllyBans || config.manualEnemyBans) slots = slots.map {
                 it.copy(region = it.region?.copy(radius = config.banDiameterRatio / 2f))

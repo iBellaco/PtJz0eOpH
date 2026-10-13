@@ -146,7 +146,7 @@ object DraftVisionScanner {
     val bannedChampionIdsFlow = kotlinx.coroutines.flow.MutableStateFlow<Set<String>>(emptySet())
     val detectedBannedChampionIds: Set<String> get() = bannedChampionIdsFlow.value
     private val banPublicationLock = Any()
-    private var banGeneration = 0L
+    @Volatile private var banGeneration = 0L
 
     internal fun captureBanFrame(bitmap: Bitmap, pickedIds: Set<String>): DraftBanFrame = synchronized(banPublicationLock) {
         banDetectionActiveFlow.value=true
@@ -159,7 +159,7 @@ object DraftVisionScanner {
     internal fun processBanFrame(frame: DraftBanFrame, context: Context, canPublish: () -> Boolean) {
         if(!synchronized(banPublicationLock) { frame.generation==banGeneration } || !canPublish()) return
         val ids = bannedPortraitScanner.scan(frame.bitmap,context,android.os.SystemClock.elapsedRealtime(),
-            frame.masks,frame.config,frame.pickedIds)
+            frame.masks,frame.config,frame.pickedIds) { frame.generation==banGeneration && canPublish() }
         synchronized(banPublicationLock) {
             if(frame.generation!=banGeneration || !canPublish()) return
             banDetectionActiveFlow.value=true
