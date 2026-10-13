@@ -11,7 +11,7 @@
 
 ## Archivos
 
-`app/build.gradle.kts`, `firestore.rules`, `tests/firestore/rules.test.mjs`, `app/src/main/assets/translations_ui_pt.json`, `app/src/main/java/com/example/data/{FeedbackRepository,ModeratorActivityRepository,SupportConversationPolicy,SupportReplyManager}.kt`, `app/src/main/java/com/example/ui/components/{AdminDashboardDialog,AdminDatabaseConsumptionDialog,AdminFeedbackPanel,AdminModeratorActivityDialog,ChampionBuildCreatorDialog,FeedbackReportCard,ModeratorDashboardDialog,PrivacyPolicyDialog,SupportReportDialog,UserDetailManagementDialog}.kt`, `app/src/main/java/com/example/util/{ImageUtils,PrivacyContact}.kt`, `app/src/main/res/values/account_deletion.xml`, `app/src/main/res/values-pt/account_deletion.xml`.
+`app/build.gradle.kts`, `firestore.rules`, `tests/firestore/rules.test.mjs`, `app/src/test/java/com/example/AccountDeletionRenderedTest.kt`, `app/src/main/assets/translations_ui_pt.json`, `app/src/main/java/com/example/data/{FeedbackRepository,ModeratorActivityRepository,SupportConversationPolicy,SupportReplyManager}.kt`, `app/src/main/java/com/example/ui/components/{AdminDashboardDialog,AdminDatabaseConsumptionDialog,AdminFeedbackPanel,AdminModeratorActivityDialog,ChampionBuildCreatorDialog,FeedbackReportCard,ModeratorDashboardDialog,PrivacyPolicyDialog,SupportReportDialog,UserDetailManagementDialog}.kt`, `app/src/main/java/com/example/util/{ImageUtils,PrivacyContact}.kt`, `app/src/main/res/values/account_deletion.xml`, `app/src/main/res/values-pt/account_deletion.xml`.
 
 ## Validación
 
