@@ -224,6 +224,10 @@ try {
     const report = { ...ticket(reportId, 'VERIFICAR'), userId:'other', userEmail:'other@test.invalid',
       conversation:[{ id:'other-initial', senderRole:'USER', senderUid:'other', text:'Verificar', timestampMillis:100 }, { id:'other-system', senderRole:'SYSTEM', senderUid:'', text:greeting, timestampMillis:101 }], photos:['a','b','c'] };
     await assertSucceeds(setDoc(doc(other, 'support_reports', reportId), report));
+    const premature = writeBatch(moderator);
+    premature.update(doc(moderator, 'support_reports', reportId), { status:'ACCEPTED', lastModeratorActionId:'premature-review' });
+    premature.set(doc(moderator, 'moderator_activity/mod/events/premature-review'), { actorUid:'mod', targetUid:'other', reportId, action:'SUPPORT_STATUS', value:'ACCEPTED', createdAt:serverTimestamp() });
+    await assertFails(premature.commit());
     const batch = writeBatch(moderator);
     batch.update(doc(moderator, 'users/other'), { isVerified:true, verified:true, lastModeratorActionId:'other-verified' });
     batch.set(doc(moderator, 'moderator_activity/mod/events/other-verified'), { actorUid:'mod', targetUid:'other', action:'VERIFICATION', value:'true', createdAt:serverTimestamp() });

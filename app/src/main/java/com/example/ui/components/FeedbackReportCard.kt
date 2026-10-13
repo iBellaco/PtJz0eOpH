@@ -438,6 +438,7 @@ internal fun ComprehensiveFeedbackCard(
             }
 
             // CONTROLES DE ESTADO (Requisitos de selección para el usuario/admin)
+            if (itemCategory != "VERIFY") {
             Spacer(modifier = Modifier.height(10.dp))
             Box(
                 modifier = Modifier
@@ -520,6 +521,8 @@ internal fun ComprehensiveFeedbackCard(
                         }
                     }
                 }
+            }
+
             }
 
             // 💬 Sección de Respuesta de Soporte

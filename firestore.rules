@@ -307,6 +307,8 @@ service cloud.firestore {
         return id is string && id.size() > 0 && id != resource.data.get('lastModeratorActionId', '')
           && event.actorUid == request.auth.uid && event.targetUid == resource.data.get('userId', '')
           && event.reportId == reportId
+          && (resource.data.get('tag', '') != 'VERIFICAR' || request.resource.data.get('status', '') != 'ACCEPTED'
+            || getAfter(/databases/$(database)/documents/users/$(resource.data.userId)).data.get('isVerified', false) == true)
           && (request.resource.data.diff(resource.data).affectedKeys().hasAny(['conversation'])
             ? event.action == 'SUPPORT_REPLY' && staffReply()
             : event.action == 'SUPPORT_STATUS' && event.value == request.resource.data.get('status', '')
