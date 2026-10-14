@@ -71,6 +71,22 @@ def main(check=False):
         for name in alternatives:
             if len(situational)>=4: break
             if name not in core+ situational and name in items: situational.append(name)
+
+        # Always keep full items from the local catalog. Add matchup tools that
+        # cover common draft states so users can answer healing, shields and
+        # high-resistance frontlines without falling back to components.
+        catalog_tools=[]
+        if lane=='SUPPORT':
+            catalog_tools += ['Tridente de Oceánida', 'Morellonomicón']
+        elif champ.get('damageType') == 'MAGIC':
+            catalog_tools += ['Tridente de Oceánida', 'Morellonomicón', 'Bastón del Vacío']
+        elif champ.get('damageType') == 'PHYSICAL':
+            catalog_tools += ['Colmillo de serpiente', 'Recuerdos de Lord Dominik']
+        if champ.get('isFrontline') or lane in ('TOP','JUNGLE','SUPPORT'):
+            catalog_tools += ['Malla de espinas', 'Fuerza de la naturaleza']
+        for name in catalog_tools:
+            if name in items and name not in core + situational:
+                situational.append(name)
         build['situationalItems']=situational
         build['creatorName']='Coach (Criterio Táctico)'
         def localized(name):

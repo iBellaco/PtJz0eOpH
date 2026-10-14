@@ -148,23 +148,26 @@ internal fun AdaptiveDetailAlertDialog(
                 .padding(12.dp),
             contentAlignment = androidx.compose.ui.Alignment.Center
         ) {
-            androidx.compose.material3.Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .coachClickable(
-                        interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() },
-                        indication = null,
-                        onClick = {}
-                    ),
-                shape = androidx.compose.foundation.shape.RoundedCornerShape(12.dp),
-                colors = androidx.compose.material3.CardDefaults.cardColors(containerColor = com.example.ui.theme.HextechDarkBg),
-                border = androidx.compose.foundation.BorderStroke(1.5.dp, com.example.ui.theme.HextechGold)
-            ) {
-                Column(
+            BoxWithConstraints(Modifier.fillMaxWidth()) {
+                val dialogMaxHeight = (maxHeight - 24.dp).coerceAtLeast(280.dp)
+                androidx.compose.material3.Card(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(14.dp)
+                        .heightIn(max = dialogMaxHeight)
+                        .coachClickable(
+                            interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() },
+                            indication = null,
+                            onClick = {}
+                        ),
+                    shape = androidx.compose.foundation.shape.RoundedCornerShape(12.dp),
+                    colors = androidx.compose.material3.CardDefaults.cardColors(containerColor = com.example.ui.theme.HextechDarkBg),
+                    border = androidx.compose.foundation.BorderStroke(1.5.dp, com.example.ui.theme.HextechGold)
                 ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(14.dp)
+                    ) {
                     title()
                     Spacer(modifier = Modifier.height(10.dp))
                     Box(modifier = Modifier.weight(1f, fill = false)) {

@@ -56,13 +56,21 @@
       "Calibrador de Sterak",
       "Rencor de Serylda",
       "Ángel de la guarda",
-      "Fauces de Malmortius"
+      "Fauces de Malmortius",
+      "Colmillo de serpiente",
+      "Recuerdos de Lord Dominik",
+      "Malla de espinas",
+      "Fuerza de la naturaleza"
     ],
     "situationalItemsIcons": [
       "file:///android_asset/offline_images/919bc13bc2461bb522082722e34a456d.webp",
       "file:///android_asset/offline_images/672c2f3191c28c8f729dd0b4a67d17b8.webp",
       "file:///android_asset/offline_images/a9e382435db8c5b4d3dada562fa99d42.webp",
-      "file:///android_asset/offline_images/fde3101c1b0cf8002454b75c285cd1fe.webp"
+      "file:///android_asset/offline_images/fde3101c1b0cf8002454b75c285cd1fe.webp",
+      "file:///android_asset/offline_images/9056fe258a17cfe13919ec1b3e222f4a.webp",
+      "file:///android_asset/offline_images/22544e382529f38069d660a78e6df20e.png",
+      "file:///android_asset/offline_images/b68d6e640042b5db9b2c77722c9187e5.webp",
+      "file:///android_asset/offline_images/3e9ae4d161ed330f5ba83c71d2b2a637.webp"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -141,7 +149,11 @@
           "Calibrador de Sterak",
           "Rencor de Serylda",
           "Ángel de la guarda",
-          "Fauces de Malmortius"
+          "Fauces de Malmortius",
+          "Colmillo de serpiente",
+          "Recuerdos de Lord Dominik",
+          "Malla de espinas",
+          "Fuerza de la naturaleza"
         ],
         "bootBase": "Grebas codiciosas",
         "bootUpgrade": "Botas inmortales",
@@ -172,7 +184,11 @@
           "Calibrador de Sterak",
           "Rencor de Serylda",
           "Ángel de la guarda",
-          "Fauces de Malmortius"
+          "Fauces de Malmortius",
+          "Colmillo de serpiente",
+          "Recuerdos de Lord Dominik",
+          "Malla de espinas",
+          "Fuerza de la naturaleza"
         ],
         "bootBase": "Grebas codiciosas",
         "bootUpgrade": "Botas inmortales",
@@ -246,13 +262,15 @@
       "Bastón del Vacío",
       "Corona de la Reina Fragmentada",
       "Morellonomicón",
-      "Impulso Cósmico"
+      "Impulso Cósmico",
+      "Tridente de Oceánida"
     ],
     "situationalItemsIcons": [
       "file:///android_asset/offline_images/a67295fc9713d5227ce1e8037c3e2779.webp",
       "file:///android_asset/offline_images/85536ee1d624a04cb68019aebba6d66e.webp",
       "file:///android_asset/offline_images/0c0fefe5c38af6fc40ea24c5539672b0.webp",
-      "file:///android_asset/offline_images/22da6db8487eb222ee027fc4b6a5fb95.webp"
+      "file:///android_asset/offline_images/22da6db8487eb222ee027fc4b6a5fb95.webp",
+      "file:///android_asset/offline_images/f800a2be044a17e73fe7079161df361a.webp"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -328,7 +346,8 @@
           "Bastón del Vacío",
           "Corona de la Reina Fragmentada",
           "Morellonomicón",
-          "Impulso Cósmico"
+          "Impulso Cósmico",
+          "Tridente de Oceánida"
         ],
         "bootBase": "Botas de maná",
         "bootUpgrade": "Botas del lanzahechizos",
@@ -359,7 +378,10 @@
           "Bastón del Vacío",
           "Corona de la Reina Fragmentada",
           "Morellonomicón",
-          "Impulso Cósmico"
+          "Impulso Cósmico",
+          "Tridente de Oceánida",
+          "Malla de espinas",
+          "Fuerza de la naturaleza"
         ],
         "bootBase": "Botas jonias de la lucidez",
         "bootUpgrade": "Lucidez carmesí",
@@ -433,13 +455,15 @@
       "Perdición del liche",
       "Bastón del Vacío",
       "Corona de la Reina Fragmentada",
-      "Morellonomicón"
+      "Morellonomicón",
+      "Tridente de Oceánida"
     ],
     "situationalItemsIcons": [
       "file:///android_asset/offline_images/49358858c22a8313bd7c2a47b405e5fd.webp",
       "file:///android_asset/offline_images/a67295fc9713d5227ce1e8037c3e2779.webp",
       "file:///android_asset/offline_images/85536ee1d624a04cb68019aebba6d66e.webp",
-      "file:///android_asset/offline_images/0c0fefe5c38af6fc40ea24c5539672b0.webp"
+      "file:///android_asset/offline_images/0c0fefe5c38af6fc40ea24c5539672b0.webp",
+      "file:///android_asset/offline_images/f800a2be044a17e73fe7079161df361a.webp"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -515,7 +539,8 @@
           "Perdición del liche",
           "Bastón del Vacío",
           "Corona de la Reina Fragmentada",
-          "Morellonomicón"
+          "Morellonomicón",
+          "Tridente de Oceánida"
         ],
         "bootBase": "Botas de maná",
         "bootUpgrade": "Botas del lanzahechizos",
@@ -546,7 +571,10 @@
           "Perdición del liche",
           "Bastón del Vacío",
           "Corona de la Reina Fragmentada",
-          "Morellonomicón"
+          "Morellonomicón",
+          "Tridente de Oceánida",
+          "Malla de espinas",
+          "Fuerza de la naturaleza"
         ],
         "bootBase": "Grebas codiciosas",
         "bootUpgrade": "Botas inmortales",
@@ -621,13 +649,15 @@
       "Recuerdos de Lord Dominik",
       "Sanguinaria",
       "Ángel de la guarda",
-      "Fauces de Malmortius"
+      "Fauces de Malmortius",
+      "Colmillo de serpiente"
     ],
     "situationalItemsIcons": [
       "file:///android_asset/offline_images/22544e382529f38069d660a78e6df20e.png",
       "file:///android_asset/offline_images/926efbca7b9ae9f241ddf7cd3c250273.webp",
       "file:///android_asset/offline_images/a9e382435db8c5b4d3dada562fa99d42.webp",
-      "file:///android_asset/offline_images/fde3101c1b0cf8002454b75c285cd1fe.webp"
+      "file:///android_asset/offline_images/fde3101c1b0cf8002454b75c285cd1fe.webp",
+      "file:///android_asset/offline_images/9056fe258a17cfe13919ec1b3e222f4a.webp"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -703,7 +733,8 @@
           "Recuerdos de Lord Dominik",
           "Sanguinaria",
           "Ángel de la guarda",
-          "Fauces de Malmortius"
+          "Fauces de Malmortius",
+          "Colmillo de serpiente"
         ],
         "bootBase": "Grebas de berserker",
         "bootUpgrade": "Grebas de metal",
@@ -734,7 +765,10 @@
           "Recuerdos de Lord Dominik",
           "Sanguinaria",
           "Ángel de la guarda",
-          "Fauces de Malmortius"
+          "Fauces de Malmortius",
+          "Colmillo de serpiente",
+          "Malla de espinas",
+          "Fuerza de la naturaleza"
         ],
         "bootBase": "Grebas de berserker",
         "bootUpgrade": "Grebas de metal",
@@ -765,7 +799,8 @@
           "Recuerdos de Lord Dominik",
           "Sanguinaria",
           "Ángel de la guarda",
-          "Fauces de Malmortius"
+          "Fauces de Malmortius",
+          "Colmillo de serpiente"
         ],
         "bootBase": "Grebas de berserker",
         "bootUpgrade": "Grebas de metal",
@@ -839,13 +874,17 @@
       "Malla de espinas",
       "Fuerza de la naturaleza",
       "Corazón de hielo",
-      "Medallón de los Solari de Hierro"
+      "Medallón de los Solari de Hierro",
+      "Tridente de Oceánida",
+      "Morellonomicón"
     ],
     "situationalItemsIcons": [
       "file:///android_asset/offline_images/b68d6e640042b5db9b2c77722c9187e5.webp",
       "file:///android_asset/offline_images/3e9ae4d161ed330f5ba83c71d2b2a637.webp",
       "file:///android_asset/offline_images/0e47792257d27c16e79a36c746d6c82e.webp",
-      "file:///android_asset/offline_images/90e64403fbbc718c296e56622bc21fac.webp"
+      "file:///android_asset/offline_images/90e64403fbbc718c296e56622bc21fac.webp",
+      "file:///android_asset/offline_images/f800a2be044a17e73fe7079161df361a.webp",
+      "file:///android_asset/offline_images/0c0fefe5c38af6fc40ea24c5539672b0.webp"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -921,7 +960,9 @@
           "Malla de espinas",
           "Fuerza de la naturaleza",
           "Corazón de hielo",
-          "Medallón de los Solari de Hierro"
+          "Medallón de los Solari de Hierro",
+          "Tridente de Oceánida",
+          "Morellonomicón"
         ],
         "bootBase": "Botas blindadas",
         "bootUpgrade": "Avance blindado",
@@ -952,7 +993,10 @@
           "Fuerza de la naturaleza",
           "Presagio de Randuin",
           "Armadura de Warmog",
-          "Corazón de hielo"
+          "Corazón de hielo",
+          "Tridente de Oceánida",
+          "Morellonomicón",
+          "Bastón del Vacío"
         ],
         "bootBase": "Botas blindadas",
         "bootUpgrade": "Avance blindado",
@@ -1026,13 +1070,21 @@
       "Calibrador de Sterak",
       "Rencor de Serylda",
       "Ángel de la guarda",
-      "Fauces de Malmortius"
+      "Fauces de Malmortius",
+      "Colmillo de serpiente",
+      "Recuerdos de Lord Dominik",
+      "Malla de espinas",
+      "Fuerza de la naturaleza"
     ],
     "situationalItemsIcons": [
       "file:///android_asset/offline_images/919bc13bc2461bb522082722e34a456d.webp",
       "file:///android_asset/offline_images/672c2f3191c28c8f729dd0b4a67d17b8.webp",
       "file:///android_asset/offline_images/a9e382435db8c5b4d3dada562fa99d42.webp",
-      "file:///android_asset/offline_images/fde3101c1b0cf8002454b75c285cd1fe.webp"
+      "file:///android_asset/offline_images/fde3101c1b0cf8002454b75c285cd1fe.webp",
+      "file:///android_asset/offline_images/9056fe258a17cfe13919ec1b3e222f4a.webp",
+      "file:///android_asset/offline_images/22544e382529f38069d660a78e6df20e.png",
+      "file:///android_asset/offline_images/b68d6e640042b5db9b2c77722c9187e5.webp",
+      "file:///android_asset/offline_images/3e9ae4d161ed330f5ba83c71d2b2a637.webp"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -1108,7 +1160,11 @@
           "Calibrador de Sterak",
           "Rencor de Serylda",
           "Ángel de la guarda",
-          "Fauces de Malmortius"
+          "Fauces de Malmortius",
+          "Colmillo de serpiente",
+          "Recuerdos de Lord Dominik",
+          "Malla de espinas",
+          "Fuerza de la naturaleza"
         ],
         "bootBase": "Grebas codiciosas",
         "bootUpgrade": "Botas inmortales",
@@ -1139,7 +1195,11 @@
           "Calibrador de Sterak",
           "Rencor de Serylda",
           "Ángel de la guarda",
-          "Fauces de Malmortius"
+          "Fauces de Malmortius",
+          "Colmillo de serpiente",
+          "Recuerdos de Lord Dominik",
+          "Malla de espinas",
+          "Fuerza de la naturaleza"
         ],
         "bootBase": "Grebas codiciosas",
         "bootUpgrade": "Botas inmortales",
@@ -1213,13 +1273,21 @@
       "Fuerza de la naturaleza",
       "Corona abrasadora",
       "Máscara abisal",
-      "Corazón de acero"
+      "Corazón de acero",
+      "Tridente de Oceánida",
+      "Morellonomicón",
+      "Bastón del Vacío",
+      "Malla de espinas"
     ],
     "situationalItemsIcons": [
       "file:///android_asset/offline_images/3e9ae4d161ed330f5ba83c71d2b2a637.webp",
       "file:///android_asset/offline_images/8c585684ae11f4bd1818521dc47bcc3d.webp",
       "file:///android_asset/offline_images/c08d478db157d63bf53cc63e98254f91.webp",
-      "file:///android_asset/offline_images/06c122abcc307025bf2aacd5667ddaad.webp"
+      "file:///android_asset/offline_images/06c122abcc307025bf2aacd5667ddaad.webp",
+      "file:///android_asset/offline_images/f800a2be044a17e73fe7079161df361a.webp",
+      "file:///android_asset/offline_images/0c0fefe5c38af6fc40ea24c5539672b0.webp",
+      "file:///android_asset/offline_images/a67295fc9713d5227ce1e8037c3e2779.webp",
+      "file:///android_asset/offline_images/b68d6e640042b5db9b2c77722c9187e5.webp"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -1295,7 +1363,11 @@
           "Fuerza de la naturaleza",
           "Corona abrasadora",
           "Máscara abisal",
-          "Corazón de acero"
+          "Corazón de acero",
+          "Tridente de Oceánida",
+          "Morellonomicón",
+          "Bastón del Vacío",
+          "Malla de espinas"
         ],
         "bootBase": "Botas blindadas",
         "bootUpgrade": "Avance blindado",
@@ -1326,7 +1398,9 @@
           "Malla de espinas",
           "Fuerza de la naturaleza",
           "Velo del amanecer",
-          "Medallón de los Solari de Hierro"
+          "Medallón de los Solari de Hierro",
+          "Tridente de Oceánida",
+          "Morellonomicón"
         ],
         "bootBase": "Botas blindadas",
         "bootUpgrade": "Avance blindado",
@@ -1400,13 +1474,15 @@
       "Bastón del Vacío",
       "Corona de la Reina Fragmentada",
       "Tormento de Liandry",
-      "Morellonomicón"
+      "Morellonomicón",
+      "Tridente de Oceánida"
     ],
     "situationalItemsIcons": [
       "file:///android_asset/offline_images/a67295fc9713d5227ce1e8037c3e2779.webp",
       "file:///android_asset/offline_images/85536ee1d624a04cb68019aebba6d66e.webp",
       "file:///android_asset/offline_images/206e3eef90b44d6334533e14005a29b6.webp",
-      "file:///android_asset/offline_images/0c0fefe5c38af6fc40ea24c5539672b0.webp"
+      "file:///android_asset/offline_images/0c0fefe5c38af6fc40ea24c5539672b0.webp",
+      "file:///android_asset/offline_images/f800a2be044a17e73fe7079161df361a.webp"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -1482,7 +1558,8 @@
           "Bastón del Vacío",
           "Corona de la Reina Fragmentada",
           "Tormento de Liandry",
-          "Morellonomicón"
+          "Morellonomicón",
+          "Tridente de Oceánida"
         ],
         "bootBase": "Botas de maná",
         "bootUpgrade": "Botas del lanzahechizos",
@@ -1513,7 +1590,10 @@
           "Bastón del Vacío",
           "Corona de la Reina Fragmentada",
           "Tormento de Liandry",
-          "Morellonomicón"
+          "Morellonomicón",
+          "Tridente de Oceánida",
+          "Malla de espinas",
+          "Fuerza de la naturaleza"
         ],
         "bootBase": "Botas jonias de la lucidez",
         "bootUpgrade": "Lucidez carmesí",
@@ -1587,13 +1667,15 @@
       "Recuerdos de Lord Dominik",
       "Sanguinaria",
       "Ángel de la guarda",
-      "Fauces de Malmortius"
+      "Fauces de Malmortius",
+      "Colmillo de serpiente"
     ],
     "situationalItemsIcons": [
       "file:///android_asset/offline_images/22544e382529f38069d660a78e6df20e.png",
       "file:///android_asset/offline_images/926efbca7b9ae9f241ddf7cd3c250273.webp",
       "file:///android_asset/offline_images/a9e382435db8c5b4d3dada562fa99d42.webp",
-      "file:///android_asset/offline_images/fde3101c1b0cf8002454b75c285cd1fe.webp"
+      "file:///android_asset/offline_images/fde3101c1b0cf8002454b75c285cd1fe.webp",
+      "file:///android_asset/offline_images/9056fe258a17cfe13919ec1b3e222f4a.webp"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -1669,7 +1751,8 @@
           "Recuerdos de Lord Dominik",
           "Sanguinaria",
           "Ángel de la guarda",
-          "Fauces de Malmortius"
+          "Fauces de Malmortius",
+          "Colmillo de serpiente"
         ],
         "bootBase": "Grebas de berserker",
         "bootUpgrade": "Grebas de metal",
@@ -1700,7 +1783,11 @@
           "Recuerdos de Lord Dominik",
           "Sanguinaria",
           "Ángel de la guarda",
-          "Fauces de Malmortius"
+          "Fauces de Malmortius",
+          "Tridente de Oceánida",
+          "Morellonomicón",
+          "Malla de espinas",
+          "Fuerza de la naturaleza"
         ],
         "bootBase": "Botas jonias de la lucidez",
         "bootUpgrade": "Lucidez carmesí",
@@ -1774,13 +1861,15 @@
       "Bastón del Vacío",
       "Corona de la Reina Fragmentada",
       "Impulso Cósmico",
-      "Morellonomicón"
+      "Morellonomicón",
+      "Tridente de Oceánida"
     ],
     "situationalItemsIcons": [
       "file:///android_asset/offline_images/a67295fc9713d5227ce1e8037c3e2779.webp",
       "file:///android_asset/offline_images/85536ee1d624a04cb68019aebba6d66e.webp",
       "file:///android_asset/offline_images/22da6db8487eb222ee027fc4b6a5fb95.webp",
-      "file:///android_asset/offline_images/0c0fefe5c38af6fc40ea24c5539672b0.webp"
+      "file:///android_asset/offline_images/0c0fefe5c38af6fc40ea24c5539672b0.webp",
+      "file:///android_asset/offline_images/f800a2be044a17e73fe7079161df361a.webp"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -1856,7 +1945,8 @@
           "Bastón del Vacío",
           "Corona de la Reina Fragmentada",
           "Impulso Cósmico",
-          "Morellonomicón"
+          "Morellonomicón",
+          "Tridente de Oceánida"
         ],
         "bootBase": "Botas de maná",
         "bootUpgrade": "Botas del lanzahechizos",
@@ -1887,7 +1977,10 @@
           "Bastón del Vacío",
           "Corona de la Reina Fragmentada",
           "Impulso Cósmico",
-          "Morellonomicón"
+          "Morellonomicón",
+          "Tridente de Oceánida",
+          "Malla de espinas",
+          "Fuerza de la naturaleza"
         ],
         "bootBase": "Botas de maná",
         "bootUpgrade": "Botas del lanzahechizos",
@@ -1961,13 +2054,15 @@
       "Bastón del Vacío",
       "Corona de la Reina Fragmentada",
       "Impulso Cósmico",
-      "Morellonomicón"
+      "Morellonomicón",
+      "Tridente de Oceánida"
     ],
     "situationalItemsIcons": [
       "file:///android_asset/offline_images/a67295fc9713d5227ce1e8037c3e2779.webp",
       "file:///android_asset/offline_images/85536ee1d624a04cb68019aebba6d66e.webp",
       "file:///android_asset/offline_images/22da6db8487eb222ee027fc4b6a5fb95.webp",
-      "file:///android_asset/offline_images/0c0fefe5c38af6fc40ea24c5539672b0.webp"
+      "file:///android_asset/offline_images/0c0fefe5c38af6fc40ea24c5539672b0.webp",
+      "file:///android_asset/offline_images/f800a2be044a17e73fe7079161df361a.webp"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -2043,7 +2138,8 @@
           "Bastón del Vacío",
           "Corona de la Reina Fragmentada",
           "Impulso Cósmico",
-          "Morellonomicón"
+          "Morellonomicón",
+          "Tridente de Oceánida"
         ],
         "bootBase": "Botas de maná",
         "bootUpgrade": "Botas del lanzahechizos",
@@ -2074,7 +2170,10 @@
           "Bastón del Vacío",
           "Corona de la Reina Fragmentada",
           "Impulso Cósmico",
-          "Morellonomicón"
+          "Morellonomicón",
+          "Tridente de Oceánida",
+          "Malla de espinas",
+          "Fuerza de la naturaleza"
         ],
         "bootBase": "Botas de maná",
         "bootUpgrade": "Botas del lanzahechizos",
@@ -2148,13 +2247,17 @@
       "Fuerza de la naturaleza",
       "Malla de espinas",
       "Medallón de los Solari de Hierro",
-      "Mandato imperial"
+      "Mandato imperial",
+      "Tridente de Oceánida",
+      "Morellonomicón"
     ],
     "situationalItemsIcons": [
       "file:///android_asset/offline_images/3e9ae4d161ed330f5ba83c71d2b2a637.webp",
       "file:///android_asset/offline_images/b68d6e640042b5db9b2c77722c9187e5.webp",
       "file:///android_asset/offline_images/90e64403fbbc718c296e56622bc21fac.webp",
-      "file:///android_asset/offline_images/516c29e1d0b53fc59197feeb6201c965.webp"
+      "file:///android_asset/offline_images/516c29e1d0b53fc59197feeb6201c965.webp",
+      "file:///android_asset/offline_images/f800a2be044a17e73fe7079161df361a.webp",
+      "file:///android_asset/offline_images/0c0fefe5c38af6fc40ea24c5539672b0.webp"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -2230,7 +2333,9 @@
           "Fuerza de la naturaleza",
           "Malla de espinas",
           "Medallón de los Solari de Hierro",
-          "Mandato imperial"
+          "Mandato imperial",
+          "Tridente de Oceánida",
+          "Morellonomicón"
         ],
         "bootBase": "Botas blindadas",
         "bootUpgrade": "Avance blindado",
@@ -2261,7 +2366,9 @@
           "Eco de Luden",
           "Orbe infinito",
           "Sombrero mortal de Rabadon",
-          "Bastón del Vacío"
+          "Bastón del Vacío",
+          "Tridente de Oceánida",
+          "Morellonomicón"
         ],
         "bootBase": "Botas de maná",
         "bootUpgrade": "Botas del lanzahechizos",
@@ -2335,13 +2442,17 @@
       "Malla de espinas",
       "Fuerza de la naturaleza",
       "Corazón de hielo",
-      "Medallón de los Solari de Hierro"
+      "Medallón de los Solari de Hierro",
+      "Tridente de Oceánida",
+      "Morellonomicón"
     ],
     "situationalItemsIcons": [
       "file:///android_asset/offline_images/b68d6e640042b5db9b2c77722c9187e5.webp",
       "file:///android_asset/offline_images/3e9ae4d161ed330f5ba83c71d2b2a637.webp",
       "file:///android_asset/offline_images/0e47792257d27c16e79a36c746d6c82e.webp",
-      "file:///android_asset/offline_images/90e64403fbbc718c296e56622bc21fac.webp"
+      "file:///android_asset/offline_images/90e64403fbbc718c296e56622bc21fac.webp",
+      "file:///android_asset/offline_images/f800a2be044a17e73fe7079161df361a.webp",
+      "file:///android_asset/offline_images/0c0fefe5c38af6fc40ea24c5539672b0.webp"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -2417,7 +2528,9 @@
           "Malla de espinas",
           "Fuerza de la naturaleza",
           "Corazón de hielo",
-          "Medallón de los Solari de Hierro"
+          "Medallón de los Solari de Hierro",
+          "Tridente de Oceánida",
+          "Morellonomicón"
         ],
         "bootBase": "Botas blindadas",
         "bootUpgrade": "Avance blindado",
@@ -2448,7 +2561,10 @@
           "Fuerza de la naturaleza",
           "Presagio de Randuin",
           "Armadura de Warmog",
-          "Corazón de hielo"
+          "Corazón de hielo",
+          "Tridente de Oceánida",
+          "Morellonomicón",
+          "Bastón del Vacío"
         ],
         "bootBase": "Botas blindadas",
         "bootUpgrade": "Avance blindado",
@@ -2523,13 +2639,19 @@
       "Morellonomicón",
       "Orbe infinito",
       "Sombrero mortal de Rabadon",
-      "Bastón del Vacío"
+      "Bastón del Vacío",
+      "Tridente de Oceánida",
+      "Malla de espinas",
+      "Fuerza de la naturaleza"
     ],
     "situationalItemsIcons": [
       "file:///android_asset/offline_images/0c0fefe5c38af6fc40ea24c5539672b0.webp",
       "file:///android_asset/offline_images/026213a99027f6878f2e67427e6a2445.webp",
       "file:///android_asset/offline_images/3e238358c02090087ae206fc310ad98a.webp",
-      "file:///android_asset/offline_images/a67295fc9713d5227ce1e8037c3e2779.webp"
+      "file:///android_asset/offline_images/a67295fc9713d5227ce1e8037c3e2779.webp",
+      "file:///android_asset/offline_images/f800a2be044a17e73fe7079161df361a.webp",
+      "file:///android_asset/offline_images/b68d6e640042b5db9b2c77722c9187e5.webp",
+      "file:///android_asset/offline_images/3e9ae4d161ed330f5ba83c71d2b2a637.webp"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -2605,7 +2727,10 @@
           "Morellonomicón",
           "Orbe infinito",
           "Sombrero mortal de Rabadon",
-          "Bastón del Vacío"
+          "Bastón del Vacío",
+          "Tridente de Oceánida",
+          "Malla de espinas",
+          "Fuerza de la naturaleza"
         ],
         "bootBase": "Botas jonias de la lucidez",
         "bootUpgrade": "Lucidez carmesí",
@@ -2636,7 +2761,8 @@
           "Orbe infinito",
           "Sombrero mortal de Rabadon",
           "Bastón del Vacío",
-          "Eco de Luden"
+          "Eco de Luden",
+          "Tridente de Oceánida"
         ],
         "bootBase": "Botas de maná",
         "bootUpgrade": "Botas del lanzahechizos",
@@ -2667,7 +2793,10 @@
           "Orbe infinito",
           "Sombrero mortal de Rabadon",
           "Bastón del Vacío",
-          "Eco de Luden"
+          "Eco de Luden",
+          "Tridente de Oceánida",
+          "Malla de espinas",
+          "Fuerza de la naturaleza"
         ],
         "bootBase": "Botas de maná",
         "bootUpgrade": "Botas del lanzahechizos",
@@ -2741,13 +2870,17 @@
       "Malla de espinas",
       "Fuerza de la naturaleza",
       "Corazón de hielo",
-      "Medallón de los Solari de Hierro"
+      "Medallón de los Solari de Hierro",
+      "Tridente de Oceánida",
+      "Morellonomicón"
     ],
     "situationalItemsIcons": [
       "file:///android_asset/offline_images/b68d6e640042b5db9b2c77722c9187e5.webp",
       "file:///android_asset/offline_images/3e9ae4d161ed330f5ba83c71d2b2a637.webp",
       "file:///android_asset/offline_images/0e47792257d27c16e79a36c746d6c82e.webp",
-      "file:///android_asset/offline_images/90e64403fbbc718c296e56622bc21fac.webp"
+      "file:///android_asset/offline_images/90e64403fbbc718c296e56622bc21fac.webp",
+      "file:///android_asset/offline_images/f800a2be044a17e73fe7079161df361a.webp",
+      "file:///android_asset/offline_images/0c0fefe5c38af6fc40ea24c5539672b0.webp"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -2823,7 +2956,9 @@
           "Malla de espinas",
           "Fuerza de la naturaleza",
           "Corazón de hielo",
-          "Medallón de los Solari de Hierro"
+          "Medallón de los Solari de Hierro",
+          "Tridente de Oceánida",
+          "Morellonomicón"
         ],
         "bootBase": "Botas blindadas",
         "bootUpgrade": "Avance blindado",
@@ -2854,7 +2989,10 @@
           "Fuerza de la naturaleza",
           "Presagio de Randuin",
           "Armadura de Warmog",
-          "Corazón de hielo"
+          "Corazón de hielo",
+          "Tridente de Oceánida",
+          "Morellonomicón",
+          "Bastón del Vacío"
         ],
         "bootBase": "Botas blindadas",
         "bootUpgrade": "Avance blindado",
@@ -2928,13 +3066,15 @@
       "Sanguinaria",
       "Ángel de la guarda",
       "Arcoescudo Inmortal",
-      "Recaudadora"
+      "Recaudadora",
+      "Colmillo de serpiente"
     ],
     "situationalItemsIcons": [
       "file:///android_asset/offline_images/926efbca7b9ae9f241ddf7cd3c250273.webp",
       "file:///android_asset/offline_images/a9e382435db8c5b4d3dada562fa99d42.webp",
       "file:///android_asset/offline_images/immortal_shieldbow.webp",
-      "file:///android_asset/offline_images/c341133522f4f2bf164b1b823a13249c.webp"
+      "file:///android_asset/offline_images/c341133522f4f2bf164b1b823a13249c.webp",
+      "file:///android_asset/offline_images/9056fe258a17cfe13919ec1b3e222f4a.webp"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -3010,7 +3150,8 @@
           "Sanguinaria",
           "Ángel de la guarda",
           "Arcoescudo Inmortal",
-          "Recaudadora"
+          "Recaudadora",
+          "Colmillo de serpiente"
         ],
         "bootBase": "Grebas de berserker",
         "bootUpgrade": "Grebas de metal",
@@ -3041,7 +3182,8 @@
           "Sanguinaria",
           "Ángel de la guarda",
           "Arcoescudo Inmortal",
-          "Recaudadora"
+          "Recaudadora",
+          "Colmillo de serpiente"
         ],
         "bootBase": "Botas dinámicas",
         "bootUpgrade": "Botas quebrantarmaduras",
@@ -3115,13 +3257,19 @@
       "Rompecascos",
       "Ángel de la guarda",
       "Malla de espinas",
-      "Fauces de Malmortius"
+      "Fauces de Malmortius",
+      "Colmillo de serpiente",
+      "Recuerdos de Lord Dominik",
+      "Fuerza de la naturaleza"
     ],
     "situationalItemsIcons": [
       "file:///android_asset/offline_images/0678b476a01b8e1b5fa9754e8858ee93.png",
       "file:///android_asset/offline_images/a9e382435db8c5b4d3dada562fa99d42.webp",
       "file:///android_asset/offline_images/b68d6e640042b5db9b2c77722c9187e5.webp",
-      "file:///android_asset/offline_images/fde3101c1b0cf8002454b75c285cd1fe.webp"
+      "file:///android_asset/offline_images/fde3101c1b0cf8002454b75c285cd1fe.webp",
+      "file:///android_asset/offline_images/9056fe258a17cfe13919ec1b3e222f4a.webp",
+      "file:///android_asset/offline_images/22544e382529f38069d660a78e6df20e.png",
+      "file:///android_asset/offline_images/3e9ae4d161ed330f5ba83c71d2b2a637.webp"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -3197,7 +3345,10 @@
           "Rompecascos",
           "Ángel de la guarda",
           "Malla de espinas",
-          "Fauces de Malmortius"
+          "Fauces de Malmortius",
+          "Colmillo de serpiente",
+          "Recuerdos de Lord Dominik",
+          "Fuerza de la naturaleza"
         ],
         "bootBase": "Grebas codiciosas",
         "bootUpgrade": "Botas inmortales",
@@ -3228,7 +3379,10 @@
           "Rompecascos",
           "Ángel de la guarda",
           "Malla de espinas",
-          "Fauces de Malmortius"
+          "Fauces de Malmortius",
+          "Colmillo de serpiente",
+          "Recuerdos de Lord Dominik",
+          "Fuerza de la naturaleza"
         ],
         "bootBase": "Grebas codiciosas",
         "bootUpgrade": "Botas inmortales",
@@ -3302,13 +3456,19 @@
       "Fuerza de la naturaleza",
       "Presagio de Randuin",
       "Armadura de Warmog",
-      "Coraza dual purpúrea"
+      "Coraza dual purpúrea",
+      "Tridente de Oceánida",
+      "Morellonomicón",
+      "Bastón del Vacío"
     ],
     "situationalItemsIcons": [
       "file:///android_asset/offline_images/3e9ae4d161ed330f5ba83c71d2b2a637.webp",
       "file:///android_asset/offline_images/a01f7976459d788cbb0a763155cb39b8.webp",
       "file:///android_asset/offline_images/f141ec3263251399bc6226e325c1d998.webp",
-      "file:///android_asset/offline_images/amaranths_twinguard.webp"
+      "file:///android_asset/offline_images/amaranths_twinguard.webp",
+      "file:///android_asset/offline_images/f800a2be044a17e73fe7079161df361a.webp",
+      "file:///android_asset/offline_images/0c0fefe5c38af6fc40ea24c5539672b0.webp",
+      "file:///android_asset/offline_images/a67295fc9713d5227ce1e8037c3e2779.webp"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -3384,7 +3544,10 @@
           "Fuerza de la naturaleza",
           "Presagio de Randuin",
           "Armadura de Warmog",
-          "Coraza dual purpúrea"
+          "Coraza dual purpúrea",
+          "Tridente de Oceánida",
+          "Morellonomicón",
+          "Bastón del Vacío"
         ],
         "bootBase": "Botas blindadas",
         "bootUpgrade": "Avance blindado",
@@ -3415,7 +3578,10 @@
           "Fuerza de la naturaleza",
           "Presagio de Randuin",
           "Armadura de Warmog",
-          "Coraza dual purpúrea"
+          "Coraza dual purpúrea",
+          "Tridente de Oceánida",
+          "Morellonomicón",
+          "Bastón del Vacío"
         ],
         "bootBase": "Botas blindadas",
         "bootUpgrade": "Avance blindado",
@@ -3676,13 +3842,17 @@
       "Coraza del muerto",
       "Fuerza de la naturaleza",
       "Malla de espinas",
-      "Ángel de la guarda"
+      "Ángel de la guarda",
+      "Colmillo de serpiente",
+      "Recuerdos de Lord Dominik"
     ],
     "situationalItemsIcons": [
       "file:///android_asset/offline_images/856d8989c3c87e50fc7b8e997f9facbc.webp",
       "file:///android_asset/offline_images/3e9ae4d161ed330f5ba83c71d2b2a637.webp",
       "file:///android_asset/offline_images/b68d6e640042b5db9b2c77722c9187e5.webp",
-      "file:///android_asset/offline_images/a9e382435db8c5b4d3dada562fa99d42.webp"
+      "file:///android_asset/offline_images/a9e382435db8c5b4d3dada562fa99d42.webp",
+      "file:///android_asset/offline_images/9056fe258a17cfe13919ec1b3e222f4a.webp",
+      "file:///android_asset/offline_images/22544e382529f38069d660a78e6df20e.png"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -3758,7 +3928,9 @@
           "Coraza del muerto",
           "Fuerza de la naturaleza",
           "Malla de espinas",
-          "Ángel de la guarda"
+          "Ángel de la guarda",
+          "Colmillo de serpiente",
+          "Recuerdos de Lord Dominik"
         ],
         "bootBase": "Grebas codiciosas",
         "bootUpgrade": "Botas inmortales",
@@ -3789,7 +3961,9 @@
           "Coraza del muerto",
           "Fuerza de la naturaleza",
           "Malla de espinas",
-          "Ángel de la guarda"
+          "Ángel de la guarda",
+          "Colmillo de serpiente",
+          "Recuerdos de Lord Dominik"
         ],
         "bootBase": "Grebas codiciosas",
         "bootUpgrade": "Botas inmortales",
@@ -3863,13 +4037,19 @@
       "Bastón del Vacío",
       "Corona de la Reina Fragmentada",
       "Tormento de Liandry",
-      "Morellonomicón"
+      "Morellonomicón",
+      "Tridente de Oceánida",
+      "Malla de espinas",
+      "Fuerza de la naturaleza"
     ],
     "situationalItemsIcons": [
       "file:///android_asset/offline_images/a67295fc9713d5227ce1e8037c3e2779.webp",
       "file:///android_asset/offline_images/85536ee1d624a04cb68019aebba6d66e.webp",
       "file:///android_asset/offline_images/206e3eef90b44d6334533e14005a29b6.webp",
-      "file:///android_asset/offline_images/0c0fefe5c38af6fc40ea24c5539672b0.webp"
+      "file:///android_asset/offline_images/0c0fefe5c38af6fc40ea24c5539672b0.webp",
+      "file:///android_asset/offline_images/f800a2be044a17e73fe7079161df361a.webp",
+      "file:///android_asset/offline_images/b68d6e640042b5db9b2c77722c9187e5.webp",
+      "file:///android_asset/offline_images/3e9ae4d161ed330f5ba83c71d2b2a637.webp"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -3945,7 +4125,10 @@
           "Bastón del Vacío",
           "Corona de la Reina Fragmentada",
           "Tormento de Liandry",
-          "Morellonomicón"
+          "Morellonomicón",
+          "Tridente de Oceánida",
+          "Malla de espinas",
+          "Fuerza de la naturaleza"
         ],
         "bootBase": "Grebas codiciosas",
         "bootUpgrade": "Botas inmortales",
@@ -3976,7 +4159,10 @@
           "Bastón del Vacío",
           "Corona de la Reina Fragmentada",
           "Tormento de Liandry",
-          "Morellonomicón"
+          "Morellonomicón",
+          "Tridente de Oceánida",
+          "Malla de espinas",
+          "Fuerza de la naturaleza"
         ],
         "bootBase": "Botas de maná",
         "bootUpgrade": "Botas del lanzahechizos",
@@ -4050,13 +4236,19 @@
       "Fuerza de la naturaleza",
       "Armadura de Warmog",
       "Presagio de Randuin",
-      "Hidra titánica"
+      "Hidra titánica",
+      "Tridente de Oceánida",
+      "Morellonomicón",
+      "Bastón del Vacío"
     ],
     "situationalItemsIcons": [
       "file:///android_asset/offline_images/3e9ae4d161ed330f5ba83c71d2b2a637.webp",
       "file:///android_asset/offline_images/f141ec3263251399bc6226e325c1d998.webp",
       "file:///android_asset/offline_images/a01f7976459d788cbb0a763155cb39b8.webp",
-      "file:///android_asset/offline_images/a587350906b08db7aacfec025271682b.webp"
+      "file:///android_asset/offline_images/a587350906b08db7aacfec025271682b.webp",
+      "file:///android_asset/offline_images/f800a2be044a17e73fe7079161df361a.webp",
+      "file:///android_asset/offline_images/0c0fefe5c38af6fc40ea24c5539672b0.webp",
+      "file:///android_asset/offline_images/a67295fc9713d5227ce1e8037c3e2779.webp"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -4132,7 +4324,10 @@
           "Fuerza de la naturaleza",
           "Armadura de Warmog",
           "Presagio de Randuin",
-          "Hidra titánica"
+          "Hidra titánica",
+          "Tridente de Oceánida",
+          "Morellonomicón",
+          "Bastón del Vacío"
         ],
         "bootBase": "Botas blindadas",
         "bootUpgrade": "Avance blindado",
@@ -4163,7 +4358,10 @@
           "Fuerza de la naturaleza",
           "Armadura de Warmog",
           "Presagio de Randuin",
-          "Hidra titánica"
+          "Hidra titánica",
+          "Tridente de Oceánida",
+          "Morellonomicón",
+          "Bastón del Vacío"
         ],
         "bootBase": "Botas blindadas",
         "bootUpgrade": "Avance blindado",
@@ -4237,13 +4435,15 @@
       "Recuerdos de Lord Dominik",
       "Cañón de Fuego Rápido",
       "Ángel de la guarda",
-      "Arcoescudo Inmortal"
+      "Arcoescudo Inmortal",
+      "Colmillo de serpiente"
     ],
     "situationalItemsIcons": [
       "file:///android_asset/offline_images/22544e382529f38069d660a78e6df20e.png",
       "file:///android_asset/offline_images/rapid_firecannon.webp",
       "file:///android_asset/offline_images/a9e382435db8c5b4d3dada562fa99d42.webp",
-      "file:///android_asset/offline_images/immortal_shieldbow.webp"
+      "file:///android_asset/offline_images/immortal_shieldbow.webp",
+      "file:///android_asset/offline_images/9056fe258a17cfe13919ec1b3e222f4a.webp"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -4319,7 +4519,8 @@
           "Recuerdos de Lord Dominik",
           "Cañón de Fuego Rápido",
           "Ángel de la guarda",
-          "Arcoescudo Inmortal"
+          "Arcoescudo Inmortal",
+          "Colmillo de serpiente"
         ],
         "bootBase": "Grebas de berserker",
         "bootUpgrade": "Grebas de metal",
@@ -4350,7 +4551,8 @@
           "Recuerdos de Lord Dominik",
           "Cañón de Fuego Rápido",
           "Ángel de la guarda",
-          "Arcoescudo Inmortal"
+          "Arcoescudo Inmortal",
+          "Colmillo de serpiente"
         ],
         "bootBase": "Botas dinámicas",
         "bootUpgrade": "Botas quebrantarmaduras",
@@ -4424,13 +4626,19 @@
       "Bastón del Vacío",
       "Corona de la Reina Fragmentada",
       "Morellonomicón",
-      "Diente de Nashor"
+      "Diente de Nashor",
+      "Tridente de Oceánida",
+      "Malla de espinas",
+      "Fuerza de la naturaleza"
     ],
     "situationalItemsIcons": [
       "file:///android_asset/offline_images/a67295fc9713d5227ce1e8037c3e2779.webp",
       "file:///android_asset/offline_images/85536ee1d624a04cb68019aebba6d66e.webp",
       "file:///android_asset/offline_images/0c0fefe5c38af6fc40ea24c5539672b0.webp",
-      "file:///android_asset/offline_images/721c3fa5d5bbda08bcc8de214d0ff715.webp"
+      "file:///android_asset/offline_images/721c3fa5d5bbda08bcc8de214d0ff715.webp",
+      "file:///android_asset/offline_images/f800a2be044a17e73fe7079161df361a.webp",
+      "file:///android_asset/offline_images/b68d6e640042b5db9b2c77722c9187e5.webp",
+      "file:///android_asset/offline_images/3e9ae4d161ed330f5ba83c71d2b2a637.webp"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -4506,7 +4714,10 @@
           "Bastón del Vacío",
           "Corona de la Reina Fragmentada",
           "Morellonomicón",
-          "Diente de Nashor"
+          "Diente de Nashor",
+          "Tridente de Oceánida",
+          "Malla de espinas",
+          "Fuerza de la naturaleza"
         ],
         "bootBase": "Grebas codiciosas",
         "bootUpgrade": "Botas inmortales",
@@ -4537,7 +4748,8 @@
           "Bastón del Vacío",
           "Corona de la Reina Fragmentada",
           "Morellonomicón",
-          "Diente de Nashor"
+          "Diente de Nashor",
+          "Tridente de Oceánida"
         ],
         "bootBase": "Botas de maná",
         "bootUpgrade": "Botas del lanzahechizos",
@@ -4611,13 +4823,21 @@
       "Bastón del Vacío",
       "Corona de la Reina Fragmentada",
       "Impulso Cósmico",
-      "Eco de Luden"
+      "Eco de Luden",
+      "Tridente de Oceánida",
+      "Morellonomicón",
+      "Malla de espinas",
+      "Fuerza de la naturaleza"
     ],
     "situationalItemsIcons": [
       "file:///android_asset/offline_images/a67295fc9713d5227ce1e8037c3e2779.webp",
       "file:///android_asset/offline_images/85536ee1d624a04cb68019aebba6d66e.webp",
       "file:///android_asset/offline_images/22da6db8487eb222ee027fc4b6a5fb95.webp",
-      "file:///android_asset/offline_images/1788098a082a158a83b05bbc9bcb4e0b.webp"
+      "file:///android_asset/offline_images/1788098a082a158a83b05bbc9bcb4e0b.webp",
+      "file:///android_asset/offline_images/f800a2be044a17e73fe7079161df361a.webp",
+      "file:///android_asset/offline_images/0c0fefe5c38af6fc40ea24c5539672b0.webp",
+      "file:///android_asset/offline_images/b68d6e640042b5db9b2c77722c9187e5.webp",
+      "file:///android_asset/offline_images/3e9ae4d161ed330f5ba83c71d2b2a637.webp"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -4693,7 +4913,11 @@
           "Bastón del Vacío",
           "Corona de la Reina Fragmentada",
           "Impulso Cósmico",
-          "Eco de Luden"
+          "Eco de Luden",
+          "Tridente de Oceánida",
+          "Morellonomicón",
+          "Malla de espinas",
+          "Fuerza de la naturaleza"
         ],
         "bootBase": "Grebas codiciosas",
         "bootUpgrade": "Botas inmortales",
@@ -4724,7 +4948,9 @@
           "Bastón del Vacío",
           "Corona de la Reina Fragmentada",
           "Impulso Cósmico",
-          "Eco de Luden"
+          "Eco de Luden",
+          "Tridente de Oceánida",
+          "Morellonomicón"
         ],
         "bootBase": "Botas de maná",
         "bootUpgrade": "Botas del lanzahechizos",
@@ -4985,13 +5211,19 @@
       "Cetro de cristal de Rylai",
       "Bastón del Vacío",
       "Corona de la Reina Fragmentada",
-      "Morellonomicón"
+      "Morellonomicón",
+      "Tridente de Oceánida",
+      "Malla de espinas",
+      "Fuerza de la naturaleza"
     ],
     "situationalItemsIcons": [
       "file:///android_asset/offline_images/da88ffd23441e3d461aec00c69f066b3.webp",
       "file:///android_asset/offline_images/a67295fc9713d5227ce1e8037c3e2779.webp",
       "file:///android_asset/offline_images/85536ee1d624a04cb68019aebba6d66e.webp",
-      "file:///android_asset/offline_images/0c0fefe5c38af6fc40ea24c5539672b0.webp"
+      "file:///android_asset/offline_images/0c0fefe5c38af6fc40ea24c5539672b0.webp",
+      "file:///android_asset/offline_images/f800a2be044a17e73fe7079161df361a.webp",
+      "file:///android_asset/offline_images/b68d6e640042b5db9b2c77722c9187e5.webp",
+      "file:///android_asset/offline_images/3e9ae4d161ed330f5ba83c71d2b2a637.webp"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -5067,7 +5299,10 @@
           "Cetro de cristal de Rylai",
           "Bastón del Vacío",
           "Corona de la Reina Fragmentada",
-          "Morellonomicón"
+          "Morellonomicón",
+          "Tridente de Oceánida",
+          "Malla de espinas",
+          "Fuerza de la naturaleza"
         ],
         "bootBase": "Botas de maná",
         "bootUpgrade": "Botas del lanzahechizos",
@@ -5098,7 +5333,10 @@
           "Cetro de cristal de Rylai",
           "Bastón del Vacío",
           "Corona de la Reina Fragmentada",
-          "Morellonomicón"
+          "Morellonomicón",
+          "Tridente de Oceánida",
+          "Malla de espinas",
+          "Fuerza de la naturaleza"
         ],
         "bootBase": "Botas jonias de la lucidez",
         "bootUpgrade": "Lucidez carmesí",
@@ -5172,13 +5410,15 @@
       "Calibrador de Sterak",
       "Ángel de la guarda",
       "Malla de espinas",
-      "Fauces de Malmortius"
+      "Fauces de Malmortius",
+      "Fuerza de la naturaleza"
     ],
     "situationalItemsIcons": [
       "file:///android_asset/offline_images/919bc13bc2461bb522082722e34a456d.webp",
       "file:///android_asset/offline_images/a9e382435db8c5b4d3dada562fa99d42.webp",
       "file:///android_asset/offline_images/b68d6e640042b5db9b2c77722c9187e5.webp",
-      "file:///android_asset/offline_images/fde3101c1b0cf8002454b75c285cd1fe.webp"
+      "file:///android_asset/offline_images/fde3101c1b0cf8002454b75c285cd1fe.webp",
+      "file:///android_asset/offline_images/3e9ae4d161ed330f5ba83c71d2b2a637.webp"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -5254,7 +5494,8 @@
           "Calibrador de Sterak",
           "Ángel de la guarda",
           "Malla de espinas",
-          "Fauces de Malmortius"
+          "Fauces de Malmortius",
+          "Fuerza de la naturaleza"
         ],
         "bootBase": "Grebas codiciosas",
         "bootUpgrade": "Botas inmortales",
@@ -5285,7 +5526,8 @@
           "Calibrador de Sterak",
           "Ángel de la guarda",
           "Malla de espinas",
-          "Fauces de Malmortius"
+          "Fauces de Malmortius",
+          "Fuerza de la naturaleza"
         ],
         "bootBase": "Grebas codiciosas",
         "bootUpgrade": "Botas inmortales",
@@ -5359,13 +5601,15 @@
       "Bastón del Vacío",
       "Corona de la Reina Fragmentada",
       "Morellonomicón",
-      "Eco de Luden"
+      "Eco de Luden",
+      "Tridente de Oceánida"
     ],
     "situationalItemsIcons": [
       "file:///android_asset/offline_images/a67295fc9713d5227ce1e8037c3e2779.webp",
       "file:///android_asset/offline_images/85536ee1d624a04cb68019aebba6d66e.webp",
       "file:///android_asset/offline_images/0c0fefe5c38af6fc40ea24c5539672b0.webp",
-      "file:///android_asset/offline_images/1788098a082a158a83b05bbc9bcb4e0b.webp"
+      "file:///android_asset/offline_images/1788098a082a158a83b05bbc9bcb4e0b.webp",
+      "file:///android_asset/offline_images/f800a2be044a17e73fe7079161df361a.webp"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -5441,7 +5685,8 @@
           "Bastón del Vacío",
           "Corona de la Reina Fragmentada",
           "Morellonomicón",
-          "Eco de Luden"
+          "Eco de Luden",
+          "Tridente de Oceánida"
         ],
         "bootBase": "Botas de maná",
         "bootUpgrade": "Botas del lanzahechizos",
@@ -5472,7 +5717,10 @@
           "Bastón del Vacío",
           "Corona de la Reina Fragmentada",
           "Morellonomicón",
-          "Eco de Luden"
+          "Eco de Luden",
+          "Tridente de Oceánida",
+          "Malla de espinas",
+          "Fuerza de la naturaleza"
         ],
         "bootBase": "Grebas codiciosas",
         "bootUpgrade": "Botas inmortales",
@@ -5546,13 +5794,19 @@
       "Corona de la Reina Fragmentada",
       "Bastón del Vacío",
       "Morellonomicón",
-      "Tormento de Liandry"
+      "Tormento de Liandry",
+      "Tridente de Oceánida",
+      "Malla de espinas",
+      "Fuerza de la naturaleza"
     ],
     "situationalItemsIcons": [
       "file:///android_asset/offline_images/85536ee1d624a04cb68019aebba6d66e.webp",
       "file:///android_asset/offline_images/a67295fc9713d5227ce1e8037c3e2779.webp",
       "file:///android_asset/offline_images/0c0fefe5c38af6fc40ea24c5539672b0.webp",
-      "file:///android_asset/offline_images/206e3eef90b44d6334533e14005a29b6.webp"
+      "file:///android_asset/offline_images/206e3eef90b44d6334533e14005a29b6.webp",
+      "file:///android_asset/offline_images/f800a2be044a17e73fe7079161df361a.webp",
+      "file:///android_asset/offline_images/b68d6e640042b5db9b2c77722c9187e5.webp",
+      "file:///android_asset/offline_images/3e9ae4d161ed330f5ba83c71d2b2a637.webp"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -5628,7 +5882,10 @@
           "Corona de la Reina Fragmentada",
           "Bastón del Vacío",
           "Morellonomicón",
-          "Tormento de Liandry"
+          "Tormento de Liandry",
+          "Tridente de Oceánida",
+          "Malla de espinas",
+          "Fuerza de la naturaleza"
         ],
         "bootBase": "Botas de maná",
         "bootUpgrade": "Botas del lanzahechizos",
@@ -5659,7 +5916,9 @@
           "Malla de espinas",
           "Fuerza de la naturaleza",
           "Velo del amanecer",
-          "Medallón de los Solari de Hierro"
+          "Medallón de los Solari de Hierro",
+          "Tridente de Oceánida",
+          "Morellonomicón"
         ],
         "bootBase": "Botas blindadas",
         "bootUpgrade": "Avance blindado",
@@ -5733,13 +5992,17 @@
       "Coraza del muerto",
       "Fuerza de la naturaleza",
       "Malla de espinas",
-      "Ángel de la guarda"
+      "Ángel de la guarda",
+      "Colmillo de serpiente",
+      "Recuerdos de Lord Dominik"
     ],
     "situationalItemsIcons": [
       "file:///android_asset/offline_images/856d8989c3c87e50fc7b8e997f9facbc.webp",
       "file:///android_asset/offline_images/3e9ae4d161ed330f5ba83c71d2b2a637.webp",
       "file:///android_asset/offline_images/b68d6e640042b5db9b2c77722c9187e5.webp",
-      "file:///android_asset/offline_images/a9e382435db8c5b4d3dada562fa99d42.webp"
+      "file:///android_asset/offline_images/a9e382435db8c5b4d3dada562fa99d42.webp",
+      "file:///android_asset/offline_images/9056fe258a17cfe13919ec1b3e222f4a.webp",
+      "file:///android_asset/offline_images/22544e382529f38069d660a78e6df20e.png"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -5815,7 +6078,9 @@
           "Coraza del muerto",
           "Fuerza de la naturaleza",
           "Malla de espinas",
-          "Ángel de la guarda"
+          "Ángel de la guarda",
+          "Colmillo de serpiente",
+          "Recuerdos de Lord Dominik"
         ],
         "bootBase": "Grebas codiciosas",
         "bootUpgrade": "Botas inmortales",
@@ -5846,7 +6111,9 @@
           "Coraza del muerto",
           "Fuerza de la naturaleza",
           "Malla de espinas",
-          "Ángel de la guarda"
+          "Ángel de la guarda",
+          "Colmillo de serpiente",
+          "Recuerdos de Lord Dominik"
         ],
         "bootBase": "Grebas codiciosas",
         "bootUpgrade": "Botas inmortales",
@@ -5920,13 +6187,17 @@
       "Cuchilla negra",
       "Fuerza de la naturaleza",
       "Malla de espinas",
-      "Ángel de la guarda"
+      "Ángel de la guarda",
+      "Colmillo de serpiente",
+      "Recuerdos de Lord Dominik"
     ],
     "situationalItemsIcons": [
       "file:///android_asset/offline_images/c98e3aff8b69a404445bcedab6bc9b96.webp",
       "file:///android_asset/offline_images/3e9ae4d161ed330f5ba83c71d2b2a637.webp",
       "file:///android_asset/offline_images/b68d6e640042b5db9b2c77722c9187e5.webp",
-      "file:///android_asset/offline_images/a9e382435db8c5b4d3dada562fa99d42.webp"
+      "file:///android_asset/offline_images/a9e382435db8c5b4d3dada562fa99d42.webp",
+      "file:///android_asset/offline_images/9056fe258a17cfe13919ec1b3e222f4a.webp",
+      "file:///android_asset/offline_images/22544e382529f38069d660a78e6df20e.png"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -6002,7 +6273,9 @@
           "Cuchilla negra",
           "Fuerza de la naturaleza",
           "Malla de espinas",
-          "Ángel de la guarda"
+          "Ángel de la guarda",
+          "Colmillo de serpiente",
+          "Recuerdos de Lord Dominik"
         ],
         "bootBase": "Grebas codiciosas",
         "bootUpgrade": "Botas inmortales",
@@ -6033,7 +6306,9 @@
           "Cuchilla negra",
           "Fuerza de la naturaleza",
           "Malla de espinas",
-          "Ángel de la guarda"
+          "Ángel de la guarda",
+          "Colmillo de serpiente",
+          "Recuerdos de Lord Dominik"
         ],
         "bootBase": "Grebas codiciosas",
         "bootUpgrade": "Botas inmortales",
@@ -6108,13 +6383,19 @@
       "Bastón del Vacío",
       "Perdición del liche",
       "Corona de la Reina Fragmentada",
-      "Morellonomicón"
+      "Morellonomicón",
+      "Tridente de Oceánida",
+      "Malla de espinas",
+      "Fuerza de la naturaleza"
     ],
     "situationalItemsIcons": [
       "file:///android_asset/offline_images/a67295fc9713d5227ce1e8037c3e2779.webp",
       "file:///android_asset/offline_images/49358858c22a8313bd7c2a47b405e5fd.webp",
       "file:///android_asset/offline_images/85536ee1d624a04cb68019aebba6d66e.webp",
-      "file:///android_asset/offline_images/0c0fefe5c38af6fc40ea24c5539672b0.webp"
+      "file:///android_asset/offline_images/0c0fefe5c38af6fc40ea24c5539672b0.webp",
+      "file:///android_asset/offline_images/f800a2be044a17e73fe7079161df361a.webp",
+      "file:///android_asset/offline_images/b68d6e640042b5db9b2c77722c9187e5.webp",
+      "file:///android_asset/offline_images/3e9ae4d161ed330f5ba83c71d2b2a637.webp"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -6190,7 +6471,10 @@
           "Bastón del Vacío",
           "Perdición del liche",
           "Corona de la Reina Fragmentada",
-          "Morellonomicón"
+          "Morellonomicón",
+          "Tridente de Oceánida",
+          "Malla de espinas",
+          "Fuerza de la naturaleza"
         ],
         "bootBase": "Grebas codiciosas",
         "bootUpgrade": "Botas inmortales",
@@ -6221,7 +6505,10 @@
           "Bastón del Vacío",
           "Perdición del liche",
           "Corona de la Reina Fragmentada",
-          "Morellonomicón"
+          "Morellonomicón",
+          "Tridente de Oceánida",
+          "Malla de espinas",
+          "Fuerza de la naturaleza"
         ],
         "bootBase": "Grebas codiciosas",
         "bootUpgrade": "Botas inmortales",
@@ -6252,7 +6539,10 @@
           "Bastón del Vacío",
           "Perdición del liche",
           "Corona de la Reina Fragmentada",
-          "Morellonomicón"
+          "Morellonomicón",
+          "Tridente de Oceánida",
+          "Malla de espinas",
+          "Fuerza de la naturaleza"
         ],
         "bootBase": "Botas de maná",
         "bootUpgrade": "Botas del lanzahechizos",
@@ -6326,13 +6616,19 @@
       "Recuerdos de Lord Dominik",
       "Sanguinaria",
       "Ángel de la guarda",
-      "Baile de la muerte"
+      "Baile de la muerte",
+      "Colmillo de serpiente",
+      "Malla de espinas",
+      "Fuerza de la naturaleza"
     ],
     "situationalItemsIcons": [
       "file:///android_asset/offline_images/22544e382529f38069d660a78e6df20e.png",
       "file:///android_asset/offline_images/926efbca7b9ae9f241ddf7cd3c250273.webp",
       "file:///android_asset/offline_images/a9e382435db8c5b4d3dada562fa99d42.webp",
-      "file:///android_asset/offline_images/5069d1174a4d1b3b70d631d7bb61731e.webp"
+      "file:///android_asset/offline_images/5069d1174a4d1b3b70d631d7bb61731e.webp",
+      "file:///android_asset/offline_images/9056fe258a17cfe13919ec1b3e222f4a.webp",
+      "file:///android_asset/offline_images/b68d6e640042b5db9b2c77722c9187e5.webp",
+      "file:///android_asset/offline_images/3e9ae4d161ed330f5ba83c71d2b2a637.webp"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -6408,7 +6704,10 @@
           "Recuerdos de Lord Dominik",
           "Sanguinaria",
           "Ángel de la guarda",
-          "Baile de la muerte"
+          "Baile de la muerte",
+          "Colmillo de serpiente",
+          "Malla de espinas",
+          "Fuerza de la naturaleza"
         ],
         "bootBase": "Botas dinámicas",
         "bootUpgrade": "Botas quebrantarmaduras",
@@ -6439,7 +6738,10 @@
           "Recuerdos de Lord Dominik",
           "Sanguinaria",
           "Ángel de la guarda",
-          "Baile de la muerte"
+          "Baile de la muerte",
+          "Colmillo de serpiente",
+          "Malla de espinas",
+          "Fuerza de la naturaleza"
         ],
         "bootBase": "Grebas codiciosas",
         "bootUpgrade": "Botas inmortales",
@@ -6513,13 +6815,19 @@
       "Bastón del Vacío",
       "Corona de la Reina Fragmentada",
       "Impulso Cósmico",
-      "Morellonomicón"
+      "Morellonomicón",
+      "Tridente de Oceánida",
+      "Malla de espinas",
+      "Fuerza de la naturaleza"
     ],
     "situationalItemsIcons": [
       "file:///android_asset/offline_images/a67295fc9713d5227ce1e8037c3e2779.webp",
       "file:///android_asset/offline_images/85536ee1d624a04cb68019aebba6d66e.webp",
       "file:///android_asset/offline_images/22da6db8487eb222ee027fc4b6a5fb95.webp",
-      "file:///android_asset/offline_images/0c0fefe5c38af6fc40ea24c5539672b0.webp"
+      "file:///android_asset/offline_images/0c0fefe5c38af6fc40ea24c5539672b0.webp",
+      "file:///android_asset/offline_images/f800a2be044a17e73fe7079161df361a.webp",
+      "file:///android_asset/offline_images/b68d6e640042b5db9b2c77722c9187e5.webp",
+      "file:///android_asset/offline_images/3e9ae4d161ed330f5ba83c71d2b2a637.webp"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -6595,7 +6903,10 @@
           "Bastón del Vacío",
           "Corona de la Reina Fragmentada",
           "Impulso Cósmico",
-          "Morellonomicón"
+          "Morellonomicón",
+          "Tridente de Oceánida",
+          "Malla de espinas",
+          "Fuerza de la naturaleza"
         ],
         "bootBase": "Grebas codiciosas",
         "bootUpgrade": "Botas inmortales",
@@ -6626,7 +6937,10 @@
           "Bastón del Vacío",
           "Corona de la Reina Fragmentada",
           "Impulso Cósmico",
-          "Morellonomicón"
+          "Morellonomicón",
+          "Tridente de Oceánida",
+          "Malla de espinas",
+          "Fuerza de la naturaleza"
         ],
         "bootBase": "Grebas codiciosas",
         "bootUpgrade": "Botas inmortales",
@@ -6700,13 +7014,17 @@
       "Cuchilla negra",
       "Fuerza de la naturaleza",
       "Malla de espinas",
-      "Ángel de la guarda"
+      "Ángel de la guarda",
+      "Colmillo de serpiente",
+      "Recuerdos de Lord Dominik"
     ],
     "situationalItemsIcons": [
       "file:///android_asset/offline_images/c98e3aff8b69a404445bcedab6bc9b96.webp",
       "file:///android_asset/offline_images/3e9ae4d161ed330f5ba83c71d2b2a637.webp",
       "file:///android_asset/offline_images/b68d6e640042b5db9b2c77722c9187e5.webp",
-      "file:///android_asset/offline_images/a9e382435db8c5b4d3dada562fa99d42.webp"
+      "file:///android_asset/offline_images/a9e382435db8c5b4d3dada562fa99d42.webp",
+      "file:///android_asset/offline_images/9056fe258a17cfe13919ec1b3e222f4a.webp",
+      "file:///android_asset/offline_images/22544e382529f38069d660a78e6df20e.png"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -6782,7 +7100,9 @@
           "Cuchilla negra",
           "Fuerza de la naturaleza",
           "Malla de espinas",
-          "Ángel de la guarda"
+          "Ángel de la guarda",
+          "Colmillo de serpiente",
+          "Recuerdos de Lord Dominik"
         ],
         "bootBase": "Grebas codiciosas",
         "bootUpgrade": "Botas inmortales",
@@ -6813,7 +7133,9 @@
           "Cuchilla negra",
           "Fuerza de la naturaleza",
           "Malla de espinas",
-          "Ángel de la guarda"
+          "Ángel de la guarda",
+          "Colmillo de serpiente",
+          "Recuerdos de Lord Dominik"
         ],
         "bootBase": "Grebas codiciosas",
         "bootUpgrade": "Botas inmortales",
@@ -6888,13 +7210,15 @@
       "Bastón del Vacío",
       "Corona de la Reina Fragmentada",
       "Morellonomicón",
-      "Impulso Cósmico"
+      "Impulso Cósmico",
+      "Tridente de Oceánida"
     ],
     "situationalItemsIcons": [
       "file:///android_asset/offline_images/a67295fc9713d5227ce1e8037c3e2779.webp",
       "file:///android_asset/offline_images/85536ee1d624a04cb68019aebba6d66e.webp",
       "file:///android_asset/offline_images/0c0fefe5c38af6fc40ea24c5539672b0.webp",
-      "file:///android_asset/offline_images/22da6db8487eb222ee027fc4b6a5fb95.webp"
+      "file:///android_asset/offline_images/22da6db8487eb222ee027fc4b6a5fb95.webp",
+      "file:///android_asset/offline_images/f800a2be044a17e73fe7079161df361a.webp"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -6970,7 +7294,8 @@
           "Bastón del Vacío",
           "Corona de la Reina Fragmentada",
           "Morellonomicón",
-          "Impulso Cósmico"
+          "Impulso Cósmico",
+          "Tridente de Oceánida"
         ],
         "bootBase": "Botas de maná",
         "bootUpgrade": "Botas del lanzahechizos",
@@ -7001,7 +7326,10 @@
           "Bastón del Vacío",
           "Corona de la Reina Fragmentada",
           "Morellonomicón",
-          "Impulso Cósmico"
+          "Impulso Cósmico",
+          "Tridente de Oceánida",
+          "Malla de espinas",
+          "Fuerza de la naturaleza"
         ],
         "bootBase": "Botas de maná",
         "bootUpgrade": "Botas del lanzahechizos",
@@ -7032,7 +7360,10 @@
           "Bastón del Vacío",
           "Corona de la Reina Fragmentada",
           "Morellonomicón",
-          "Impulso Cósmico"
+          "Impulso Cósmico",
+          "Tridente de Oceánida",
+          "Malla de espinas",
+          "Fuerza de la naturaleza"
         ],
         "bootBase": "Botas jonias de la lucidez",
         "bootUpgrade": "Lucidez carmesí",
@@ -7117,13 +7448,15 @@
       "Bastón del Vacío",
       "Corona de la Reina Fragmentada",
       "Tormento de Liandry",
-      "Morellonomicón"
+      "Morellonomicón",
+      "Tridente de Oceánida"
     ],
     "situationalItemsIcons": [
       "file:///android_asset/offline_images/a67295fc9713d5227ce1e8037c3e2779.webp",
       "file:///android_asset/offline_images/85536ee1d624a04cb68019aebba6d66e.webp",
       "file:///android_asset/offline_images/206e3eef90b44d6334533e14005a29b6.webp",
-      "file:///android_asset/offline_images/0c0fefe5c38af6fc40ea24c5539672b0.webp"
+      "file:///android_asset/offline_images/0c0fefe5c38af6fc40ea24c5539672b0.webp",
+      "file:///android_asset/offline_images/f800a2be044a17e73fe7079161df361a.webp"
     ],
     "build2Runes": "Cometa Arcano • Banda de Maná • Trascendencia • Piroláser • Se Avecina Tormenta",
     "build2Spells": [
@@ -7209,7 +7542,8 @@
           "Bastón del Vacío",
           "Corona de la Reina Fragmentada",
           "Tormento de Liandry",
-          "Morellonomicón"
+          "Morellonomicón",
+          "Tridente de Oceánida"
         ],
         "bootBase": "Botas de maná",
         "bootUpgrade": "Botas del lanzahechizos",
@@ -7240,7 +7574,10 @@
           "Bastón del Vacío",
           "Corona de la Reina Fragmentada",
           "Tormento de Liandry",
-          "Morellonomicón"
+          "Morellonomicón",
+          "Tridente de Oceánida",
+          "Malla de espinas",
+          "Fuerza de la naturaleza"
         ],
         "bootBase": "Botas jonias de la lucidez",
         "bootUpgrade": "Lucidez carmesí",
@@ -7310,13 +7647,19 @@
       "Calibrador de Sterak",
       "Final del ingenio",
       "Ángel de la guarda",
-      "Malla de espinas"
+      "Malla de espinas",
+      "Colmillo de serpiente",
+      "Recuerdos de Lord Dominik",
+      "Fuerza de la naturaleza"
     ],
     "situationalItemsIcons": [
       "file:///android_asset/offline_images/919bc13bc2461bb522082722e34a456d.webp",
       "file:///android_asset/offline_images/77c41c15fa7642a1d42a2717e2a7e6ca.webp",
       "file:///android_asset/offline_images/a9e382435db8c5b4d3dada562fa99d42.webp",
-      "file:///android_asset/offline_images/b68d6e640042b5db9b2c77722c9187e5.webp"
+      "file:///android_asset/offline_images/b68d6e640042b5db9b2c77722c9187e5.webp",
+      "file:///android_asset/offline_images/9056fe258a17cfe13919ec1b3e222f4a.webp",
+      "file:///android_asset/offline_images/22544e382529f38069d660a78e6df20e.png",
+      "file:///android_asset/offline_images/3e9ae4d161ed330f5ba83c71d2b2a637.webp"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -7392,7 +7735,10 @@
           "Calibrador de Sterak",
           "Final del ingenio",
           "Ángel de la guarda",
-          "Malla de espinas"
+          "Malla de espinas",
+          "Colmillo de serpiente",
+          "Recuerdos de Lord Dominik",
+          "Fuerza de la naturaleza"
         ],
         "bootBase": "Grebas codiciosas",
         "bootUpgrade": "Botas inmortales",
@@ -7423,7 +7769,10 @@
           "Calibrador de Sterak",
           "Final del ingenio",
           "Ángel de la guarda",
-          "Malla de espinas"
+          "Malla de espinas",
+          "Colmillo de serpiente",
+          "Recuerdos de Lord Dominik",
+          "Fuerza de la naturaleza"
         ],
         "bootBase": "Grebas codiciosas",
         "bootUpgrade": "Botas inmortales",
@@ -7497,13 +7846,21 @@
       "Bastón de aguas fluidas",
       "Mandato imperial",
       "Redención",
-      "Bendición de Mikael"
+      "Bendición de Mikael",
+      "Tridente de Oceánida",
+      "Morellonomicón",
+      "Malla de espinas",
+      "Fuerza de la naturaleza"
     ],
     "situationalItemsIcons": [
       "file:///android_asset/offline_images/0514e703e9172ec9266ef8121ae07b3b.webp",
       "file:///android_asset/offline_images/516c29e1d0b53fc59197feeb6201c965.webp",
       "file:///android_asset/offline_images/7c4aa6c8827f314917041dc3a4d63c05.webp",
-      "file:///android_asset/offline_images/bbc3dbd2e1b410b93581181f83ef1e54.webp"
+      "file:///android_asset/offline_images/bbc3dbd2e1b410b93581181f83ef1e54.webp",
+      "file:///android_asset/offline_images/f800a2be044a17e73fe7079161df361a.webp",
+      "file:///android_asset/offline_images/0c0fefe5c38af6fc40ea24c5539672b0.webp",
+      "file:///android_asset/offline_images/b68d6e640042b5db9b2c77722c9187e5.webp",
+      "file:///android_asset/offline_images/3e9ae4d161ed330f5ba83c71d2b2a637.webp"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -7579,7 +7936,11 @@
           "Bastón de aguas fluidas",
           "Mandato imperial",
           "Redención",
-          "Bendición de Mikael"
+          "Bendición de Mikael",
+          "Tridente de Oceánida",
+          "Morellonomicón",
+          "Malla de espinas",
+          "Fuerza de la naturaleza"
         ],
         "bootBase": "Botas jonias de la lucidez",
         "bootUpgrade": "Lucidez carmesí",
@@ -7610,7 +7971,8 @@
           "Bastón del Vacío",
           "Impulso Cósmico",
           "Morellonomicón",
-          "Creagrietas"
+          "Creagrietas",
+          "Tridente de Oceánida"
         ],
         "bootBase": "Botas de maná",
         "bootUpgrade": "Botas del lanzahechizos",
@@ -7684,13 +8046,15 @@
       "Ángel de la guarda",
       "Malla de espinas",
       "Fuerza de la naturaleza",
-      "Colmillo de serpiente"
+      "Colmillo de serpiente",
+      "Recuerdos de Lord Dominik"
     ],
     "situationalItemsIcons": [
       "file:///android_asset/offline_images/a9e382435db8c5b4d3dada562fa99d42.webp",
       "file:///android_asset/offline_images/b68d6e640042b5db9b2c77722c9187e5.webp",
       "file:///android_asset/offline_images/3e9ae4d161ed330f5ba83c71d2b2a637.webp",
-      "file:///android_asset/offline_images/9056fe258a17cfe13919ec1b3e222f4a.webp"
+      "file:///android_asset/offline_images/9056fe258a17cfe13919ec1b3e222f4a.webp",
+      "file:///android_asset/offline_images/22544e382529f38069d660a78e6df20e.png"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -7766,7 +8130,8 @@
           "Ángel de la guarda",
           "Malla de espinas",
           "Fuerza de la naturaleza",
-          "Colmillo de serpiente"
+          "Colmillo de serpiente",
+          "Recuerdos de Lord Dominik"
         ],
         "bootBase": "Grebas codiciosas",
         "bootUpgrade": "Botas inmortales",
@@ -7797,7 +8162,8 @@
           "Ángel de la guarda",
           "Malla de espinas",
           "Fuerza de la naturaleza",
-          "Colmillo de serpiente"
+          "Colmillo de serpiente",
+          "Recuerdos de Lord Dominik"
         ],
         "bootBase": "Grebas codiciosas",
         "bootUpgrade": "Botas inmortales",
@@ -7871,13 +8237,17 @@
       "Hoja del rey arruinado",
       "Rompecascos",
       "Ángel de la guarda",
-      "Fauces de Malmortius"
+      "Fauces de Malmortius",
+      "Malla de espinas",
+      "Fuerza de la naturaleza"
     ],
     "situationalItemsIcons": [
       "file:///android_asset/offline_images/537435e5e6691bd654c89dba3aa169ef.webp",
       "file:///android_asset/offline_images/0678b476a01b8e1b5fa9754e8858ee93.png",
       "file:///android_asset/offline_images/a9e382435db8c5b4d3dada562fa99d42.webp",
-      "file:///android_asset/offline_images/fde3101c1b0cf8002454b75c285cd1fe.webp"
+      "file:///android_asset/offline_images/fde3101c1b0cf8002454b75c285cd1fe.webp",
+      "file:///android_asset/offline_images/b68d6e640042b5db9b2c77722c9187e5.webp",
+      "file:///android_asset/offline_images/3e9ae4d161ed330f5ba83c71d2b2a637.webp"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -7953,7 +8323,9 @@
           "Hoja del rey arruinado",
           "Rompecascos",
           "Ángel de la guarda",
-          "Fauces de Malmortius"
+          "Fauces de Malmortius",
+          "Malla de espinas",
+          "Fuerza de la naturaleza"
         ],
         "bootBase": "Grebas codiciosas",
         "bootUpgrade": "Botas inmortales",
@@ -7984,7 +8356,9 @@
           "Hoja del rey arruinado",
           "Rompecascos",
           "Ángel de la guarda",
-          "Fauces de Malmortius"
+          "Fauces de Malmortius",
+          "Malla de espinas",
+          "Fuerza de la naturaleza"
         ],
         "bootBase": "Grebas codiciosas",
         "bootUpgrade": "Botas inmortales",
@@ -8058,13 +8432,21 @@
       "Filo de la noche",
       "Ángel de la guarda",
       "Baile de la muerte",
-      "Fauces de Malmortius"
+      "Fauces de Malmortius",
+      "Colmillo de serpiente",
+      "Recuerdos de Lord Dominik",
+      "Malla de espinas",
+      "Fuerza de la naturaleza"
     ],
     "situationalItemsIcons": [
       "file:///android_asset/offline_images/9d3f49bbe18458be5b63ce1d74b3e91c.webp",
       "file:///android_asset/offline_images/a9e382435db8c5b4d3dada562fa99d42.webp",
       "file:///android_asset/offline_images/5069d1174a4d1b3b70d631d7bb61731e.webp",
-      "file:///android_asset/offline_images/fde3101c1b0cf8002454b75c285cd1fe.webp"
+      "file:///android_asset/offline_images/fde3101c1b0cf8002454b75c285cd1fe.webp",
+      "file:///android_asset/offline_images/9056fe258a17cfe13919ec1b3e222f4a.webp",
+      "file:///android_asset/offline_images/22544e382529f38069d660a78e6df20e.png",
+      "file:///android_asset/offline_images/b68d6e640042b5db9b2c77722c9187e5.webp",
+      "file:///android_asset/offline_images/3e9ae4d161ed330f5ba83c71d2b2a637.webp"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -8140,7 +8522,11 @@
           "Filo de la noche",
           "Ángel de la guarda",
           "Baile de la muerte",
-          "Fauces de Malmortius"
+          "Fauces de Malmortius",
+          "Colmillo de serpiente",
+          "Recuerdos de Lord Dominik",
+          "Malla de espinas",
+          "Fuerza de la naturaleza"
         ],
         "bootBase": "Grebas codiciosas",
         "bootUpgrade": "Botas inmortales",
@@ -8171,7 +8557,9 @@
           "Filo de la noche",
           "Ángel de la guarda",
           "Baile de la muerte",
-          "Fauces de Malmortius"
+          "Fauces de Malmortius",
+          "Colmillo de serpiente",
+          "Recuerdos de Lord Dominik"
         ],
         "bootBase": "Botas dinámicas",
         "bootUpgrade": "Botas quebrantarmaduras",
@@ -8245,13 +8633,15 @@
       "Sanguinaria",
       "Ángel de la guarda",
       "Filo fantasmal de Youmuu",
-      "Recuerdos de Lord Dominik"
+      "Recuerdos de Lord Dominik",
+      "Colmillo de serpiente"
     ],
     "situationalItemsIcons": [
       "file:///android_asset/offline_images/926efbca7b9ae9f241ddf7cd3c250273.webp",
       "file:///android_asset/offline_images/a9e382435db8c5b4d3dada562fa99d42.webp",
       "file:///android_asset/offline_images/f1b8c4afd751ba63ea7b8f0ff5f2c981.webp",
-      "file:///android_asset/offline_images/22544e382529f38069d660a78e6df20e.png"
+      "file:///android_asset/offline_images/22544e382529f38069d660a78e6df20e.png",
+      "file:///android_asset/offline_images/9056fe258a17cfe13919ec1b3e222f4a.webp"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -8327,7 +8717,8 @@
           "Sanguinaria",
           "Ángel de la guarda",
           "Filo fantasmal de Youmuu",
-          "Recuerdos de Lord Dominik"
+          "Recuerdos de Lord Dominik",
+          "Colmillo de serpiente"
         ],
         "bootBase": "Grebas codiciosas",
         "bootUpgrade": "Botas inmortales",
@@ -8358,7 +8749,8 @@
           "Sanguinaria",
           "Ángel de la guarda",
           "Filo fantasmal de Youmuu",
-          "Recuerdos de Lord Dominik"
+          "Recuerdos de Lord Dominik",
+          "Colmillo de serpiente"
         ],
         "bootBase": "Botas dinámicas",
         "bootUpgrade": "Botas quebrantarmaduras",
@@ -8432,13 +8824,17 @@
       "Sanguinaria",
       "Cañón de Fuego Rápido",
       "Ángel de la guarda",
-      "Arcoescudo Inmortal"
+      "Arcoescudo Inmortal",
+      "Colmillo de serpiente",
+      "Recuerdos de Lord Dominik"
     ],
     "situationalItemsIcons": [
       "file:///android_asset/offline_images/926efbca7b9ae9f241ddf7cd3c250273.webp",
       "file:///android_asset/offline_images/rapid_firecannon.webp",
       "file:///android_asset/offline_images/a9e382435db8c5b4d3dada562fa99d42.webp",
-      "file:///android_asset/offline_images/immortal_shieldbow.webp"
+      "file:///android_asset/offline_images/immortal_shieldbow.webp",
+      "file:///android_asset/offline_images/9056fe258a17cfe13919ec1b3e222f4a.webp",
+      "file:///android_asset/offline_images/22544e382529f38069d660a78e6df20e.png"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -8514,7 +8910,9 @@
           "Sanguinaria",
           "Cañón de Fuego Rápido",
           "Ángel de la guarda",
-          "Arcoescudo Inmortal"
+          "Arcoescudo Inmortal",
+          "Colmillo de serpiente",
+          "Recuerdos de Lord Dominik"
         ],
         "bootBase": "Grebas de berserker",
         "bootUpgrade": "Grebas de metal",
@@ -8545,7 +8943,9 @@
           "Sanguinaria",
           "Cañón de Fuego Rápido",
           "Ángel de la guarda",
-          "Arcoescudo Inmortal"
+          "Arcoescudo Inmortal",
+          "Colmillo de serpiente",
+          "Recuerdos de Lord Dominik"
         ],
         "bootBase": "Grebas de berserker",
         "bootUpgrade": "Grebas de metal",
@@ -8619,13 +9019,17 @@
       "Guantelete de hielo",
       "Fuerza de la naturaleza",
       "Presagio de Randuin",
-      "Coraza dual purpúrea"
+      "Coraza dual purpúrea",
+      "Colmillo de serpiente",
+      "Recuerdos de Lord Dominik"
     ],
     "situationalItemsIcons": [
       "file:///android_asset/offline_images/0ec5d7a3b173c4f04ca3cc32e35c2e43.webp",
       "file:///android_asset/offline_images/3e9ae4d161ed330f5ba83c71d2b2a637.webp",
       "file:///android_asset/offline_images/a01f7976459d788cbb0a763155cb39b8.webp",
-      "file:///android_asset/offline_images/amaranths_twinguard.webp"
+      "file:///android_asset/offline_images/amaranths_twinguard.webp",
+      "file:///android_asset/offline_images/9056fe258a17cfe13919ec1b3e222f4a.webp",
+      "file:///android_asset/offline_images/22544e382529f38069d660a78e6df20e.png"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -8701,7 +9105,9 @@
           "Guantelete de hielo",
           "Fuerza de la naturaleza",
           "Presagio de Randuin",
-          "Coraza dual purpúrea"
+          "Coraza dual purpúrea",
+          "Colmillo de serpiente",
+          "Recuerdos de Lord Dominik"
         ],
         "bootBase": "Botas blindadas",
         "bootUpgrade": "Avance blindado",
@@ -8732,7 +9138,9 @@
           "Guantelete de hielo",
           "Fuerza de la naturaleza",
           "Presagio de Randuin",
-          "Coraza dual purpúrea"
+          "Coraza dual purpúrea",
+          "Colmillo de serpiente",
+          "Recuerdos de Lord Dominik"
         ],
         "bootBase": "Botas blindadas",
         "bootUpgrade": "Avance blindado",
@@ -8993,13 +9401,15 @@
       "Recuerdos de Lord Dominik",
       "Sanguinaria",
       "Ángel de la guarda",
-      "Arcoescudo Inmortal"
+      "Arcoescudo Inmortal",
+      "Colmillo de serpiente"
     ],
     "situationalItemsIcons": [
       "file:///android_asset/offline_images/22544e382529f38069d660a78e6df20e.png",
       "file:///android_asset/offline_images/926efbca7b9ae9f241ddf7cd3c250273.webp",
       "file:///android_asset/offline_images/a9e382435db8c5b4d3dada562fa99d42.webp",
-      "file:///android_asset/offline_images/immortal_shieldbow.webp"
+      "file:///android_asset/offline_images/immortal_shieldbow.webp",
+      "file:///android_asset/offline_images/9056fe258a17cfe13919ec1b3e222f4a.webp"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -9075,7 +9485,8 @@
           "Recuerdos de Lord Dominik",
           "Sanguinaria",
           "Ángel de la guarda",
-          "Arcoescudo Inmortal"
+          "Arcoescudo Inmortal",
+          "Colmillo de serpiente"
         ],
         "bootBase": "Grebas de berserker",
         "bootUpgrade": "Grebas de metal",
@@ -9106,7 +9517,10 @@
           "Recuerdos de Lord Dominik",
           "Sanguinaria",
           "Ángel de la guarda",
-          "Arcoescudo Inmortal"
+          "Arcoescudo Inmortal",
+          "Colmillo de serpiente",
+          "Malla de espinas",
+          "Fuerza de la naturaleza"
         ],
         "bootBase": "Grebas de berserker",
         "bootUpgrade": "Grebas de metal",
@@ -9180,13 +9594,21 @@
       "Incensario ardiente",
       "Bastón de aguas fluidas",
       "Corona de la Reina Fragmentada",
-      "Redención"
+      "Redención",
+      "Tridente de Oceánida",
+      "Morellonomicón",
+      "Malla de espinas",
+      "Fuerza de la naturaleza"
     ],
     "situationalItemsIcons": [
       "file:///android_asset/offline_images/9910505e11aafddc30dd943ecf79b0d8.webp",
       "file:///android_asset/offline_images/0514e703e9172ec9266ef8121ae07b3b.webp",
       "file:///android_asset/offline_images/85536ee1d624a04cb68019aebba6d66e.webp",
-      "file:///android_asset/offline_images/7c4aa6c8827f314917041dc3a4d63c05.webp"
+      "file:///android_asset/offline_images/7c4aa6c8827f314917041dc3a4d63c05.webp",
+      "file:///android_asset/offline_images/f800a2be044a17e73fe7079161df361a.webp",
+      "file:///android_asset/offline_images/0c0fefe5c38af6fc40ea24c5539672b0.webp",
+      "file:///android_asset/offline_images/b68d6e640042b5db9b2c77722c9187e5.webp",
+      "file:///android_asset/offline_images/3e9ae4d161ed330f5ba83c71d2b2a637.webp"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -9262,7 +9684,11 @@
           "Incensario ardiente",
           "Bastón de aguas fluidas",
           "Corona de la Reina Fragmentada",
-          "Redención"
+          "Redención",
+          "Tridente de Oceánida",
+          "Morellonomicón",
+          "Malla de espinas",
+          "Fuerza de la naturaleza"
         ],
         "bootBase": "Botas jonias de la lucidez",
         "bootUpgrade": "Lucidez carmesí",
@@ -9293,7 +9719,8 @@
           "Sombrero mortal de Rabadon",
           "Bastón del Vacío",
           "Impulso Cósmico",
-          "Morellonomicón"
+          "Morellonomicón",
+          "Tridente de Oceánida"
         ],
         "bootBase": "Botas de maná",
         "bootUpgrade": "Botas del lanzahechizos",
@@ -9367,13 +9794,15 @@
       "Orbe infinito",
       "Bastón del Vacío",
       "Corona de la Reina Fragmentada",
-      "Morellonomicón"
+      "Morellonomicón",
+      "Tridente de Oceánida"
     ],
     "situationalItemsIcons": [
       "file:///android_asset/offline_images/026213a99027f6878f2e67427e6a2445.webp",
       "file:///android_asset/offline_images/a67295fc9713d5227ce1e8037c3e2779.webp",
       "file:///android_asset/offline_images/85536ee1d624a04cb68019aebba6d66e.webp",
-      "file:///android_asset/offline_images/0c0fefe5c38af6fc40ea24c5539672b0.webp"
+      "file:///android_asset/offline_images/0c0fefe5c38af6fc40ea24c5539672b0.webp",
+      "file:///android_asset/offline_images/f800a2be044a17e73fe7079161df361a.webp"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -9449,7 +9878,8 @@
           "Orbe infinito",
           "Bastón del Vacío",
           "Corona de la Reina Fragmentada",
-          "Morellonomicón"
+          "Morellonomicón",
+          "Tridente de Oceánida"
         ],
         "bootBase": "Botas de maná",
         "bootUpgrade": "Botas del lanzahechizos",
@@ -9480,7 +9910,10 @@
           "Orbe infinito",
           "Bastón del Vacío",
           "Corona de la Reina Fragmentada",
-          "Morellonomicón"
+          "Morellonomicón",
+          "Tridente de Oceánida",
+          "Malla de espinas",
+          "Fuerza de la naturaleza"
         ],
         "bootBase": "Grebas codiciosas",
         "bootUpgrade": "Botas inmortales",
@@ -9554,13 +9987,15 @@
       "Bastón del Vacío",
       "Corona de la Reina Fragmentada",
       "Creagrietas",
-      "Morellonomicón"
+      "Morellonomicón",
+      "Tridente de Oceánida"
     ],
     "situationalItemsIcons": [
       "file:///android_asset/offline_images/a67295fc9713d5227ce1e8037c3e2779.webp",
       "file:///android_asset/offline_images/85536ee1d624a04cb68019aebba6d66e.webp",
       "file:///android_asset/offline_images/8ab6dc6493eda1a50bf731f8fa715087.webp",
-      "file:///android_asset/offline_images/0c0fefe5c38af6fc40ea24c5539672b0.webp"
+      "file:///android_asset/offline_images/0c0fefe5c38af6fc40ea24c5539672b0.webp",
+      "file:///android_asset/offline_images/f800a2be044a17e73fe7079161df361a.webp"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -9636,7 +10071,8 @@
           "Bastón del Vacío",
           "Corona de la Reina Fragmentada",
           "Creagrietas",
-          "Morellonomicón"
+          "Morellonomicón",
+          "Tridente de Oceánida"
         ],
         "bootBase": "Botas de maná",
         "bootUpgrade": "Botas del lanzahechizos",
@@ -9667,7 +10103,10 @@
           "Bastón del Vacío",
           "Corona de la Reina Fragmentada",
           "Creagrietas",
-          "Morellonomicón"
+          "Morellonomicón",
+          "Tridente de Oceánida",
+          "Malla de espinas",
+          "Fuerza de la naturaleza"
         ],
         "bootBase": "Grebas codiciosas",
         "bootUpgrade": "Botas inmortales",
@@ -9741,13 +10180,17 @@
       "Bastón del Vacío",
       "Corona de la Reina Fragmentada",
       "Orbe infinito",
-      "Morellonomicón"
+      "Morellonomicón",
+      "Malla de espinas",
+      "Fuerza de la naturaleza"
     ],
     "situationalItemsIcons": [
       "file:///android_asset/offline_images/a67295fc9713d5227ce1e8037c3e2779.webp",
       "file:///android_asset/offline_images/85536ee1d624a04cb68019aebba6d66e.webp",
       "file:///android_asset/offline_images/026213a99027f6878f2e67427e6a2445.webp",
-      "file:///android_asset/offline_images/0c0fefe5c38af6fc40ea24c5539672b0.webp"
+      "file:///android_asset/offline_images/0c0fefe5c38af6fc40ea24c5539672b0.webp",
+      "file:///android_asset/offline_images/b68d6e640042b5db9b2c77722c9187e5.webp",
+      "file:///android_asset/offline_images/3e9ae4d161ed330f5ba83c71d2b2a637.webp"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -9823,7 +10266,9 @@
           "Bastón del Vacío",
           "Corona de la Reina Fragmentada",
           "Orbe infinito",
-          "Morellonomicón"
+          "Morellonomicón",
+          "Malla de espinas",
+          "Fuerza de la naturaleza"
         ],
         "bootBase": "Grebas de berserker",
         "bootUpgrade": "Grebas de metal",
@@ -9928,13 +10373,21 @@
       "Eclipse",
       "Filo de la noche",
       "Ángel de la guarda",
-      "Baile de la muerte"
+      "Baile de la muerte",
+      "Colmillo de serpiente",
+      "Recuerdos de Lord Dominik",
+      "Malla de espinas",
+      "Fuerza de la naturaleza"
     ],
     "situationalItemsIcons": [
       "file:///android_asset/offline_images/58e5a4886b2f0f5814d36b8dfabff5a6.webp",
       "file:///android_asset/offline_images/9d3f49bbe18458be5b63ce1d74b3e91c.webp",
       "file:///android_asset/offline_images/a9e382435db8c5b4d3dada562fa99d42.webp",
-      "file:///android_asset/offline_images/5069d1174a4d1b3b70d631d7bb61731e.webp"
+      "file:///android_asset/offline_images/5069d1174a4d1b3b70d631d7bb61731e.webp",
+      "file:///android_asset/offline_images/9056fe258a17cfe13919ec1b3e222f4a.webp",
+      "file:///android_asset/offline_images/22544e382529f38069d660a78e6df20e.png",
+      "file:///android_asset/offline_images/b68d6e640042b5db9b2c77722c9187e5.webp",
+      "file:///android_asset/offline_images/3e9ae4d161ed330f5ba83c71d2b2a637.webp"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -10010,7 +10463,11 @@
           "Eclipse",
           "Filo de la noche",
           "Ángel de la guarda",
-          "Baile de la muerte"
+          "Baile de la muerte",
+          "Colmillo de serpiente",
+          "Recuerdos de Lord Dominik",
+          "Malla de espinas",
+          "Fuerza de la naturaleza"
         ],
         "bootBase": "Grebas codiciosas",
         "bootUpgrade": "Botas inmortales",
@@ -10041,7 +10498,11 @@
           "Eclipse",
           "Filo de la noche",
           "Ángel de la guarda",
-          "Baile de la muerte"
+          "Baile de la muerte",
+          "Colmillo de serpiente",
+          "Recuerdos de Lord Dominik",
+          "Malla de espinas",
+          "Fuerza de la naturaleza"
         ],
         "bootBase": "Grebas codiciosas",
         "bootUpgrade": "Botas inmortales",
@@ -10115,13 +10576,19 @@
       "Bastón del Vacío",
       "Corona de la Reina Fragmentada",
       "Tormento de Liandry",
-      "Morellonomicón"
+      "Morellonomicón",
+      "Tridente de Oceánida",
+      "Malla de espinas",
+      "Fuerza de la naturaleza"
     ],
     "situationalItemsIcons": [
       "file:///android_asset/offline_images/a67295fc9713d5227ce1e8037c3e2779.webp",
       "file:///android_asset/offline_images/85536ee1d624a04cb68019aebba6d66e.webp",
       "file:///android_asset/offline_images/206e3eef90b44d6334533e14005a29b6.webp",
-      "file:///android_asset/offline_images/0c0fefe5c38af6fc40ea24c5539672b0.webp"
+      "file:///android_asset/offline_images/0c0fefe5c38af6fc40ea24c5539672b0.webp",
+      "file:///android_asset/offline_images/f800a2be044a17e73fe7079161df361a.webp",
+      "file:///android_asset/offline_images/b68d6e640042b5db9b2c77722c9187e5.webp",
+      "file:///android_asset/offline_images/3e9ae4d161ed330f5ba83c71d2b2a637.webp"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -10197,7 +10664,10 @@
           "Bastón del Vacío",
           "Corona de la Reina Fragmentada",
           "Tormento de Liandry",
-          "Morellonomicón"
+          "Morellonomicón",
+          "Tridente de Oceánida",
+          "Malla de espinas",
+          "Fuerza de la naturaleza"
         ],
         "bootBase": "Botas de maná",
         "bootUpgrade": "Botas del lanzahechizos",
@@ -10228,7 +10698,8 @@
           "Bastón del Vacío",
           "Corona de la Reina Fragmentada",
           "Tormento de Liandry",
-          "Morellonomicón"
+          "Morellonomicón",
+          "Tridente de Oceánida"
         ],
         "bootBase": "Botas de maná",
         "bootUpgrade": "Botas del lanzahechizos",
@@ -10302,13 +10773,19 @@
       "Filo de la noche",
       "Eclipse",
       "Ángel de la guarda",
-      "Colmillo de serpiente"
+      "Colmillo de serpiente",
+      "Recuerdos de Lord Dominik",
+      "Malla de espinas",
+      "Fuerza de la naturaleza"
     ],
     "situationalItemsIcons": [
       "file:///android_asset/offline_images/9d3f49bbe18458be5b63ce1d74b3e91c.webp",
       "file:///android_asset/offline_images/58e5a4886b2f0f5814d36b8dfabff5a6.webp",
       "file:///android_asset/offline_images/a9e382435db8c5b4d3dada562fa99d42.webp",
-      "file:///android_asset/offline_images/9056fe258a17cfe13919ec1b3e222f4a.webp"
+      "file:///android_asset/offline_images/9056fe258a17cfe13919ec1b3e222f4a.webp",
+      "file:///android_asset/offline_images/22544e382529f38069d660a78e6df20e.png",
+      "file:///android_asset/offline_images/b68d6e640042b5db9b2c77722c9187e5.webp",
+      "file:///android_asset/offline_images/3e9ae4d161ed330f5ba83c71d2b2a637.webp"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -10384,7 +10861,10 @@
           "Filo de la noche",
           "Eclipse",
           "Ángel de la guarda",
-          "Colmillo de serpiente"
+          "Colmillo de serpiente",
+          "Recuerdos de Lord Dominik",
+          "Malla de espinas",
+          "Fuerza de la naturaleza"
         ],
         "bootBase": "Botas dinámicas",
         "bootUpgrade": "Botas quebrantarmaduras",
@@ -10415,7 +10895,8 @@
           "Filo de la noche",
           "Eclipse",
           "Ángel de la guarda",
-          "Colmillo de serpiente"
+          "Colmillo de serpiente",
+          "Recuerdos de Lord Dominik"
         ],
         "bootBase": "Botas dinámicas",
         "bootUpgrade": "Botas quebrantarmaduras",
@@ -10489,13 +10970,21 @@
       "Sanguinaria",
       "Ángel de la guarda",
       "Fauces de Malmortius",
-      "Fuerza de trinidad"
+      "Fuerza de trinidad",
+      "Colmillo de serpiente",
+      "Recuerdos de Lord Dominik",
+      "Malla de espinas",
+      "Fuerza de la naturaleza"
     ],
     "situationalItemsIcons": [
       "file:///android_asset/offline_images/926efbca7b9ae9f241ddf7cd3c250273.webp",
       "file:///android_asset/offline_images/a9e382435db8c5b4d3dada562fa99d42.webp",
       "file:///android_asset/offline_images/fde3101c1b0cf8002454b75c285cd1fe.webp",
-      "file:///android_asset/offline_images/1475e9776e1486a548893bcbfba5b0ce.webp"
+      "file:///android_asset/offline_images/1475e9776e1486a548893bcbfba5b0ce.webp",
+      "file:///android_asset/offline_images/9056fe258a17cfe13919ec1b3e222f4a.webp",
+      "file:///android_asset/offline_images/22544e382529f38069d660a78e6df20e.png",
+      "file:///android_asset/offline_images/b68d6e640042b5db9b2c77722c9187e5.webp",
+      "file:///android_asset/offline_images/3e9ae4d161ed330f5ba83c71d2b2a637.webp"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -10571,7 +11060,11 @@
           "Sanguinaria",
           "Ángel de la guarda",
           "Fauces de Malmortius",
-          "Fuerza de trinidad"
+          "Fuerza de trinidad",
+          "Colmillo de serpiente",
+          "Recuerdos de Lord Dominik",
+          "Malla de espinas",
+          "Fuerza de la naturaleza"
         ],
         "bootBase": "Botas dinámicas",
         "bootUpgrade": "Botas quebrantarmaduras",
@@ -10602,7 +11095,9 @@
           "Sanguinaria",
           "Ángel de la guarda",
           "Fauces de Malmortius",
-          "Fuerza de trinidad"
+          "Fuerza de trinidad",
+          "Colmillo de serpiente",
+          "Recuerdos de Lord Dominik"
         ],
         "bootBase": "Grebas de berserker",
         "bootUpgrade": "Grebas de metal",
@@ -10863,13 +11358,19 @@
       "Calibrador de Sterak",
       "Ángel de la guarda",
       "Fauces de Malmortius",
-      "Colmillo de serpiente"
+      "Colmillo de serpiente",
+      "Recuerdos de Lord Dominik",
+      "Malla de espinas",
+      "Fuerza de la naturaleza"
     ],
     "situationalItemsIcons": [
       "file:///android_asset/offline_images/919bc13bc2461bb522082722e34a456d.webp",
       "file:///android_asset/offline_images/a9e382435db8c5b4d3dada562fa99d42.webp",
       "file:///android_asset/offline_images/fde3101c1b0cf8002454b75c285cd1fe.webp",
-      "file:///android_asset/offline_images/9056fe258a17cfe13919ec1b3e222f4a.webp"
+      "file:///android_asset/offline_images/9056fe258a17cfe13919ec1b3e222f4a.webp",
+      "file:///android_asset/offline_images/22544e382529f38069d660a78e6df20e.png",
+      "file:///android_asset/offline_images/b68d6e640042b5db9b2c77722c9187e5.webp",
+      "file:///android_asset/offline_images/3e9ae4d161ed330f5ba83c71d2b2a637.webp"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -10945,7 +11446,10 @@
           "Calibrador de Sterak",
           "Ángel de la guarda",
           "Fauces de Malmortius",
-          "Colmillo de serpiente"
+          "Colmillo de serpiente",
+          "Recuerdos de Lord Dominik",
+          "Malla de espinas",
+          "Fuerza de la naturaleza"
         ],
         "bootBase": "Grebas codiciosas",
         "bootUpgrade": "Botas inmortales",
@@ -10976,7 +11480,10 @@
           "Calibrador de Sterak",
           "Ángel de la guarda",
           "Fauces de Malmortius",
-          "Colmillo de serpiente"
+          "Colmillo de serpiente",
+          "Recuerdos de Lord Dominik",
+          "Malla de espinas",
+          "Fuerza de la naturaleza"
         ],
         "bootBase": "Grebas codiciosas",
         "bootUpgrade": "Botas inmortales",
@@ -11050,13 +11557,17 @@
       "Malla de espinas",
       "Fuerza de la naturaleza",
       "Corazón de hielo",
-      "Medallón de los Solari de Hierro"
+      "Medallón de los Solari de Hierro",
+      "Tridente de Oceánida",
+      "Morellonomicón"
     ],
     "situationalItemsIcons": [
       "file:///android_asset/offline_images/b68d6e640042b5db9b2c77722c9187e5.webp",
       "file:///android_asset/offline_images/3e9ae4d161ed330f5ba83c71d2b2a637.webp",
       "file:///android_asset/offline_images/0e47792257d27c16e79a36c746d6c82e.webp",
-      "file:///android_asset/offline_images/90e64403fbbc718c296e56622bc21fac.webp"
+      "file:///android_asset/offline_images/90e64403fbbc718c296e56622bc21fac.webp",
+      "file:///android_asset/offline_images/f800a2be044a17e73fe7079161df361a.webp",
+      "file:///android_asset/offline_images/0c0fefe5c38af6fc40ea24c5539672b0.webp"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -11132,7 +11643,9 @@
           "Malla de espinas",
           "Fuerza de la naturaleza",
           "Corazón de hielo",
-          "Medallón de los Solari de Hierro"
+          "Medallón de los Solari de Hierro",
+          "Tridente de Oceánida",
+          "Morellonomicón"
         ],
         "bootBase": "Botas blindadas",
         "bootUpgrade": "Avance blindado",
@@ -11163,7 +11676,10 @@
           "Fuerza de la naturaleza",
           "Presagio de Randuin",
           "Armadura de Warmog",
-          "Corazón de hielo"
+          "Corazón de hielo",
+          "Tridente de Oceánida",
+          "Morellonomicón",
+          "Bastón del Vacío"
         ],
         "bootBase": "Botas blindadas",
         "bootUpgrade": "Avance blindado",
@@ -11237,13 +11753,21 @@
       "Creagrietas",
       "Bastón del Vacío",
       "Corona de la Reina Fragmentada",
-      "Coraza dual purpúrea"
+      "Coraza dual purpúrea",
+      "Tridente de Oceánida",
+      "Morellonomicón",
+      "Malla de espinas",
+      "Fuerza de la naturaleza"
     ],
     "situationalItemsIcons": [
       "file:///android_asset/offline_images/8ab6dc6493eda1a50bf731f8fa715087.webp",
       "file:///android_asset/offline_images/a67295fc9713d5227ce1e8037c3e2779.webp",
       "file:///android_asset/offline_images/85536ee1d624a04cb68019aebba6d66e.webp",
-      "file:///android_asset/offline_images/amaranths_twinguard.webp"
+      "file:///android_asset/offline_images/amaranths_twinguard.webp",
+      "file:///android_asset/offline_images/f800a2be044a17e73fe7079161df361a.webp",
+      "file:///android_asset/offline_images/0c0fefe5c38af6fc40ea24c5539672b0.webp",
+      "file:///android_asset/offline_images/b68d6e640042b5db9b2c77722c9187e5.webp",
+      "file:///android_asset/offline_images/3e9ae4d161ed330f5ba83c71d2b2a637.webp"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -11319,7 +11843,11 @@
           "Creagrietas",
           "Bastón del Vacío",
           "Corona de la Reina Fragmentada",
-          "Coraza dual purpúrea"
+          "Coraza dual purpúrea",
+          "Tridente de Oceánida",
+          "Morellonomicón",
+          "Malla de espinas",
+          "Fuerza de la naturaleza"
         ],
         "bootBase": "Botas de maná",
         "bootUpgrade": "Botas del lanzahechizos",
@@ -11350,7 +11878,11 @@
           "Creagrietas",
           "Bastón del Vacío",
           "Corona de la Reina Fragmentada",
-          "Coraza dual purpúrea"
+          "Coraza dual purpúrea",
+          "Tridente de Oceánida",
+          "Morellonomicón",
+          "Malla de espinas",
+          "Fuerza de la naturaleza"
         ],
         "bootBase": "Botas de maná",
         "bootUpgrade": "Botas del lanzahechizos",
@@ -11424,13 +11956,15 @@
       "Bastón del Vacío",
       "Corona de la Reina Fragmentada",
       "Morellonomicón",
-      "Tormento de Liandry"
+      "Tormento de Liandry",
+      "Tridente de Oceánida"
     ],
     "situationalItemsIcons": [
       "file:///android_asset/offline_images/a67295fc9713d5227ce1e8037c3e2779.webp",
       "file:///android_asset/offline_images/85536ee1d624a04cb68019aebba6d66e.webp",
       "file:///android_asset/offline_images/0c0fefe5c38af6fc40ea24c5539672b0.webp",
-      "file:///android_asset/offline_images/206e3eef90b44d6334533e14005a29b6.webp"
+      "file:///android_asset/offline_images/206e3eef90b44d6334533e14005a29b6.webp",
+      "file:///android_asset/offline_images/f800a2be044a17e73fe7079161df361a.webp"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -11506,7 +12040,8 @@
           "Bastón del Vacío",
           "Corona de la Reina Fragmentada",
           "Morellonomicón",
-          "Tormento de Liandry"
+          "Tormento de Liandry",
+          "Tridente de Oceánida"
         ],
         "bootBase": "Botas de maná",
         "bootUpgrade": "Botas del lanzahechizos",
@@ -11537,7 +12072,10 @@
           "Bastón del Vacío",
           "Corona de la Reina Fragmentada",
           "Morellonomicón",
-          "Tormento de Liandry"
+          "Tormento de Liandry",
+          "Tridente de Oceánida",
+          "Malla de espinas",
+          "Fuerza de la naturaleza"
         ],
         "bootBase": "Botas de maná",
         "bootUpgrade": "Botas del lanzahechizos",
@@ -11611,13 +12149,17 @@
       "Sanguinaria",
       "Cañón de Fuego Rápido",
       "Ángel de la guarda",
-      "Fauces de Malmortius"
+      "Fauces de Malmortius",
+      "Colmillo de serpiente",
+      "Recuerdos de Lord Dominik"
     ],
     "situationalItemsIcons": [
       "file:///android_asset/offline_images/926efbca7b9ae9f241ddf7cd3c250273.webp",
       "file:///android_asset/offline_images/rapid_firecannon.webp",
       "file:///android_asset/offline_images/a9e382435db8c5b4d3dada562fa99d42.webp",
-      "file:///android_asset/offline_images/fde3101c1b0cf8002454b75c285cd1fe.webp"
+      "file:///android_asset/offline_images/fde3101c1b0cf8002454b75c285cd1fe.webp",
+      "file:///android_asset/offline_images/9056fe258a17cfe13919ec1b3e222f4a.webp",
+      "file:///android_asset/offline_images/22544e382529f38069d660a78e6df20e.png"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -11693,7 +12235,9 @@
           "Sanguinaria",
           "Cañón de Fuego Rápido",
           "Ángel de la guarda",
-          "Fauces de Malmortius"
+          "Fauces de Malmortius",
+          "Colmillo de serpiente",
+          "Recuerdos de Lord Dominik"
         ],
         "bootBase": "Grebas de berserker",
         "bootUpgrade": "Grebas de metal",
@@ -11724,7 +12268,9 @@
           "Sanguinaria",
           "Cañón de Fuego Rápido",
           "Ángel de la guarda",
-          "Fauces de Malmortius"
+          "Fauces de Malmortius",
+          "Colmillo de serpiente",
+          "Recuerdos de Lord Dominik"
         ],
         "bootBase": "Botas dinámicas",
         "bootUpgrade": "Botas quebrantarmaduras",
@@ -11798,13 +12344,21 @@
       "Bastón de aguas fluidas",
       "Mandato imperial",
       "Redención",
-      "Bendición de Mikael"
+      "Bendición de Mikael",
+      "Tridente de Oceánida",
+      "Morellonomicón",
+      "Malla de espinas",
+      "Fuerza de la naturaleza"
     ],
     "situationalItemsIcons": [
       "file:///android_asset/offline_images/0514e703e9172ec9266ef8121ae07b3b.webp",
       "file:///android_asset/offline_images/516c29e1d0b53fc59197feeb6201c965.webp",
       "file:///android_asset/offline_images/7c4aa6c8827f314917041dc3a4d63c05.webp",
-      "file:///android_asset/offline_images/bbc3dbd2e1b410b93581181f83ef1e54.webp"
+      "file:///android_asset/offline_images/bbc3dbd2e1b410b93581181f83ef1e54.webp",
+      "file:///android_asset/offline_images/f800a2be044a17e73fe7079161df361a.webp",
+      "file:///android_asset/offline_images/0c0fefe5c38af6fc40ea24c5539672b0.webp",
+      "file:///android_asset/offline_images/b68d6e640042b5db9b2c77722c9187e5.webp",
+      "file:///android_asset/offline_images/3e9ae4d161ed330f5ba83c71d2b2a637.webp"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -11880,7 +12434,11 @@
           "Bastón de aguas fluidas",
           "Mandato imperial",
           "Redención",
-          "Bendición de Mikael"
+          "Bendición de Mikael",
+          "Tridente de Oceánida",
+          "Morellonomicón",
+          "Malla de espinas",
+          "Fuerza de la naturaleza"
         ],
         "bootBase": "Botas jonias de la lucidez",
         "bootUpgrade": "Lucidez carmesí",
@@ -11911,7 +12469,8 @@
           "Bastón del Vacío",
           "Impulso Cósmico",
           "Morellonomicón",
-          "Creagrietas"
+          "Creagrietas",
+          "Tridente de Oceánida"
         ],
         "bootBase": "Botas de maná",
         "bootUpgrade": "Botas del lanzahechizos",
@@ -11985,13 +12544,15 @@
       "Bastón del Vacío",
       "Corona de la Reina Fragmentada",
       "Precisión infalible",
-      "Morellonomicón"
+      "Morellonomicón",
+      "Tridente de Oceánida"
     ],
     "situationalItemsIcons": [
       "file:///android_asset/offline_images/a67295fc9713d5227ce1e8037c3e2779.webp",
       "file:///android_asset/offline_images/85536ee1d624a04cb68019aebba6d66e.webp",
       "file:///android_asset/offline_images/8f0a15511fe5a7a9cce26cc981494f47.webp",
-      "file:///android_asset/offline_images/0c0fefe5c38af6fc40ea24c5539672b0.webp"
+      "file:///android_asset/offline_images/0c0fefe5c38af6fc40ea24c5539672b0.webp",
+      "file:///android_asset/offline_images/f800a2be044a17e73fe7079161df361a.webp"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -12067,7 +12628,8 @@
           "Bastón del Vacío",
           "Corona de la Reina Fragmentada",
           "Precisión infalible",
-          "Morellonomicón"
+          "Morellonomicón",
+          "Tridente de Oceánida"
         ],
         "bootBase": "Botas de maná",
         "bootUpgrade": "Botas del lanzahechizos",
@@ -12098,7 +12660,10 @@
           "Bastón del Vacío",
           "Corona de la Reina Fragmentada",
           "Precisión infalible",
-          "Morellonomicón"
+          "Morellonomicón",
+          "Tridente de Oceánida",
+          "Malla de espinas",
+          "Fuerza de la naturaleza"
         ],
         "bootBase": "Botas jonias de la lucidez",
         "bootUpgrade": "Lucidez carmesí",
@@ -12173,13 +12738,19 @@
       "Fuerza de la naturaleza",
       "Presagio de Randuin",
       "Corazón de acero",
-      "Malla de espinas"
+      "Malla de espinas",
+      "Tridente de Oceánida",
+      "Morellonomicón",
+      "Bastón del Vacío"
     ],
     "situationalItemsIcons": [
       "file:///android_asset/offline_images/3e9ae4d161ed330f5ba83c71d2b2a637.webp",
       "file:///android_asset/offline_images/a01f7976459d788cbb0a763155cb39b8.webp",
       "file:///android_asset/offline_images/06c122abcc307025bf2aacd5667ddaad.webp",
-      "file:///android_asset/offline_images/b68d6e640042b5db9b2c77722c9187e5.webp"
+      "file:///android_asset/offline_images/b68d6e640042b5db9b2c77722c9187e5.webp",
+      "file:///android_asset/offline_images/f800a2be044a17e73fe7079161df361a.webp",
+      "file:///android_asset/offline_images/0c0fefe5c38af6fc40ea24c5539672b0.webp",
+      "file:///android_asset/offline_images/a67295fc9713d5227ce1e8037c3e2779.webp"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -12255,7 +12826,10 @@
           "Fuerza de la naturaleza",
           "Presagio de Randuin",
           "Corazón de acero",
-          "Malla de espinas"
+          "Malla de espinas",
+          "Tridente de Oceánida",
+          "Morellonomicón",
+          "Bastón del Vacío"
         ],
         "bootBase": "Botas blindadas",
         "bootUpgrade": "Avance blindado",
@@ -12286,7 +12860,10 @@
           "Fuerza de la naturaleza",
           "Presagio de Randuin",
           "Corazón de acero",
-          "Malla de espinas"
+          "Malla de espinas",
+          "Tridente de Oceánida",
+          "Morellonomicón",
+          "Bastón del Vacío"
         ],
         "bootBase": "Botas blindadas",
         "bootUpgrade": "Avance blindado",
@@ -12317,7 +12894,9 @@
           "Malla de espinas",
           "Fuerza de la naturaleza",
           "Velo del amanecer",
-          "Medallón de los Solari de Hierro"
+          "Medallón de los Solari de Hierro",
+          "Tridente de Oceánida",
+          "Morellonomicón"
         ],
         "bootBase": "Botas blindadas",
         "bootUpgrade": "Avance blindado",
@@ -12392,13 +12971,17 @@
       "Malla de espinas",
       "Fuerza de la naturaleza",
       "Corazón de hielo",
-      "Medallón de los Solari de Hierro"
+      "Medallón de los Solari de Hierro",
+      "Tridente de Oceánida",
+      "Morellonomicón"
     ],
     "situationalItemsIcons": [
       "file:///android_asset/offline_images/b68d6e640042b5db9b2c77722c9187e5.webp",
       "file:///android_asset/offline_images/3e9ae4d161ed330f5ba83c71d2b2a637.webp",
       "file:///android_asset/offline_images/0e47792257d27c16e79a36c746d6c82e.webp",
-      "file:///android_asset/offline_images/90e64403fbbc718c296e56622bc21fac.webp"
+      "file:///android_asset/offline_images/90e64403fbbc718c296e56622bc21fac.webp",
+      "file:///android_asset/offline_images/f800a2be044a17e73fe7079161df361a.webp",
+      "file:///android_asset/offline_images/0c0fefe5c38af6fc40ea24c5539672b0.webp"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -12474,7 +13057,9 @@
           "Malla de espinas",
           "Fuerza de la naturaleza",
           "Corazón de hielo",
-          "Medallón de los Solari de Hierro"
+          "Medallón de los Solari de Hierro",
+          "Tridente de Oceánida",
+          "Morellonomicón"
         ],
         "bootBase": "Botas blindadas",
         "bootUpgrade": "Avance blindado",
@@ -12505,7 +13090,10 @@
           "Fuerza de la naturaleza",
           "Presagio de Randuin",
           "Armadura de Warmog",
-          "Corazón de hielo"
+          "Corazón de hielo",
+          "Tridente de Oceánida",
+          "Morellonomicón",
+          "Bastón del Vacío"
         ],
         "bootBase": "Botas blindadas",
         "bootUpgrade": "Avance blindado",
@@ -12536,7 +13124,10 @@
           "Fuerza de la naturaleza",
           "Presagio de Randuin",
           "Armadura de Warmog",
-          "Corazón de hielo"
+          "Corazón de hielo",
+          "Tridente de Oceánida",
+          "Morellonomicón",
+          "Bastón del Vacío"
         ],
         "bootBase": "Botas blindadas",
         "bootUpgrade": "Avance blindado",
@@ -12610,13 +13201,17 @@
       "Calibrador de Sterak",
       "Ángel de la guarda",
       "Filo Infinito",
-      "Recuerdos de Lord Dominik"
+      "Recuerdos de Lord Dominik",
+      "Malla de espinas",
+      "Fuerza de la naturaleza"
     ],
     "situationalItemsIcons": [
       "file:///android_asset/offline_images/919bc13bc2461bb522082722e34a456d.webp",
       "file:///android_asset/offline_images/a9e382435db8c5b4d3dada562fa99d42.webp",
       "file:///android_asset/offline_images/277520aa7c2716fe0e494a9f2fa55e2a.webp",
-      "file:///android_asset/offline_images/22544e382529f38069d660a78e6df20e.png"
+      "file:///android_asset/offline_images/22544e382529f38069d660a78e6df20e.png",
+      "file:///android_asset/offline_images/b68d6e640042b5db9b2c77722c9187e5.webp",
+      "file:///android_asset/offline_images/3e9ae4d161ed330f5ba83c71d2b2a637.webp"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -12692,7 +13287,9 @@
           "Calibrador de Sterak",
           "Ángel de la guarda",
           "Filo Infinito",
-          "Recuerdos de Lord Dominik"
+          "Recuerdos de Lord Dominik",
+          "Malla de espinas",
+          "Fuerza de la naturaleza"
         ],
         "bootBase": "Grebas codiciosas",
         "bootUpgrade": "Botas inmortales",
@@ -12723,7 +13320,9 @@
           "Calibrador de Sterak",
           "Ángel de la guarda",
           "Filo Infinito",
-          "Recuerdos de Lord Dominik"
+          "Recuerdos de Lord Dominik",
+          "Malla de espinas",
+          "Fuerza de la naturaleza"
         ],
         "bootBase": "Grebas codiciosas",
         "bootUpgrade": "Botas inmortales",
@@ -12797,13 +13396,15 @@
       "Bastón del Vacío",
       "Corona de la Reina Fragmentada",
       "Impulso Cósmico",
-      "Morellonomicón"
+      "Morellonomicón",
+      "Tridente de Oceánida"
     ],
     "situationalItemsIcons": [
       "file:///android_asset/offline_images/a67295fc9713d5227ce1e8037c3e2779.webp",
       "file:///android_asset/offline_images/85536ee1d624a04cb68019aebba6d66e.webp",
       "file:///android_asset/offline_images/22da6db8487eb222ee027fc4b6a5fb95.webp",
-      "file:///android_asset/offline_images/0c0fefe5c38af6fc40ea24c5539672b0.webp"
+      "file:///android_asset/offline_images/0c0fefe5c38af6fc40ea24c5539672b0.webp",
+      "file:///android_asset/offline_images/f800a2be044a17e73fe7079161df361a.webp"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -12879,7 +13480,8 @@
           "Bastón del Vacío",
           "Corona de la Reina Fragmentada",
           "Impulso Cósmico",
-          "Morellonomicón"
+          "Morellonomicón",
+          "Tridente de Oceánida"
         ],
         "bootBase": "Botas de maná",
         "bootUpgrade": "Botas del lanzahechizos",
@@ -12910,7 +13512,10 @@
           "Bastón del Vacío",
           "Corona de la Reina Fragmentada",
           "Impulso Cósmico",
-          "Morellonomicón"
+          "Morellonomicón",
+          "Tridente de Oceánida",
+          "Malla de espinas",
+          "Fuerza de la naturaleza"
         ],
         "bootBase": "Botas jonias de la lucidez",
         "bootUpgrade": "Lucidez carmesí",
@@ -12984,13 +13589,21 @@
       "Bastón de aguas fluidas",
       "Mandato imperial",
       "Redención",
-      "Bendición de Mikael"
+      "Bendición de Mikael",
+      "Tridente de Oceánida",
+      "Morellonomicón",
+      "Malla de espinas",
+      "Fuerza de la naturaleza"
     ],
     "situationalItemsIcons": [
       "file:///android_asset/offline_images/0514e703e9172ec9266ef8121ae07b3b.webp",
       "file:///android_asset/offline_images/516c29e1d0b53fc59197feeb6201c965.webp",
       "file:///android_asset/offline_images/7c4aa6c8827f314917041dc3a4d63c05.webp",
-      "file:///android_asset/offline_images/bbc3dbd2e1b410b93581181f83ef1e54.webp"
+      "file:///android_asset/offline_images/bbc3dbd2e1b410b93581181f83ef1e54.webp",
+      "file:///android_asset/offline_images/f800a2be044a17e73fe7079161df361a.webp",
+      "file:///android_asset/offline_images/0c0fefe5c38af6fc40ea24c5539672b0.webp",
+      "file:///android_asset/offline_images/b68d6e640042b5db9b2c77722c9187e5.webp",
+      "file:///android_asset/offline_images/3e9ae4d161ed330f5ba83c71d2b2a637.webp"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -13066,7 +13679,11 @@
           "Bastón de aguas fluidas",
           "Mandato imperial",
           "Redención",
-          "Bendición de Mikael"
+          "Bendición de Mikael",
+          "Tridente de Oceánida",
+          "Morellonomicón",
+          "Malla de espinas",
+          "Fuerza de la naturaleza"
         ],
         "bootBase": "Botas jonias de la lucidez",
         "bootUpgrade": "Lucidez carmesí",
@@ -13097,7 +13714,8 @@
           "Bastón del Vacío",
           "Impulso Cósmico",
           "Morellonomicón",
-          "Creagrietas"
+          "Creagrietas",
+          "Tridente de Oceánida"
         ],
         "bootBase": "Botas de maná",
         "bootUpgrade": "Botas del lanzahechizos",
@@ -13171,13 +13789,15 @@
       "Recuerdos de Lord Dominik",
       "Sanguinaria",
       "Ángel de la guarda",
-      "Filo de la noche"
+      "Filo de la noche",
+      "Colmillo de serpiente"
     ],
     "situationalItemsIcons": [
       "file:///android_asset/offline_images/22544e382529f38069d660a78e6df20e.png",
       "file:///android_asset/offline_images/926efbca7b9ae9f241ddf7cd3c250273.webp",
       "file:///android_asset/offline_images/a9e382435db8c5b4d3dada562fa99d42.webp",
-      "file:///android_asset/offline_images/9d3f49bbe18458be5b63ce1d74b3e91c.webp"
+      "file:///android_asset/offline_images/9d3f49bbe18458be5b63ce1d74b3e91c.webp",
+      "file:///android_asset/offline_images/9056fe258a17cfe13919ec1b3e222f4a.webp"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -13253,7 +13873,8 @@
           "Recuerdos de Lord Dominik",
           "Sanguinaria",
           "Ángel de la guarda",
-          "Filo de la noche"
+          "Filo de la noche",
+          "Colmillo de serpiente"
         ],
         "bootBase": "Grebas codiciosas",
         "bootUpgrade": "Botas inmortales",
@@ -13284,7 +13905,11 @@
           "Recuerdos de Lord Dominik",
           "Sanguinaria",
           "Ángel de la guarda",
-          "Filo de la noche"
+          "Filo de la noche",
+          "Tridente de Oceánida",
+          "Morellonomicón",
+          "Malla de espinas",
+          "Fuerza de la naturaleza"
         ],
         "bootBase": "Botas jonias de la lucidez",
         "bootUpgrade": "Lucidez carmesí",
@@ -13358,13 +13983,19 @@
       "Malla de espinas",
       "Fuerza de la naturaleza",
       "Sombrero mortal de Rabadon",
-      "Coraza dual purpúrea"
+      "Coraza dual purpúrea",
+      "Tridente de Oceánida",
+      "Morellonomicón",
+      "Bastón del Vacío"
     ],
     "situationalItemsIcons": [
       "file:///android_asset/offline_images/b68d6e640042b5db9b2c77722c9187e5.webp",
       "file:///android_asset/offline_images/3e9ae4d161ed330f5ba83c71d2b2a637.webp",
       "file:///android_asset/offline_images/3e238358c02090087ae206fc310ad98a.webp",
-      "file:///android_asset/offline_images/amaranths_twinguard.webp"
+      "file:///android_asset/offline_images/amaranths_twinguard.webp",
+      "file:///android_asset/offline_images/f800a2be044a17e73fe7079161df361a.webp",
+      "file:///android_asset/offline_images/0c0fefe5c38af6fc40ea24c5539672b0.webp",
+      "file:///android_asset/offline_images/a67295fc9713d5227ce1e8037c3e2779.webp"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -13440,7 +14071,10 @@
           "Malla de espinas",
           "Fuerza de la naturaleza",
           "Sombrero mortal de Rabadon",
-          "Coraza dual purpúrea"
+          "Coraza dual purpúrea",
+          "Tridente de Oceánida",
+          "Morellonomicón",
+          "Bastón del Vacío"
         ],
         "bootBase": "Grebas codiciosas",
         "bootUpgrade": "Botas inmortales",
@@ -13471,7 +14105,10 @@
           "Malla de espinas",
           "Fuerza de la naturaleza",
           "Sombrero mortal de Rabadon",
-          "Coraza dual purpúrea"
+          "Coraza dual purpúrea",
+          "Tridente de Oceánida",
+          "Morellonomicón",
+          "Bastón del Vacío"
         ],
         "bootBase": "Grebas codiciosas",
         "bootUpgrade": "Botas inmortales",
@@ -13546,13 +14183,19 @@
       "Morellonomicón",
       "Corona de la Reina Fragmentada",
       "Sombrero mortal de Rabadon",
-      "Medallón de los Solari de Hierro"
+      "Medallón de los Solari de Hierro",
+      "Tridente de Oceánida",
+      "Malla de espinas",
+      "Fuerza de la naturaleza"
     ],
     "situationalItemsIcons": [
       "file:///android_asset/offline_images/0c0fefe5c38af6fc40ea24c5539672b0.webp",
       "file:///android_asset/offline_images/85536ee1d624a04cb68019aebba6d66e.webp",
       "file:///android_asset/offline_images/3e238358c02090087ae206fc310ad98a.webp",
-      "file:///android_asset/offline_images/90e64403fbbc718c296e56622bc21fac.webp"
+      "file:///android_asset/offline_images/90e64403fbbc718c296e56622bc21fac.webp",
+      "file:///android_asset/offline_images/f800a2be044a17e73fe7079161df361a.webp",
+      "file:///android_asset/offline_images/b68d6e640042b5db9b2c77722c9187e5.webp",
+      "file:///android_asset/offline_images/3e9ae4d161ed330f5ba83c71d2b2a637.webp"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -13628,7 +14271,10 @@
           "Morellonomicón",
           "Corona de la Reina Fragmentada",
           "Sombrero mortal de Rabadon",
-          "Medallón de los Solari de Hierro"
+          "Medallón de los Solari de Hierro",
+          "Tridente de Oceánida",
+          "Malla de espinas",
+          "Fuerza de la naturaleza"
         ],
         "bootBase": "Botas jonias de la lucidez",
         "bootUpgrade": "Lucidez carmesí",
@@ -13659,7 +14305,9 @@
           "Corona de la Reina Fragmentada",
           "Sombrero mortal de Rabadon",
           "Eco de Luden",
-          "Orbe infinito"
+          "Orbe infinito",
+          "Tridente de Oceánida",
+          "Bastón del Vacío"
         ],
         "bootBase": "Botas de maná",
         "bootUpgrade": "Botas del lanzahechizos",
@@ -13690,7 +14338,11 @@
           "Corona de la Reina Fragmentada",
           "Sombrero mortal de Rabadon",
           "Eco de Luden",
-          "Orbe infinito"
+          "Orbe infinito",
+          "Tridente de Oceánida",
+          "Bastón del Vacío",
+          "Malla de espinas",
+          "Fuerza de la naturaleza"
         ],
         "bootBase": "Botas de maná",
         "bootUpgrade": "Botas del lanzahechizos",

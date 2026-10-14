@@ -246,6 +246,9 @@ fun DraftHistoryScreen(
 
     val currentLang = com.example.util.currentAppLanguage()
     val effectiveLang = if (currentLang == "auto") "es" else currentLang
+    val accountRole by com.example.util.SubscriptionManager.userRole.collectAsStateWithLifecycle()
+    val isAdminUser = accountRole.equals("admin", ignoreCase = true) || com.example.util.AuthManager.isCurrentUserAdmin()
+    var isSeedingTestDrafts by remember { mutableStateOf(false) }
 
     // Backup & Restore state
     var showBackupRestoreDialog by remember { mutableStateOf(false) }
@@ -314,7 +317,7 @@ fun DraftHistoryScreen(
         }
     }
 
-    val filteredDrafts = remember(currentScopeDrafts, searchQuery, selectedResultFilter, selectedRoleFilter) {
+    val filteredDrafts = remember(currentScopeDrafts, searchQuery, selectedResultFilter, selectedQueueFilter, selectedRoleFilter) {
         currentScopeDrafts.filter { draft ->
             val matchesQuery = searchQuery.isBlank() ||
                     draft.title.contains(searchQuery, ignoreCase = true) ||
@@ -902,6 +905,51 @@ fun DraftHistoryScreen(
             }
 
             Spacer(modifier = Modifier.height(8.dp))
+
+            if (isAdminUser) {
+                Button(
+                    onClick = {
+                        if (!isSeedingTestDrafts) {
+                            isSeedingTestDrafts = true
+                            coroutineScope.launch {
+                                try {
+                                    val total = DraftHistoryRepository.seedAdminDraftHistoryForTesting(context)
+                                    Toast.makeText(
+                                        context,
+                                        trStr(effectiveLang, "Se agregaron %d drafts de prueba: 20 normales y 20 legendarias.").format(total),
+                                        Toast.LENGTH_LONG
+                                    ).show()
+                                } catch (e: Exception) {
+                                    Toast.makeText(context, com.example.util.appTr("Error al crear drafts de prueba: ${e.localizedMessage}"), Toast.LENGTH_LONG).show()
+                                } finally {
+                                    isSeedingTestDrafts = false
+                                }
+                            }
+                        }
+                    },
+                    enabled = !isSeedingTestDrafts,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .testTag("admin_seed_draft_history_button"),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = HextechCyan.copy(alpha = 0.18f),
+                        contentColor = HextechCyan,
+                        disabledContainerColor = HextechSurfaceVariant,
+                        disabledContentColor = TextMuted
+                    ),
+                    border = BorderStroke(1.dp, HextechCyan.copy(alpha = 0.65f)),
+                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 10.dp)
+                ) {
+                    Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(16.dp))
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = tr(if (isSeedingTestDrafts) "Creando drafts de prueba..." else "Agregar 40 drafts de prueba"),
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 12.sp
+                    )
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+            }
 
             Box(
                 modifier = Modifier

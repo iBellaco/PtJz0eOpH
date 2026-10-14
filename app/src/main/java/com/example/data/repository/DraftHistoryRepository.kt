@@ -216,6 +216,75 @@ object DraftHistoryRepository {
         }
     }
 
+    suspend fun seedAdminDraftHistoryForTesting(context: Context): Int {
+        WildRiftRepository.initChampions(context)
+        val roster = WildRiftRepository.champions.filter { it.id.isNotBlank() && it.id != "empty" }
+        if (roster.size < 20) return 0
+
+        fun champion(id: String): Champion = roster.firstOrNull { it.id == id } ?: roster.first()
+        fun slot(id: String, role: LaneRole) = DraftSlot(champion(id), role)
+
+        val normalDrafts = listOf(
+            listOf("darius", "jarvan_iv", "orianna", "jinx", "lulu") to listOf("malphite", "lee_sin", "akali", "caitlyn", "thresh"),
+            listOf("garen", "vi", "ahri", "kai_sa", "nami") to listOf("aatrox", "amumu", "syndra", "draven", "leona"),
+            listOf("mordekaiser", "rammus", "hwei", "vayne", "janna") to listOf("gwen", "zed", "lux", "tristana", "alistar"),
+            listOf("yone", "gragas", "kassadin", "ezreal", "seraphine") to listOf("irelia", "kayn", "fizz", "ashe", "yuumi"),
+            listOf("aatrox", "lee_sin", "diana", "caitlyn", "senna") to listOf("garen", "vi", "katarina", "jhin", "rakan")
+        )
+        val legendaryDrafts = listOf(
+            listOf("malphite", "amumu", "hwei", "zeri", "milio") to listOf("darius", "kha_zix", "akali", "tristana", "pyke"),
+            listOf("gwen", "jarvan_iv", "syndra", "xayah", "rakan") to listOf("mordekaiser", "lee_sin", "orianna", "jinx", "thresh"),
+            listOf("irelia", "rammus", "ahri", "vayne", "lulu") to listOf("malphite", "gragas", "zed", "caitlyn", "nami"),
+            listOf("yone", "vi", "kassadin", "kai_sa", "alistar") to listOf("aatrox", "amumu", "diana", "draven", "seraphine"),
+            listOf("garen", "kayn", "lux", "ezreal", "leona") to listOf("gwen", "jarvan_iv", "fizz", "ashe", "yuumi")
+        )
+        val roles = listOf(LaneRole.TOP, LaneRole.JUNGLE, LaneRole.MID, LaneRole.ADC, LaneRole.SUPPORT)
+        val activeProfile = AccountProfileManager.getActiveProfile(context)
+        var inserted = 0
+
+        suspend fun insertBatch(matchMode: String, source: List<Pair<List<String>, List<String>>>) {
+            repeat(20) { index ->
+                val pair = source[index % source.size]
+                val role = roles[index % roles.size]
+                val allies = pair.first.mapIndexed { slotIndex, id -> slot(id, roles[slotIndex]) }
+                val enemies = pair.second.mapIndexed { slotIndex, id -> slot(id, roles[slotIndex]) }
+                val laneEnemy = enemies.firstOrNull { it.assignedRole == role }?.champion
+                val analysis = WildRiftRepository.analyzeDraft(
+                    myRole = role,
+                    allies = allies.map { it.champion },
+                    enemies = enemies.map { it.champion },
+                    enemyLaneOpponent = laneEnemy,
+                    isFirstPick = index % 2 == 0,
+                    lang = "es"
+                )
+                val myChampion = allies.firstOrNull { it.assignedRole == role }?.champion?.name.orEmpty()
+                val modeLabel = if (matchMode == "LEGENDARY") "Legendaria" else "Clasificatoria Normal"
+                saveDraft(
+                    context = context,
+                    myRole = role,
+                    isFirstPick = index % 2 == 0,
+                    allies = allies,
+                    enemies = enemies,
+                    analysis = analysis,
+                    title = "Prueba $modeLabel ${index + 1} · $myChampion",
+                    notes = "Registro de prueba para validar historial y Tier List Personal.",
+                    matchResult = if (index % 3 == 0) "DEFEAT" else "VICTORY",
+                    accountProfileId = activeProfile.id,
+                    accountProfileName = activeProfile.name,
+                    isLegendary = matchMode == "LEGENDARY",
+                    matchMode = matchMode,
+                    myScore = listOf("8/3/9", "5/2/14", "11/6/7", "3/1/18", "9/4/10")[index % 5],
+                    allowDuplicate = true
+                )
+                inserted++
+            }
+        }
+
+        insertBatch("RANKED", normalDrafts)
+        insertBatch("LEGENDARY", legendaryDrafts)
+        return inserted
+    }
+
     suspend fun updateMatchResult(context: Context, id: Long, result: String) {
         AppDatabase.getDatabase(context).draftDao().updateMatchResult(id, result)
     }
