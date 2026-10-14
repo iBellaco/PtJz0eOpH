@@ -160,8 +160,8 @@
   "locket_of_the_iron_solari": {
     "passive": "Medallón activa: Te otorga un escudo a ti y a todos los campeones aliados cercanos que absorbe de 250 a 370 de daño durante 2,5 s, enfriamiento de 60 s. Este efecto disminuye un 50% si el objetivo se ha visto afectado por otro Medallón en los últimos 20 s.",
     "passivePt": "Medalhão ativo: Concede a você e a todos os campeões aliados próximos um escudo que absorve 250 a 370 de dano por 2,5 s, tempo de recarga de 60 s. O efeito diminui em 50% se o alvo tiver recebido outro Medalhão nos últimos 20 s.",
-    "stats": "+200 Vida máxima • +30 Armadura • +30 Resistencia mágica • +10 Velocidad de habilidades",
-    "statsPt": "+200 Vida máxima • +30 Armadura • +30 Resistência mágica • +10 Aceleração de habilidade"
+    "stats": "+300 Vida máxima • +30 Armadura • +30 Resistencia mágica • +10 Velocidad de habilidades",
+    "statsPt": "+300 Vida máxima • +30 Armadura • +30 Resistência mágica • +10 Aceleração de habilidade"
   },
   "galeforce": {
     "passive": "Aguacero activa: Te deslizas hacia la dirección seleccionada y disparas 3 misiles al enemigo con menos vida que se encuentre cerca de tu destino, prioriza a los campeones. Inflige daño físico equivalente al 40-125 más 35% del daño de ataque adicional, enfriamiento de 60 s.",
