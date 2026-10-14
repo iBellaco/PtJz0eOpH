@@ -151,6 +151,7 @@ internal fun AdaptiveDetailAlertDialog(
             androidx.compose.material3.Card(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .heightIn(max = 440.dp)
                     .coachClickable(
                         interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() },
                         indication = null,

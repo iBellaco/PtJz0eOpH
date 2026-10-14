@@ -50,6 +50,11 @@ class ChampionBuildsCatalogValidationTest {
         assertEquals("Official builds must match primary + Flex roles exactly", expectedBuildKeys, actualBuildKeys.toSet())
 
         val validItemNames = WildRiftItemsData.list.map { it.name }.toSet()
+        val disallowedComponentNames = WildRiftItemsData.officialCategoryOrder.flatMap { section ->
+            com.example.data.WildRiftComponentItemsData.getItems(section, "Básico") +
+                com.example.data.WildRiftComponentItemsData.getItems(section, "Nivel Medio")
+        }.map { it.name }.toSet()
+        val supportStarterNames = setOf("Hoz espectral", "Escudo reliquia")
         val validSpellNames = WildRiftSpellsAndRunes.summonerSpells.map { it.name }.toSet()
         val validRunesMap = WildRiftSpellsAndRunes.runes.associateBy { it.name }
 
@@ -82,11 +87,20 @@ class ChampionBuildsCatalogValidationTest {
                 assertTrue("$prefix item ${entry.itemName} must include Coach advice", entry.description.isNotBlank())
             }
 
+            val buildItemNames = build.coreItems + build.situationalItems
+            val illegalComponents = buildItemNames.filter { it in disallowedComponentNames && it !in supportStarterNames }
+            assertTrue("$prefix must not use basic or mid-tier components: $illegalComponents", illegalComponents.isEmpty())
+
             if (build.role.contains("Soporte", ignoreCase = true)) {
-                val requiredSupportItems = build.coreItems.filter {
-                    it == "Hoz espectral" || it == "Escudo reliquia"
-                }
+                val requiredSupportItems = build.coreItems.filter { it in supportStarterNames }
                 assertEquals("$prefix support must use exactly one required support item", 1, requiredSupportItems.size)
+            }
+
+            val champion = champions.first { it.id == build.championId }
+            val role = com.example.model.LaneRole.entries.first { it.displayName == build.role.substringBefore(" (") }
+            if (role == com.example.model.LaneRole.SUPPORT || champion.damageType == com.example.model.DamageType.MAGIC) {
+                assertTrue("$prefix must expose AP anti-shield answer from the local item catalog",
+                    buildItemNames.contains("Tridente de Oceánida"))
             }
 
             val t2 = assertNotNullAndGet("$prefix must have Tier 2 boots", build.bootsT2Item)
@@ -97,8 +111,6 @@ class ChampionBuildsCatalogValidationTest {
             assertTrue("$prefix Tier 2 boots need advice", t2.description.isNotBlank())
             assertTrue("$prefix Tier 3 boots need advice", t3.description.isNotBlank())
 
-            val champion = champions.first { it.id == build.championId }
-            val role = com.example.model.LaneRole.entries.first { it.displayName == build.role.substringBefore(" (") }
             val expectedBoots = com.example.util.BuildChoiceRules.boots(t2.itemName, champion.damageType,
                 champion.isFrontline, champion.isRanged, role, champion.id)
             assertEquals("$prefix must follow conditional boot recommendations", expectedBoots.singleOrNull()?.name,

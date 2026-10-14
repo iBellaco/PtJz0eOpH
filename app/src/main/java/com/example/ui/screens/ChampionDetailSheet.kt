@@ -1458,7 +1458,7 @@ fun ChampionDetailSheet(
                                 ) {
                                     Box(
                                         modifier = Modifier
-                                            .size(48.dp)
+                                            .size(runeSecSize)
                                             .testTag("build_situational_rune_${detailRune.id}")
                                             .coachClickable {
                                                 val buildAdvice = com.example.util.trStr(currentLang, sRune.description)
@@ -1495,7 +1495,7 @@ fun ChampionDetailSheet(
                                         AppAssetImage(
                                             url = com.example.data.WildRiftSpellsAndRunes.getRuneIconByName(sourceName),
                                             contentDescription = tr(sourceName), fallbackText = tr(sourceName),
-                                            modifier = Modifier.size(48.dp)
+                                            modifier = Modifier.size(runeSecSize)
                                                 .testTag("build_source_rune_${detailRune.id}_${sourceName.lowercase().replace(" ", "_")}")
                                                 .coachClickable {
                                                     val sourceRune = com.example.data.WildRiftSpellsAndRunes.getRuneByName(sourceName)
@@ -1943,7 +1943,7 @@ fun ChampionDetailSheet(
                         url = rune.iconUrl,
                         contentDescription = rune.getLocalizedName(com.example.util.currentAppLanguage()),
                         fallbackText = rune.getLocalizedName(com.example.util.currentAppLanguage()),
-                        modifier = Modifier.size(48.dp),
+                        modifier = Modifier.size(40.dp),
                         borderColor = com.example.ui.theme.HextechGold,
                         shape = RoundedCornerShape(8.dp)
                     )
@@ -1966,7 +1966,7 @@ fun ChampionDetailSheet(
                 }
             },
             text = {
-                Column(Modifier.heightIn(max = 400.dp).verticalScroll(rememberScrollState())) {
+                Column(Modifier.heightIn(max = if (isOverlay) 320.dp else 460.dp).verticalScroll(rememberScrollState()).testTag("build_rune_detail_scroll")) {
                     FormattedWildRiftText(
                         text = rune.getLocalizedDescription(com.example.util.currentAppLanguage()),
                         modifier = Modifier.testTag("build_rune_effect"),
@@ -1994,7 +1994,7 @@ fun ChampionDetailSheet(
                         url = spell.iconUrl,
                         contentDescription = spell.getLocalizedName(com.example.util.currentAppLanguage()),
                         fallbackText = spell.getLocalizedName(com.example.util.currentAppLanguage()),
-                        modifier = Modifier.size(48.dp),
+                        modifier = Modifier.size(40.dp),
                         borderColor = com.example.ui.theme.HextechGold,
                         shape = RoundedCornerShape(8.dp)
                     )
@@ -2008,7 +2008,7 @@ fun ChampionDetailSheet(
                 }
             },
             text = {
-                Column(Modifier.heightIn(max = 400.dp).verticalScroll(rememberScrollState())) {
+                Column(Modifier.heightIn(max = if (isOverlay) 320.dp else 460.dp).verticalScroll(rememberScrollState()).testTag("build_spell_detail_scroll")) {
                     val presentation = com.example.util.SpellCatalogFormatting.split(
                         spell.getLocalizedDescription(currentLang), currentLang
                     )
