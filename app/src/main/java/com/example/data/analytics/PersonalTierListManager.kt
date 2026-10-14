@@ -160,7 +160,7 @@ object PersonalTierListManager {
             if (catalogChampions.any { it.name.equals(key, true) || it.id.equals(key, true) }) null
             else Champion(id = matches.first().myChampionId.ifBlank { key },
                 name = extractPlayerChampionName(matches.first()),
-                avatarUrl = extractChampionAvatar(matches.first(), key).orEmpty(),
+                avatarUrl = localAvatarForIdentity(matches.first().myChampionId, extractPlayerChampionName(matches.first())),
                 primaryRole = recordedRole(matches.first()) ?: LaneRole.MID)
         }
 
@@ -254,7 +254,7 @@ object PersonalTierListManager {
                 val allyObj = WildRiftRepository.champions.find { it.name.equals(allyName, ignoreCase = true) }
                 AllySynergyRecord(
                     allyName = allyName,
-                    allyAvatarUrl = allyObj?.avatarUrl ?: "",
+                    allyAvatarUrl = championAvatar(allyObj),
                     role = allyObj?.primaryRole ?: LaneRole.SUPPORT,
                     wins = counts.first,
                     losses = counts.second,
@@ -297,7 +297,7 @@ object PersonalTierListManager {
                 PersonalChampionStats(
                     championId = champ.id,
                     championName = champ.name,
-                    avatarUrl = champ.avatarUrl,
+                    avatarUrl = championAvatar(champ),
                     primaryRole = primaryRole,
                     totalGames = matches.size,
                     wins = wins,
@@ -467,19 +467,24 @@ object PersonalTierListManager {
             canonicalName(ownSlot.championId, ownSlot.championName) else ""
     }
 
-    private fun extractChampionAvatar(draft: SavedDraftEntity, champName: String): String? {
-        return slots(draft.allyPicksJson).find { canonicalName(it.championId, it.championName).equals(champName, true) }?.avatarUrl
-    }
-
     /**
-     * El catálogo no siempre trae una URL remota (por ejemplo, después de una
-     * importación o cuando se usa el catálogo offline). En ese caso usamos el
-     * avatar local canónico del campeón para que las tarjetas de historial no
-     * desaparezcan ni muestren un espacio vacío.
+     * Los avatares de campeones son siempre assets incluidos en la aplicación.
+     * No dependemos de CDN ni de URLs externas: incluso si el catálogo conserva
+     * un valor antiguo, se ignora y se construye la ruta local canónica.
      */
-    private fun championAvatar(champion: Champion?): String = champion?.let {
-        it.avatarUrl.trim().ifBlank { it.getLocalAvatarUri() }
-    }.orEmpty()
+    private fun championAvatar(champion: Champion?): String = champion?.getLocalAvatarUri().orEmpty()
+
+    private fun localAvatarForIdentity(id: String, name: String): String {
+        val champion = WildRiftRepository.champions.firstOrNull {
+            (id.isNotBlank() && it.id.equals(id, true)) ||
+                (name.isNotBlank() && it.name.equals(name, true))
+        }
+        return championAvatar(champion).ifBlank {
+            id.trim().ifBlank { name.trim() }.let { raw ->
+                if (raw.isBlank()) "" else "file:///android_asset/champions/${raw.lowercase()}.png"
+            }
+        }
+    }
 
     fun recordedLaneOpponent(draft: SavedDraftEntity): String {
         val role = recordedRole(draft) ?: return ""
