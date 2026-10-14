@@ -143,7 +143,7 @@ private fun MatchupSummaryCard(
                         fallbackText = record.playerChampionName.take(2),
                         modifier = Modifier.size(22.dp).clip(CircleShape).border(1.dp, accent, CircleShape)
                     )
-                    Text("  vs  ", color = TextMuted, fontSize = 8.sp)
+                    Text(tr(" vs "), color = TextMuted, fontSize = 8.sp)
                 }
                 AppAssetImage(
                     url = record.opponentAvatarUrl,
