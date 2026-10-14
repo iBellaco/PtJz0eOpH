@@ -80,6 +80,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.data.analytics.PersonalChampionStats
+import com.example.data.analytics.MatchupRecord
 import com.example.data.analytics.PersonalTierListManager
 import com.example.data.analytics.PersonalTierListResult
 import com.example.data.analytics.TierGrade
@@ -101,6 +102,82 @@ import com.example.ui.theme.TextMuted
 import com.example.ui.theme.TextPrimary
 import com.example.ui.theme.TextSecondary
 import com.example.util.tr
+
+@Composable
+private fun MatchupSummaryCard(
+    record: MatchupRecord?,
+    positive: Boolean,
+    modifier: Modifier = Modifier
+) {
+    val accent = if (positive) Color(0xFF81C784) else DangerRed
+    Surface(
+        modifier = modifier,
+        shape = RoundedCornerShape(8.dp),
+        color = HextechSurface,
+        border = BorderStroke(1.dp, accent.copy(alpha = 0.6f))
+    ) {
+        if (record == null) {
+            Column(modifier = Modifier.padding(8.dp)) {
+                Text(
+                    text = if (positive) tr("Mayor tasa registrada") else tr("Menor tasa registrada"),
+                    color = accent,
+                    fontSize = 8.5.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = tr("Sin cinco partidas terminadas contra un mismo rival"),
+                    color = TextMuted,
+                    fontSize = 9.sp,
+                    lineHeight = 12.sp
+                )
+            }
+        } else {
+            Row(
+                modifier = Modifier.padding(6.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                if (record.playerChampionAvatarUrl.isNotBlank()) {
+                    AppAssetImage(
+                        url = record.playerChampionAvatarUrl,
+                        contentDescription = record.playerChampionName,
+                        fallbackText = record.playerChampionName.take(2),
+                        modifier = Modifier.size(22.dp).clip(CircleShape).border(1.dp, accent, CircleShape)
+                    )
+                    Text("  vs  ", color = TextMuted, fontSize = 8.sp)
+                }
+                AppAssetImage(
+                    url = record.opponentAvatarUrl,
+                    contentDescription = record.opponentName,
+                    fallbackText = record.opponentName.take(2),
+                    modifier = Modifier.size(26.dp).clip(CircleShape).border(1.dp, accent, CircleShape)
+                )
+                Spacer(modifier = Modifier.width(6.dp))
+                Column {
+                    Text(
+                        text = if (positive) tr("Mayor tasa registrada") else tr("Menor tasa registrada"),
+                        color = accent,
+                        fontSize = 8.5.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        text = tr("${record.playerChampionName.ifBlank { "Tu campeón" }} vs ${record.opponentName}"),
+                        color = TextPrimary,
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Bold,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    Text(
+                        text = tr("${record.wins}W - ${record.losses}L (${record.winRate.toInt()}% WR)"),
+                        color = accent,
+                        fontSize = 9.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
+            }
+        }
+    }
+}
 
 @OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
 @Composable
@@ -803,102 +880,16 @@ private fun PersonalOverviewCard(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
-                                // Mejor rival 1v1
-                                if (overview.best1v1Matchup != null) {
-                                    val best = overview.best1v1Matchup
-                                    Surface(
-                                        modifier = Modifier.weight(1f),
-                                        shape = RoundedCornerShape(8.dp),
-                                        color = HextechSurface,
-                                        border = BorderStroke(1.dp, Color(0xFF81C784).copy(alpha = 0.6f))
-                                    ) {
-                                        Row(
-                                            modifier = Modifier.padding(6.dp),
-                                            verticalAlignment = Alignment.CenterVertically
-                                        ) {
-                                            AppAssetImage(
-                                                url = best.opponentAvatarUrl,
-                                                contentDescription = best.opponentName,
-                                                fallbackText = best.opponentName.take(2),
-                                                modifier = Modifier
-                                                    .size(26.dp)
-                                                    .clip(CircleShape)
-                                                    .border(1.dp, Color(0xFF81C784), CircleShape)
-                                            )
-                                            Spacer(modifier = Modifier.width(6.dp))
-                                            Column {
-                                                Text(
-                                                    text = tr("Mayor tasa de victorias"),
-                                                    color = Color(0xFF81C784),
-                                                    fontSize = 8.5.sp,
-                                                    fontWeight = FontWeight.Bold
-                                                )
-                                                Text(
-                                                    text = com.example.util.tr(best.opponentName),
-                                                    color = TextPrimary,
-                                                    fontSize = 11.sp,
-                                                    fontWeight = FontWeight.Bold,
-                                                    maxLines = 1
-                                                )
-                                                Text(
-                                                    text = com.example.util.tr("${best.wins}W - ${best.losses}L (${best.winRate.toInt()}% WR)"),
-                                                    color = Color(0xFF81C784),
-                                                    fontSize = 9.sp,
-                                                    fontWeight = FontWeight.SemiBold
-                                                )
-                                            }
-                                        }
-                                    }
-                                }
-
-                                // Némesis 1v1
-                                if (overview.nemesisOpponent != null) {
-                                    val nem = overview.nemesisOpponent
-                                    Surface(
-                                        modifier = Modifier.weight(1f),
-                                        shape = RoundedCornerShape(8.dp),
-                                        color = HextechSurface,
-                                        border = BorderStroke(1.dp, DangerRed.copy(alpha = 0.6f))
-                                    ) {
-                                        Row(
-                                            modifier = Modifier.padding(6.dp),
-                                            verticalAlignment = Alignment.CenterVertically
-                                        ) {
-                                            AppAssetImage(
-                                                url = nem.opponentAvatarUrl,
-                                                contentDescription = nem.opponentName,
-                                                fallbackText = nem.opponentName.take(2),
-                                                modifier = Modifier
-                                                    .size(26.dp)
-                                                    .clip(CircleShape)
-                                                    .border(1.dp, DangerRed, CircleShape)
-                                            )
-                                            Spacer(modifier = Modifier.width(6.dp))
-                                            Column {
-                                                Text(
-                                                    text = tr("Menor tasa de victorias"),
-                                                    color = DangerRed,
-                                                    fontSize = 8.5.sp,
-                                                    fontWeight = FontWeight.Bold
-                                                )
-                                                Text(
-                                                    text = com.example.util.tr(nem.opponentName),
-                                                    color = TextPrimary,
-                                                    fontSize = 11.sp,
-                                                    fontWeight = FontWeight.Bold,
-                                                    maxLines = 1
-                                                )
-                                                Text(
-                                                    text = com.example.util.tr("${nem.wins}W - ${nem.losses}L (${nem.winRate.toInt()}% WR)"),
-                                                    color = DangerRed,
-                                                    fontSize = 9.sp,
-                                                    fontWeight = FontWeight.SemiBold
-                                                )
-                                            }
-                                        }
-                                    }
-                                }
-                            }
+                                MatchupSummaryCard(
+                                    record = overview.best1v1Matchup,
+                                    positive = true,
+                                    modifier = Modifier.weight(1f)
+                                )
+                                MatchupSummaryCard(
+                                    record = overview.nemesisOpponent,
+                                    positive = false,
+                                    modifier = Modifier.weight(1f)
+                                )
 
                             // Veredicto y Respuesta del Coach según sus cálculos automáticos
                             if (overview.coach1v1Analysis.isNotBlank()) {

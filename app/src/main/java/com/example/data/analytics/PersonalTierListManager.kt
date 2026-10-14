@@ -22,7 +22,9 @@ data class MatchupRecord(
     val wins: Int,
     val losses: Int,
     val total: Int,
-    val winRate: Double
+    val winRate: Double,
+    val playerChampionName: String = "",
+    val playerChampionAvatarUrl: String = ""
 )
 
 private const val MIN_MATCHUP_RESULTS = 5
@@ -244,7 +246,16 @@ object PersonalTierListManager {
                 val totalM = counts.first + counts.second
                 val wrM = if (totalM > 0) (counts.first.toDouble() / totalM * 100.0) else 0.0
                 val oppObj = WildRiftRepository.champions.find { it.name.equals(oppName, ignoreCase = true) }
-                MatchupRecord(oppName, championAvatar(oppObj), counts.first, counts.second, totalM, wrM)
+                MatchupRecord(
+                    opponentName = oppName,
+                    opponentAvatarUrl = championAvatar(oppObj),
+                    wins = counts.first,
+                    losses = counts.second,
+                    total = totalM,
+                    winRate = wrM,
+                    playerChampionName = champ.name,
+                    playerChampionAvatarUrl = championAvatar(champ)
+                )
             }.sortedWith(compareByDescending<MatchupRecord> { it.total }.thenBy { it.winRate })
 
             // Aliados
@@ -369,7 +380,17 @@ object PersonalTierListManager {
                 val tot = w + l
                 val wr = if (tot > 0) (w.toDouble() / tot * 100.0) else 0.0
                 val champion = WildRiftRepository.champions.firstOrNull { it.name.equals(name, true) }
-                MatchupRecord(name, championAvatar(champion), w, l, tot, wr)
+                val representative = list.maxWithOrNull(compareBy<MatchupRecord> { it.total }.thenBy { it.winRate })
+                MatchupRecord(
+                    opponentName = name,
+                    opponentAvatarUrl = championAvatar(champion),
+                    wins = w,
+                    losses = l,
+                    total = tot,
+                    winRate = wr,
+                    playerChampionName = representative?.playerChampionName.orEmpty(),
+                    playerChampionAvatarUrl = representative?.playerChampionAvatarUrl.orEmpty()
+                )
             }
         // 1v1 Matchups globales y análisis del Coach
         // Una tasa de 100% con una sola partida no es una ventaja fiable. El
@@ -381,14 +402,20 @@ object PersonalTierListManager {
                 .thenByDescending { it.total }
                 .thenByDescending { it.wins }
         )
-        val best1v1 = top1v1.firstOrNull()
+        val eligibleBest = top1v1.firstOrNull() ?: decidedMatchups.maxWithOrNull(
+            compareBy<MatchupRecord> { it.winRate }.thenBy { it.total }
+        )
+        val best1v1 = eligibleBest
 
         val worst1v1 = decidedMatchups.filter { it.winRate < 50.0 }.sortedWith(
             compareBy<MatchupRecord> { it.winRate }
                 .thenByDescending { it.total }
                 .thenByDescending { it.losses }
         )
-        val nemesis = worst1v1.firstOrNull()
+        val eligibleWorst = worst1v1.firstOrNull()
+            ?: decidedMatchups.filter { it.opponentName != best1v1?.opponentName }
+                .minWithOrNull(compareBy<MatchupRecord> { it.winRate }.thenByDescending { it.total })
+        val nemesis = eligibleWorst
 
         val allAllies = championStatsList.flatMap { it.allies }
             .groupBy { it.allyName }
@@ -563,9 +590,18 @@ object PersonalTierListManager {
         if (records.isEmpty()) return if (lang == "pt")
             "Ainda não há cinco resultados contra um mesmo rival de rota. Os resultados são de partidas completas; não comprovam vitórias em duelos 1v1."
             else "Todavía no hay cinco resultados contra un mismo rival de línea. Los resultados son de partidas completas; no demuestran victorias en duelos 1v1."
-        val summary = records.joinToString("; ") { "${it.opponentName}: ${it.wins}V - ${it.losses}D (${it.total})" }
+        val summary = records.joinToString("; ") {
+            "${it.playerChampionName.ifBlank { "tu campeón" }} vs ${it.opponentName}: ${it.wins}V - ${it.losses}D (${it.total})"
+        }
+        val positive = bestMatchup?.let {
+            "Fortaleza: ${it.playerChampionName.ifBlank { "tu campeón" }} contra ${it.opponentName} (${it.winRate.toInt()}%). Repite el plan de oleadas y las ventanas de objetivos que acompañaron esas victorias."
+        }
+        val improvement = nemesis?.let {
+            "Mejora: ${it.playerChampionName.ifBlank { "tu campeón" }} contra ${it.opponentName} (${it.winRate.toInt()}%). Revisa las primeras muertes, adapta la compra defensiva y evita repetir el mismo intercambio antes de tener recursos."
+        }
         return if (lang == "pt")
-            "Diagnóstico: resultados de partidas com estes rivais de rota: $summary. Não são probabilidades de ganhar um duelo. Decisão: revise uma derrota contra o rival com mais resultados. Micro e macro: confira onda, recursos e posição dos dois junglers antes da troca; esses eventos não estão neste histórico. Regra: o resultado da equipe não comprova quem venceu a rota."
-        else "Diagnóstico: resultados de partidas con estos rivales de línea: $summary. No son probabilidades de ganar un duelo. Decisión: revisa una derrota contra el rival con más resultados. Micro y macro: comprueba oleada, recursos y posición de ambos junglas antes del intercambio; esos eventos no están en este historial. Regla: el resultado del equipo no demuestra quién ganó la línea."
+            "Histórico de rota: $summary. Não é uma probabilidade de vencer o duelo. ${positive.orEmpty()} ${improvement.orEmpty()} Regra do coach: compare a onda, os recursos e a posição dos junglers; o resultado da equipe sozinho não prova quem ganhou a rota."
+        else
+            "Historial de línea: $summary. No es una probabilidad de ganar el duelo. ${positive.orEmpty()} ${improvement.orEmpty()} Regla del coach: compara la oleada, los recursos y la posición de los junglas; el resultado del equipo por sí solo no demuestra quién ganó la línea."
     }
 }
