@@ -7,6 +7,8 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.clickable
+import androidx.compose.ui.Alignment
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -40,15 +42,33 @@ fun AdminDatabaseConsumptionDialog(onDismiss: () -> Unit, onOpenCashRequests: ((
     Dialog(onDismissRequest = onDismiss) {
         Surface(color = HextechDarkBg, shape = MaterialTheme.shapes.large, border = BorderStroke(1.dp, HextechGold)) {
             Column(Modifier.fillMaxWidth().heightIn(max = 700.dp).verticalScroll(rememberScrollState()).padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                Text(tr("Estadísticas de datos guardados"), color = HextechGold, style = MaterialTheme.typography.titleLarge)
-                Text(tr("Recuento consultado en la nube. Cada categoría indica qué información está guardada."), color = TextSecondary)
+                Text(tr("Resumen de datos"), color = HextechGold, style = MaterialTheme.typography.titleLarge)
+                Text(tr("Consulta el volumen y abre cada categoría para ver los detalles."), color = TextSecondary)
                 if (busy) CircularProgressIndicator(color = HextechCyan)
                 if (failed) Text(tr("No se pudieron consultar los datos. Vuelve a intentarlo."), color = DangerRed)
-                StorageConsumptionSummary(consumption)
+                Surface(color = HextechSurface, shape = MaterialTheme.shapes.medium) {
+                    Row(Modifier.fillMaxWidth().padding(14.dp), horizontalArrangement = Arrangement.SpaceBetween) {
+                        Column {
+                            Text(tr("Registros"), color = TextSecondary)
+                            Text(rows.mapNotNull { it.count }.sum().toString(), color = HextechGold, style = MaterialTheme.typography.titleLarge)
+                        }
+                        Column(horizontalAlignment = Alignment.End) {
+                            Text(tr("Tamaño estimado"), color = TextSecondary)
+                            Text(consumption.estimatedBytes?.let(StorageConsumptionPolicy::formatBytes) ?: tr("No disponible"), color = HextechCyan, style = MaterialTheme.typography.titleLarge)
+                        }
+                    }
+                }
+                var showStorageDetails by remember { mutableStateOf(false) }
+                TextButton(onClick = { showStorageDetails = !showStorageDetails }, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp).testTag("toggle_storage_details")) {
+                    Text(tr(if (showStorageDetails) "Ocultar detalles de almacenamiento" else "Ver detalles de almacenamiento"))
+                }
+                if (showStorageDetails) StorageConsumptionSummary(consumption)
                 SavedDataStatisticsContent(rows)
-                Button(onClick = { refresh(forceRefresh = true) }, enabled = !busy, modifier = Modifier.fillMaxWidth()) { Text(tr("Actualizar")) }
-                if (onOpenCashRequests != null) TextButton(onClick = onOpenCashRequests) { Text(tr("Solicitudes de canje")) }
-                TextButton(onClick = onDismiss) { Text(tr("Cerrar")) }
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Button(onClick = { refresh(forceRefresh = true) }, enabled = !busy, modifier = Modifier.weight(1f).heightIn(min = 48.dp).testTag("refresh_data_summary")) { Text(tr("Actualizar")) }
+                    TextButton(onClick = onDismiss, modifier = Modifier.heightIn(min = 48.dp).testTag("close_data_summary")) { Text(tr("Cerrar")) }
+                }
+                if (onOpenCashRequests != null) TextButton(onClick = onOpenCashRequests, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp).testTag("open_cash_requests")) { Text(tr("Solicitudes de canje")) }
             }
         }
     }
@@ -56,15 +76,21 @@ fun AdminDatabaseConsumptionDialog(onDismiss: () -> Unit, onOpenCashRequests: ((
 
 @Composable
 fun SavedDataStatisticsContent(rows: List<SavedDataStatistic>) {
-    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
         rows.forEachIndexed { index, row ->
+            var expanded by remember(row.label) { mutableStateOf(false) }
             Surface(color = HextechSurface, shape = MaterialTheme.shapes.medium) {
-                Column(Modifier.fillMaxWidth().padding(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    Text(tr(row.label), color = HextechGold)
-                    Text(row.count?.toString() ?: tr("No disponible"), color = if (row.failed) DangerRed else HextechCyan,
-                        modifier = Modifier.testTag("saved_data_count_$index"))
-                    Text(tr(row.description), color = TextSecondary)
-                    if (row.failed || row.failureReason != null) Text(tr(row.failureReason ?: "No se pudo consultar esta categoría."), color = if (row.failed) DangerRed else HextechGold)
+                Column(Modifier.fillMaxWidth().heightIn(min = 48.dp).clickable { expanded = !expanded }.testTag("saved_data_row_$index").padding(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                        Text(tr(row.label), color = HextechGold, modifier = Modifier.weight(1f))
+                        Text(row.count?.toString() ?: "—", color = if (row.failed) DangerRed else HextechCyan,
+                            modifier = Modifier.testTag("saved_data_count_$index"))
+                    }
+                    if (expanded) {
+                        Text(tr(row.description), color = TextSecondary)
+                        row.estimatedBytes?.let { Text(StorageConsumptionPolicy.formatBytes(it), color = HextechCyan) }
+                        if (row.failed || row.failureReason != null) Text(tr(row.failureReason ?: "No se pudo consultar esta categoría."), color = if (row.failed) DangerRed else HextechGold)
+                    }
                 }
             }
         }

@@ -1467,18 +1467,26 @@ fun ChampionBuildCreatorDialog(
                          showItemPickerForCore, showItemPickerForSituational,
                          showItemPickerForBootsT2, showItemPickerForBootsT3,
                          showItemPickerForSituationalBootsT2, showItemPickerForSituationalBootsT3,
-                         coreItems, situationalItems
+                         coreItems, situationalItems, selectedRole
                      ) {
                          fun normalizeQuery(s: String) = java.text.Normalizer.normalize(s, java.text.Normalizer.Form.NFD)
                              .replace("\\p{InCombiningDiacriticalMarks}+".toRegex(), "")
                              .lowercase().trim()
                          val qNorm = normalizeQuery(searchFilterQuery)
 
-                         val base = if (qNorm.isBlank()) items else items.filter { item ->
+                         val base = (if (qNorm.isBlank()) items else items.filter { item ->
                              normalizeQuery(item.name).contains(qNorm) ||
                              normalizeQuery(item.nameEn).contains(qNorm) ||
                              normalizeQuery(item.namePt).contains(qNorm) ||
                              normalizeQuery(item.category).contains(qNorm)
+                         }).filter { item ->
+                             val category = normalizeQuery(item.category)
+                             val isBasic = category == "basico"
+                             val isMedium = category == "nivel medio"
+                             !isMedium && (!isBasic || (selectedRole == com.example.model.LaneRole.SUPPORT &&
+                                 (coreItems + situationalItems).none { chosen ->
+                                     items.any { it.name == chosen.name && normalizeQuery(it.category) == "basico" }
+                                 }))
                          }
                          val pool = when {
                              showItemPickerForBootsT2 || showItemPickerForSituationalBootsT2 -> {

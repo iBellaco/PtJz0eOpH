@@ -9,6 +9,12 @@ const user = db('user'), moderator = db('mod'), admin = db('admin', {admin:true}
 const greeting = 'Hola. El sistema ha recibido tu mensaje. El equipo de Coach te responderá aquí. Ningún miembro del staff te pedirá información privada sobre tu cuenta de juego ni sobre tu vida personal.';
 const initial = id => [{ id: `${id}_initial`, senderRole: 'USER', senderUid: 'user', text: 'Ayuda', timestampMillis: 100 }, { id: `${id}_system`, senderRole: 'SYSTEM', senderUid: '', text: greeting, timestampMillis: 101 }];
 const ticket = (id, tag = 'SOPORTE') => ({ userId: 'user', userEmail: 'user@test.invalid', tag, type: tag, staffVisible: tag !== 'PATROCINADOR', userCanReply:false, status: 'PENDING', conversation: initial(id), userRead: true, isRead: true, hasNewAdminReply: false });
+let auditSequence = 0;
+function auditTicket(transaction, store, reportId, action, value, data) {
+  const auditId = `audit-${++auditSequence}`;
+  transaction.update(doc(store, 'support_reports', reportId), { ...data, lastModeratorActionId: auditId });
+  transaction.set(doc(store, `moderator_activity/mod/events/${auditId}`), { actorUid:'mod', targetUid:'user', reportId, action, value, createdAt:serverTimestamp() });
+}
 let count = 0;
 async function test(name, action) { await action(); count++; console.log(`PASS ${name}`); }
 try {
@@ -193,12 +199,52 @@ try {
   await test('role and secondary-role self escalation are forbidden', async () => {
     await assertFails(updateDoc(doc(user, 'users', 'user'), { role: 'admin' })); await assertFails(updateDoc(doc(user, 'users', 'user'), { secondaryRole: 'moderador' }));
   });
+  await test('verification requests require three bounded images', async () => {
+    const base = ticket('verify-three', 'VERIFICAR');
+    await assertFails(setDoc(doc(user, 'support_reports', 'verify-two'), { ...base, photos:['a','b'] }));
+    await assertFails(setDoc(doc(user, 'support_reports', 'verify-large'), { ...base, photos:['x'.repeat(275001),'b','c'] }));
+    await assertSucceeds(setDoc(doc(user, 'support_reports', 'verify-three'), { ...base, photos:['a','b','c'] }));
+  });
+  await test('moderator profile changes require matching immutable audit events', async () => {
+    await assertFails(updateDoc(doc(moderator, 'users/user'), { secondaryRole:'diamante' }));
+    const batch = writeBatch(moderator);
+    batch.update(doc(moderator, 'users/user'), { secondaryRole:'diamante', last_secondary_role_update:Date.now(), lastModeratorActionId:'rank-audit' });
+    batch.set(doc(moderator, 'moderator_activity/mod/events/rank-audit'), { actorUid:'mod', targetUid:'user', action:'SECONDARY_ROLE', value:'diamante', createdAt:serverTimestamp() });
+    await assertSucceeds(batch.commit());
+    await assertFails(updateDoc(doc(moderator, 'moderator_activity/mod/events/rank-audit'), { value:'soberano' }));
+    const verify = writeBatch(moderator);
+    verify.update(doc(moderator, 'users/user'), { isVerified:true, verified:true, lastModeratorActionId:'verify-audit' });
+    verify.set(doc(moderator, 'moderator_activity/mod/events/verify-audit'), { actorUid:'mod', targetUid:'user', action:'VERIFICATION', value:'true', createdAt:serverTimestamp() });
+    await assertSucceeds(verify.commit());
+    await assertSucceeds(getDocs(collectionGroup(admin, 'events')));
+    await assertFails(getDocs(collectionGroup(moderator, 'events')));
+  });
+  await test('verification review closes the request and verifies the account atomically', async () => {
+    const reportId = 'other-verification';
+    const report = { ...ticket(reportId, 'VERIFICAR'), userId:'other', userEmail:'other@test.invalid',
+      conversation:[{ id:'other-initial', senderRole:'USER', senderUid:'other', text:'Verificar', timestampMillis:100 }, { id:'other-system', senderRole:'SYSTEM', senderUid:'', text:greeting, timestampMillis:101 }], photos:['a','b','c'] };
+    await assertSucceeds(setDoc(doc(other, 'support_reports', reportId), report));
+    const premature = writeBatch(moderator);
+    premature.update(doc(moderator, 'support_reports', reportId), { status:'ACCEPTED', lastModeratorActionId:'premature-review' });
+    premature.set(doc(moderator, 'moderator_activity/mod/events/premature-review'), { actorUid:'mod', targetUid:'other', reportId, action:'SUPPORT_STATUS', value:'ACCEPTED', createdAt:serverTimestamp() });
+    await assertFails(premature.commit());
+    const batch = writeBatch(moderator);
+    batch.update(doc(moderator, 'users/other'), { isVerified:true, verified:true, lastModeratorActionId:'other-verified' });
+    batch.set(doc(moderator, 'moderator_activity/mod/events/other-verified'), { actorUid:'mod', targetUid:'other', action:'VERIFICATION', value:'true', createdAt:serverTimestamp() });
+    const state = { status:'ACCEPTED', isCompleted:true, staffRead:true, userRead:true, lastModeratorActionId:'other-reviewed' };
+    batch.update(doc(moderator, 'support_reports', reportId), state);
+    batch.set(doc(moderator, `moderator_activity/mod/events/other-reviewed`), { actorUid:'mod', targetUid:'other', reportId, action:'SUPPORT_STATUS', value:'ACCEPTED', createdAt:serverTimestamp() });
+    batch.set(doc(moderator, `users/other/messages/${reportId}`), state, { merge:true });
+    await assertSucceeds(batch.commit());
+    assert.equal((await getDoc(doc(other, 'users/other'))).data().isVerified, true);
+    assert.equal((await getDoc(doc(other, 'support_reports', reportId))).data().status, 'ACCEPTED');
+  });
   await test('staff appends repeated answers and syncs recipient mirror', async () => {
     for (let i = 0; i < 2; i++) await assertSucceeds(runTransaction(moderator, async transaction => {
       const ref = doc(moderator, 'support_reports', 'ticket'), snap = await transaction.get(ref);
       const history = [...snap.data().conversation, { id: `reply${i}`, senderRole: 'SUPPORT', senderUid: 'mod', text: `Respuesta ${i}`, timestampMillis: 200+i }];
       const data = { conversation: history, status: 'READ', userCanReply:true, userRead: false, isRead: false, hasNewAdminReply: true, staffRead: true };
-      transaction.update(ref, data); transaction.set(doc(moderator, 'users/user/messages/ticket'), data, { merge: true });
+      auditTicket(transaction, moderator, 'ticket', 'SUPPORT_REPLY', `reply${i}`, data); transaction.set(doc(moderator, 'users/user/messages/ticket'), data, { merge: true });
     }));
     assert.equal((await getDoc(doc(user, 'support_reports', 'ticket'))).data().conversation.length, 4);
   });
@@ -223,7 +269,10 @@ try {
     await assertFails(updateDoc(doc(moderator, 'support_reports', 'new'), { userCanReply:true }));
     await assertFails(setDoc(doc(user, 'support_reports', 'fake-unlock'), { ...ticket('fake-unlock'), userCanReply:true }));
     const staffHistory = [...initial('new'), {id:'staff-first', senderRole:'SUPPORT', senderUid:'mod', text:'Respuesta real', timestampMillis:250}];
-    await assertSucceeds(updateDoc(doc(moderator, 'support_reports', 'new'), { conversation:staffHistory, userCanReply:true, status:'READ' }));
+    await assertSucceeds(runTransaction(moderator, async transaction => {
+      const ref = doc(moderator, 'support_reports', 'new'); await transaction.get(ref);
+      auditTicket(transaction, moderator, 'new', 'SUPPORT_REPLY', 'staff-first', { conversation:staffHistory, userCanReply:true, status:'READ' });
+    }));
     await assertSucceeds(updateDoc(doc(user, 'support_reports', 'new'), { conversation:[...staffHistory,history.at(-1)], status:'PENDING', isCompleted:false, staffRead:false, lastUserMessage:'Más detalles' }));
     await assertFails(updateDoc(doc(user, 'support_reports', 'new'), { conversation:[...history.slice(1),{ id:'evil',senderRole:'SUPPORT',senderUid:'user',text:'Falso' }] }));
   });
@@ -235,7 +284,8 @@ try {
           const snap = await transaction.get(ref);
           const entry = { id: `turn-${turn}-${senderRole}`, senderRole, senderUid, text: `Mensagem ${turn}`, timestampMillis: 1000 + turn, isGreeting: false };
           const data = { conversation: [...snap.data().conversation, entry], status, isCompleted: false, staffRead: senderRole === 'SUPPORT', ...(senderRole === 'SUPPORT' ? { userCanReply: true } : { lastUserMessage: entry.text }) };
-          transaction.update(ref, data);
+          if (senderRole === 'SUPPORT') auditTicket(transaction, store, 'new', 'SUPPORT_REPLY', entry.id, data);
+          else transaction.update(ref, data);
           transaction.set(doc(store, 'users/user/messages/new'), data, { merge: true });
         }));
       }
@@ -260,7 +310,9 @@ try {
   await test('resolved status is shared and prevents user replies', async () => {
     const batch = writeBatch(moderator);
     const close = { status:'SOLVED', isCompleted:true, staffRead:true };
-    batch.update(doc(moderator, 'support_reports', 'new'), close);
+    const auditId = `audit-${++auditSequence}`;
+    batch.update(doc(moderator, 'support_reports', 'new'), { ...close, lastModeratorActionId:auditId });
+    batch.set(doc(moderator, `moderator_activity/mod/events/${auditId}`), { actorUid:'mod', targetUid:'user', reportId:'new', action:'SUPPORT_STATUS', value:'SOLVED', createdAt:serverTimestamp() });
     batch.set(doc(moderator, 'users/user/messages/new'), close, { merge:true });
     await assertSucceeds(batch.commit());
     assert.equal((await getDoc(doc(user,'support_reports','new'))).data().status,'SOLVED');

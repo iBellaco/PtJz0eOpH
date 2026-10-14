@@ -59,6 +59,7 @@ import androidx.compose.material.icons.filled.Smartphone
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VerifiedUser
 import androidx.compose.material.icons.filled.ZoomIn
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -111,6 +112,7 @@ internal fun ComprehensiveFeedbackCard(
     currentStatus: String,
     onSelectStatus: (String) -> Unit,
     onReply: (() -> Unit)? = null,
+    onReviewVerification: ((Boolean) -> Unit)? = null,
     onDelete: (() -> Unit)?,
     onCopy: () -> Unit,
     onOpenImage: (Bitmap) -> Unit,
@@ -139,8 +141,13 @@ internal fun ComprehensiveFeedbackCard(
     }
 
     // Parsear imágenes base64 si existen
-    val attachedBitmaps = remember(report.deviceInfo, report.description) {
-        extractBase64Images(report.deviceInfo + "\n" + report.description)
+    val attachedBitmaps = remember(report.deviceInfo, report.description, report.photosBase64) {
+        if (report.photosBase64.isNotEmpty()) report.photosBase64.mapNotNull { encoded ->
+            runCatching {
+                val bytes = Base64.decode(encoded.substringAfter(','), Base64.DEFAULT)
+                BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+            }.getOrNull()
+        } else extractBase64Images(report.deviceInfo + "\n" + report.description)
     }
 
     // Información del tipo
@@ -149,6 +156,7 @@ internal fun ComprehensiveFeedbackCard(
         "PATROCINADOR" -> Triple(HextechGold, Icons.Default.Star, "PATROCINADOR")
         "BUG" -> Triple(DangerRed, Icons.Default.BugReport, "BUG / ERROR")
         "SUPPORT" -> Triple(HextechCyan, Icons.Default.SupportAgent, "SOPORTE")
+        "VERIFY" -> Triple(HextechCyan, Icons.Default.VerifiedUser, "VERIFICAR")
         "BUILD" -> Triple(HextechGold, Icons.Default.SportsEsports, "BUILD SUGERIDA")
         else -> Triple(Color(0xFFFFB74D), Icons.Default.Lightbulb, "SUGERENCIA")
     }
@@ -430,6 +438,7 @@ internal fun ComprehensiveFeedbackCard(
             }
 
             // CONTROLES DE ESTADO (Requisitos de selección para el usuario/admin)
+            if (itemCategory != "VERIFY") {
             Spacer(modifier = Modifier.height(10.dp))
             Box(
                 modifier = Modifier
@@ -514,6 +523,8 @@ internal fun ComprehensiveFeedbackCard(
                 }
             }
 
+            }
+
             // 💬 Sección de Respuesta de Soporte
             val reportKey = report.id ?: "${report.title}_${report.createdAt}"
             val localReply = remember(reportKey) { SupportReplyManager.getLocalReply(context, reportKey) }
@@ -592,6 +603,20 @@ internal fun ComprehensiveFeedbackCard(
                         Icon(Icons.Default.Reply, contentDescription = null, tint = HextechCyan, modifier = Modifier.size(13.dp))
                         Text(text = tr("Responder Mensaje"), color = HextechCyan, fontSize = 10.5.sp, fontWeight = FontWeight.SemiBold)
                     }
+                }
+            }
+            if (itemCategory == "VERIFY" && currentStatus == FeedbackRepository.STATUS_PENDING && onReviewVerification != null) {
+                Text(tr("Revisa las tres imágenes antes de decidir."), color = TextSecondary, fontSize = 11.sp)
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    OutlinedButton(
+                        onClick = { onReviewVerification(false) },
+                        modifier = Modifier.weight(1f).heightIn(min = 48.dp).testTag("reject_profile_verification")
+                    ) { Text(tr("Rechazar")) }
+                    OutlinedButton(
+                        onClick = { onReviewVerification(true) },
+                        enabled = attachedBitmaps.size == 3,
+                        modifier = Modifier.weight(1f).heightIn(min = 48.dp).testTag("approve_profile_verification")
+                    ) { Text(tr("Verificar")) }
                 }
             }
 

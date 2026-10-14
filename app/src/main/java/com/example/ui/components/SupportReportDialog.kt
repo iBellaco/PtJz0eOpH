@@ -72,6 +72,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -135,7 +136,7 @@ fun SupportReportDialog(
                 for (uri in uris) {
                     if (base64Photos.size + addedList.size >= 3) break
 
-                    // Validar tamaño máximo estricto de 2 MB
+                    // El pedido de verificación exige imágenes originales de 1 MB como máximo.
                     var fileSizeInBytes: Long = 0
                     try {
                         val cursor = context.contentResolver.query(uri, null, null, null, null)
@@ -150,18 +151,33 @@ fun SupportReportDialog(
                         e.printStackTrace()
                     }
 
-                    if (fileSizeInBytes > 2 * 1024 * 1024) {
+                    val maxOriginalBytes = if (selectedTag == "VERIFICAR") 1024 * 1024 else 2 * 1024 * 1024
+                    if (fileSizeInBytes <= 0L) {
+                        fileSizeInBytes = runCatching {
+                            context.contentResolver.openInputStream(uri)?.use { stream ->
+                                val buffer = ByteArray(8192)
+                                var total = 0L
+                                while (total <= maxOriginalBytes) {
+                                    val read = stream.read(buffer)
+                                    if (read < 0) break
+                                    total += read
+                                }
+                                total
+                            } ?: maxOriginalBytes + 1L
+                        }.getOrDefault(maxOriginalBytes + 1L)
+                    }
+                    if (fileSizeInBytes > maxOriginalBytes) {
                         withContext(Dispatchers.Main) {
                             Toast.makeText(
                                 context,
-                                com.example.util.appTr("⚠️ Una foto supera el límite de 2 MB y fue descartada."),
+                                com.example.util.appTr(if (selectedTag == "VERIFICAR") "La imagen supera 1 MB y fue descartada." else "La imagen supera 2 MB y fue descartada."),
                                 Toast.LENGTH_LONG
                             ).show()
                         }
                         continue
                     }
 
-                    val b64 = ImageUtils.uriToBase64(context, uri)
+                    val b64 = ImageUtils.uriToBase64(context, uri, maxBytes = if (selectedTag == "VERIFICAR") 200 * 1024 else 750 * 1024)
                     if (b64 != null) {
                         addedList.add(b64)
                     }
@@ -261,8 +277,21 @@ fun SupportReportDialog(
 
                     Spacer(modifier = Modifier.height(14.dp))
 
+                    // La verificación está disponible en la bandeja de cualquier cuenta.
+                    FilterChip(
+                        selected = selectedTag == "VERIFICAR",
+                        onClick = {
+                            selectedTag = if (selectedTag == "VERIFICAR") "SOPORTE" else "VERIFICAR"
+                            base64Photos.clear()
+                        },
+                        label = { Text(tr("Verificar perfil")) },
+                        modifier = Modifier.heightIn(min = 48.dp).testTag("support_tag_verify")
+                    )
+                    if (selectedTag == "VERIFICAR") {
+                        Text(tr("Adjunta exactamente tres imágenes de tu perfil. Cada archivo debe medir 1 MB o menos. Un moderador revisará la solicitud."), color = TextSecondary, fontSize = 11.sp)
+                    }
                     // Selector de Etiqueta (Visible exclusivamente para rol Patrocinador / Admin)
-                    if (isSponsorUser) {
+                    if (isSponsorUser && selectedTag != "VERIFICAR") {
                         Text(
                             text = tr("Etiqueta del reporte"),
                             color = HextechGold,
@@ -409,13 +438,13 @@ fun SupportReportDialog(
                     ) {
                         Column {
                             Text(
-                                text = tr("Fotos opcionales (Máx. 3)"),
+                                text = tr(if (selectedTag == "VERIFICAR") "Tres imágenes obligatorias" else "Fotos opcionales (Máx. 3)"),
                                 color = HextechGold,
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.SemiBold
                             )
                             Text(
-                                text = tr("Máximo 2 MB por cada imagen"),
+                                text = tr(if (selectedTag == "VERIFICAR") "Máximo 1 MB por imagen" else "Máximo 2 MB por imagen"),
                                 color = TextMuted,
                                 fontSize = 10.5.sp
                             )
@@ -581,6 +610,10 @@ fun SupportReportDialog(
                                 descriptionError = true
                                 hasError = true
                             }
+                            if (selectedTag == "VERIFICAR" && base64Photos.size != 3) {
+                                Toast.makeText(context, com.example.util.appTr("Adjunta exactamente tres imágenes para solicitar la verificación."), Toast.LENGTH_LONG).show()
+                                hasError = true
+                            }
                             if (hasError) return@HextechAnimatedButton
 
                             isSubmitting = true
@@ -614,7 +647,19 @@ fun SupportReportDialog(
                                     val initialConversation = listOf(initialMessageMap)
 
                                     val reportId = java.util.UUID.randomUUID().toString()
-                                    val finalTag = if (selectedTag == "PATROCINADOR") "PATROCINADOR" else "SOPORTE"
+                                    val finalTag = when (selectedTag) { "PATROCINADOR" -> "PATROCINADOR"; "VERIFICAR" -> "VERIFICAR"; else -> "SOPORTE" }
+                                    if (finalTag == "VERIFICAR") {
+                                        FeedbackRepository.submitFeedback(
+                                            type = finalTag, title = cleanTitle, description = cleanDesc,
+                                            email = userEmail, imagesBase64 = base64Photos.toList(), userName = userName
+                                        ).getOrThrow()
+                                        withContext(Dispatchers.Main) {
+                                            isSubmitting = false
+                                            Toast.makeText(context, com.example.util.appTr("Solicitud de verificación enviada para revisión."), Toast.LENGTH_LONG).show()
+                                            onDismiss()
+                                        }
+                                        return@launch
+                                    }
                                     val reportMap = hashMapOf<String, Any>(
                                         "id" to reportId,
                                         "title" to cleanTitle,

@@ -31,6 +31,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -133,6 +134,7 @@ fun AdminDashboardDialog(
     var showCpmAnalyticsDialog by remember { mutableStateOf(false) }
     var showCashRequests by remember { mutableStateOf(false) }
     var showDatabaseConsumptionDialog by remember { mutableStateOf(false) }
+    var showModeratorActivityDialog by remember { mutableStateOf(false) }
     var showSponsorModerationDialog by remember { mutableStateOf(false) }
     var showSponsorPanelDialog by remember { mutableStateOf(false) }
     var showModeratorRequestsDialog by remember { mutableStateOf(false) }
@@ -183,6 +185,7 @@ fun AdminDashboardDialog(
     if (showDatabaseConsumptionDialog) {
         AdminDatabaseConsumptionDialog(onDismiss = { showDatabaseConsumptionDialog = false }, onOpenCashRequests = { showCashRequests = true })
     }
+    if (showModeratorActivityDialog) AdminModeratorActivityDialog(onDismiss = { showModeratorActivityDialog = false })
 
     if (showSponsorModerationDialog) {
         AdminSponsorModerationDialog(onDismiss = { showSponsorModerationDialog = false })
@@ -201,6 +204,7 @@ fun AdminDashboardDialog(
                 showNoticeConfigDialog -> showNoticeConfigDialog = false
                 showCpmAnalyticsDialog -> showCpmAnalyticsDialog = false
                 showDatabaseConsumptionDialog -> showDatabaseConsumptionDialog = false
+                showModeratorActivityDialog -> showModeratorActivityDialog = false
                 showSponsorModerationDialog -> showSponsorModerationDialog = false
                 showSponsorPanelDialog -> showSponsorPanelDialog = false
                 showModeratorRequestsDialog -> showModeratorRequestsDialog = false
@@ -245,6 +249,7 @@ fun AdminDashboardDialog(
                     onOpenNotice = { showNoticeConfigDialog = true },
                     onOpenCpmAnalytics = { showCpmAnalyticsDialog = true },
                     onOpenDatabaseConsumption = { showDatabaseConsumptionDialog = true },
+                    onOpenModeratorActivity = { showModeratorActivityDialog = true },
                     onOpenSponsorPanel = { showSponsorPanelDialog = true },
                     isFullAdmin = userRole == "admin" || com.example.util.AuthManager.isCurrentUserAdmin()
                 )
@@ -290,6 +295,7 @@ private fun AdminDashboardHeader(
     onOpenNotice: () -> Unit,
     onOpenCpmAnalytics: () -> Unit = {},
     onOpenDatabaseConsumption: () -> Unit = {},
+    onOpenModeratorActivity: () -> Unit = {},
     onOpenSponsorPanel: () -> Unit = {},
     isFullAdmin: Boolean = true
 ) {
@@ -444,6 +450,16 @@ private fun AdminDashboardHeader(
                     Icon(Icons.Default.Storage, contentDescription = null, tint = HextechGold, modifier = Modifier.size(13.dp))
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(tr("Base Datos"), fontSize = 10.5.sp, color = HextechGold, fontWeight = FontWeight.Bold, maxLines = 1)
+                }
+                AnimatedAdminActionButton(
+                    onClick = onOpenModeratorActivity,
+                    modifier = Modifier.heightIn(min = 48.dp).testTag("open_moderator_activity"),
+                    colors = ButtonDefaults.buttonColors(containerColor = HextechCyan.copy(alpha = 0.2f)),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Icon(Icons.Default.History, contentDescription = null, tint = HextechCyan, modifier = Modifier.size(13.dp))
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(tr("Actividad"), fontSize = 10.5.sp, color = HextechCyan, fontWeight = FontWeight.Bold)
                 }
             }
         }
