@@ -559,7 +559,7 @@ class RuntimeVisibilityTest(private val screen: String) {
             "saved-data-statistics" -> {
                 compose.onNodeWithTag("saved_data_count_0", useUnmergedTree = true).assertTextEquals("42")
                 compose.onNodeWithTag("saved_data_count_1", useUnmergedTree = true).assertTextEquals("0")
-                compose.onNodeWithTag("saved_data_count_2", useUnmergedTree = true).assertTextEquals(appTr("No disponible"))
+                compose.onNodeWithTag("saved_data_count_2", useUnmergedTree = true).assertTextEquals("—")
             }
             "inbox-circle-badge" -> {
                 val icon = compose.onNodeWithTag("panel_notification_icon_INBOX", useUnmergedTree = true).fetchSemanticsNode().boundsInRoot
