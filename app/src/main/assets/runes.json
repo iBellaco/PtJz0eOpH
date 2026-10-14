@@ -12,7 +12,7 @@
     "name": "Electrocutar",
     "tree": "Dominación",
     "type": "Clave",
-    "description": "Alcanzar a un campeón con 3 ataques o habilidades individuales en 3s inflige daño adaptable instantáneo adicional.",
+    "description": "Alcanzar a un campeón con 3 ataques o habilidades individuales en 3 s inflige 60-210 de daño adaptable adicional (Parche 7.3b).",
     "iconUrl": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/perk-images/styles/domination/electrocute/electrocute.png"
   },
   {
@@ -36,7 +36,7 @@
     "name": "Invocar a Aery",
     "tree": "Brujería",
     "type": "Clave",
-    "description": "Tus ataques y habilidades envían a Aery hacia un objetivo para dañar enemigos o poner un escudo protector a tus aliados.",
+    "description": "Tus ataques y habilidades envían a Aery hacia un objetivo para dañar enemigos o poner un escudo protector de 20-100 a tus aliados.",
     "iconUrl": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/perk-images/styles/sorcery/summongaery/summongaery.png"
   },
   {
@@ -132,7 +132,7 @@
     "name": "Golpe Bajo",
     "tree": "Dominación",
     "type": "Secundaria",
-    "description": "Inflige de 10 a 45 de daño verdadero adicional a los enemigos cuya velocidad de movimiento se haya visto reducida (7 s de enfriamiento).",
+    "description": "Inflige de 10 a 45 de daño verdadero adicional a enemigos con movimiento reducido. Enfriamiento: 5 s.",
     "iconUrl": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/perk-images/styles/domination/cheapshot/cheapshot.png"
   },
   {
@@ -374,5 +374,13 @@
     "type": "Secundaria",
     "description": "Al estar a 550 de distancia de una torreta enemiga, obtienes una carga cada 0,5 s, hasta un máximo de 6 veces. Con el máximo de cargas, el siguiente ataque que asestes a la torreta inflige (100 + 22% de la vida máxima ♥) de daño físico adicional (30 s de enfriamiento).",
     "iconUrl": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/perk-images/styles/resolve/demolish/demolish.png"
+  },
+  {
+    "id": "grasp_undying",
+    "name": "Garras del Inmortal",
+    "tree": "Valor",
+    "type": "Clave",
+    "description": "Cada 3 s en combate, tu siguiente ataque contra un campeón inflige 3% de tu vida máxima como daño mágico, cura y otorga 8 de vida permanente.",
+    "iconUrl": "file:///android_asset/runes/grasp_undying.png"
   }
 ]

@@ -82,8 +82,12 @@ def main(check=False):
             catalog_tools += ['Tridente de Oceánida', 'Morellonomicón', 'Bastón del Vacío']
         elif champ.get('damageType') == 'PHYSICAL':
             catalog_tools += ['Colmillo de serpiente', 'Recuerdos de Lord Dominik']
+            if champ.get('isRanged'):
+                catalog_tools += ['Puñal de Statikk']
         if champ.get('isFrontline') or lane in ('TOP','JUNGLE','SUPPORT'):
             catalog_tools += ['Malla de espinas', 'Fuerza de la naturaleza']
+        if lane == 'SUPPORT' and 'Medallón de los Solari de Hierro' not in core + situational:
+            catalog_tools += ['Medallón de los Solari de Hierro']
         for name in catalog_tools:
             if name in items and name not in core + situational:
                 situational.append(name)

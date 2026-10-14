@@ -160,8 +160,8 @@
   "locket_of_the_iron_solari": {
     "passive": "Medallón activa: Te otorga un escudo a ti y a todos los campeones aliados cercanos que absorbe de 250 a 370 de daño durante 2,5 s, enfriamiento de 60 s. Este efecto disminuye un 50% si el objetivo se ha visto afectado por otro Medallón en los últimos 20 s.",
     "passivePt": "Medalhão ativo: Concede a você e a todos os campeões aliados próximos um escudo que absorve 250 a 370 de dano por 2,5 s, tempo de recarga de 60 s. O efeito diminui em 50% se o alvo tiver recebido outro Medalhão nos últimos 20 s.",
-    "stats": "+200 Vida máxima • +30 Armadura • +30 Resistencia mágica • +10 Velocidad de habilidades",
-    "statsPt": "+200 Vida máxima • +30 Armadura • +30 Resistência mágica • +10 Aceleração de habilidade"
+    "stats": "+300 Vida máxima • +30 Armadura • +30 Resistencia mágica • +10 Velocidad de habilidades",
+    "statsPt": "+300 Vida máxima • +30 Armadura • +30 Resistência mágica • +10 Aceleração de habilidade"
   },
   "galeforce": {
     "passive": "Aguacero activa: Te deslizas hacia la dirección seleccionada y disparas 3 misiles al enemigo con menos vida que se encuentre cerca de tu destino, prioriza a los campeones. Inflige daño físico equivalente al 40-125 más 35% del daño de ataque adicional, enfriamiento de 60 s.",
@@ -198,12 +198,12 @@
     "passive": "La práctica hace al asesino: Al atacar, obtienes probabilidad de crítico permanente, 0,4% para campeones cuerpo a cuerpo y 0,2% para campeones a distancia por ataque, hasta un máximo de 25%.\nRáfaga: Al atacar a un campeón enemigo, obtienes un 35% de velocidad de ataque durante 6 s, enfriamiento de 25 s. Los ataques reducen el enfriamiento 1 s o 2 s si son impactos críticos.",
     "passivePt": "A Prática Faz o Assassino: Ao atacar, você recebe chance de acerto crítico permanente, 0,4% para campeões corpo a corpo e 0,2% para campeões de ataque à distância por ataque, até 25%.\nRajada: Ao atacar um campeão inimigo, você recebe 35% de velocidade de ataque por 6 s, tempo de recarga de 25 s. Os ataques reduzem o tempo de recarga em 1 s ou em 2 s se forem acertos críticos.",
     "stats": "+50 Daño de ataque • +35% Velocidad de ataque",
-    "goldCost": 3100,
+    "goldCost": 3000,
     "statsPt": "+50 Dano de ataque • +35% Velocidade de ataque"
   },
   "statikk_shiv": {
-    "passive": "Electrochoque: Los ataques otorgan 5 acumulaciones de vigor adicionales.\nElectrochispa: Moverte y atacar genera un ataque con vigor que emite rayos que rebotan a 4-7 objetivos, lo que inflige 60 de daño mágico, aumenta hasta 90 de daño mágico contra súbditos y monstruos y aplica efectos de impacto al rebotar a otros objetivos.",
-    "passivePt": "Eletrochoque: Os ataques concedem 5 acúmulos adicionais de energia.\nEletrofaísca: Mover-se e atacar gera um ataque energizado que dispara raios que saltam entre 4-7 alvos, causando 60 de dano mágico, aumentado para 90 de dano mágico contra tropas e monstros, e aplica efeitos de contato ao atingir outros alvos.",
+    "passive": "Electrochoque: Los ataques otorgan 7 acumulaciones de vigor adicionales.\nElectrochispa: Moverte y atacar genera un ataque con vigor que emite rayos que rebotan a 4-7 objetivos, lo que inflige 60 de daño mágico, aumenta hasta 90 de daño mágico contra súbditos y monstruos y aplica efectos de impacto al rebotar a otros objetivos.",
+    "passivePt": "Eletrochoque: Os ataques concedem 7 acúmulos adicionais de energia.\nEletrofaísca: Mover-se e atacar gera um ataque energizado que dispara raios que saltam entre 4-7 alvos, causando 60 de dano mágico, aumentado para 90 de dano mágico contra tropas e monstros, e aplica efeitos de contato ao atingir outros alvos.",
     "stats": "+40 Daño de ataque • +30% Velocidad de ataque • +40 Poder de habilidad • +4% Velocidad de movimiento",
     "statsPt": "+40 Dano de ataque • +30% Velocidade de ataque • +40 Poder de habilidade • +4% Velocidade de movimento"
   },

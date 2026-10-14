@@ -381,7 +381,8 @@
           "Impulso Cósmico",
           "Tridente de Oceánida",
           "Malla de espinas",
-          "Fuerza de la naturaleza"
+          "Fuerza de la naturaleza",
+          "Medallón de los Solari de Hierro"
         ],
         "bootBase": "Botas jonias de la lucidez",
         "bootUpgrade": "Lucidez carmesí",
@@ -650,14 +651,16 @@
       "Sanguinaria",
       "Ángel de la guarda",
       "Fauces de Malmortius",
-      "Colmillo de serpiente"
+      "Colmillo de serpiente",
+      "Puñal de Statikk"
     ],
     "situationalItemsIcons": [
       "file:///android_asset/offline_images/22544e382529f38069d660a78e6df20e.png",
       "file:///android_asset/offline_images/926efbca7b9ae9f241ddf7cd3c250273.webp",
       "file:///android_asset/offline_images/a9e382435db8c5b4d3dada562fa99d42.webp",
       "file:///android_asset/offline_images/fde3101c1b0cf8002454b75c285cd1fe.webp",
-      "file:///android_asset/offline_images/9056fe258a17cfe13919ec1b3e222f4a.webp"
+      "file:///android_asset/offline_images/9056fe258a17cfe13919ec1b3e222f4a.webp",
+      "file:///android_asset/offline_images/statikk_shiv.webp"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -734,7 +737,8 @@
           "Sanguinaria",
           "Ángel de la guarda",
           "Fauces de Malmortius",
-          "Colmillo de serpiente"
+          "Colmillo de serpiente",
+          "Puñal de Statikk"
         ],
         "bootBase": "Grebas de berserker",
         "bootUpgrade": "Grebas de metal",
@@ -768,7 +772,8 @@
           "Fauces de Malmortius",
           "Colmillo de serpiente",
           "Malla de espinas",
-          "Fuerza de la naturaleza"
+          "Fuerza de la naturaleza",
+          "Puñal de Statikk"
         ],
         "bootBase": "Grebas de berserker",
         "bootUpgrade": "Grebas de metal",
@@ -800,7 +805,8 @@
           "Sanguinaria",
           "Ángel de la guarda",
           "Fauces de Malmortius",
-          "Colmillo de serpiente"
+          "Colmillo de serpiente",
+          "Puñal de Statikk"
         ],
         "bootBase": "Grebas de berserker",
         "bootUpgrade": "Grebas de metal",
@@ -1593,7 +1599,8 @@
           "Morellonomicón",
           "Tridente de Oceánida",
           "Malla de espinas",
-          "Fuerza de la naturaleza"
+          "Fuerza de la naturaleza",
+          "Medallón de los Solari de Hierro"
         ],
         "bootBase": "Botas jonias de la lucidez",
         "bootUpgrade": "Lucidez carmesí",
@@ -1668,14 +1675,16 @@
       "Sanguinaria",
       "Ángel de la guarda",
       "Fauces de Malmortius",
-      "Colmillo de serpiente"
+      "Colmillo de serpiente",
+      "Puñal de Statikk"
     ],
     "situationalItemsIcons": [
       "file:///android_asset/offline_images/22544e382529f38069d660a78e6df20e.png",
       "file:///android_asset/offline_images/926efbca7b9ae9f241ddf7cd3c250273.webp",
       "file:///android_asset/offline_images/a9e382435db8c5b4d3dada562fa99d42.webp",
       "file:///android_asset/offline_images/fde3101c1b0cf8002454b75c285cd1fe.webp",
-      "file:///android_asset/offline_images/9056fe258a17cfe13919ec1b3e222f4a.webp"
+      "file:///android_asset/offline_images/9056fe258a17cfe13919ec1b3e222f4a.webp",
+      "file:///android_asset/offline_images/statikk_shiv.webp"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -1752,7 +1761,8 @@
           "Sanguinaria",
           "Ángel de la guarda",
           "Fauces de Malmortius",
-          "Colmillo de serpiente"
+          "Colmillo de serpiente",
+          "Puñal de Statikk"
         ],
         "bootBase": "Grebas de berserker",
         "bootUpgrade": "Grebas de metal",
@@ -1787,7 +1797,8 @@
           "Tridente de Oceánida",
           "Morellonomicón",
           "Malla de espinas",
-          "Fuerza de la naturaleza"
+          "Fuerza de la naturaleza",
+          "Medallón de los Solari de Hierro"
         ],
         "bootBase": "Botas jonias de la lucidez",
         "bootUpgrade": "Lucidez carmesí",
@@ -2642,7 +2653,8 @@
       "Bastón del Vacío",
       "Tridente de Oceánida",
       "Malla de espinas",
-      "Fuerza de la naturaleza"
+      "Fuerza de la naturaleza",
+      "Medallón de los Solari de Hierro"
     ],
     "situationalItemsIcons": [
       "file:///android_asset/offline_images/0c0fefe5c38af6fc40ea24c5539672b0.webp",
@@ -2651,7 +2663,8 @@
       "file:///android_asset/offline_images/a67295fc9713d5227ce1e8037c3e2779.webp",
       "file:///android_asset/offline_images/f800a2be044a17e73fe7079161df361a.webp",
       "file:///android_asset/offline_images/b68d6e640042b5db9b2c77722c9187e5.webp",
-      "file:///android_asset/offline_images/3e9ae4d161ed330f5ba83c71d2b2a637.webp"
+      "file:///android_asset/offline_images/3e9ae4d161ed330f5ba83c71d2b2a637.webp",
+      "file:///android_asset/offline_images/90e64403fbbc718c296e56622bc21fac.webp"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -2730,7 +2743,8 @@
           "Bastón del Vacío",
           "Tridente de Oceánida",
           "Malla de espinas",
-          "Fuerza de la naturaleza"
+          "Fuerza de la naturaleza",
+          "Medallón de los Solari de Hierro"
         ],
         "bootBase": "Botas jonias de la lucidez",
         "bootUpgrade": "Lucidez carmesí",
@@ -3067,14 +3081,16 @@
       "Ángel de la guarda",
       "Arcoescudo Inmortal",
       "Recaudadora",
-      "Colmillo de serpiente"
+      "Colmillo de serpiente",
+      "Puñal de Statikk"
     ],
     "situationalItemsIcons": [
       "file:///android_asset/offline_images/926efbca7b9ae9f241ddf7cd3c250273.webp",
       "file:///android_asset/offline_images/a9e382435db8c5b4d3dada562fa99d42.webp",
       "file:///android_asset/offline_images/immortal_shieldbow.webp",
       "file:///android_asset/offline_images/c341133522f4f2bf164b1b823a13249c.webp",
-      "file:///android_asset/offline_images/9056fe258a17cfe13919ec1b3e222f4a.webp"
+      "file:///android_asset/offline_images/9056fe258a17cfe13919ec1b3e222f4a.webp",
+      "file:///android_asset/offline_images/statikk_shiv.webp"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -3151,7 +3167,8 @@
           "Ángel de la guarda",
           "Arcoescudo Inmortal",
           "Recaudadora",
-          "Colmillo de serpiente"
+          "Colmillo de serpiente",
+          "Puñal de Statikk"
         ],
         "bootBase": "Grebas de berserker",
         "bootUpgrade": "Grebas de metal",
@@ -3183,7 +3200,8 @@
           "Ángel de la guarda",
           "Arcoescudo Inmortal",
           "Recaudadora",
-          "Colmillo de serpiente"
+          "Colmillo de serpiente",
+          "Puñal de Statikk"
         ],
         "bootBase": "Botas dinámicas",
         "bootUpgrade": "Botas quebrantarmaduras",
@@ -4436,14 +4454,16 @@
       "Cañón de Fuego Rápido",
       "Ángel de la guarda",
       "Arcoescudo Inmortal",
-      "Colmillo de serpiente"
+      "Colmillo de serpiente",
+      "Puñal de Statikk"
     ],
     "situationalItemsIcons": [
       "file:///android_asset/offline_images/22544e382529f38069d660a78e6df20e.png",
       "file:///android_asset/offline_images/rapid_firecannon.webp",
       "file:///android_asset/offline_images/a9e382435db8c5b4d3dada562fa99d42.webp",
       "file:///android_asset/offline_images/immortal_shieldbow.webp",
-      "file:///android_asset/offline_images/9056fe258a17cfe13919ec1b3e222f4a.webp"
+      "file:///android_asset/offline_images/9056fe258a17cfe13919ec1b3e222f4a.webp",
+      "file:///android_asset/offline_images/statikk_shiv.webp"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -4520,7 +4540,8 @@
           "Cañón de Fuego Rápido",
           "Ángel de la guarda",
           "Arcoescudo Inmortal",
-          "Colmillo de serpiente"
+          "Colmillo de serpiente",
+          "Puñal de Statikk"
         ],
         "bootBase": "Grebas de berserker",
         "bootUpgrade": "Grebas de metal",
@@ -4552,7 +4573,8 @@
           "Cañón de Fuego Rápido",
           "Ángel de la guarda",
           "Arcoescudo Inmortal",
-          "Colmillo de serpiente"
+          "Colmillo de serpiente",
+          "Puñal de Statikk"
         ],
         "bootBase": "Botas dinámicas",
         "bootUpgrade": "Botas quebrantarmaduras",
@@ -5336,7 +5358,8 @@
           "Morellonomicón",
           "Tridente de Oceánida",
           "Malla de espinas",
-          "Fuerza de la naturaleza"
+          "Fuerza de la naturaleza",
+          "Medallón de los Solari de Hierro"
         ],
         "bootBase": "Botas jonias de la lucidez",
         "bootUpgrade": "Lucidez carmesí",
@@ -6189,7 +6212,8 @@
       "Malla de espinas",
       "Ángel de la guarda",
       "Colmillo de serpiente",
-      "Recuerdos de Lord Dominik"
+      "Recuerdos de Lord Dominik",
+      "Puñal de Statikk"
     ],
     "situationalItemsIcons": [
       "file:///android_asset/offline_images/c98e3aff8b69a404445bcedab6bc9b96.webp",
@@ -6197,7 +6221,8 @@
       "file:///android_asset/offline_images/b68d6e640042b5db9b2c77722c9187e5.webp",
       "file:///android_asset/offline_images/a9e382435db8c5b4d3dada562fa99d42.webp",
       "file:///android_asset/offline_images/9056fe258a17cfe13919ec1b3e222f4a.webp",
-      "file:///android_asset/offline_images/22544e382529f38069d660a78e6df20e.png"
+      "file:///android_asset/offline_images/22544e382529f38069d660a78e6df20e.png",
+      "file:///android_asset/offline_images/statikk_shiv.webp"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -6275,7 +6300,8 @@
           "Malla de espinas",
           "Ángel de la guarda",
           "Colmillo de serpiente",
-          "Recuerdos de Lord Dominik"
+          "Recuerdos de Lord Dominik",
+          "Puñal de Statikk"
         ],
         "bootBase": "Grebas codiciosas",
         "bootUpgrade": "Botas inmortales",
@@ -6308,7 +6334,8 @@
           "Malla de espinas",
           "Ángel de la guarda",
           "Colmillo de serpiente",
-          "Recuerdos de Lord Dominik"
+          "Recuerdos de Lord Dominik",
+          "Puñal de Statikk"
         ],
         "bootBase": "Grebas codiciosas",
         "bootUpgrade": "Botas inmortales",
@@ -6619,7 +6646,8 @@
       "Baile de la muerte",
       "Colmillo de serpiente",
       "Malla de espinas",
-      "Fuerza de la naturaleza"
+      "Fuerza de la naturaleza",
+      "Puñal de Statikk"
     ],
     "situationalItemsIcons": [
       "file:///android_asset/offline_images/22544e382529f38069d660a78e6df20e.png",
@@ -6628,7 +6656,8 @@
       "file:///android_asset/offline_images/5069d1174a4d1b3b70d631d7bb61731e.webp",
       "file:///android_asset/offline_images/9056fe258a17cfe13919ec1b3e222f4a.webp",
       "file:///android_asset/offline_images/b68d6e640042b5db9b2c77722c9187e5.webp",
-      "file:///android_asset/offline_images/3e9ae4d161ed330f5ba83c71d2b2a637.webp"
+      "file:///android_asset/offline_images/3e9ae4d161ed330f5ba83c71d2b2a637.webp",
+      "file:///android_asset/offline_images/statikk_shiv.webp"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -6707,7 +6736,8 @@
           "Baile de la muerte",
           "Colmillo de serpiente",
           "Malla de espinas",
-          "Fuerza de la naturaleza"
+          "Fuerza de la naturaleza",
+          "Puñal de Statikk"
         ],
         "bootBase": "Botas dinámicas",
         "bootUpgrade": "Botas quebrantarmaduras",
@@ -6741,7 +6771,8 @@
           "Baile de la muerte",
           "Colmillo de serpiente",
           "Malla de espinas",
-          "Fuerza de la naturaleza"
+          "Fuerza de la naturaleza",
+          "Puñal de Statikk"
         ],
         "bootBase": "Grebas codiciosas",
         "bootUpgrade": "Botas inmortales",
@@ -7363,7 +7394,8 @@
           "Impulso Cósmico",
           "Tridente de Oceánida",
           "Malla de espinas",
-          "Fuerza de la naturaleza"
+          "Fuerza de la naturaleza",
+          "Medallón de los Solari de Hierro"
         ],
         "bootBase": "Botas jonias de la lucidez",
         "bootUpgrade": "Lucidez carmesí",
@@ -7397,7 +7429,7 @@
     "secondaryRoles": [
       "SUPPORT"
     ],
-    "tier": "S",
+    "tier": "A+",
     "winrate": 51.85,
     "pickRate": 7.92,
     "banRate": 14.3,
@@ -7422,7 +7454,7 @@
       "Vi",
       "Amumu"
     ],
-    "tacticalAdvice": "En la Línea Central, gestiona tus pinceladas según el estado de la línea: usa tu Habilidad 2 (H2 - Luces Provocadoras) para restaurar maná con ataques básicos y tu Habilidad 1 (H1 - Fuego Devastador o Rayo Destrozador) para castigar el posicionamiento enemigo. En peleas de equipo, bloquea el paso o agrupa a los rivales con tu Habilidad 3 (H3 - Fauces Trituradoras) antes de conectar tu Definitiva (H4 - Desesperación en Espiral) para activar detonaciones masivas de tu Pasiva.",
+    "tacticalAdvice": "Parche 7.3b: bajaron daño, escudos y alcance de Fauces Trituradoras (H3). Juega más por control de zona y castigo seguro; evita intercambios largos si fallas la pincelada clave.",
     "recommendedRunes": "Cometa Arcano, Banda de Maná, Trascendencia, Piroláser, Revestimiento de Huesos",
     "runeTreeDetails": "Brujería / Valor: Cometa Arcano • Banda de Maná • Trascendencia • Piroláser • Revestimiento de Huesos",
     "primaryRuneIconUrl": "file:///android_asset/runes/arcane_comet.png",
@@ -7577,7 +7609,8 @@
           "Morellonomicón",
           "Tridente de Oceánida",
           "Malla de espinas",
-          "Fuerza de la naturaleza"
+          "Fuerza de la naturaleza",
+          "Medallón de los Solari de Hierro"
         ],
         "bootBase": "Botas jonias de la lucidez",
         "bootUpgrade": "Lucidez carmesí",
@@ -7850,7 +7883,8 @@
       "Tridente de Oceánida",
       "Morellonomicón",
       "Malla de espinas",
-      "Fuerza de la naturaleza"
+      "Fuerza de la naturaleza",
+      "Medallón de los Solari de Hierro"
     ],
     "situationalItemsIcons": [
       "file:///android_asset/offline_images/0514e703e9172ec9266ef8121ae07b3b.webp",
@@ -7860,7 +7894,8 @@
       "file:///android_asset/offline_images/f800a2be044a17e73fe7079161df361a.webp",
       "file:///android_asset/offline_images/0c0fefe5c38af6fc40ea24c5539672b0.webp",
       "file:///android_asset/offline_images/b68d6e640042b5db9b2c77722c9187e5.webp",
-      "file:///android_asset/offline_images/3e9ae4d161ed330f5ba83c71d2b2a637.webp"
+      "file:///android_asset/offline_images/3e9ae4d161ed330f5ba83c71d2b2a637.webp",
+      "file:///android_asset/offline_images/90e64403fbbc718c296e56622bc21fac.webp"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -7940,7 +7975,8 @@
           "Tridente de Oceánida",
           "Morellonomicón",
           "Malla de espinas",
-          "Fuerza de la naturaleza"
+          "Fuerza de la naturaleza",
+          "Medallón de los Solari de Hierro"
         ],
         "bootBase": "Botas jonias de la lucidez",
         "bootUpgrade": "Lucidez carmesí",
@@ -8436,7 +8472,8 @@
       "Colmillo de serpiente",
       "Recuerdos de Lord Dominik",
       "Malla de espinas",
-      "Fuerza de la naturaleza"
+      "Fuerza de la naturaleza",
+      "Puñal de Statikk"
     ],
     "situationalItemsIcons": [
       "file:///android_asset/offline_images/9d3f49bbe18458be5b63ce1d74b3e91c.webp",
@@ -8446,7 +8483,8 @@
       "file:///android_asset/offline_images/9056fe258a17cfe13919ec1b3e222f4a.webp",
       "file:///android_asset/offline_images/22544e382529f38069d660a78e6df20e.png",
       "file:///android_asset/offline_images/b68d6e640042b5db9b2c77722c9187e5.webp",
-      "file:///android_asset/offline_images/3e9ae4d161ed330f5ba83c71d2b2a637.webp"
+      "file:///android_asset/offline_images/3e9ae4d161ed330f5ba83c71d2b2a637.webp",
+      "file:///android_asset/offline_images/statikk_shiv.webp"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -8526,7 +8564,8 @@
           "Colmillo de serpiente",
           "Recuerdos de Lord Dominik",
           "Malla de espinas",
-          "Fuerza de la naturaleza"
+          "Fuerza de la naturaleza",
+          "Puñal de Statikk"
         ],
         "bootBase": "Grebas codiciosas",
         "bootUpgrade": "Botas inmortales",
@@ -8559,7 +8598,8 @@
           "Baile de la muerte",
           "Fauces de Malmortius",
           "Colmillo de serpiente",
-          "Recuerdos de Lord Dominik"
+          "Recuerdos de Lord Dominik",
+          "Puñal de Statikk"
         ],
         "bootBase": "Botas dinámicas",
         "bootUpgrade": "Botas quebrantarmaduras",
@@ -8589,7 +8629,7 @@
     "secondaryRoles": [
       "MID"
     ],
-    "tier": "B",
+    "tier": "A",
     "winrate": 51.46,
     "pickRate": 10.56,
     "banRate": 0.63,
@@ -8610,7 +8650,7 @@
       "Leona",
       "Nautilus"
     ],
-    "tacticalAdvice": "Guarda tu 4º disparo para ejecutar objetivos con poca vida. Tu Florecer Mortal (H2) atrapa a cualquier enemigo dañado por tus aliados.",
+    "tacticalAdvice": "Parche 7.3b: el daño crítico y la ejecución por vida faltante mejoran antes. Guarda el 4º disparo para rematar y no lo gastes en tanques si el carry está alcanzable.",
     "recommendedRunes": "Pies Veloces, Brutal, Leyenda: Linaje, Golpe de Gracia, Celeridad",
     "runeTreeDetails": "Precisión / Brujería: Pies Veloces • Brutal • Leyenda: Linaje • Golpe de Gracia • Celeridad",
     "primaryRuneIconUrl": "file:///android_asset/runes/fleet_footwork.png",
@@ -8634,14 +8674,16 @@
       "Ángel de la guarda",
       "Filo fantasmal de Youmuu",
       "Recuerdos de Lord Dominik",
-      "Colmillo de serpiente"
+      "Colmillo de serpiente",
+      "Puñal de Statikk"
     ],
     "situationalItemsIcons": [
       "file:///android_asset/offline_images/926efbca7b9ae9f241ddf7cd3c250273.webp",
       "file:///android_asset/offline_images/a9e382435db8c5b4d3dada562fa99d42.webp",
       "file:///android_asset/offline_images/f1b8c4afd751ba63ea7b8f0ff5f2c981.webp",
       "file:///android_asset/offline_images/22544e382529f38069d660a78e6df20e.png",
-      "file:///android_asset/offline_images/9056fe258a17cfe13919ec1b3e222f4a.webp"
+      "file:///android_asset/offline_images/9056fe258a17cfe13919ec1b3e222f4a.webp",
+      "file:///android_asset/offline_images/statikk_shiv.webp"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -8718,7 +8760,8 @@
           "Ángel de la guarda",
           "Filo fantasmal de Youmuu",
           "Recuerdos de Lord Dominik",
-          "Colmillo de serpiente"
+          "Colmillo de serpiente",
+          "Puñal de Statikk"
         ],
         "bootBase": "Grebas codiciosas",
         "bootUpgrade": "Botas inmortales",
@@ -8750,7 +8793,8 @@
           "Ángel de la guarda",
           "Filo fantasmal de Youmuu",
           "Recuerdos de Lord Dominik",
-          "Colmillo de serpiente"
+          "Colmillo de serpiente",
+          "Puñal de Statikk"
         ],
         "bootBase": "Botas dinámicas",
         "bootUpgrade": "Botas quebrantarmaduras",
@@ -8826,7 +8870,8 @@
       "Ángel de la guarda",
       "Arcoescudo Inmortal",
       "Colmillo de serpiente",
-      "Recuerdos de Lord Dominik"
+      "Recuerdos de Lord Dominik",
+      "Puñal de Statikk"
     ],
     "situationalItemsIcons": [
       "file:///android_asset/offline_images/926efbca7b9ae9f241ddf7cd3c250273.webp",
@@ -8834,7 +8879,8 @@
       "file:///android_asset/offline_images/a9e382435db8c5b4d3dada562fa99d42.webp",
       "file:///android_asset/offline_images/immortal_shieldbow.webp",
       "file:///android_asset/offline_images/9056fe258a17cfe13919ec1b3e222f4a.webp",
-      "file:///android_asset/offline_images/22544e382529f38069d660a78e6df20e.png"
+      "file:///android_asset/offline_images/22544e382529f38069d660a78e6df20e.png",
+      "file:///android_asset/offline_images/statikk_shiv.webp"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -8912,7 +8958,8 @@
           "Ángel de la guarda",
           "Arcoescudo Inmortal",
           "Colmillo de serpiente",
-          "Recuerdos de Lord Dominik"
+          "Recuerdos de Lord Dominik",
+          "Puñal de Statikk"
         ],
         "bootBase": "Grebas de berserker",
         "bootUpgrade": "Grebas de metal",
@@ -8945,7 +8992,8 @@
           "Ángel de la guarda",
           "Arcoescudo Inmortal",
           "Colmillo de serpiente",
-          "Recuerdos de Lord Dominik"
+          "Recuerdos de Lord Dominik",
+          "Puñal de Statikk"
         ],
         "bootBase": "Grebas de berserker",
         "bootUpgrade": "Grebas de metal",
@@ -9402,14 +9450,16 @@
       "Sanguinaria",
       "Ángel de la guarda",
       "Arcoescudo Inmortal",
-      "Colmillo de serpiente"
+      "Colmillo de serpiente",
+      "Puñal de Statikk"
     ],
     "situationalItemsIcons": [
       "file:///android_asset/offline_images/22544e382529f38069d660a78e6df20e.png",
       "file:///android_asset/offline_images/926efbca7b9ae9f241ddf7cd3c250273.webp",
       "file:///android_asset/offline_images/a9e382435db8c5b4d3dada562fa99d42.webp",
       "file:///android_asset/offline_images/immortal_shieldbow.webp",
-      "file:///android_asset/offline_images/9056fe258a17cfe13919ec1b3e222f4a.webp"
+      "file:///android_asset/offline_images/9056fe258a17cfe13919ec1b3e222f4a.webp",
+      "file:///android_asset/offline_images/statikk_shiv.webp"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -9486,7 +9536,8 @@
           "Sanguinaria",
           "Ángel de la guarda",
           "Arcoescudo Inmortal",
-          "Colmillo de serpiente"
+          "Colmillo de serpiente",
+          "Puñal de Statikk"
         ],
         "bootBase": "Grebas de berserker",
         "bootUpgrade": "Grebas de metal",
@@ -9520,7 +9571,8 @@
           "Arcoescudo Inmortal",
           "Colmillo de serpiente",
           "Malla de espinas",
-          "Fuerza de la naturaleza"
+          "Fuerza de la naturaleza",
+          "Puñal de Statikk"
         ],
         "bootBase": "Grebas de berserker",
         "bootUpgrade": "Grebas de metal",
@@ -9598,7 +9650,8 @@
       "Tridente de Oceánida",
       "Morellonomicón",
       "Malla de espinas",
-      "Fuerza de la naturaleza"
+      "Fuerza de la naturaleza",
+      "Medallón de los Solari de Hierro"
     ],
     "situationalItemsIcons": [
       "file:///android_asset/offline_images/9910505e11aafddc30dd943ecf79b0d8.webp",
@@ -9608,7 +9661,8 @@
       "file:///android_asset/offline_images/f800a2be044a17e73fe7079161df361a.webp",
       "file:///android_asset/offline_images/0c0fefe5c38af6fc40ea24c5539672b0.webp",
       "file:///android_asset/offline_images/b68d6e640042b5db9b2c77722c9187e5.webp",
-      "file:///android_asset/offline_images/3e9ae4d161ed330f5ba83c71d2b2a637.webp"
+      "file:///android_asset/offline_images/3e9ae4d161ed330f5ba83c71d2b2a637.webp",
+      "file:///android_asset/offline_images/90e64403fbbc718c296e56622bc21fac.webp"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -9688,7 +9742,8 @@
           "Tridente de Oceánida",
           "Morellonomicón",
           "Malla de espinas",
-          "Fuerza de la naturaleza"
+          "Fuerza de la naturaleza",
+          "Medallón de los Solari de Hierro"
         ],
         "bootBase": "Botas jonias de la lucidez",
         "bootUpgrade": "Lucidez carmesí",
@@ -10974,7 +11029,8 @@
       "Colmillo de serpiente",
       "Recuerdos de Lord Dominik",
       "Malla de espinas",
-      "Fuerza de la naturaleza"
+      "Fuerza de la naturaleza",
+      "Puñal de Statikk"
     ],
     "situationalItemsIcons": [
       "file:///android_asset/offline_images/926efbca7b9ae9f241ddf7cd3c250273.webp",
@@ -10984,7 +11040,8 @@
       "file:///android_asset/offline_images/9056fe258a17cfe13919ec1b3e222f4a.webp",
       "file:///android_asset/offline_images/22544e382529f38069d660a78e6df20e.png",
       "file:///android_asset/offline_images/b68d6e640042b5db9b2c77722c9187e5.webp",
-      "file:///android_asset/offline_images/3e9ae4d161ed330f5ba83c71d2b2a637.webp"
+      "file:///android_asset/offline_images/3e9ae4d161ed330f5ba83c71d2b2a637.webp",
+      "file:///android_asset/offline_images/statikk_shiv.webp"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -11064,7 +11121,8 @@
           "Colmillo de serpiente",
           "Recuerdos de Lord Dominik",
           "Malla de espinas",
-          "Fuerza de la naturaleza"
+          "Fuerza de la naturaleza",
+          "Puñal de Statikk"
         ],
         "bootBase": "Botas dinámicas",
         "bootUpgrade": "Botas quebrantarmaduras",
@@ -11097,7 +11155,8 @@
           "Fauces de Malmortius",
           "Fuerza de trinidad",
           "Colmillo de serpiente",
-          "Recuerdos de Lord Dominik"
+          "Recuerdos de Lord Dominik",
+          "Puñal de Statikk"
         ],
         "bootBase": "Grebas de berserker",
         "bootUpgrade": "Grebas de metal",
@@ -12151,7 +12210,8 @@
       "Ángel de la guarda",
       "Fauces de Malmortius",
       "Colmillo de serpiente",
-      "Recuerdos de Lord Dominik"
+      "Recuerdos de Lord Dominik",
+      "Puñal de Statikk"
     ],
     "situationalItemsIcons": [
       "file:///android_asset/offline_images/926efbca7b9ae9f241ddf7cd3c250273.webp",
@@ -12159,7 +12219,8 @@
       "file:///android_asset/offline_images/a9e382435db8c5b4d3dada562fa99d42.webp",
       "file:///android_asset/offline_images/fde3101c1b0cf8002454b75c285cd1fe.webp",
       "file:///android_asset/offline_images/9056fe258a17cfe13919ec1b3e222f4a.webp",
-      "file:///android_asset/offline_images/22544e382529f38069d660a78e6df20e.png"
+      "file:///android_asset/offline_images/22544e382529f38069d660a78e6df20e.png",
+      "file:///android_asset/offline_images/statikk_shiv.webp"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -12237,7 +12298,8 @@
           "Ángel de la guarda",
           "Fauces de Malmortius",
           "Colmillo de serpiente",
-          "Recuerdos de Lord Dominik"
+          "Recuerdos de Lord Dominik",
+          "Puñal de Statikk"
         ],
         "bootBase": "Grebas de berserker",
         "bootUpgrade": "Grebas de metal",
@@ -12270,7 +12332,8 @@
           "Ángel de la guarda",
           "Fauces de Malmortius",
           "Colmillo de serpiente",
-          "Recuerdos de Lord Dominik"
+          "Recuerdos de Lord Dominik",
+          "Puñal de Statikk"
         ],
         "bootBase": "Botas dinámicas",
         "bootUpgrade": "Botas quebrantarmaduras",
@@ -12348,7 +12411,8 @@
       "Tridente de Oceánida",
       "Morellonomicón",
       "Malla de espinas",
-      "Fuerza de la naturaleza"
+      "Fuerza de la naturaleza",
+      "Medallón de los Solari de Hierro"
     ],
     "situationalItemsIcons": [
       "file:///android_asset/offline_images/0514e703e9172ec9266ef8121ae07b3b.webp",
@@ -12358,7 +12422,8 @@
       "file:///android_asset/offline_images/f800a2be044a17e73fe7079161df361a.webp",
       "file:///android_asset/offline_images/0c0fefe5c38af6fc40ea24c5539672b0.webp",
       "file:///android_asset/offline_images/b68d6e640042b5db9b2c77722c9187e5.webp",
-      "file:///android_asset/offline_images/3e9ae4d161ed330f5ba83c71d2b2a637.webp"
+      "file:///android_asset/offline_images/3e9ae4d161ed330f5ba83c71d2b2a637.webp",
+      "file:///android_asset/offline_images/90e64403fbbc718c296e56622bc21fac.webp"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -12438,7 +12503,8 @@
           "Tridente de Oceánida",
           "Morellonomicón",
           "Malla de espinas",
-          "Fuerza de la naturaleza"
+          "Fuerza de la naturaleza",
+          "Medallón de los Solari de Hierro"
         ],
         "bootBase": "Botas jonias de la lucidez",
         "bootUpgrade": "Lucidez carmesí",
@@ -12663,7 +12729,8 @@
           "Morellonomicón",
           "Tridente de Oceánida",
           "Malla de espinas",
-          "Fuerza de la naturaleza"
+          "Fuerza de la naturaleza",
+          "Medallón de los Solari de Hierro"
         ],
         "bootBase": "Botas jonias de la lucidez",
         "bootUpgrade": "Lucidez carmesí",
@@ -13515,7 +13582,8 @@
           "Morellonomicón",
           "Tridente de Oceánida",
           "Malla de espinas",
-          "Fuerza de la naturaleza"
+          "Fuerza de la naturaleza",
+          "Medallón de los Solari de Hierro"
         ],
         "bootBase": "Botas jonias de la lucidez",
         "bootUpgrade": "Lucidez carmesí",
@@ -13593,7 +13661,8 @@
       "Tridente de Oceánida",
       "Morellonomicón",
       "Malla de espinas",
-      "Fuerza de la naturaleza"
+      "Fuerza de la naturaleza",
+      "Medallón de los Solari de Hierro"
     ],
     "situationalItemsIcons": [
       "file:///android_asset/offline_images/0514e703e9172ec9266ef8121ae07b3b.webp",
@@ -13603,7 +13672,8 @@
       "file:///android_asset/offline_images/f800a2be044a17e73fe7079161df361a.webp",
       "file:///android_asset/offline_images/0c0fefe5c38af6fc40ea24c5539672b0.webp",
       "file:///android_asset/offline_images/b68d6e640042b5db9b2c77722c9187e5.webp",
-      "file:///android_asset/offline_images/3e9ae4d161ed330f5ba83c71d2b2a637.webp"
+      "file:///android_asset/offline_images/3e9ae4d161ed330f5ba83c71d2b2a637.webp",
+      "file:///android_asset/offline_images/90e64403fbbc718c296e56622bc21fac.webp"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -13683,7 +13753,8 @@
           "Tridente de Oceánida",
           "Morellonomicón",
           "Malla de espinas",
-          "Fuerza de la naturaleza"
+          "Fuerza de la naturaleza",
+          "Medallón de los Solari de Hierro"
         ],
         "bootBase": "Botas jonias de la lucidez",
         "bootUpgrade": "Lucidez carmesí",
@@ -13790,14 +13861,16 @@
       "Sanguinaria",
       "Ángel de la guarda",
       "Filo de la noche",
-      "Colmillo de serpiente"
+      "Colmillo de serpiente",
+      "Puñal de Statikk"
     ],
     "situationalItemsIcons": [
       "file:///android_asset/offline_images/22544e382529f38069d660a78e6df20e.png",
       "file:///android_asset/offline_images/926efbca7b9ae9f241ddf7cd3c250273.webp",
       "file:///android_asset/offline_images/a9e382435db8c5b4d3dada562fa99d42.webp",
       "file:///android_asset/offline_images/9d3f49bbe18458be5b63ce1d74b3e91c.webp",
-      "file:///android_asset/offline_images/9056fe258a17cfe13919ec1b3e222f4a.webp"
+      "file:///android_asset/offline_images/9056fe258a17cfe13919ec1b3e222f4a.webp",
+      "file:///android_asset/offline_images/statikk_shiv.webp"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -13874,7 +13947,8 @@
           "Sanguinaria",
           "Ángel de la guarda",
           "Filo de la noche",
-          "Colmillo de serpiente"
+          "Colmillo de serpiente",
+          "Puñal de Statikk"
         ],
         "bootBase": "Grebas codiciosas",
         "bootUpgrade": "Botas inmortales",
@@ -13909,7 +13983,8 @@
           "Tridente de Oceánida",
           "Morellonomicón",
           "Malla de espinas",
-          "Fuerza de la naturaleza"
+          "Fuerza de la naturaleza",
+          "Medallón de los Solari de Hierro"
         ],
         "bootBase": "Botas jonias de la lucidez",
         "bootUpgrade": "Lucidez carmesí",
