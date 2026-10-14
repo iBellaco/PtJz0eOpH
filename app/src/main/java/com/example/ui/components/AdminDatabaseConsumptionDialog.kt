@@ -80,7 +80,7 @@ fun SavedDataStatisticsContent(rows: List<SavedDataStatistic>) {
         rows.forEachIndexed { index, row ->
             var expanded by remember(row.label) { mutableStateOf(false) }
             Surface(color = HextechSurface, shape = MaterialTheme.shapes.medium) {
-                Column(Modifier.fillMaxWidth().clickable { expanded = !expanded }.padding(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Column(Modifier.fillMaxWidth().heightIn(min = 48.dp).clickable { expanded = !expanded }.testTag("saved_data_row_$index").padding(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                         Text(tr(row.label), color = HextechGold, modifier = Modifier.weight(1f))
                         Text(row.count?.toString() ?: "—", color = if (row.failed) DangerRed else HextechCyan,

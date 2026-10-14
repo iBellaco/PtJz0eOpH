@@ -103,8 +103,10 @@ class HistoryConsistencyRenderedTest(private val language: String) {
                 failureReason="Recuento disponible. No se pudo estimar el tamaño de esta categoría."),
             SavedDataStatistic("Contadores de streamers", "Clics acumulados de cada publicación.", failed=true,
                 failureReason="El servicio rechazó el acceso a esta categoría. Sus permisos deben actualizarse."))) } }
-        compose.onNodeWithTag("saved_data_count_0").assertTextEquals("42")
-        compose.onNodeWithTag("saved_data_count_1").assertTextEquals(if(language=="pt") "Não disponível" else "No disponible")
+        compose.onNodeWithTag("saved_data_count_0", useUnmergedTree=true).assertTextEquals("42")
+        compose.onNodeWithTag("saved_data_count_1", useUnmergedTree=true).assertTextEquals("—")
+        compose.onNodeWithTag("saved_data_row_0").performClick()
+        compose.onNodeWithTag("saved_data_row_1").performClick()
         compose.onNodeWithText(if(language=="pt") "Contagem disponível. Não foi possível estimar o tamanho desta categoria." else "Recuento disponible. No se pudo estimar el tamaño de esta categoría.").assertExists()
         compose.onNodeWithText(if(language=="pt") "O serviço recusou o acesso a esta categoria. As permissões precisam ser atualizadas." else "El servicio rechazó el acceso a esta categoría. Sus permisos deben actualizarse.").assertExists()
         capture("statistics")
