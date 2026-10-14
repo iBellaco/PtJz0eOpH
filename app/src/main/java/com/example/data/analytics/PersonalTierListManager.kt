@@ -25,6 +25,8 @@ data class MatchupRecord(
     val winRate: Double
 )
 
+private const val MIN_MATCHUP_RESULTS = 5
+
 data class AllySynergyRecord(
     val allyName: String,
     val allyAvatarUrl: String,
@@ -242,7 +244,7 @@ object PersonalTierListManager {
                 val totalM = counts.first + counts.second
                 val wrM = if (totalM > 0) (counts.first.toDouble() / totalM * 100.0) else 0.0
                 val oppObj = WildRiftRepository.champions.find { it.name.equals(oppName, ignoreCase = true) }
-                MatchupRecord(oppName, oppObj?.avatarUrl ?: "", counts.first, counts.second, totalM, wrM)
+                MatchupRecord(oppName, championAvatar(oppObj), counts.first, counts.second, totalM, wrM)
             }.sortedWith(compareByDescending<MatchupRecord> { it.total }.thenBy { it.winRate })
 
             // Aliados
@@ -270,8 +272,10 @@ object PersonalTierListManager {
                 String.format(java.util.Locale.US, "%.1f KDA", avgKda)
             } else ""
 
-            val bestChamp1v1 = matchupList.filter { it.total >= 5 && it.winRate > 50.0 }.maxWithOrNull(
-                compareBy<MatchupRecord> { it.winRate }.thenBy { it.wins }
+            val bestChamp1v1 = matchupList.filter { it.total >= MIN_MATCHUP_RESULTS && it.winRate > 50.0 }.maxWithOrNull(
+                compareBy<MatchupRecord> { it.winRate }
+                    .thenBy { it.total }
+                    .thenBy { it.wins }
             )
 
             // Four neutral prior results reduce the impact of a single win/loss.
@@ -364,21 +368,25 @@ object PersonalTierListManager {
                 val l = list.sumOf { it.losses }
                 val tot = w + l
                 val wr = if (tot > 0) (w.toDouble() / tot * 100.0) else 0.0
-                MatchupRecord(name, list.firstOrNull()?.opponentAvatarUrl ?: "", w, l, tot, wr)
+                val champion = WildRiftRepository.champions.firstOrNull { it.name.equals(name, true) }
+                MatchupRecord(name, championAvatar(champion), w, l, tot, wr)
             }
         // 1v1 Matchups globales y análisis del Coach
-        val decidedMatchups = allMatchups.filter { it.total >= 5 }
+        // Una tasa de 100% con una sola partida no es una ventaja fiable. El
+        // historial solo presenta extremos cuando hay al menos cinco resultados
+        // terminados contra el mismo rival.
+        val decidedMatchups = allMatchups.filter { it.total >= MIN_MATCHUP_RESULTS }
         val top1v1 = decidedMatchups.filter { it.winRate > 50.0 }.sortedWith(
             compareByDescending<MatchupRecord> { it.winRate }
-                .thenByDescending { it.wins }
                 .thenByDescending { it.total }
+                .thenByDescending { it.wins }
         )
         val best1v1 = top1v1.firstOrNull()
 
         val worst1v1 = decidedMatchups.filter { it.winRate < 50.0 }.sortedWith(
             compareBy<MatchupRecord> { it.winRate }
-                .thenByDescending { it.losses }
                 .thenByDescending { it.total }
+                .thenByDescending { it.losses }
         )
         val nemesis = worst1v1.firstOrNull()
 
@@ -463,6 +471,16 @@ object PersonalTierListManager {
         return slots(draft.allyPicksJson).find { canonicalName(it.championId, it.championName).equals(champName, true) }?.avatarUrl
     }
 
+    /**
+     * El catálogo no siempre trae una URL remota (por ejemplo, después de una
+     * importación o cuando se usa el catálogo offline). En ese caso usamos el
+     * avatar local canónico del campeón para que las tarjetas de historial no
+     * desaparezcan ni muestren un espacio vacío.
+     */
+    private fun championAvatar(champion: Champion?): String = champion?.let {
+        it.avatarUrl.trim().ifBlank { it.getLocalAvatarUri() }
+    }.orEmpty()
+
     fun recordedLaneOpponent(draft: SavedDraftEntity): String {
         val role = recordedRole(draft) ?: return ""
         if (draft.enemyLaneOpponentName.isNotBlank()) {
@@ -535,7 +553,8 @@ object PersonalTierListManager {
         nemesis: MatchupRecord?,
         lang: String = "es"
     ): String {
-        val records = listOfNotNull(bestMatchup, nemesis).distinctBy { it.opponentName }.filter { it.total >= 5 }
+        val records = listOfNotNull(bestMatchup, nemesis).distinctBy { it.opponentName }
+            .filter { it.total >= MIN_MATCHUP_RESULTS }
         if (records.isEmpty()) return if (lang == "pt")
             "Ainda não há cinco resultados contra um mesmo rival de rota. Os resultados são de partidas completas; não comprovam vitórias em duelos 1v1."
             else "Todavía no hay cinco resultados contra un mismo rival de línea. Los resultados son de partidas completas; no demuestran victorias en duelos 1v1."
