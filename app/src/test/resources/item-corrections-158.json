@@ -202,8 +202,8 @@
     "statsPt": "+50 Dano de ataque • +35% Velocidade de ataque"
   },
   "statikk_shiv": {
-    "passive": "Electrochoque: Los ataques otorgan 5 acumulaciones de vigor adicionales.\nElectrochispa: Moverte y atacar genera un ataque con vigor que emite rayos que rebotan a 4-7 objetivos, lo que inflige 60 de daño mágico, aumenta hasta 90 de daño mágico contra súbditos y monstruos y aplica efectos de impacto al rebotar a otros objetivos.",
-    "passivePt": "Eletrochoque: Os ataques concedem 5 acúmulos adicionais de energia.\nEletrofaísca: Mover-se e atacar gera um ataque energizado que dispara raios que saltam entre 4-7 alvos, causando 60 de dano mágico, aumentado para 90 de dano mágico contra tropas e monstros, e aplica efeitos de contato ao atingir outros alvos.",
+    "passive": "Electrochoque: Los ataques otorgan 7 acumulaciones de vigor adicionales.\nElectrochispa: Moverte y atacar genera un ataque con vigor que emite rayos que rebotan a 4-7 objetivos, lo que inflige 60 de daño mágico, aumenta hasta 90 de daño mágico contra súbditos y monstruos y aplica efectos de impacto al rebotar a otros objetivos.",
+    "passivePt": "Eletrochoque: Os ataques concedem 7 acúmulos adicionais de energia.\nEletrofaísca: Mover-se e atacar gera um ataque energizado que dispara raios que saltam entre 4-7 alvos, causando 60 de dano mágico, aumentado para 90 de dano mágico contra tropas e monstros, e aplica efeitos de contato ao atingir outros alvos.",
     "stats": "+40 Daño de ataque • +30% Velocidad de ataque • +40 Poder de habilidad • +4% Velocidad de movimiento",
     "statsPt": "+40 Dano de ataque • +30% Velocidade de ataque • +40 Poder de habilidade • +4% Velocidade de movimento"
   },
