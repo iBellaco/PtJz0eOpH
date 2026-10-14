@@ -816,18 +816,16 @@ private fun PersonalOverviewCard(
                                             modifier = Modifier.padding(6.dp),
                                             verticalAlignment = Alignment.CenterVertically
                                         ) {
-                                            if (best.opponentAvatarUrl.isNotBlank()) {
-                                                AppAssetImage(
-                                                    url = best.opponentAvatarUrl,
-                                                    contentDescription = best.opponentName,
-                                                    fallbackText = best.opponentName.take(2),
-                                                    modifier = Modifier
-                                                        .size(26.dp)
-                                                        .clip(CircleShape)
-                                                        .border(1.dp, Color(0xFF81C784), CircleShape)
-                                                )
-                                                Spacer(modifier = Modifier.width(6.dp))
-                                            }
+                                            AppAssetImage(
+                                                url = best.opponentAvatarUrl,
+                                                contentDescription = best.opponentName,
+                                                fallbackText = best.opponentName.take(2),
+                                                modifier = Modifier
+                                                    .size(26.dp)
+                                                    .clip(CircleShape)
+                                                    .border(1.dp, Color(0xFF81C784), CircleShape)
+                                            )
+                                            Spacer(modifier = Modifier.width(6.dp))
                                             Column {
                                                 Text(
                                                     text = tr("Mayor tasa de victorias"),
@@ -866,18 +864,16 @@ private fun PersonalOverviewCard(
                                             modifier = Modifier.padding(6.dp),
                                             verticalAlignment = Alignment.CenterVertically
                                         ) {
-                                            if (nem.opponentAvatarUrl.isNotBlank()) {
-                                                AppAssetImage(
-                                                    url = nem.opponentAvatarUrl,
-                                                    contentDescription = nem.opponentName,
-                                                    fallbackText = nem.opponentName.take(2),
-                                                    modifier = Modifier
-                                                        .size(26.dp)
-                                                        .clip(CircleShape)
-                                                        .border(1.dp, DangerRed, CircleShape)
-                                                )
-                                                Spacer(modifier = Modifier.width(6.dp))
-                                            }
+                                            AppAssetImage(
+                                                url = nem.opponentAvatarUrl,
+                                                contentDescription = nem.opponentName,
+                                                fallbackText = nem.opponentName.take(2),
+                                                modifier = Modifier
+                                                    .size(26.dp)
+                                                    .clip(CircleShape)
+                                                    .border(1.dp, DangerRed, CircleShape)
+                                            )
+                                            Spacer(modifier = Modifier.width(6.dp))
                                             Column {
                                                 Text(
                                                     text = tr("Menor tasa de victorias"),
