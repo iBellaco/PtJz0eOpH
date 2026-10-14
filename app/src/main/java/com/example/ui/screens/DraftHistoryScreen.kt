@@ -920,7 +920,11 @@ fun DraftHistoryScreen(
                                         Toast.LENGTH_LONG
                                     ).show()
                                 } catch (e: Exception) {
-                                    Toast.makeText(context, com.example.util.appTr("Error al crear drafts de prueba: ${e.localizedMessage}"), Toast.LENGTH_LONG).show()
+                                    Toast.makeText(
+                                        context,
+                                        trStr(effectiveLang, "Error al crear drafts de prueba: %s").format(e.localizedMessage ?: ""),
+                                        Toast.LENGTH_LONG
+                                    ).show()
                                 } finally {
                                     isSeedingTestDrafts = false
                                 }

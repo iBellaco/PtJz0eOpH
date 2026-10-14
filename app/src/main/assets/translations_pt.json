@@ -9517,7 +9517,7 @@
   "Error al cargar solicitudes: {0}": "Erro ao carregar solicitações: {0}",
   "Error al cargar usuarios: {0}": "Erro ao carregar usuários: {0}",
   "Error al cargar:": "Erro ao carregar:",
-  "Error al crear drafts de prueba: ${e.localizedMessage}": "Erro ao criar drafts de teste: ${e.localizedMessage}",
+  "Error al crear drafts de prueba: %s": "Erro ao criar drafts de teste: %s",
   "Error al crear solicitud: {0}": "Erro ao criar solicitação: {0}",
   "Error al desactivar: {0}": "Erro ao desativar: {0}",
   "Error al descargar": "Erro ao baixar",
