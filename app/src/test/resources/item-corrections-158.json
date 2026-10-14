@@ -198,7 +198,7 @@
     "passive": "La práctica hace al asesino: Al atacar, obtienes probabilidad de crítico permanente, 0,4% para campeones cuerpo a cuerpo y 0,2% para campeones a distancia por ataque, hasta un máximo de 25%.\nRáfaga: Al atacar a un campeón enemigo, obtienes un 35% de velocidad de ataque durante 6 s, enfriamiento de 25 s. Los ataques reducen el enfriamiento 1 s o 2 s si son impactos críticos.",
     "passivePt": "A Prática Faz o Assassino: Ao atacar, você recebe chance de acerto crítico permanente, 0,4% para campeões corpo a corpo e 0,2% para campeões de ataque à distância por ataque, até 25%.\nRajada: Ao atacar um campeão inimigo, você recebe 35% de velocidade de ataque por 6 s, tempo de recarga de 25 s. Os ataques reduzem o tempo de recarga em 1 s ou em 2 s se forem acertos críticos.",
     "stats": "+50 Daño de ataque • +35% Velocidad de ataque",
-    "goldCost": 3100,
+    "goldCost": 3000,
     "statsPt": "+50 Dano de ataque • +35% Velocidade de ataque"
   },
   "statikk_shiv": {
