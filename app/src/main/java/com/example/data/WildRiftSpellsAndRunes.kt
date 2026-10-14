@@ -297,7 +297,7 @@ object WildRiftSpellsAndRunes {
             name = "Electrocutar",
             category = "Clave",
             iconUrl = "file:///android_asset/runes/electrocute.png",
-            description = "Daño explosivo\n\nEn 3 s, golpea a un mismo campeón enemigo con 3 ataques básicos o habilidades para infligirle daño adaptable adicional.\nDaño: 40-210 (nivel) + 10% adicional DA + 5% PH.\nEnfriamiento: 20-13 s (nivel)."
+            description = "Daño explosivo\n\nEn 3 s, golpea a un mismo campeón enemigo con 3 ataques básicos o habilidades para infligirle daño adaptable adicional.\nDaño: 60-210 (nivel) + 10% adicional DA + 5% PH.\nEnfriamiento: 20-13 s (nivel)."
         ),
         RuneItem(
             id = "fortalecimiento",
@@ -332,7 +332,7 @@ object WildRiftSpellsAndRunes {
             name = "Garras del Inmortal",
             category = "Clave",
             iconUrl = "file:///android_asset/runes/grasp_undying.png",
-            description = "Tanque, curación\n\nCada 3 s que pases en combate, se potenciará tu siguiente ataque contra un campeón..\nDaño mágico adicional: 3,3% vida máx.\nCuración: 1,3% vida máx.\nAumento de vida permanente: 10\nCon campeones a distancia, los efectos se reducen un 60%."
+            description = "Tanque, curación\n\nCada 3 s que pases en combate, se potenciará tu siguiente ataque contra un campeón..\nDaño mágico adicional: 3% vida máx.\nCuración: 1,3% vida máx.\nAumento de vida permanente: 8\nCon campeones a distancia, los efectos se reducen un 60%."
         ),
         RuneItem(
             id = "guardian",
@@ -353,7 +353,7 @@ object WildRiftSpellsAndRunes {
             name = "Aery",
             category = "Clave",
             iconUrl = "file:///android_asset/runes/aery.png",
-            description = "Desgaste, protección\n\nTus ataques y habilidades envían a Aery a un objetivo para dañar a los enemigos u otorgar un escudo a los aliados.\nDaño: 15 - 70 (nivel) + 10% adicional DA + 5% PH.\nEscudo: 25 - 120 (nivel) + 10% adicional DA + 5% PH.\nNo se puede enviar a Aery de nuevo hasta que vuelva a ti."
+            description = "Desgaste, protección\n\nTus ataques y habilidades envían a Aery a un objetivo para dañar a los enemigos u otorgar un escudo a los aliados.\nDaño: 15 - 70 (nivel) + 10% adicional DA + 5% PH.\nEscudo: 20 - 100 (nivel) + 10% adicional DA + 5% PH.\nNo se puede enviar a Aery de nuevo hasta que vuelva a ti."
         ),
         RuneItem(
             id = "arcane_comet",
@@ -382,7 +382,7 @@ object WildRiftSpellsAndRunes {
             name = "Golpe Bajo",
             category = "Dominación",
             iconUrl = "file:///android_asset/runes/cheap_shot.webp",
-            description = "Inflige de 10 a 45 de daño verdadero adicional a los enemigos cuya velocidad de movimiento se haya visto reducida (7 s de enfriamiento)."
+            description = "Inflige de 10 a 45 de daño verdadero adicional a los enemigos cuya velocidad de movimiento se haya visto reducida (5 s de enfriamiento)."
         ),
         RuneItem(
             id = "sudden_impact",

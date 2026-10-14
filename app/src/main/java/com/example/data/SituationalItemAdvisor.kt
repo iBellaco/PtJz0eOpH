@@ -81,7 +81,7 @@ object SituationalItemAdvisor {
         "Baile de la muerte" to SituationalItemInfo(
             name = "Baile de la muerte",
             iconUrl = "file:///android_asset/offline_images/7f8482a5143b2c02ad323ce93df371f1.png",
-            categoryName = "Anti-Burst AD & Supervivencia (Parche 7.3a)",
+            categoryName = "Anti-Burst AD & Supervivencia",
             purpose = "Convierte el daño de ráfaga en daño diferido (Cauterizar 30%) y limpia el sangrado curando en derribos (Reto 90% AD adicional). Coste ajustado a 3300g.",
             bestAgainst = listOf("Zed", "Kha'Zix", "Rengar", "Talon", "Pantheon", "Jayce", "Draven"),
             keyEffect = "Cauterizar: 30% del daño recibido se difiere en 3s. Reto: Derribos limpian el sangrado y curan 90% de AD adicional.",
@@ -207,16 +207,16 @@ object SituationalItemAdvisor {
         "Diadema susurrante" to SituationalItemInfo(
             name = "Diadema susurrante",
             iconUrl = "file:///android_asset/offline_images/whispering_headband.webp",
-            categoryName = "Soporte Encantador & Maná (Parche 7.3a)",
+            categoryName = "Soporte Encantador & Maná",
             purpose = "Otorga vida, maná y poder de curaciones y escudos con Armonía (+0.25% por maná). Al alcanzar 700 de maná evoluciona a Diadema melodiosa.",
             bestAgainst = listOf("Composiciones de desgaste", "Soportes encantadores (Lulu, Janna, Nami, Karma, Sona, Seraphine)"),
-            keyEffect = "Armonía (7.3a): Concede un 0.25% de poder de curaciones y escudos adicional según el maná. Carga de maná evoluciona el objeto.",
+            keyEffect = "Armonía: Concede un 0.25% de poder de curaciones y escudos adicional según el maná. Carga de maná evoluciona el objeto.",
             recommendationTip = "Excelente compra para soportes encantadores que requieren regeneración y escalado de sanación en fase de líneas."
         ),
         "Diadema melodiosa" to SituationalItemInfo(
             name = "Diadema melodiosa",
             iconUrl = "file:///android_asset/offline_images/diadem_of_songs.webp",
-            categoryName = "Soporte Encantador Evolucionado (Parche 7.3a)",
+            categoryName = "Soporte Encantador Evolucionado",
             purpose = "Forma final tras acumular 700 de maná. Concede Armonía al 0.25% y sana al aliado con menor vida en combate durante peleas de equipo.",
             bestAgainst = listOf("Peleas de equipo prolongadas 5v5", "Composiciones de asedio y desgaste"),
             keyEffect = "Cántico Sagrado: Cura al aliado con menor vida en combate al usar habilidades o curar/escudar. Armonía: +0.25% curación y escudos.",
@@ -225,7 +225,7 @@ object SituationalItemAdvisor {
         "Diadema de canciones" to SituationalItemInfo(
             name = "Diadema melodiosa",
             iconUrl = "file:///android_asset/offline_images/diadem_of_songs.webp",
-            categoryName = "Soporte Encantador Evolucionado (Parche 7.3a)",
+            categoryName = "Soporte Encantador Evolucionado",
             purpose = "Forma final tras acumular 700 de maná. Concede Armonía al 0.25% y sana al aliado con menor vida en combate durante peleas de equipo.",
             bestAgainst = listOf("Peleas de equipo prolongadas 5v5", "Composiciones de asedio y desgaste"),
             keyEffect = "Cántico Sagrado: Cura al aliado con menor vida en combate al usar habilidades o curar/escudar. Armonía: +0.25% curación y escudos.",
@@ -279,7 +279,7 @@ object SituationalItemAdvisor {
         "El gran invierno" to SituationalItemInfo(
             name = "El gran invierno",
             iconUrl = "file:///android_asset/offline_images/ae7584f101f22466aaeaca45438a8371.webp",
-            categoryName = "Tanque Escudo & Maná (Parche 7.3a)",
+            categoryName = "Tanque Escudo & Maná",
             purpose = "Forma evolucionada de Llegada del invierno (+500 vida, +1200 maná). Otorga un escudo masivo (Coloso helado) al inmovilizar o ralentizar a un enemigo.",
             bestAgainst = listOf("Tanques y colosos con alto gasto de maná (Nautilus, Sion, Gragas, Malphite, Alistar, Shen)"),
             keyEffect = "Coloso helado: Escudo de 120 + 4.5% del maná al obstaculizar movimiento (+80% si hay varios enemigos).",
@@ -288,7 +288,7 @@ object SituationalItemAdvisor {
         "Llegada del invierno" to SituationalItemInfo(
             name = "Llegada del invierno",
             iconUrl = "file:///android_asset/offline_images/ed3f1fac19870153dfdc6bed7a071edd.webp",
-            categoryName = "Tanque Escudo & Maná (Parche 7.3a)",
+            categoryName = "Tanque Escudo & Maná",
             purpose = "Objeto inicial de maná y vida (+500 vida, +500 maná). Acumula 700 de maná para transformarse en El gran invierno.",
             bestAgainst = listOf("Tanques con alto gasto de maná en fase de líneas"),
             keyEffect = "Asombro: +15% de vida por maná gastado. Carga de maná: Transforma en El gran invierno.",
@@ -297,7 +297,7 @@ object SituationalItemAdvisor {
         "Muramana" to SituationalItemInfo(
             name = "Muramana",
             iconUrl = "file:///android_asset/offline_images/08f2da37400fbff1179c90b251358dac.webp",
-            categoryName = "Daño Físico & Escalado de Maná (Parche 7.3a)",
+            categoryName = "Daño Físico & Escalado de Maná",
             purpose = "Forma evolucionada de Manamune (+40 DA, +1200 maná). Aplica daño físico de impacto adicional en ataques básicos y habilidades.",
             bestAgainst = listOf("Tiradores y asesinos de daño físico dependientes de habilidades (Ezreal, Varus, Jayce, Senna, Corki)"),
             keyEffect = "Impacto: +1.5% maná como daño en ataques y +3.5% maná en habilidades. Asombro: +2% DA por maná.",
@@ -306,7 +306,7 @@ object SituationalItemAdvisor {
         "Manamune" to SituationalItemInfo(
             name = "Manamune",
             iconUrl = "file:///android_asset/offline_images/aba4fb973b550edadd3be632fb355f74.webp",
-            categoryName = "Daño Físico & Escalado de Maná (Parche 7.3a)",
+            categoryName = "Daño Físico & Escalado de Maná",
             purpose = "Objeto inicial de AD y maná (+40 DA, +500 maná). Acumula 700 de maná para evolucionar en Muramana.",
             bestAgainst = listOf("Tiradores y duelistas de spam de habilidades"),
             keyEffect = "Asombro: +2% DA según el maná. Carga de maná: Transforma en Muramana.",
@@ -315,11 +315,11 @@ object SituationalItemAdvisor {
         "Flechas de los Yun Tal" to SituationalItemInfo(
             name = "Flechas de los Yun Tal",
             iconUrl = "file:///android_asset/offline_images/yun_tal_wildarrows.webp",
-            categoryName = "Daño Físico & Crítico con Ráfaga (Parche 7.3a)",
-            purpose = "Mejorado en el Parche 7.3a con +35% velocidad de ataque base y +35% de velocidad de ataque en Ráfaga tras asestar golpes críticos con sangrado continuo.",
+            categoryName = "Daño Físico & Crítico con Ráfaga (Parche 7.3b)",
+            purpose = "Parche 7.3b: baja a 3000 de oro. Mantiene el pico de velocidad de ataque para tiradores de autoataques continuos.",
             bestAgainst = listOf("Tiradores de autoataques continuos (Jinx, Tristana, Draven, Caitlyn, Ashe, Kai'Sa)"),
-            keyEffect = "Ráfaga (7.3a): Otorga +35% velocidad de ataque tras crítico (25s enfriamiento). Hojas sangrientas: Aplica sangrado físico continuo.",
-            recommendationTip = "Primer objeto estelar de crítico tras las mejoras del Parche 7.3a para acelerar el pico de poder en juego temprano y medio."
+            keyEffect = "Ráfaga: al atacar a un campeón enemigo, otorga +35% velocidad de ataque durante 6 s; los ataques reducen su enfriamiento.",
+            recommendationTip = "Primer objeto de crítico más accesible en 7.3b para acelerar el pico de poder en juego temprano y medio."
         ),
         "Velo del amanecer" to SituationalItemInfo(
             name = "Velo del amanecer",
