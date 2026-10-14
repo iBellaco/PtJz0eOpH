@@ -890,6 +890,7 @@ private fun PersonalOverviewCard(
                                     positive = false,
                                     modifier = Modifier.weight(1f)
                                 )
+                            }
 
                             // Veredicto y Respuesta del Coach según sus cálculos automáticos
                             if (overview.coach1v1Analysis.isNotBlank()) {
