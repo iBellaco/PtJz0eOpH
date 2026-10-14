@@ -160,7 +160,7 @@ private fun MatchupSummaryCard(
                         fontWeight = FontWeight.Bold
                     )
                     Text(
-                        text = tr("${record.playerChampionName.ifBlank { "Tu campeón" }} vs ${record.opponentName}"),
+                        text = tr("${record.playerChampionName.ifBlank { record.opponentName }} vs ${record.opponentName}"),
                         color = TextPrimary,
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Bold,

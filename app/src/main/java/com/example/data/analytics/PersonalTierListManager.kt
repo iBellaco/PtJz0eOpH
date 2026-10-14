@@ -591,13 +591,13 @@ object PersonalTierListManager {
             "Ainda não há cinco resultados contra um mesmo rival de rota. Os resultados são de partidas completas; não comprovam vitórias em duelos 1v1."
             else "Todavía no hay cinco resultados contra un mismo rival de línea. Los resultados son de partidas completas; no demuestran victorias en duelos 1v1."
         val summary = records.joinToString("; ") {
-            "${it.playerChampionName.ifBlank { "tu campeón" }} vs ${it.opponentName}: ${it.wins}V - ${it.losses}D (${it.total})"
+            "${it.playerChampionName} vs ${it.opponentName}: ${it.wins}V - ${it.losses}D (${it.total})"
         }
         val positive = bestMatchup?.let {
-            "Fortaleza: ${it.playerChampionName.ifBlank { "tu campeón" }} contra ${it.opponentName} (${it.winRate.toInt()}%). Repite el plan de oleadas y las ventanas de objetivos que acompañaron esas victorias."
+            "Fortaleza: ${it.playerChampionName} contra ${it.opponentName} (${it.winRate.toInt()}%). Repite el plan de oleadas y las ventanas de objetivos que acompañaron esas victorias."
         }
         val improvement = nemesis?.let {
-            "Mejora: ${it.playerChampionName.ifBlank { "tu campeón" }} contra ${it.opponentName} (${it.winRate.toInt()}%). Revisa las primeras muertes, adapta la compra defensiva y evita repetir el mismo intercambio antes de tener recursos."
+            "Mejora: ${it.playerChampionName} contra ${it.opponentName} (${it.winRate.toInt()}%). Revisa las primeras muertes, adapta la compra defensiva y evita repetir el mismo intercambio antes de tener recursos."
         }
         return if (lang == "pt")
             "Histórico de rota: $summary. Não é uma probabilidade de vencer o duelo. ${positive.orEmpty()} ${improvement.orEmpty()} Regra do coach: compare a onda, os recursos e a posição dos junglers; o resultado da equipe sozinho não prova quem ganhou a rota."
