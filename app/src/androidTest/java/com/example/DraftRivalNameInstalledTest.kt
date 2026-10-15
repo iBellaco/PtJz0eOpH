@@ -84,6 +84,20 @@ class DraftRivalNameInstalledTest {
                     scanner.publishScreenDiagnosticText((0 until masks.length()).map { physicalRect(masks.getJSONArray(it)) }, sourceWidth, sourceHeight)
                     scanner.publishScreenOverlay(physicalRect(fixture.getJSONArray("overlayRect")), sourceWidth, sourceHeight)
                     val hud = com.example.service.OverlayState()
+                    // Automatic selection starts with this path, before a full
+                    // screen read can hide failures in the isolated name bands.
+                    repeat(2) {
+                        val result = scanner.scanDraftFromBitmap(bitmap, context, null, com.example.model.LaneRole.MID,
+                            namesOnly = true)
+                        assertTrue("Fast Red Magic $name: ${result.statusMessage}", result.isSuccessful)
+                        hud.syncScannedAllies(result)
+                        hud.syncScannedEnemies(result)
+                    }
+                    assertEquals("Fast Red Magic $name allies", setOf("senna", "fizz", "nami", "malphite"),
+                        hud.allies.filterNotNull().map { it.id }.toSet())
+                    scanner.resetSlotMemory()
+                    scanner.publishScreenDiagnosticText((0 until masks.length()).map { physicalRect(masks.getJSONArray(it)) }, sourceWidth, sourceHeight)
+                    scanner.publishScreenOverlay(physicalRect(fixture.getJSONArray("overlayRect")), sourceWidth, sourceHeight)
                     repeat(2) {
                         val result = scanner.scanDraftFromBitmap(bitmap, context, null, com.example.model.LaneRole.MID,
                             detectBannedPortraits = true)
@@ -296,18 +310,18 @@ class DraftRivalNameInstalledTest {
                     bitmap.eraseColor(android.graphics.Color.BLACK)
                     val canvas = android.graphics.Canvas(bitmap)
                     val paint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply {
-                        color = android.graphics.Color.WHITE; textSize = 20f; typeface = android.graphics.Typeface.DEFAULT_BOLD
+                        color = android.graphics.Color.rgb(220, 180, 80); textSize = 20f; typeface = android.graphics.Typeface.DEFAULT_BOLD
                     }
                     // Game title positions are independent of the scanner's rectangle calculation.
-                    canvas.drawText("SERAPHINE", 1920 * config.getAllySlotX(0) + 868 * .074f,
+                    canvas.drawText("SERAPHINE", 1920 * config.getAllySlotX(0) + 868 * .058f,
                         868 * config.allySlotYRatios[0] - 18f, paint)
                     canvas.drawText("MEL", 1920 * config.getEnemySlotX(0) - 868 * .074f - paint.measureText("MEL"),
                         868 * config.enemySlotYRatios[0] - 18f, paint)
                     kotlinx.coroutines.withTimeout(60_000L) {
-                        scanner.scanDraftFromBitmap(bitmap, context, true, com.example.model.LaneRole.TOP)
+                        scanner.scanDraftFromBitmap(bitmap, context, true, com.example.model.LaneRole.TOP, namesOnly = true)
                     }
                     val result = kotlinx.coroutines.withTimeout(60_000L) {
-                        scanner.scanDraftFromBitmap(bitmap, context, true, com.example.model.LaneRole.TOP)
+                        scanner.scanDraftFromBitmap(bitmap, context, true, com.example.model.LaneRole.TOP, namesOnly = true)
                     }
                     assertEquals("seraphine", result.alliesBySlot[0]?.id)
                     assertEquals("mel", result.enemiesBySlot[0]?.id)

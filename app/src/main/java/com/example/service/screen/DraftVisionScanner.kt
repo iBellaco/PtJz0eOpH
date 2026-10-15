@@ -533,6 +533,7 @@ object DraftVisionScanner {
         val enemyOcrChampions = Array<Champion?>(5) { null }
         val textDiagnosticsList = mutableListOf<TextBlockDiagnostic>()
         val targetedAllyReadings = Array(5) { AllyDraftNameReader.Reading() }
+        val badgeSuppressedAllyReadings = Array(5) { AllyDraftNameReader.Reading() }
         val targetedEnemyChampions = Array<Champion?>(5) { null }
 
         // -----------------------------------------------------------------------------------------
@@ -579,8 +580,13 @@ object DraftVisionScanner {
                     val reading = AllyDraftNameReader.readTitleRows(titleLines.map {
                         it.text to (it.boundingBox!!.centerY()-tile.region.top)
                     },(tile.region.height()*.30f).toInt(),allChamps,tile.titleMaxY)
-                    if (tile.ally) targetedAllyReadings[tile.slot]=reading
+                    if (tile.ally && tile.original) targetedAllyReadings[tile.slot]=reading
+                    else if (tile.ally) badgeSuppressedAllyReadings[tile.slot]=reading
                     else targetedEnemyChampions[tile.slot]=reading.champion.takeUnless { reading.ambiguous }
+                }
+                for (slot in 0..4) {
+                    targetedAllyReadings[slot] = AllyDraftNameReader.preferOriginal(
+                        targetedAllyReadings[slot], badgeSuppressedAllyReadings[slot])
                 }
             } finally { atlas.bitmap.recycle() }
 
