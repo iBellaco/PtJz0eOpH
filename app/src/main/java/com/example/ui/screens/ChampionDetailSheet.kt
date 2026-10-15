@@ -68,6 +68,7 @@ import androidx.compose.material.icons.filled.Star
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.data.local.FavoriteChampionsManager
+import com.example.data.WildRiftRepository
 import com.example.data.SituationalItemAdvisor
 import com.example.data.SynergyAdvisor
 import com.example.model.Champion
@@ -139,6 +140,9 @@ fun ChampionDetailSheet(
     var selectedBuildOptionIndex by remember(champion.id, selectedRole) { mutableStateOf(0) }
 
     val currentLang = com.example.util.currentAppLanguage()
+    val liveChampion = WildRiftRepository.champions.firstOrNull {
+        it.id.equals(champion.id, ignoreCase = true)
+    } ?: champion
 
 
     // Service-hosted overlays have no activity back dispatcher; their visible
@@ -162,13 +166,13 @@ fun ChampionDetailSheet(
     }
 
     // Perfil dinámico de estadísticas, build, runas y counters adaptados a la línea elegida
-    val roleProfile = remember(champion.id, selectedRole, currentLang) {
-        ChampionRoleAdapter.getProfile(champion, selectedRole, currentLang)
+    val roleProfile = remember(champion.id, selectedRole, currentLang, WildRiftRepository.regionRevision) {
+        ChampionRoleAdapter.getProfile(liveChampion, selectedRole, currentLang)
     }
 
     // Perfil de Sinergias del Meta y Compañeros complementarios
-    val synergyProfile = remember(champion.id, selectedRole, currentLang) {
-        SynergyAdvisor.getSynergyProfile(champion, selectedRole, currentLang)
+    val synergyProfile = remember(champion.id, selectedRole, currentLang, WildRiftRepository.regionRevision) {
+        SynergyAdvisor.getSynergyProfile(liveChampion, selectedRole, currentLang)
     }
 
     val isCompact = isOverlay

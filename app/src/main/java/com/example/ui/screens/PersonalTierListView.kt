@@ -143,7 +143,7 @@ private fun MatchupSummaryCard(
                         fallbackText = record.playerChampionName.take(2),
                         modifier = Modifier.size(22.dp).clip(CircleShape).border(1.dp, accent, CircleShape)
                     )
-                    Text(tr(" vs "), color = TextMuted, fontSize = 8.sp)
+                    Text(tr(" contra "), color = TextMuted, fontSize = 8.sp)
                 }
                 AppAssetImage(
                     url = record.opponentAvatarUrl,
@@ -160,7 +160,7 @@ private fun MatchupSummaryCard(
                         fontWeight = FontWeight.Bold
                     )
                     Text(
-                        text = tr("${record.playerChampionName.ifBlank { record.opponentName }} vs ${record.opponentName}"),
+                        text = tr("${record.playerChampionName} contra ${record.opponentName}"),
                         color = TextPrimary,
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Bold,

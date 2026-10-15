@@ -34,12 +34,17 @@ class GlobalTierSourceClient(
         .followRedirects(true)
         .build()
 ) {
-    data class SourceResult(val source: GlobalScrapingSource, val tiers: Map<String, String>,
-                                    val status: ScraperSourceStatus)
+    data class SourceResult(
+        val source: GlobalScrapingSource,
+        val tiers: Map<String, String>,
+        val status: ScraperSourceStatus,
+        val stats: Map<String, ChampionMetaStats> = emptyMap()
+    )
 
     suspend fun fetch(source: GlobalScrapingSource, knownIds: Set<String>): SourceResult {
         val started = System.currentTimeMillis()
         var parsed = emptyMap<String, String>()
+        var parsedStats = emptyMap<String, ChampionMetaStats>()
         var error: String? = null
         for (attempt in 0..1) {
             currentCoroutineContext().ensureActive()
@@ -59,6 +64,10 @@ class GlobalTierSourceClient(
                         parsed = if (html.length <= 4_000_000)
                             GlobalTierConsensus.validated(RegionalTierParser.parse(html, source.id), knownIds)
                             else emptyMap()
+                        parsedStats = if (parsed.isNotEmpty() && html.length <= 4_000_000) {
+                            RegionalTierParser.parseStats(html, source.id)
+                                .filterKeys { id -> knownIds.map(RegionalTierParser::canonical).contains(id) }
+                        } else emptyMap()
                         error = if (parsed.isEmpty()) "No se encontraron suficientes categorías válidas" else null
                     }
                 }
@@ -79,7 +88,7 @@ class GlobalTierSourceClient(
             name = "${source.name} (${source.displayUrl})", url = source.url,
             isHealthy = parsed.isNotEmpty(), lastChecked = System.currentTimeMillis(),
             responseTimeMs = System.currentTimeMillis() - started, errorMessage = error
-        ))
+        ), parsedStats)
     }
 
 }

@@ -86,11 +86,11 @@ open class WildRiftApp : Application(), ImageLoaderFactory {
             AppLogger.e("WildRiftApp", "Error cargando caché inicial", e)
         }
 
-        // Garantizar que los campeones siempre estén en memoria (si la caché estaba vacía o corrupta)
-        if (com.example.data.WildRiftRepository.champions.isEmpty()) {
-            com.example.data.WildRiftRepository.initChampions(this)
-            AppLogger.d("WildRiftApp", "Campeones inicializados desde JSON de emergencia.")
-        }
+        // La caché puede contener un catálogo de una versión anterior. Recargar el
+        // catálogo empaquetado en cada arranque garantiza que win/pick/ban y la tier
+        // publicada en la aplicación no queden congelados tras una actualización.
+        com.example.data.WildRiftRepository.initChampions(this, forceReload = true)
+        AppLogger.d("WildRiftApp", "Catálogo canónico de campeones actualizado desde los assets.")
 
         try {
             GlobalMetaSyncService.loadRegion(this)
