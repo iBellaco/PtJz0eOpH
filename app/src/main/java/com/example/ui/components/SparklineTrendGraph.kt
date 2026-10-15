@@ -6,12 +6,6 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.tween
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -33,11 +27,10 @@ fun SparklineTrendGraph(
 ) {
     // Pulso visual del punto actual: confirma que la vista sigue viva mientras
     // esperamos la siguiente publicación real de la fuente.
-    val livePulse = rememberInfiniteTransition(label = "trend_live_pulse").animateFloat(
-        initialValue = 0.35f, targetValue = 0.95f,
-        animationSpec = infiniteRepeatable(tween(900), RepeatMode.Reverse),
-        label = "trend_live_alpha"
-    ).value
+    // El contenedor de clasificación se repinta cada segundo. Usamos ese
+    // reloj para el pulso y evitamos dejar una animación infinita viva en
+    // pantallas de prueba o cuando la vista deja de estar visible.
+    val livePulse = if ((System.currentTimeMillis() / 900L) % 2L == 0L) 0.35f else 0.95f
     val samples = listOf(observed24h, observed12h, winrate).map { it?.takeIf { v -> v.isFinite() && v in 0.0..100.0 } }
     val present = samples.filterNotNull()
     val labels = listOf(tr("hace 24h"), tr("hace 12h"), tr("actual"))
