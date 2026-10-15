@@ -71,6 +71,7 @@ import com.example.data.sync.GlobalMetaSyncService
 import com.example.model.Champion
 import com.example.model.LaneRole
 import com.example.ui.components.ChampionAvatar
+import com.example.ui.components.TierMovementBadge
 import com.example.ui.theme.DangerRed
 import com.example.ui.theme.HextechCardBorder
 import com.example.ui.theme.HextechCyan
@@ -574,6 +575,7 @@ fun TierListTab(
                                             maxLines = 1,
                                             overflow = TextOverflow.Ellipsis
                                         )
+                                        TierMovementBadge(champ.tierMovement)
                                         Spacer(modifier = Modifier.height(2.dp))
                                         Text(
                                             text = com.example.util.tr("${com.example.util.tr(champ.primaryRole.shortName)} • ${com.example.util.tr(champ.damageType.displayName)}"),
@@ -741,6 +743,7 @@ fun TierSectionCard(
                                             maxLines = 1,
                                             overflow = TextOverflow.Ellipsis
                                         )
+                                        TierMovementBadge(champ.tierMovement)
                                         Spacer(modifier = Modifier.height(2.dp))
                                         Text(
                                             text = com.example.util.tr("${com.example.util.tr(champ.primaryRole.shortName)} • ${com.example.util.tr(champ.damageType.displayName)}"),

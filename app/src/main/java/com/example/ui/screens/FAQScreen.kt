@@ -46,7 +46,7 @@ fun FAQScreen(
             ),
             Pair(
                 "¿De dónde salen las estadísticas, los campeones y las builds?",
-                "Todo el contenido viene directo del meta competitivo oficial de Wild Rift y servidores de alto elo (Soberano/Grandmaster). Analizamos constantemente las builds de los mejores jugadores del mundo, las runas óptimas, los hechizos de invocador que más se usan por línea y las guías de objetos core o situacionales (como cortacuras o fajines) para que siempre tengas la información más precisa."
+                "Las cifras se combinan a partir de las fuentes de meta configuradas para el parche activo. Se valida la versión y la cobertura antes de mostrar un dato; cuando una fuente no publica una métrica se indica como pendiente. Las builds y consejos son orientación y no garantizan una victoria."
             ),
             Pair(
                 "¿Por qué cambian las recomendaciones de campeones si elijo 1er Pick?",
@@ -66,7 +66,7 @@ fun FAQScreen(
             ),
             Pair(
                 "¿Cómo funciona la suscripción y qué beneficios incluye?",
-                "La suscripción te da acceso total a funciones avanzadas como guardar tus drafts, personalizar avatares y temas visuales exclusivos. Ten en cuenta que actualmente el servicio de suscripción está temporalmente fuera de servicio mientras preparamos pasarelas de pago oficiales, pero podrás disfrutarlo muy pronto."
+                "Según el plan activo, Premium habilita funciones como guardar drafts, personalizar avatares y usar temas visuales exclusivos. La pantalla de suscripción muestra el estado y las funciones disponibles para tu cuenta."
             ),
             Pair(
                 "¿Cómo puedo personalizar los temas visuales de la aplicación?",
@@ -74,7 +74,7 @@ fun FAQScreen(
             ),
             Pair(
                 "¿Cómo puedo cambiar mi avatar en la aplicación?",
-                "Es muy sencillo. Solo entra a tu perfil y toca el botón 'Cambiar Avatar'. Se abrirá el catálogo completo donde puedes elegir tu icono preferido, desde poros divertidos hasta avatares legendarios de campeones."
+                "Entra a tu perfil y toca 'Cambiar avatar'. Se abrirá el catálogo para elegir el icono que prefieras, incluidos avatares de campeones."
             ),
             Pair(
                 "¿Cómo funciona el sistema de Tier List y las valoraciones S+, S y A?",
@@ -82,7 +82,7 @@ fun FAQScreen(
             ),
             Pair(
                 "¿Cómo funcionan los servidores y regiones en la aplicación?",
-                "La tier list utiliza únicamente el meta Global, con referencias de BestBuildWR, WildRiftFire y WildRiftCore. La última lista guardada permanece disponible sin conexión."
+                "La tier list usa el meta Global y las fuentes configuradas para el parche vigente. Si una fuente no coincide con el parche o no publica datos completos, se excluye de la combinación. La última lista válida puede permanecer disponible sin conexión."
             ),
             Pair(
                 "¿Me pueden banear en Wild Rift por usar esta burbuja flotante?",
@@ -90,7 +90,7 @@ fun FAQScreen(
             ),
             Pair(
                 "¿Puedo cambiar el tamaño de la burbuja flotante?",
-                "Por ahora la burbuja tiene un tamaño estándar diseñado para no estorbar, pero estamos trabajando en una actualización para que puedas escalar su tamaño o hacerla semi-transparente."
+                "El tamaño de la burbuja se ajusta desde la calibración del asistente cuando esa opción está disponible. Si no aparece, el dispositivo o la versión actual usan el tamaño estándar."
             ),
             Pair(
                 "¿Qué pasa si abro la burbuja en medio de una teamfight por accidente?",
@@ -331,7 +331,7 @@ fun FAQScreen(
                     )
                 }
             } else {
-                filteredFaqs.forEach { pair ->
+                filteredFaqs.forEachIndexed { index, pair ->
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -350,7 +350,7 @@ fun FAQScreen(
                             Icon(Icons.Default.Info, contentDescription = null, tint = HextechGold, modifier = Modifier.size(20.dp))
                             Spacer(modifier = Modifier.width(12.dp))
                             Text(
-                                text = tr(pair.first),
+                                text = tr("${index + 1}. ${pair.first}"),
                                 color = HextechGoldLight,
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.Bold,

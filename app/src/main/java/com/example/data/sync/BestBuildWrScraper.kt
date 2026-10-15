@@ -259,7 +259,8 @@ object BestBuildWrScraper {
                         "GLOBAL",
                         merged,
                         mergedStats,
-                        previousStats = previousStats, checkedAt = started, history = history
+                        previousStats = previousStats, previousTiers = previousTiers,
+                        checkedAt = started, history = history
                     )
                     cache = JSONObject(merged)
                     statsCache = encodeStats(mergedStats)

@@ -185,6 +185,7 @@ object WildRiftRepository {
         tiers: Map<String, String>,
         stats: Map<String, ChampionMetaStats> = emptyMap(),
         previousStats: Map<String, ChampionMetaStats> = emptyMap(),
+        previousTiers: Map<String, String> = emptyMap(),
         checkedAt: Long = 0L,
         history: Map<String, List<com.example.data.sync.ObservedRate>> = emptyMap()
     ) {
@@ -194,6 +195,13 @@ object WildRiftRepository {
             val category = tiers[com.example.data.sync.RegionalTierParser.canonical(champion.id)]
                 ?: tiers[com.example.data.sync.RegionalTierParser.canonical(champion.name)]
                 ?: champion.tier.ifBlank { "A" }
+            val previousTier = previousTiers[com.example.data.sync.RegionalTierParser.canonical(champion.id)]
+                ?: previousTiers[com.example.data.sync.RegionalTierParser.canonical(champion.name)]
+            fun tierRank(value: String): Int = when (value.trim().uppercase()) {
+                "S+" -> 3
+                "S", "A+", "A" -> 2
+                else -> 1
+            }
             val meta = stats[com.example.data.sync.RegionalTierParser.canonical(champion.id)]
                 ?: stats[com.example.data.sync.RegionalTierParser.canonical(champion.name)]
 
@@ -210,7 +218,10 @@ object WildRiftRepository {
 
             champion.copy(
                 hasRegionalStats = meta?.isUsable() == true,
-                statsCheckedAt = if (meta?.isUsable() == true) history[com.example.data.sync.RegionalTierParser.canonical(champion.id)]?.lastOrNull()?.at ?: checkedAt else 0L,
+                // Este es el momento de la consulta válida, no el momento de
+                // la última muestra histórica. Así la ficha no queda congelada
+                // cuando la fuente publica el mismo valor durante un rato.
+                statsCheckedAt = if (meta?.isUsable() == true) checkedAt else 0L,
                 winrate24h = com.example.data.sync.MetaRateHistory.atAge(history[com.example.data.sync.RegionalTierParser.canonical(champion.id)].orEmpty(), checkedAt, 24),
                 winrate12h = com.example.data.sync.MetaRateHistory.atAge(history[com.example.data.sync.RegionalTierParser.canonical(champion.id)].orEmpty(), checkedAt, 12),
                 historyUsesDailyReports = day?.daily == true || halfDay?.daily == true,
@@ -218,6 +229,13 @@ object WildRiftRepository {
                 history24hAt = day?.at ?: 0L,
                 history12hAt = halfDay?.at ?: 0L,
                 tier = category,
+                tierMovement = previousTier?.takeIf { it.isNotBlank() }?.let {
+                    when {
+                        tierRank(category) > tierRank(it) -> 1
+                        tierRank(category) < tierRank(it) -> -1
+                        else -> 0
+                    }
+                } ?: 0,
                 winrate = if (meta != null) meta.winRate ?: Double.NaN else champion.winrate,
                 pickRate = if (meta != null) meta.pickRate ?: Double.NaN else champion.pickRate,
                 banRate = if (meta != null) meta.banRate ?: Double.NaN else champion.banRate,
