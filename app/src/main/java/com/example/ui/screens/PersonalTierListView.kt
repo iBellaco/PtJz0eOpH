@@ -194,7 +194,7 @@ fun PersonalTierListView(
     var viewMode by remember { mutableStateOf("TIERS") } // "TIERS" or "TABLE"
     var isFiltersExpanded by rememberSaveable { mutableStateOf(!isOverlay) }
 
-    val tierData: PersonalTierListResult = remember(draftsList, selectedRoleFilter, selectedQueueMode, currentLang) {
+    val tierData: PersonalTierListResult = remember(draftsList, selectedRoleFilter, selectedQueueMode, currentLang, com.example.data.WildRiftRepository.regionRevision) {
         PersonalTierListManager.calculatePersonalTierList(
             drafts = draftsList,
             roleFilter = selectedRoleFilter,
@@ -683,7 +683,7 @@ fun PersonalTierListView(
     // Modal de Análisis Estadístico Profundo del Campeón
     if (selectedChampionStats != null) {
         PersonalChampionDetailModal(
-            stats = selectedChampionStats!!,
+            stats = tierData.allRankedChampions.firstOrNull { it.championId == selectedChampionStats!!.championId } ?: selectedChampionStats!!,
             onDismiss = { selectedChampionStats = null },
             onSelectDraft = { draft ->
                 selectedChampionStats = null

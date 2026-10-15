@@ -1061,20 +1061,12 @@ internal fun formatExpirationDateDetailed(timestamp: Long?): String {
 private fun ServerScraperHealthCard() {
     val context = LocalContext.current
     val sourceStatuses by BestBuildWrScraper.sourceStatuses.collectAsState()
-    val globalStatus by BestBuildWrScraper.globalSyncStatus.collectAsState()
+    val health by BestBuildWrScraper.freshness.collectAsState()
+    val versionStatus by com.example.util.AppUpdateManager.checkStatus.collectAsState()
+    var now by remember { mutableStateOf(System.currentTimeMillis()) }
+    LaunchedEffect(Unit) { while (isActive) { now = System.currentTimeMillis(); delay(15_000L) } }
     val isSyncing by BestBuildWrScraper.isSyncing.collectAsState()
 
-    // Actualización reactiva constante en tiempo real en segundo plano
-    LaunchedEffect(Unit) {
-        while (isActive) {
-            try {
-                BestBuildWrScraper.syncGlobalTierList(context)
-            } catch (e: Exception) {
-                // Prevenir interrupción
-            }
-            delay(8000L) // Actualización automática constante cada 8 segundos
-        }
-    }
 
     Surface(
         color = HextechSurfaceBg,
@@ -1111,11 +1103,11 @@ private fun ServerScraperHealthCard() {
                         modifier = Modifier
                             .size(6.dp)
                             .clip(CircleShape)
-                            .background(if (isSyncing) HextechGold else Color(0xFF00FF7F))
+                            .background(if (health.stale(now)) DangerRed else if (isSyncing) HextechGold else HextechCyan)
                     )
                     Spacer(modifier = Modifier.width(5.dp))
                     Text(
-                        text = com.example.util.tr(if (isSyncing) "Sincronizando..." else "En tiempo real"),
+                        text = com.example.util.tr(if (isSyncing) "Sincronizando..." else "Monitoreo activo"),
                         color = if (isSyncing) HextechGold else HextechCyan,
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Bold
@@ -1123,65 +1115,26 @@ private fun ServerScraperHealthCard() {
                 }
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = com.example.util.tr("Estado de Red: $globalStatus"),
-                color = TextSecondary,
-                fontSize = 11.sp
-            )
-
-            Spacer(modifier = Modifier.height(10.dp))
+            MetaSyncSummary()
+            Text(tr("Versión instalada") + ": " + com.example.BuildConfig.VERSION_NAME + " · " +
+                tr("Versión disponible") + ": " + versionStatus.publishedName.ifBlank { "—" }, color = HextechCyan, fontSize = 10.sp)
+            Text(tr("Última verificación de versión") + ": " + metaTime(versionStatus.lastSuccessAt), color = TextMuted, fontSize = 10.sp)
+            if (versionStatus.lastAttemptAt > versionStatus.lastSuccessAt) {
+                Text(tr("No se pudo comprobar la versión publicada"), color = HextechGold, fontSize = 10.sp)
+            }
 
             val allSources = sourceStatuses.values.toList()
             allSources.forEach { status ->
-                val regionPrefix = when (status.region) {
-                    "GLOBAL" -> "🌐 [GLOBAL]"
-                    else -> "🌍 [Global]"
-                }
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 4.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
-                        Box(
-                            modifier = Modifier
-                                .size(8.dp)
-                                .clip(CircleShape)
-                                .background(if (status.isHealthy) Color(0xFF00FF7F) else Color(0xFFFF5252))
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = com.example.util.tr("$regionPrefix ${status.name}"),
-                            color = Color.White,
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Medium
-                        )
-                    }
-
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(
-                            text = com.example.util.tr("${status.responseTimeMs} ms"),
-                            color = TextMuted,
-                            fontSize = 10.sp
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Surface(
-                            color = if (status.isHealthy) Color(0xFF2E7D32).copy(alpha = 0.2f) else Color(0xFFC62828).copy(alpha = 0.2f),
-                            shape = RoundedCornerShape(4.dp),
-                            border = BorderStroke(0.5.dp, if (status.isHealthy) Color(0xFF81C784) else Color(0xFFEF9A9A))
-                        ) {
-                            Text(
-                                text = com.example.util.tr(if (status.isHealthy) "OPERATIVO (OK)" else (status.errorMessage ?: "ERROR")),
-                                color = if (status.isHealthy) Color(0xFF81C784) else Color(0xFFEF9A9A),
-                                fontSize = 9.sp,
-                                fontWeight = FontWeight.Bold,
-                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
-                            )
-                        }
-                    }
+                Column(Modifier.fillMaxWidth().padding(vertical = 6.dp)) {
+                    Text(status.name, color = if (status.isHealthy) HextechCyan else DangerRed, fontSize = 12.sp)
+                    Text(tr("Última consulta") + ": " + metaTime(status.lastChecked) + " · " + status.responseTimeMs + " ms", color = TextMuted, fontSize = 10.sp)
+                    Text(tr("Última consulta válida") + ": " + metaTime(status.lastSuccessAt), color = TextMuted, fontSize = 10.sp)
+                    Text(tr("Último cambio de valores") + ": " + metaTime(status.lastChangedAt), color = TextMuted, fontSize = 10.sp)
+                    Text("Tier: ${status.tierCount} · WR/Pick/Ban: ${status.statsCount}", color = TextSecondary, fontSize = 10.sp)
+                    if (!status.isHealthy) Text(tr(status.errorMessage ?: "Error de conexión"), color = DangerRed, fontSize = 10.sp)
+                    else if (status.lastChangedAt > 0 && now - status.lastChangedAt >= 24 * 60 * 60_000L) {
+                        Text(tr("Aviso: la fuente mantiene los mismos valores desde hace 24 horas"), color = HextechGold, fontSize = 10.sp)
+                    } else if (status.unchangedChecks > 0) Text(tr("Fuente consultada: sin cambios publicados"), color = TextMuted, fontSize = 10.sp)
                 }
             }
         }

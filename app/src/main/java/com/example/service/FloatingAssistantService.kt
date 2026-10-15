@@ -187,6 +187,12 @@ class FloatingAssistantService : Service(), LifecycleOwner, ViewModelStoreOwner,
 
     override fun onCreate() {
         super.onCreate()
+        com.example.data.sync.GlobalMetaSyncService.startLive(this, "overlay")
+        serviceScope.launch {
+            com.example.util.AppUpdateManager.updateInfo.collect { update ->
+                if (update?.isMandatory == true && update.isUpdateAvailable) stopSelf()
+            }
+        }
         try {
             // Desactivar visor de depuración por defecto al iniciar o reabrir el overlay
             com.example.service.screen.DraftVisionScanner.showCalibrationBoxes.value = false
@@ -340,6 +346,7 @@ class FloatingAssistantService : Service(), LifecycleOwner, ViewModelStoreOwner,
     override fun onDestroy() {
         if (isDestroyed) return
         isDestroyed = true
+        com.example.data.sync.GlobalMetaSyncService.stopLive("overlay")
         com.example.service.screen.TenthPickDiagnosticManager.setAutomaticScanActive(false)
 
         try {
