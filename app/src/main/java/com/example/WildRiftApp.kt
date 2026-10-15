@@ -136,8 +136,8 @@ open class WildRiftApp : Application(), ImageLoaderFactory {
             )
 
             val periodicWorkRequest = PeriodicWorkRequestBuilder<MetaScrapingWorker>(
-                1, TimeUnit.HOURS,
-                15, TimeUnit.MINUTES
+                15, TimeUnit.MINUTES,
+                5, TimeUnit.MINUTES
             )
             .setConstraints(constraints)
             .build()

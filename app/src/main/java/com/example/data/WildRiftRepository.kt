@@ -202,6 +202,9 @@ object WildRiftRepository {
             // values bundled in the catalog.
             val previous = previousStats[com.example.data.sync.RegionalTierParser.canonical(champion.id)]
                 ?: previousStats[com.example.data.sync.RegionalTierParser.canonical(champion.name)]
+            val samples = history[com.example.data.sync.RegionalTierParser.canonical(champion.id)].orEmpty()
+            val day = com.example.data.sync.MetaRateHistory.sampleAtAge(samples, checkedAt, 24)
+            val halfDay = com.example.data.sync.MetaRateHistory.sampleAtAge(samples, checkedAt, 12)
             fun change(current: Double?, old: Double?): Double =
                 if (current != null && old != null && current.isFinite() && old.isFinite()) current - old else 0.0
 
@@ -210,13 +213,17 @@ object WildRiftRepository {
                 statsCheckedAt = if (meta?.isUsable() == true) history[com.example.data.sync.RegionalTierParser.canonical(champion.id)]?.lastOrNull()?.at ?: checkedAt else 0L,
                 winrate24h = com.example.data.sync.MetaRateHistory.atAge(history[com.example.data.sync.RegionalTierParser.canonical(champion.id)].orEmpty(), checkedAt, 24),
                 winrate12h = com.example.data.sync.MetaRateHistory.atAge(history[com.example.data.sync.RegionalTierParser.canonical(champion.id)].orEmpty(), checkedAt, 12),
+                historyUsesDailyReports = day?.daily == true || halfDay?.daily == true,
+                has24hComparison = day != null,
+                history24hAt = day?.at ?: 0L,
+                history12hAt = halfDay?.at ?: 0L,
                 tier = category,
                 winrate = if (meta != null) meta.winRate ?: Double.NaN else champion.winrate,
                 pickRate = if (meta != null) meta.pickRate ?: Double.NaN else champion.pickRate,
                 banRate = if (meta != null) meta.banRate ?: Double.NaN else champion.banRate,
-                winrateDelta = change(meta?.winRate, previous?.winRate),
-                pickRateDelta = change(meta?.pickRate, previous?.pickRate),
-                banRateDelta = change(meta?.banRate, previous?.banRate)
+                winrateDelta = change(meta?.winRate, day?.value),
+                pickRateDelta = change(meta?.pickRate, day?.pick),
+                banRateDelta = change(meta?.banRate, day?.ban)
             )
         }
         regionalChampions[normalized] = updated

@@ -607,18 +607,7 @@ fun TierListTab(
                                                     verticalAlignment = Alignment.CenterVertically,
                                                     horizontalArrangement = Arrangement.spacedBy(4.dp)
                                                 ) {
-                                                    val winDelta = champ.winrateDelta
-                                                    val formattedDelta = String.format(java.util.Locale.US, "%.2f", winDelta)
-                                                    val winDeltaText = if (winDelta >= 0) "+${formattedDelta}%" else "${formattedDelta}%"
-                                                    val winDeltaColor = if (winDelta >= 0) Color(0xFF4CAF50) else DangerRed
-                                                    if (!isOverlay) {
-                                                        Text(
-                                                            text = com.example.util.tr(if (winDelta >= 0) "▲ $winDeltaText" else "▼ $winDeltaText"),
-                                                            color = winDeltaColor,
-                                                            fontSize = 10.sp,
-                                                            fontWeight = FontWeight.Bold
-                                                        )
-                                                    }
+                                                    if (!isOverlay) com.example.ui.components.RateChangeBadge(if (champ.has24hComparison) champ.winrateDelta else Double.NaN, champ.historyUsesDailyReports)
                                                     Text(com.example.util.tr("WR: ${com.example.util.championStatPercent(champ, champ.winrate, "wr")}"), color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 13.sp)
                                                 }
                                                 Spacer(modifier = Modifier.height(2.dp))
@@ -671,6 +660,8 @@ fun TierListTab(
                                         winrate = if (champ.hasRegionalStats) safeWr else Double.NaN,
                                         observed24h = champ.winrate24h,
                                         observed12h = champ.winrate12h,
+                                        dailyReferences = champ.historyUsesDailyReports,
+                                        reference24hAt = champ.history24hAt, reference12hAt = champ.history12hAt,
                                         delta = safeDelta,
                                         modifier = Modifier.weight(1f).padding(start = 8.dp),
                                         showTimeLabels = true,
@@ -781,18 +772,7 @@ fun TierSectionCard(
                                             verticalAlignment = Alignment.CenterVertically,
                                             horizontalArrangement = Arrangement.spacedBy(4.dp)
                                         ) {
-                                            val winDelta = champ.winrateDelta
-                                            val formattedDelta = String.format(java.util.Locale.US, "%.2f", winDelta)
-                                            val winDeltaText = if (winDelta >= 0) "+${formattedDelta}%" else "${formattedDelta}%"
-                                            val winDeltaColor = if (winDelta >= 0) Color(0xFF4CAF50) else DangerRed
-                                            if (!isOverlay) {
-                                                Text(
-                                                    text = com.example.util.tr(if (winDelta >= 0) "▲ $winDeltaText" else "▼ $winDeltaText"),
-                                                    color = winDeltaColor,
-                                                    fontSize = 10.sp,
-                                                    fontWeight = FontWeight.Bold
-                                                )
-                                            }
+                                            if (!isOverlay) com.example.ui.components.RateChangeBadge(if (champ.has24hComparison) champ.winrateDelta else Double.NaN, champ.historyUsesDailyReports)
                                             Text(
                                                 text = com.example.util.tr(tr("WR") + ": ${com.example.util.championStatPercent(champ, champ.winrate, "wr")}"),
                                                 color = HextechGold,
@@ -844,6 +824,8 @@ fun TierSectionCard(
                                         winrate = if (champ.hasRegionalStats) safeWr else Double.NaN,
                                         observed24h = champ.winrate24h,
                                         observed12h = champ.winrate12h,
+                                        dailyReferences = champ.historyUsesDailyReports,
+                                        reference24hAt = champ.history24hAt, reference12hAt = champ.history12hAt,
                                         delta = safeDelta,
                                         modifier = Modifier.weight(1f).padding(start = 8.dp),
                                         showTimeLabels = true,

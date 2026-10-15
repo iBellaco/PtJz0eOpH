@@ -79,6 +79,7 @@ import com.example.ui.components.AppAssetImage
 import com.example.ui.components.ChampionAvatar
 import com.example.ui.components.FormattedWildRiftText
 import com.example.ui.components.DetailedTrendGraphCard
+import com.example.ui.components.RateChangeBadge
 import com.example.ui.theme.AllyBlue
 import com.example.ui.theme.DangerRed
 import com.example.ui.theme.HextechCardBorder
@@ -482,48 +483,21 @@ fun ChampionDetailSheet(
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Text(tr("Tasa de Victoria"), color = TextMuted, fontSize = 11.sp)
                             Text(com.example.util.regionalPercent(liveChampion, roleProfile.winrate), color = HextechGold, fontSize = 17.sp, fontWeight = FontWeight.Bold)
-                            val winDelta = roleProfile.winrateDelta
-                            val formattedWinDelta = String.format(java.util.Locale.US, "%.2f", winDelta)
-                            val winDeltaText = if (winDelta >= 0) "+${formattedWinDelta}%" else "${formattedWinDelta}%"
-                            val winDeltaColor = if (winDelta >= 0) Color(0xFF4CAF50) else DangerRed
-                            Text(
-                                text = com.example.util.tr(if (winDelta >= 0) "▲ $winDeltaText" else "▼ $winDeltaText"),
-                                color = winDeltaColor,
-                                fontSize = 10.sp,
-                                fontWeight = FontWeight.Bold
-                            )
+                            RateChangeBadge(if (liveChampion.has24hComparison) roleProfile.winrateDelta else Double.NaN, liveChampion.historyUsesDailyReports)
                         }
 
                         // Pick Rate + Delta
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Text(tr("Tasa de Selección"), color = TextMuted, fontSize = 11.sp)
                             Text(com.example.util.regionalPercent(liveChampion, roleProfile.pickRate), color = HextechCyan, fontSize = 17.sp, fontWeight = FontWeight.Bold)
-                            val pickDelta = roleProfile.pickRateDelta
-                            val formattedPickDelta = String.format(java.util.Locale.US, "%.2f", pickDelta)
-                            val pickDeltaText = if (pickDelta >= 0) "+${formattedPickDelta}%" else "${formattedPickDelta}%"
-                            val pickDeltaColor = if (pickDelta >= 0) Color(0xFF29B6F6) else Color(0xFFFFA726)
-                            Text(
-                                text = com.example.util.tr(if (pickDelta >= 0) "▲ $pickDeltaText" else "▼ $pickDeltaText"),
-                                color = pickDeltaColor,
-                                fontSize = 10.sp,
-                                fontWeight = FontWeight.Bold
-                            )
+                            RateChangeBadge(if (liveChampion.has24hComparison) roleProfile.pickRateDelta else Double.NaN, liveChampion.historyUsesDailyReports)
                         }
 
                         // Ban Rate + Delta
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Text(tr("Tasa de Bloqueo"), color = TextMuted, fontSize = 11.sp)
                             Text(com.example.util.regionalPercent(liveChampion, roleProfile.banRate), color = DangerRed, fontSize = 17.sp, fontWeight = FontWeight.Bold)
-                            val banDelta = roleProfile.banRateDelta
-                            val formattedBanDelta = String.format(java.util.Locale.US, "%.2f", banDelta)
-                            val banDeltaText = if (banDelta >= 0) "+${formattedBanDelta}%" else "${formattedBanDelta}%"
-                            val banDeltaColor = if (banDelta >= 0) DangerRed else Color(0xFF4CAF50)
-                            Text(
-                                text = com.example.util.tr(if (banDelta >= 0) "▲ $banDeltaText" else "▼ $banDeltaText"),
-                                color = banDeltaColor,
-                                fontSize = 10.sp,
-                                fontWeight = FontWeight.Bold
-                            )
+                            RateChangeBadge(if (liveChampion.has24hComparison) roleProfile.banRateDelta else Double.NaN, liveChampion.historyUsesDailyReports)
                         }
                     }
 
@@ -535,7 +509,9 @@ fun ChampionDetailSheet(
                             winrate = if (liveChampion.hasRegionalStats) roleProfile.winrate else Double.NaN,
                             delta = roleProfile.winrateDelta,
                             observed24h = liveChampion.winrate24h,
-                            observed12h = liveChampion.winrate12h
+                            observed12h = liveChampion.winrate12h,
+                            dailyReferences = liveChampion.historyUsesDailyReports,
+                            reference24hAt = liveChampion.history24hAt, reference12hAt = liveChampion.history12hAt
                         )
                     }
                 }

@@ -87,6 +87,22 @@ object RegionalTierParser {
                 links(row, category, "a.tl-champ-tile[href]")
             }
         }
+        if (source == null || source == "wildlegends") {
+            doc.select(".tier-list-grid").forEach { grid ->
+                val category = grid.parent()?.selectFirst("span.relative.z-10")?.text()?.let(::tier)
+                    ?: return@forEach
+                grid.select("a[href*=/guia/]").forEach { link ->
+                    add(link.attr("href").substringBefore('?').substringAfterLast('/'), category)
+                }
+            }
+        }
+        if (source == null || source == "wildrifter") {
+            doc.select("a[href*=/champion/]").forEach { link ->
+                val category = link.selectFirst("[aria-label^=Tier]")?.attr("aria-label")
+                    ?.removePrefix("Tier ")?.let(::tier) ?: return@forEach
+                add(link.attr("href").substringAfterLast('/'), category)
+            }
+        }
         return result
     }
 
@@ -96,7 +112,10 @@ object RegionalTierParser {
      * fabrican porcentajes.
      */
     fun parseStats(html: String, source: String? = null): Map<String, ChampionMetaStats> {
-        if (html.isBlank() || (source != null && source != "wildriftcore")) return emptyMap()
+        if (html.isBlank()) return emptyMap()
+        if (source == "wildrifter") return PublishedStatsParser.rifter(html)
+        if (source == "wildriftfire") return PublishedStatsParser.fire(html).stats
+        if (source != null && source != "wildriftcore") return emptyMap()
         val doc = Jsoup.parse(html)
         val output = linkedMapOf<String, ChampionMetaStats>()
         doc.select("li.tl-cell").forEach { cell ->

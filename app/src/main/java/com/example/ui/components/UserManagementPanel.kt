@@ -71,7 +71,8 @@ enum class UserFilterTab(val label: String) {
 @Composable
 fun EnhancedUserManagementPanel(
     isMinimized: Boolean = false,
-    onToggleMinimize: () -> Unit = {}
+    onToggleMinimize: () -> Unit = {},
+    showMonitoring: Boolean = true
 ) {
     val context = LocalContext.current
     var users by remember { mutableStateOf<List<Map<String, Any>>>(emptyList()) }
@@ -212,6 +213,7 @@ fun EnhancedUserManagementPanel(
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
+        if (showMonitoring) {
         // Bloque de monitoreo y métricas minimizable
         AnimatedVisibility(visible = !isMinimized) {
             Column {
@@ -264,6 +266,8 @@ fun EnhancedUserManagementPanel(
                     fontWeight = FontWeight.Bold
                 )
             }
+        }
+
         }
 
         // Buscador y Chips de Filtro
@@ -1058,85 +1062,4 @@ internal fun formatExpirationDateDetailed(timestamp: Long?): String {
 }
 
 @Composable
-private fun ServerScraperHealthCard() {
-    val context = LocalContext.current
-    val sourceStatuses by BestBuildWrScraper.sourceStatuses.collectAsState()
-    val health by BestBuildWrScraper.freshness.collectAsState()
-    val versionStatus by com.example.util.AppUpdateManager.checkStatus.collectAsState()
-    var now by remember { mutableStateOf(System.currentTimeMillis()) }
-    LaunchedEffect(Unit) { while (isActive) { now = System.currentTimeMillis(); delay(15_000L) } }
-    val isSyncing by BestBuildWrScraper.isSyncing.collectAsState()
-
-
-    Surface(
-        color = HextechSurfaceBg,
-        shape = RoundedCornerShape(12.dp),
-        border = BorderStroke(1.dp, HextechCardBorder),
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp)
-    ) {
-        Column(modifier = Modifier.padding(14.dp)) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Default.CloudSync, contentDescription = null, tint = HextechCyan, modifier = Modifier.size(20.dp))
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = tr("Fuentes del meta Global"),
-                        color = Color.White,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 14.sp
-                    )
-                }
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(6.dp))
-                        .background(HextechCyan.copy(alpha = 0.15f))
-                        .padding(horizontal = 8.dp, vertical = 3.dp)
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .size(6.dp)
-                            .clip(CircleShape)
-                            .background(if (health.stale(now)) DangerRed else if (isSyncing) HextechGold else HextechCyan)
-                    )
-                    Spacer(modifier = Modifier.width(5.dp))
-                    Text(
-                        text = com.example.util.tr(if (isSyncing) "Sincronizando..." else "Monitoreo activo"),
-                        color = if (isSyncing) HextechGold else HextechCyan,
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-            }
-
-            MetaSyncSummary()
-            Text(tr("Versión instalada") + ": " + com.example.BuildConfig.VERSION_NAME + " · " +
-                tr("Versión disponible") + ": " + versionStatus.publishedName.ifBlank { "—" }, color = HextechCyan, fontSize = 10.sp)
-            Text(tr("Última verificación de versión") + ": " + metaTime(versionStatus.lastSuccessAt), color = TextMuted, fontSize = 10.sp)
-            if (versionStatus.lastAttemptAt > versionStatus.lastSuccessAt) {
-                Text(tr("No se pudo comprobar la versión publicada"), color = HextechGold, fontSize = 10.sp)
-            }
-
-            val allSources = sourceStatuses.values.toList()
-            allSources.forEach { status ->
-                Column(Modifier.fillMaxWidth().padding(vertical = 6.dp)) {
-                    Text(status.name, color = if (status.isHealthy) HextechCyan else DangerRed, fontSize = 12.sp)
-                    Text(tr("Última consulta") + ": " + metaTime(status.lastChecked) + " · " + status.responseTimeMs + " ms", color = TextMuted, fontSize = 10.sp)
-                    Text(tr("Última consulta válida") + ": " + metaTime(status.lastSuccessAt), color = TextMuted, fontSize = 10.sp)
-                    Text(tr("Último cambio de valores") + ": " + metaTime(status.lastChangedAt), color = TextMuted, fontSize = 10.sp)
-                    Text("Tier: ${status.tierCount} · WR/Pick/Ban: ${status.statsCount}", color = TextSecondary, fontSize = 10.sp)
-                    if (!status.isHealthy) Text(tr(status.errorMessage ?: "Error de conexión"), color = DangerRed, fontSize = 10.sp)
-                    else if (status.lastChangedAt > 0 && now - status.lastChangedAt >= 24 * 60 * 60_000L) {
-                        Text(tr("Aviso: la fuente mantiene los mismos valores desde hace 24 horas"), color = HextechGold, fontSize = 10.sp)
-                    } else if (status.unchangedChecks > 0) Text(tr("Fuente consultada: sin cambios publicados"), color = TextMuted, fontSize = 10.sp)
-                }
-            }
-        }
-    }
-}
+private fun ServerScraperHealthCard() { MetaMonitoringCard() }
