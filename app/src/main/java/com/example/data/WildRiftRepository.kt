@@ -41,8 +41,6 @@ object WildRiftRepository {
     // FUENTES DE DATOS Y META ACTUAL
     // ==========================================
     val metaSources: List<MetaDataSource> = listOf(
-        MetaDataSource(id = "global_bestbuildwr", name = "BestBuildWR", description = "Tier list Global",
-            url = "https://bestbuildwr.com/tierlist", focusArea = "Categorías de campeones"),
         MetaDataSource(id = "global_wildriftfire", name = "WildRiftFire", description = "Guías y tier list Global",
             url = "https://www.wildriftfire.com/tier-list", focusArea = "Categorías y builds"),
         MetaDataSource(id = "global_wildriftcore", name = "WildRiftCore", description = "Tier list Global",
