@@ -18,6 +18,7 @@ import com.example.model.RuneItem
 import com.example.model.SummonerSpellItem
 import com.example.model.WildRiftItem
 import com.example.model.MetaDataSource
+import com.example.data.sync.ChampionMetaStats
 
 object WildRiftRepository {
 
@@ -179,15 +180,27 @@ object WildRiftRepository {
         private set
 
     @Synchronized
-    fun applyRegionalTierList(region: String, tiers: Map<String, String>) {
+    fun applyRegionalTierList(
+        region: String,
+        tiers: Map<String, String>,
+        stats: Map<String, ChampionMetaStats> = emptyMap()
+    ) {
         if (!region.equals(com.example.data.sync.MetaRegion.DEFAULT, ignoreCase = true)) return
         val normalized = com.example.data.sync.MetaRegion.normalize(region)
         val updated = baseChampions.map { champion ->
             val category = tiers[com.example.data.sync.RegionalTierParser.canonical(champion.id)]
                 ?: tiers[com.example.data.sync.RegionalTierParser.canonical(champion.name)]
                 ?: champion.tier.ifBlank { "A" }
+            val meta = stats[com.example.data.sync.RegionalTierParser.canonical(champion.id)]
+                ?: stats[com.example.data.sync.RegionalTierParser.canonical(champion.name)]
 
-            champion.copy(hasRegionalStats = false, tier = category)
+            champion.copy(
+                hasRegionalStats = meta?.isUsable() == true,
+                tier = category,
+                winrate = meta?.winRate ?: champion.winrate,
+                pickRate = meta?.pickRate ?: champion.pickRate,
+                banRate = meta?.banRate ?: champion.banRate
+            )
         }
         regionalChampions[normalized] = updated
         regionRevision++

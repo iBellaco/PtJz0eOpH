@@ -19,6 +19,7 @@ import java.util.Locale
 
 object BestBuildWrScraper {
     private const val PREFS_NAME = "wr_tier_list_cache"
+    private const val STATS_SNAPSHOT_PREFIX = "stats_snapshot_"
 
     // Los 3 sitios web exactos para la fusión del meta global
     val GLOBAL_SCRAPING_SOURCES = listOf(
@@ -98,7 +99,8 @@ object BestBuildWrScraper {
                 val saved = prefs.getString("snapshot_$region", null) ?: continue
                 val data = JSONObject(saved)
                 val tiers = data.keys().asSequence().associateWith { data.getString(it) }
-                WildRiftRepository.applyRegionalTierList(region, tiers)
+                val stats = decodeStats(prefs.getString(STATS_SNAPSHOT_PREFIX + region, null))
+                WildRiftRepository.applyRegionalTierList(region, tiers, stats)
                 regions[region] = RegionState(prefs.getLong("timestamp_$region", 0), false, "Datos guardados • Pendiente de actualización")
             } catch (_: Exception) { /* Leave other region caches intact. */ }
         }
@@ -119,6 +121,7 @@ object BestBuildWrScraper {
             var success = false
             var message: String
             var cache: JSONObject? = null
+            var statsCache: JSONObject? = null
 
             if (!_isOnline.value) {
                 message = "Sin conexión; conservando datos guardados."
@@ -143,11 +146,18 @@ object BestBuildWrScraper {
                         json.keys().asSequence().associateWith { json.getString(it) }
                     }.getOrDefault(emptyMap())
                     val merged = GlobalTierConsensus.mergeSnapshot(previousTiers, fusedTiers)
-                    WildRiftRepository.applyRegionalTierList("GLOBAL", merged)
+                    val previousStats = decodeStats(
+                        context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+                            .getString(STATS_SNAPSHOT_PREFIX + requested, null)
+                    )
+                    val freshStats = GlobalTierConsensus.fuseStats(validSources.map { it.stats })
+                    val mergedStats = previousStats + freshStats
+                    WildRiftRepository.applyRegionalTierList("GLOBAL", merged, mergedStats)
                     cache = JSONObject(merged)
+                    statsCache = encodeStats(mergedStats)
                     success = true
                 }
-                message = if (success) "Categorías globales actualizadas (${validSources.size}/3 fuentes)"
+                message = if (success) "Categorías y estadísticas globales actualizadas (${validSources.size}/3 fuentes)"
                     else "Sin actualizar; conservando datos."
 
             }
@@ -156,7 +166,10 @@ object BestBuildWrScraper {
 
                 if (cache != null) {
                     context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).edit()
-                        .putLong("timestamp_$requested", started).putString("snapshot_$requested", cache.toString()).apply()
+                        .putLong("timestamp_$requested", started)
+                        .putString("snapshot_$requested", cache.toString())
+                        .also { editor -> statsCache?.let { editor.putString(STATS_SNAPSHOT_PREFIX + requested, it.toString()) } }
+                        .apply()
                 }
             }
             regions[requested] = RegionState(if (success) started else previous.at, success, message)
@@ -173,4 +186,30 @@ object BestBuildWrScraper {
     }
 
     suspend fun syncAllChampionBuilds(context: Context, region: String = MetaRegion.DEFAULT) = syncGlobalTierList(context, region, force = true)
+
+    private fun decodeStats(raw: String?): Map<String, ChampionMetaStats> {
+        if (raw.isNullOrBlank()) return emptyMap()
+        return runCatching {
+            val root = JSONObject(raw)
+            root.keys().asSequence().mapNotNull { id ->
+                val value = root.optJSONObject(id) ?: return@mapNotNull null
+                val stats = ChampionMetaStats(
+                    winRate = value.optDouble("winRate", Double.NaN).takeUnless { it.isNaN() },
+                    pickRate = value.optDouble("pickRate", Double.NaN).takeUnless { it.isNaN() },
+                    banRate = value.optDouble("banRate", Double.NaN).takeUnless { it.isNaN() }
+                )
+                id to stats
+            }.toMap()
+        }.getOrDefault(emptyMap())
+    }
+
+    private fun encodeStats(stats: Map<String, ChampionMetaStats>): JSONObject = JSONObject().apply {
+        stats.forEach { (id, value) ->
+            put(id, JSONObject().apply {
+                value.winRate?.let { put("winRate", it) }
+                value.pickRate?.let { put("pickRate", it) }
+                value.banRate?.let { put("banRate", it) }
+            })
+        }
+    }
 }

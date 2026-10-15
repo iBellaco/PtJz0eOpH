@@ -372,15 +372,20 @@ object PersonalTierListManager {
         val bestRoleRecord = rolePerformances.filter { it.total >= 5 }.maxByOrNull { (it.wins + 2.0) / (it.total + 4.0) }
 
         // Nemesis y Mejor Sinergia global
+        // Un enfrentamiento personal siempre pertenece a la pareja campeón propio + rival.
+        // Agrupar solo por rival mezclaba, por ejemplo, Ahri contra Zed con Darius contra Zed
+        // y producía una tasa que no correspondía a ninguna de las dos elecciones.
         val allMatchups = championStatsList.flatMap { it.matchups }
-            .groupBy { it.opponentName }
-            .map { (name, list) ->
+            .groupBy { matchupKey(it) }
+            .map { (_, list) ->
+                val first = list.first()
+                val name = first.opponentName
                 val w = list.sumOf { it.wins }
                 val l = list.sumOf { it.losses }
                 val tot = w + l
                 val wr = if (tot > 0) (w.toDouble() / tot * 100.0) else 0.0
                 val champion = WildRiftRepository.champions.firstOrNull { it.name.equals(name, true) }
-                val representative = list.maxWithOrNull(compareBy<MatchupRecord> { it.total }.thenBy { it.winRate })
+                val representative = list.maxWithOrNull(compareBy<MatchupRecord> { it.total }.thenBy { it.winRate }) ?: first
                 MatchupRecord(
                     opponentName = name,
                     opponentAvatarUrl = championAvatar(champion),
@@ -413,7 +418,7 @@ object PersonalTierListManager {
                 .thenByDescending { it.losses }
         )
         val eligibleWorst = worst1v1.firstOrNull()
-            ?: decidedMatchups.filter { it.opponentName != best1v1?.opponentName }
+            ?: decidedMatchups.filter { matchupKey(it) != best1v1?.let(::matchupKey) }
                 .minWithOrNull(compareBy<MatchupRecord> { it.winRate }.thenByDescending { it.total })
         val nemesis = eligibleWorst
 
@@ -464,6 +469,9 @@ object PersonalTierListManager {
 
     private fun recordedRole(draft: SavedDraftEntity): LaneRole? =
         LaneRole.entries.firstOrNull { it.name.equals(draft.userRole.trim(), true) }
+
+    private fun matchupKey(record: MatchupRecord): String =
+        "${record.playerChampionName.trim().lowercase()}::${record.opponentName.trim().lowercase()}"
 
     fun draftsForMatchup(drafts: List<SavedDraftEntity>, player: String, opponent: String,
                          role: LaneRole?, profileId: String): List<SavedDraftEntity> = drafts.filter {
@@ -585,13 +593,13 @@ object PersonalTierListManager {
         nemesis: MatchupRecord?,
         lang: String = "es"
     ): String {
-        val records = listOfNotNull(bestMatchup, nemesis).distinctBy { it.opponentName }
+        val records = listOfNotNull(bestMatchup, nemesis).distinctBy { matchupKey(it) }
             .filter { it.total >= MIN_MATCHUP_RESULTS }
         if (records.isEmpty()) return if (lang == "pt")
             "Ainda não há cinco resultados contra um mesmo rival de rota. Os resultados são de partidas completas; não comprovam vitórias em duelos 1v1."
             else "Todavía no hay cinco resultados contra un mismo rival de línea. Los resultados son de partidas completas; no demuestran victorias en duelos 1v1."
         val summary = records.joinToString("; ") {
-            "${it.playerChampionName} vs ${it.opponentName}: ${it.wins}V - ${it.losses}D (${it.total})"
+            "${it.playerChampionName} contra ${it.opponentName}: ${it.wins}V - ${it.losses}D (${it.total})"
         }
         val positive = bestMatchup?.let {
             "Fortaleza: ${it.playerChampionName} contra ${it.opponentName} (${it.winRate.toInt()}%). Repite el plan de oleadas y las ventanas de objetivos que acompañaron esas victorias."

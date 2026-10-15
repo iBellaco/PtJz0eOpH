@@ -6,6 +6,14 @@ import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 import java.util.Locale
 
+data class ChampionMetaStats(
+    val winRate: Double? = null,
+    val pickRate: Double? = null,
+    val banRate: Double? = null
+) {
+    fun isUsable(): Boolean = listOf(winRate, pickRate, banRate).any { it != null && it.isFinite() && it >= 0.0 }
+}
+
 /** Each publisher has its own schema. Never carry a tier into navigation/footer links. */
 object RegionalTierParser {
     fun canonical(value: String): String = value.lowercase(Locale.ROOT)
@@ -80,5 +88,46 @@ object RegionalTierParser {
             }
         }
         return result
+    }
+
+    /**
+     * Lee las métricas publicadas junto a cada campeón cuando la fuente las ofrece.
+     * Las páginas que solo publican categorías devuelven un mapa vacío y no se
+     * fabrican porcentajes.
+     */
+    fun parseStats(html: String, source: String? = null): Map<String, ChampionMetaStats> {
+        if (html.isBlank() || (source != null && source != "wildriftcore")) return emptyMap()
+        val doc = Jsoup.parse(html)
+        val output = linkedMapOf<String, ChampionMetaStats>()
+        doc.select("li.tl-cell").forEach { cell ->
+            val link = cell.selectFirst("a.tl-cell__name[href]") ?: return@forEach
+            val slug = link.attr("href").substringBefore('?').substringBefore('#')
+                .trimEnd('/').substringAfterLast('/')
+            val id = canonical(slug.ifBlank { link.text() })
+            if (id.length !in 2..30) return@forEach
+
+            fun number(selector: String): Double? = cell.selectFirst(selector)?.text()
+                ?.replace(',', '.')
+                ?.replace(Regex("[^0-9.+-]"), "")
+                ?.toDoubleOrNull()
+                ?.takeIf { it.isFinite() && it >= 0.0 }
+
+            val win = number(".tl-cell__wr b")
+            val rates = cell.selectFirst(".tl-cell__rates")?.text().orEmpty()
+            val pick = Regex("([0-9]+(?:[.,][0-9]+)?)%\\s*pick", RegexOption.IGNORE_CASE)
+                .find(rates)?.groupValues?.get(1)?.replace(',', '.')?.toDoubleOrNull()
+            val ban = Regex("([0-9]+(?:[.,][0-9]+)?)%\\s*ban", RegexOption.IGNORE_CASE)
+                .find(rates)?.groupValues?.get(1)?.replace(',', '.')?.toDoubleOrNull()
+            val stats = ChampionMetaStats(win, pick, ban)
+            if (!stats.isUsable()) return@forEach
+
+            // El sitio puede repetir un campeón por línea. Conservamos la fila con
+            // mayor selección, que representa el uso global más observado.
+            val previous = output[id]
+            if (previous == null || (stats.pickRate ?: 0.0) > (previous.pickRate ?: 0.0)) {
+                output[id] = stats
+            }
+        }
+        return output
     }
 }

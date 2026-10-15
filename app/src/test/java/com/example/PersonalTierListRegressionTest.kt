@@ -115,6 +115,26 @@ class PersonalTierListRegressionTest {
             assertFalse(result.allRankedChampions.single().coachVerdict.contains("Maestría absoluta"))
         }
     }
+    @Test fun `matchups never merge different own champions against the same rival`() {
+        val teemoGames = (1L..3L).map { draft(it, if (it == 1L) "VICTORY" else "DEFEAT") }
+        val ahriGames = (10L..14L).map {
+            draft(it, "VICTORY").copy(
+                userRole = "MID",
+                myChampionId = "ahri",
+                myChampionName = "Ahri",
+                allyPicksJson = """[{"championId":"ahri","championName":"Ahri","role":"MID"}]""",
+                enemyPicksJson = """[{"championId":"garen","championName":"Garen","role":"MID"}]""",
+                enemyLaneOpponentName = "Garen"
+            )
+        }
+
+        val result = Manager.calculatePersonalTierList(teemoGames + ahriGames)
+
+        assertEquals("Ahri", result.overview.best1v1Matchup?.playerChampionName)
+        assertEquals("Garen", result.overview.best1v1Matchup?.opponentName)
+        assertEquals(5, result.overview.best1v1Matchup?.total)
+        assertEquals(5, result.overview.best1v1Matchup?.wins)
+    }
     @Test fun `imported champions retain optional KDA and lane records without catalog entry`() {
         val stats=Manager.calculatePersonalTierList(listOf(draft().copy(myChampionId="custom",myChampionName="Custom",myScore="4/2/6")))
             .allRankedChampions.single()

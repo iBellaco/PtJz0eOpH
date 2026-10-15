@@ -18,6 +18,20 @@ class GlobalTierScrapingTest {
         val html = """<section id="all-tier-list"><div class="tl-tier-row" data-tier="S+"><a class="tl-champ-tile" href="/es/champions/nunu-and-willump/">Nunu</a><a href="/es/champions/nunu-and-willump/builds/">Build</a></div></section><section><div class="tl-tier-row" data-tier="C"><a class="tl-champ-tile" href="/es/champions/ahri/">Ahri</a></div></section>"""
         assertEquals(mapOf("nunuwillump" to "S+"), RegionalTierParser.parse(html,"wildriftcore"))
     }
+    @Test fun `WildRiftCore reads published win pick and ban rates`() {
+        val html = """
+            <ul><li class="tl-cell">
+              <a class="tl-cell__name" href="/es/champions/ahri/">Ahri</a>
+              <p class="tl-cell__wr"><b>54.2</b><span>%</span></p>
+              <p class="tl-cell__rates">8.1% pick · 12.4% ban</p>
+            </li></ul>
+        """.trimIndent()
+        val stats = RegionalTierParser.parseStats(html, "wildriftcore")["ahri"]
+        assertNotNull(stats)
+        assertEquals(54.2, stats!!.winRate!!, 0.001)
+        assertEquals(8.1, stats.pickRate!!, 0.001)
+        assertEquals(12.4, stats.banRate!!, 0.001)
+    }
     @Test fun `empty error pages and insufficient unknown champions fail validation`() {
         assertTrue(RegionalTierParser.parse("<html>Service unavailable</html>").isEmpty())
         val known=(1..100).map { "champ$it" }.toSet()

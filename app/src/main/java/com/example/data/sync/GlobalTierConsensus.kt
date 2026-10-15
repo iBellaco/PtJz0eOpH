@@ -33,4 +33,24 @@ object GlobalTierConsensus {
             }
         }
     }
+
+    fun fuseStats(sources: List<Map<String, ChampionMetaStats>>): Map<String, ChampionMetaStats> {
+        val grouped = mutableMapOf<String, MutableList<ChampionMetaStats>>()
+        sources.forEach { source ->
+            source.forEach { (id, stats) ->
+                if (stats.isUsable()) grouped.getOrPut(id) { mutableListOf() }.add(stats)
+            }
+        }
+        fun average(values: List<Double?>): Double? {
+            val present = values.filterNotNull().filter { it.isFinite() && it >= 0.0 }
+            return present.takeIf { it.isNotEmpty() }?.average()
+        }
+        return grouped.mapValues { (_, values) ->
+            ChampionMetaStats(
+                winRate = average(values.map { it.winRate }),
+                pickRate = average(values.map { it.pickRate }),
+                banRate = average(values.map { it.banRate })
+            )
+        }
+    }
 }
