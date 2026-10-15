@@ -382,8 +382,8 @@ private fun OverlayVersusDraftBoard(
                 val allySlot = allySlots.find { it.assignedRole == role }
                 val enemySlot = enemySlots.find { it.assignedRole == role }
                 val isMyRole = activeUserRole == role
-                val allyChamp = allySlot?.champion
-                val enemyChamp = enemySlot?.champion
+                val allyChamp = allySlot?.champion?.let { com.example.data.WildRiftRepository.getChampionById(it.id) ?: it }
+                val enemyChamp = enemySlot?.champion?.let { com.example.data.WildRiftRepository.getChampionById(it.id) ?: it }
 
                 Surface(
                     modifier = Modifier
@@ -443,7 +443,7 @@ private fun OverlayVersusDraftBoard(
                                         horizontalArrangement = Arrangement.Start
                                     ) {
                                         Text(
-                                            text = com.example.util.tr("W:${allyChamp.winrate.toInt()}%"),
+                                            text = com.example.util.tr("W:${com.example.util.regionalPercent(allyChamp, allyChamp.winrate)}"),
                                             color = Color(0xFF00FF7F),
                                             fontSize = 7.sp,
                                             fontWeight = FontWeight.Bold,
@@ -451,7 +451,7 @@ private fun OverlayVersusDraftBoard(
                                         )
                                         Spacer(modifier = Modifier.width(3.dp))
                                         Text(
-                                            text = com.example.util.tr("B:${allyChamp.banRate.toInt()}%"),
+                                            text = com.example.util.tr("B:${com.example.util.regionalPercent(allyChamp, allyChamp.banRate)}"),
                                             color = DangerRed,
                                             fontSize = 7.sp,
                                             fontWeight = FontWeight.Bold,
@@ -459,7 +459,7 @@ private fun OverlayVersusDraftBoard(
                                         )
                                         Spacer(modifier = Modifier.width(3.dp))
                                         Text(
-                                            text = com.example.util.tr("P:${allyChamp.pickRate.toInt()}%"),
+                                            text = com.example.util.tr("P:${com.example.util.regionalPercent(allyChamp, allyChamp.pickRate)}"),
                                             color = Color(0xFFFF9800),
                                             fontSize = 7.sp,
                                             fontWeight = FontWeight.Bold,
@@ -545,7 +545,7 @@ private fun OverlayVersusDraftBoard(
                                         horizontalArrangement = Arrangement.End
                                     ) {
                                         Text(
-                                            text = com.example.util.tr("W:${enemyChamp.winrate.toInt()}%"),
+                                            text = com.example.util.tr("W:${com.example.util.regionalPercent(enemyChamp, enemyChamp.winrate)}"),
                                             color = Color(0xFF00FF7F),
                                             fontSize = 7.sp,
                                             fontWeight = FontWeight.Bold,
@@ -553,7 +553,7 @@ private fun OverlayVersusDraftBoard(
                                         )
                                         Spacer(modifier = Modifier.width(3.dp))
                                         Text(
-                                            text = com.example.util.tr("B:${enemyChamp.banRate.toInt()}%"),
+                                            text = com.example.util.tr("B:${com.example.util.regionalPercent(enemyChamp, enemyChamp.banRate)}"),
                                             color = DangerRed,
                                             fontSize = 7.sp,
                                             fontWeight = FontWeight.Bold,
@@ -561,7 +561,7 @@ private fun OverlayVersusDraftBoard(
                                         )
                                         Spacer(modifier = Modifier.width(3.dp))
                                         Text(
-                                            text = com.example.util.tr("P:${enemyChamp.pickRate.toInt()}%"),
+                                            text = com.example.util.tr("P:${com.example.util.regionalPercent(enemyChamp, enemyChamp.pickRate)}"),
                                             color = Color(0xFFFF9800),
                                             fontSize = 7.sp,
                                             fontWeight = FontWeight.Bold,

@@ -47,8 +47,10 @@ fun MatchupPreviewDialog(
     activeRole: LaneRole,
     onDismiss: () -> Unit
 ) {
+    val liveMyChampion = com.example.data.WildRiftRepository.getChampionById(myChampion.id) ?: myChampion
+    val liveEnemyOpponent = com.example.data.WildRiftRepository.getChampionById(enemyOpponent.id) ?: enemyOpponent
     val language = com.example.util.currentAppLanguage()
-    val relation = com.example.data.MatchupKnowledge.relation(myChampion,enemyOpponent)
+    val relation = com.example.data.MatchupKnowledge.relation(liveMyChampion,liveEnemyOpponent)
     val isMyCounter = relation == com.example.data.MatchupRelation.FAVORABLE
     val isEnemyCounter = relation == com.example.data.MatchupRelation.UNFAVORABLE
 
@@ -132,10 +134,10 @@ fun MatchupPreviewDialog(
                                     horizontalAlignment = Alignment.CenterHorizontally,
                                     modifier = Modifier.weight(1f)
                                 ) {
-                                    ChampionAvatar(champion = myChampion, size = 52.dp, showTierBadge = true)
+                                    ChampionAvatar(champion = liveMyChampion, size = 52.dp, showTierBadge = true)
                                     Spacer(modifier = Modifier.height(6.dp))
                                     Text(
-                                        text = com.example.util.tr(myChampion.name),
+                                        text = com.example.util.tr(liveMyChampion.name),
                                         color = TextPrimary,
                                         fontWeight = FontWeight.Bold,
                                         fontSize = 14.sp
@@ -147,7 +149,7 @@ fun MatchupPreviewDialog(
                                         fontWeight = FontWeight.SemiBold
                                     )
                                     Text(
-                                        text = com.example.util.tr("WR: ${String.format(java.util.Locale.US, "%.2f", myChampion.winrate)}%"),
+                                        text = com.example.util.tr("WR: ${com.example.util.regionalPercent(liveMyChampion, liveMyChampion.winrate)}"),
                                         color = HextechGold,
                                         fontSize = 10.sp
                                     )
@@ -201,10 +203,10 @@ fun MatchupPreviewDialog(
                                     horizontalAlignment = Alignment.CenterHorizontally,
                                     modifier = Modifier.weight(1f)
                                 ) {
-                                    ChampionAvatar(champion = enemyOpponent, size = 52.dp, showTierBadge = true)
+                                    ChampionAvatar(champion = liveEnemyOpponent, size = 52.dp, showTierBadge = true)
                                     Spacer(modifier = Modifier.height(6.dp))
                                     Text(
-                                        text = com.example.util.tr(enemyOpponent.name),
+                                        text = com.example.util.tr(liveEnemyOpponent.name),
                                         color = TextPrimary,
                                         fontWeight = FontWeight.Bold,
                                         fontSize = 14.sp
@@ -216,7 +218,7 @@ fun MatchupPreviewDialog(
                                         fontWeight = FontWeight.SemiBold
                                     )
                                     Text(
-                                        text = com.example.util.tr("WR: ${String.format(java.util.Locale.US, "%.2f", enemyOpponent.winrate)}%"),
+                                        text = com.example.util.tr("WR: ${com.example.util.regionalPercent(liveEnemyOpponent, liveEnemyOpponent.winrate)}"),
                                         color = DangerRed.copy(alpha = 0.8f),
                                         fontSize = 10.sp
                                     )
@@ -235,7 +237,7 @@ fun MatchupPreviewDialog(
                     ) {
                         Text(
                             text = com.example.util.ChampionMatchupCoaching.sovereignFeedback(
-                                myChampion, activeRole, language, enemyOpponent),
+                                liveMyChampion, activeRole, language, liveEnemyOpponent),
                             color = TextPrimary,
                             fontSize = 12.sp,
                             lineHeight = 18.sp,

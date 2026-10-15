@@ -665,7 +665,8 @@ private fun DraftDetailInnerContent(
             Text(tr("Tu Equipo Aliado"), color = HextechCyan, fontSize = 13.sp, fontWeight = FontWeight.Bold)
             Spacer(modifier = Modifier.height(6.dp))
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                allies.forEach { slot ->
+                allies.forEach { savedSlot ->
+                    val slot = savedSlot.copy(champion = com.example.data.WildRiftRepository.getChampionById(savedSlot.champion.id) ?: savedSlot.champion)
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -703,7 +704,7 @@ private fun DraftDetailInnerContent(
                             }
                         }
                         Text(
-                            text = com.example.util.tr("${String.format(java.util.Locale.US, "%.2f", slot.champion.winrate)}% WR"),
+                            text = com.example.util.tr("${com.example.util.regionalPercent(slot.champion, slot.champion.winrate)} WR"),
                             color = HextechGold,
                             fontSize = 11.5.sp,
                             fontWeight = FontWeight.Bold
@@ -718,7 +719,8 @@ private fun DraftDetailInnerContent(
             Text(tr("Equipo Rival"), color = DangerRed, fontSize = 13.sp, fontWeight = FontWeight.Bold)
             Spacer(modifier = Modifier.height(6.dp))
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                enemies.forEach { slot ->
+                enemies.forEach { savedSlot ->
+                    val slot = savedSlot.copy(champion = com.example.data.WildRiftRepository.getChampionById(savedSlot.champion.id) ?: savedSlot.champion)
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -756,7 +758,7 @@ private fun DraftDetailInnerContent(
                             }
                         }
                         Text(
-                            text = com.example.util.tr("${String.format(java.util.Locale.US, "%.2f", slot.champion.winrate)}% WR"),
+                            text = com.example.util.tr("${com.example.util.regionalPercent(slot.champion, slot.champion.winrate)} WR"),
                             color = HextechGold,
                             fontSize = 11.5.sp,
                             fontWeight = FontWeight.Bold
