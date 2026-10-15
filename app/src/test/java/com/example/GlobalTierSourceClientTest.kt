@@ -58,6 +58,22 @@ class GlobalTierSourceClientTest {
             assertEquals(53.4, result.stats["champ1"]?.winRate ?: 0.0, 0.001)
         }
     }
+    @Test fun `core fetches complete rankings independently from tier podium`() = runBlocking {
+        MockWebServer().use { server ->
+            server.enqueue(MockResponse().setBody(html()))
+            server.enqueue(MockResponse().setBody("""
+                <tr class="rk-row"><td><a class="rk-champ" href="/es/champions/champ1/">Champ 1</a></td>
+                <td><span class="rk-val--win">53.47%</span></td>
+                <td><span class="rk-stat--pick">6.2%</span><span class="rk-stat--ban">0%</span></td></tr>
+            """.let { "<table>$it</table>" }))
+            val source = GlobalScrapingSource("wildriftcore", "Test", server.url("/tierlist/").toString(), "test")
+            val result = GlobalTierSourceClient().fetch(source, known)
+            assertEquals(40, result.tiers.size)
+            assertEquals(53.47, result.stats["champ1"]!!.winRate!!, 0.001)
+            assertEquals("/tierlist/", server.takeRequest().path)
+            assertEquals("/rankings/", server.takeRequest().path)
+        }
+    }
     @Test fun `partial snapshots preserve previous champions and reject invalid categories`() {
         assertEquals(mapOf("ahri" to "S","garen" to "B"), GlobalTierConsensus.mergeSnapshot(
             mapOf("ahri" to "A","garen" to "B","unknown" to "invalid"), mapOf("ahri" to "S")))

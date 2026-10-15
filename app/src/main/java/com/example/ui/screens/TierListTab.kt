@@ -158,6 +158,7 @@ fun TierListTab(
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
         item {
+            com.example.ui.components.MetaSyncSummary()
             Spacer(modifier = Modifier.height(4.dp))
 
         }
@@ -424,7 +425,7 @@ fun TierListTab(
                                         .background(Color(0xFF00FF7F))
                                 )
                                 Text(
-                                    text = tr("En vivo"),
+                                    text = tr("Consulta automática"),
                                     color = Color(0xFF00FF7F),
                                     fontSize = if (isOverlay) 8.sp else 9.5.sp,
                                     fontWeight = FontWeight.Bold
@@ -708,10 +709,12 @@ fun TierListTab(
                                         fontSize = 9.sp,
                                         fontWeight = FontWeight.Medium
                                     )
-                                    val safeWr = if (champ.winrate > 0.0) champ.winrate else (when(champ.tier) { "S+" -> 53.8; "S" -> 52.2; "A+", "A" -> 50.8; "B+", "B" -> 49.4; "C+", "C" -> 48.1; else -> 46.8 })
-                                    val safeDelta = if (champ.winrateDelta != 0.0) champ.winrateDelta else (when(champ.tier) { "S+" -> 0.48; "S" -> 0.32; "A+", "A" -> 0.12; "B+", "B" -> -0.18; "C+", "C" -> -0.35; else -> -0.52 })
+                                    val safeWr = champ.winrate
+                                    val safeDelta = champ.winrateDelta
                                     SparklineTrendGraph(
-                                        winrate = safeWr,
+                                        winrate = if (champ.hasRegionalStats) safeWr else Double.NaN,
+                                        observed24h = champ.winrate24h,
+                                        observed12h = champ.winrate12h,
                                         delta = safeDelta,
                                         modifier = Modifier.weight(1f).padding(start = 8.dp),
                                         showTimeLabels = true,
@@ -879,10 +882,12 @@ fun TierSectionCard(
                                         fontSize = 9.sp,
                                         fontWeight = FontWeight.Medium
                                     )
-                                    val safeWr = if (champ.winrate > 0.0) champ.winrate else (when(champ.tier) { "S+" -> 53.8; "S" -> 52.2; "A+", "A" -> 50.8; "B+", "B" -> 49.4; "C+", "C" -> 48.1; else -> 46.8 })
-                                    val safeDelta = if (champ.winrateDelta != 0.0) champ.winrateDelta else (when(champ.tier) { "S+" -> 0.48; "S" -> 0.32; "A+", "A" -> 0.12; "B+", "B" -> -0.18; "C+", "C" -> -0.35; else -> -0.52 })
+                                    val safeWr = champ.winrate
+                                    val safeDelta = champ.winrateDelta
                                     SparklineTrendGraph(
-                                        winrate = safeWr,
+                                        winrate = if (champ.hasRegionalStats) safeWr else Double.NaN,
+                                        observed24h = champ.winrate24h,
+                                        observed12h = champ.winrate12h,
                                         delta = safeDelta,
                                         modifier = Modifier.weight(1f).padding(start = 8.dp),
                                         showTimeLabels = true,

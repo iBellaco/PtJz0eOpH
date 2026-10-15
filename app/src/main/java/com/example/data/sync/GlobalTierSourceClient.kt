@@ -6,6 +6,7 @@ import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.delay
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import okhttp3.CacheControl
 import java.util.concurrent.TimeUnit
 
 data class ScraperSourceStatus(
@@ -15,7 +16,12 @@ data class ScraperSourceStatus(
     val lastChecked: Long,
     val responseTimeMs: Long,
     val errorMessage: String?,
-    val region: String = "GLOBAL"
+    val region: String = "GLOBAL",
+    val tierCount: Int = 0,
+    val statsCount: Int = 0,
+    val lastSuccessAt: Long = 0,
+    val lastChangedAt: Long = 0,
+    val unchangedChecks: Int = 0
 )
 
 data class GlobalScrapingSource(
@@ -53,6 +59,7 @@ class GlobalTierSourceClient(
                 val request = Request.Builder().url(source.url)
                     .header("User-Agent", "Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 Chrome/130.0.0.0 Mobile Safari/537.36")
                     .header("Accept", "text/html,application/xhtml+xml")
+                    .cacheControl(CacheControl.FORCE_NETWORK)
                     .build()
                 val response = client.newCall(request).execute()
                 var retry = false
@@ -90,10 +97,30 @@ class GlobalTierSourceClient(
             }
             delay(500L)
         }
+        if (source.id == "wildriftcore" && source.url.contains("/tierlist/")) {
+            try {
+                val rankingsUrl = source.url.replace("/tierlist/", "/rankings/")
+                val request = Request.Builder().url(rankingsUrl)
+                    .header("User-Agent", "Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 Chrome/130.0.0.0 Mobile Safari/537.36")
+                    .cacheControl(CacheControl.FORCE_NETWORK).build()
+                client.newCall(request).execute().use { response ->
+                    if (response.isSuccessful) {
+                        val html = response.body?.string().orEmpty()
+                        if (html.length <= 4_000_000) {
+                            parsedStats = parsedStats + RegionalTierParser.parseStats(html, source.id)
+                                .filterKeys { it in knownCanonicalIds }
+                        }
+                    }
+                }
+            } catch (cancelled: CancellationException) { throw cancelled
+            } catch (_: Exception) { /* The monitor reports partial rate coverage. */ }
+        }
         return SourceResult(source, parsed, ScraperSourceStatus(
             name = "${source.name} (${source.displayUrl})", url = source.url,
             isHealthy = parsed.isNotEmpty() || parsedStats.isNotEmpty(), lastChecked = System.currentTimeMillis(),
-            responseTimeMs = System.currentTimeMillis() - started, errorMessage = error
+            responseTimeMs = System.currentTimeMillis() - started,
+            errorMessage = if (parsed.isNotEmpty() || parsedStats.isNotEmpty()) null else error,
+            tierCount = parsed.size, statsCount = parsedStats.size
         ), parsedStats)
     }
 

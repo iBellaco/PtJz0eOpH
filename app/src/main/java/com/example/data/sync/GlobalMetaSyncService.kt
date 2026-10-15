@@ -3,12 +3,43 @@ package com.example.data.sync
 import android.content.Context
 import com.example.data.WildRiftRepository
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 object GlobalMetaSyncService {
+    private val liveScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
+    private val liveOwners = mutableSetOf<String>()
+    private var liveJob: Job? = null
+
+    /** One shared poller for the activity and floating hub. Stops when both close. */
+    @Synchronized fun startLive(context: Context, owner: String) {
+        liveOwners.add(owner)
+        if (liveJob?.isActive == true) return
+        val app = context.applicationContext
+        com.example.util.AppUpdateManager.restore(app)
+        liveJob = liveScope.launch {
+            while (isActive) {
+                val cycleStarted = android.os.SystemClock.elapsedRealtime()
+                // Version verification is independent of source latency/failure.
+                launch { com.example.util.AppUpdateManager.checkForUpdates(app) }
+                syncGlobalMeta(app)
+                delay((MetaFreshness.POLL_INTERVAL_MS - (android.os.SystemClock.elapsedRealtime() - cycleStarted)).coerceAtLeast(1_000L))
+            }
+        }
+    }
+
+    @Synchronized fun stopLive(owner: String) {
+        liveOwners.remove(owner)
+        if (liveOwners.isEmpty()) { liveJob?.cancel(); liveJob = null }
+    }
+
     private val _syncState = MutableStateFlow<MetaSyncState>(MetaSyncState.Idle)
     val syncState: StateFlow<MetaSyncState> = _syncState.asStateFlow()
 
@@ -46,7 +77,7 @@ object GlobalMetaSyncService {
     }
 
     fun getLastSyncInfo(context: Context): Pair<String, String> {
-        val isOnline = BestBuildWrScraper.isOnline.value
+        val isOnline = !BestBuildWrScraper.freshness.value.stale(System.currentTimeMillis())
         val time = BestBuildWrScraper.lastSyncFormattedTime.value
         return Pair(if (isOnline) "En vivo" else "Sin conexión", time)
     }

@@ -654,10 +654,12 @@ fun ChampionsCatalogTab(
                                         fontSize = 9.sp,
                                         fontWeight = FontWeight.Medium
                                     )
-                                    val safeWr = if (champion.winrate > 0.0) champion.winrate else (when(champion.tier) { "S+" -> 53.8; "S" -> 52.2; "A+", "A" -> 50.8; "B+", "B" -> 49.4; "C+", "C" -> 48.1; else -> 46.8 })
-                                    val safeDelta = if (champion.winrateDelta != 0.0) champion.winrateDelta else (when(champion.tier) { "S+" -> 0.48; "S" -> 0.32; "A+", "A" -> 0.12; "B+", "B" -> -0.18; "C+", "C" -> -0.35; else -> -0.52 })
+                                    val safeWr = champion.winrate
+                                    val safeDelta = champion.winrateDelta
                                     SparklineTrendGraph(
-                                        winrate = safeWr,
+                                        winrate = if (champion.hasRegionalStats) safeWr else Double.NaN,
+                                        observed24h = champion.winrate24h,
+                                        observed12h = champion.winrate12h,
                                         delta = safeDelta,
                                         modifier = Modifier.weight(1f).padding(start = 8.dp),
                                         showTimeLabels = true,
