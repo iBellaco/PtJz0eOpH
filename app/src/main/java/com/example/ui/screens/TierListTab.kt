@@ -137,9 +137,9 @@ fun TierListTab(
     val championsToDisplay = remember(rawChampionsToDisplay, selectedSort, currentRegion) {
         when (selectedSort) {
             TierSortOption.BY_TIER -> rawChampionsToDisplay
-            TierSortOption.WIN_RATE -> rawChampionsToDisplay.sortedByDescending { it.winrate }
-            TierSortOption.PICK_RATE -> rawChampionsToDisplay.sortedByDescending { it.pickRate }
-            TierSortOption.BAN_RATE -> rawChampionsToDisplay.sortedByDescending { it.banRate }
+            TierSortOption.WIN_RATE -> rawChampionsToDisplay.sortedByDescending { if (it.hasRegionalStats && it.winrate.isFinite()) it.winrate else Double.NEGATIVE_INFINITY }
+            TierSortOption.PICK_RATE -> rawChampionsToDisplay.sortedByDescending { if (it.hasRegionalStats && it.pickRate.isFinite()) it.pickRate else Double.NEGATIVE_INFINITY }
+            TierSortOption.BAN_RATE -> rawChampionsToDisplay.sortedByDescending { if (it.hasRegionalStats && it.banRate.isFinite()) it.banRate else Double.NEGATIVE_INFINITY }
         }
     }
 
