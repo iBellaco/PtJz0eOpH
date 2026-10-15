@@ -25,7 +25,9 @@ fun MetaSyncSummary() {
     val health by BestBuildWrScraper.freshness.collectAsState()
     val syncing by BestBuildWrScraper.isSyncing.collectAsState()
     var now by remember { mutableStateOf(System.currentTimeMillis()) }
-    LaunchedEffect(Unit) { while (true) { now = System.currentTimeMillis(); delay(5_000L) } }
+    // Actualiza la lectura de frescura cada segundo. Esto no altera una tasa
+    // publicada: solo hace visible cuánto tiempo lleva vigente la observación.
+    LaunchedEffect(Unit) { while (true) { now = System.currentTimeMillis(); delay(1_000L) } }
     val at = minOf(health.tiersCheckedAt, health.ratesCheckedAt)
     Row(Modifier.fillMaxWidth().testTag("meta_sync_summary").padding(vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -33,7 +35,7 @@ fun MetaSyncSummary() {
         Text(tr(when {
             syncing -> "Actualizando estadísticas"
             health.stale(now) -> "Datos guardados · esperando actualización"
-            else -> "Actualizado"
+            else -> "En vivo · consulta automática"
         }) + if (!syncing && at > 0) " · " + metaTime(at) else "",
             color = if (health.stale(now) && !syncing) HextechGold else HextechCyan, fontSize = 10.sp)
     }

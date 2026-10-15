@@ -35,7 +35,6 @@ import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.History
-import androidx.compose.material.icons.filled.Refresh
 import android.widget.Toast
 import com.example.data.local.FavoriteChampionsManager
 import androidx.compose.material.icons.filled.Star
@@ -48,7 +47,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.rememberCoroutineScope
 import com.example.util.tr
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -117,10 +115,18 @@ fun TierListTab(
         }
     }
     val context = LocalContext.current
-    val coroutineScope = rememberCoroutineScope()
     val syncState by GlobalMetaSyncService.syncState.collectAsStateWithLifecycle()
     val currentRegion by GlobalMetaSyncService.currentRegion.collectAsStateWithLifecycle()
     val metaRevision = WildRiftRepository.regionRevision
+    // La vista se mantiene viva aunque el editor externo publique por lotes.
+    // El valor solo cambia cuando llega una observación nueva de la fuente.
+    var liveTick by remember { mutableStateOf(0L) }
+    androidx.compose.runtime.LaunchedEffect(Unit) {
+        while (true) {
+            liveTick = System.currentTimeMillis()
+            kotlinx.coroutines.delay(1_000L)
+        }
+    }
 
     val favorites by FavoriteChampionsManager.favoritesFlow.collectAsStateWithLifecycle()
     var showFavoritesOnly by remember { mutableStateOf(false) }
@@ -128,7 +134,7 @@ fun TierListTab(
     var selectedSort by remember { mutableStateOf(TierSortOption.BY_TIER) }
     var showTierFilters by rememberSaveable { mutableStateOf(true) }
 
-    val rawChampionsToDisplay = remember(selectedLane, showFavoritesOnly, favorites, syncState, currentRegion, metaRevision, WildRiftRepository.champions.toList()) {
+    val rawChampionsToDisplay = remember(selectedLane, showFavoritesOnly, favorites, syncState, currentRegion, metaRevision, liveTick, WildRiftRepository.champions.toList()) {
         val champs = if (selectedLane == null) WildRiftRepository.champions.toList()
         else WildRiftRepository.getChampionsByRole(selectedLane!!)
         val visibleTiers = champs.filter { it.tier in setOf("S+", "S", "A+", "A") }
@@ -205,23 +211,6 @@ fun TierListTab(
                     }
                 }
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    IconButton(
-                        onClick = {
-                            if (syncState !is com.example.data.sync.MetaSyncState.Syncing) {
-                                coroutineScope.launch {
-                                    GlobalMetaSyncService.syncGlobalMeta(context, forceRefresh = true)
-                                }
-                            }
-                        },
-                        modifier = Modifier.size(32.dp).testTag("tier_list_refresh_button")
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Refresh,
-                            contentDescription = tr("Actualizar"),
-                            tint = if (syncState is com.example.data.sync.MetaSyncState.Syncing) TextMuted else HextechCyan,
-                            modifier = Modifier.size(18.dp)
-                        )
-                    }
                     IconButton(
                         onClick = { showTierFilters = !showTierFilters },
                         modifier = Modifier.size(32.dp)
