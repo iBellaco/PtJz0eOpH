@@ -14,6 +14,12 @@ jobs:
       source_sha: ${{ steps.validated.outputs.source_sha }}
     steps:
     - uses: actions/checkout@v4
+    - name: Validate production version is newer than the last release
+      if: github.ref == 'refs/heads/main'
+      run: |
+        git fetch --tags --force origin
+        python3 -m unittest discover -s .github/scripts -p test_validate_version_bump.py
+        python3 .github/scripts/validate-version-bump.py
     - name: Check validated APK reuse policy
       run: python3 -m unittest discover -s .github/scripts -p test_validated_apk.py
     - name: Find a fully validated APK with identical source files
