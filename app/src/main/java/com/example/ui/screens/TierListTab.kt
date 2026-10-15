@@ -131,7 +131,8 @@ fun TierListTab(
     val rawChampionsToDisplay = remember(selectedLane, showFavoritesOnly, favorites, syncState, currentRegion, metaRevision, WildRiftRepository.champions.toList()) {
         val champs = if (selectedLane == null) WildRiftRepository.champions.toList()
         else WildRiftRepository.getChampionsByRole(selectedLane!!)
-        if (showFavoritesOnly) champs.filter { it.id in favorites } else champs
+        val visibleTiers = champs.filter { it.tier in setOf("S+", "S", "A+", "A") }
+        if (showFavoritesOnly) visibleTiers.filter { it.id in favorites } else visibleTiers
     }
 
     val championsToDisplay = remember(rawChampionsToDisplay, selectedSort, currentRegion) {
@@ -146,9 +147,6 @@ fun TierListTab(
     val tierSPlus = championsToDisplay.filter { it.tier == "S+" }
     val tierS = championsToDisplay.filter { (it.tier == "S") && it !in tierSPlus }
     val tierA = championsToDisplay.filter { (it.tier == "A+" || it.tier == "A") && it !in tierSPlus && it !in tierS }
-    val tierB = championsToDisplay.filter { (it.tier == "B" || it.tier == "B+") && it !in tierSPlus && it !in tierS && it !in tierA }
-    val tierC = championsToDisplay.filter { (it.tier == "C" || it.tier == "C+") && it !in tierSPlus && it !in tierS && it !in tierA && it !in tierB }
-    val tierD = championsToDisplay.filter { it !in tierSPlus && it !in tierS && it !in tierA && it !in tierB && it !in tierC }
 
     LazyColumn(
         modifier = Modifier
@@ -496,48 +494,6 @@ fun TierListTab(
                         tierName = "TIER A (${tr("Opciones Sólidas y Balanceadas")})",
                         tierColor = TierAColor,
                         champions = tierA,
-                        onSelectChampion = onSelectChampion
-                    )
-                }
-            }
-
-            // Tier B / T4
-            if (tierB.isNotEmpty()) {
-                item {
-                    TierSectionCard(
-                        isOverlay = isOverlay,
-                        showTrend = isSignedIn,
-                        tierName = "TIER B (${tr("Opciones Viables")})",
-                        tierColor = com.example.ui.theme.TierBColor,
-                        champions = tierB,
-                        onSelectChampion = onSelectChampion
-                    )
-                }
-            }
-
-            // Tier C / T5
-            if (tierC.isNotEmpty()) {
-                item {
-                    TierSectionCard(
-                        isOverlay = isOverlay,
-                        showTrend = isSignedIn,
-                        tierName = "TIER C (${tr("Situacionales")})",
-                        tierColor = com.example.ui.theme.TierCColor,
-                        champions = tierC,
-                        onSelectChampion = onSelectChampion
-                    )
-                }
-            }
-
-            // Tier D
-            if (tierD.isNotEmpty()) {
-                item {
-                    TierSectionCard(
-                        isOverlay = isOverlay,
-                        showTrend = isSignedIn,
-                        tierName = "TIER D / OTROS",
-                        tierColor = com.example.ui.theme.TierDColor,
-                        champions = tierD,
                         onSelectChampion = onSelectChampion
                     )
                 }

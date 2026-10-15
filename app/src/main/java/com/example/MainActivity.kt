@@ -67,6 +67,7 @@ import com.example.ui.screens.MetaAndDraftScreen
 import com.example.ui.screens.TutorialScreen
 import com.example.ui.theme.HextechDarkBg
 import com.example.ui.theme.MyApplicationTheme
+import com.example.ui.theme.TextPrimary
 import com.example.ui.theme.HextechCyan
 import com.example.ui.theme.HextechGold
 import com.example.ui.theme.AppThemeManager

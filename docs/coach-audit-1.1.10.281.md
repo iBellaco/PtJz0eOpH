@@ -15,6 +15,7 @@ Versión anterior: 1.1.10.280 (996). Versión nueva: 1.1.10.281 (997).
 - Se consulta la tabla completa de tasas, con validación de rango 0–100 y aceptación de cero. Las categorías siguen dependiendo de las fuentes publicadas; un S+ puede permanecer igual cuando estas no cambian su clasificación.
 - Se eliminan tasas de relleno, penalizaciones ficticias para roles secundarios y tendencias inventadas. La pantalla muestra valores publicados, la hora de consulta y guiones para datos ausentes. Se conserva un historial local acotado de observaciones reales; los puntos de 12 y 24 horas se habilitan únicamente cuando hay muestras cercanas verificadas.
 - Monitoreo por fuente: último intento, último éxito, último cambio, latencia, número de categorías y tasas, consultas sin cambios y cobertura incompleta. Alerta por consulta vencida tras tres minutos y aviso por valores iguales durante 24 horas, diferenciando una fuente sin cambios de una consulta detenida.
+- La Tier List global muestra únicamente S+, S y A (A+ se agrupa en A), incluyendo la ordenación por tasas.
 - El historial personal sigue recalculándose con los resultados guardados y actualiza también la ficha abierta y los cambios de catálogo.
 - La versión se comprueba al abrir y cada cinco minutos de uso. Una release estable con APK y build superior activa un aviso obligatorio antes de mostrar la aplicación y detiene el hub. La obligación conocida se conserva sin conexión. El aviso solo informa y permite volver a comprobar: no abre descargas, no instala y no se pospone.
 
@@ -33,4 +34,5 @@ Versión anterior: 1.1.10.280 (996). Versión nueva: 1.1.10.281 (997).
 - Auditoría de fuentes reales del 15/10/2026: 142 categorías y 137 fichas con tasas completas frente a 14 fichas del podio. Akshan, Bardo, Corki, Nilah y Zoe no tienen fila de tasas en la tabla observada; se informa la cobertura faltante y no se inventan sus valores.
 - Pruebas JVM de parser, fusión, historial real, datos vencidos y comparación de tags: 12 casos correctos.
 - Auditoría portuguesa de código fuente: sin residuos en español.
+- Se corrigió una importación faltante de color que la primera compilación Android detectó antes de publicar.
 - Validación Android, R8, firma persistente y APK instalado en español y portugués mediante las comprobaciones obligatorias de Actions antes de fusionar.
