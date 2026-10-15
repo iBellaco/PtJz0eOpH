@@ -12,6 +12,7 @@ class PublishedMetaReportTest {
     }
 
     @Test fun `new publishers preserve named categories and zero published rates`() {
+        assertEquals("nunuwillump", RegionalTierParser.canonical("nunu-amp-willump"))
         val legends = """<div><span class="relative z-10">S</span><div class="tier-list-grid"><a href="/en/guia/Ahri?role=3">Ahri</a></div></div>"""
         assertEquals("S", RegionalTierParser.parse(legends, "wildlegends")["ahri"])
         val rifter = """<a href="/en/champion/ahri"><span aria-label="Tier A">A</span><dl><div><dt>Win</dt><dd>51.2%</dd></div><div><dt>Pick</dt><dd>4.1%</dd></div><div><dt>Ban</dt><dd>0.0%</dd></div></dl></a>"""

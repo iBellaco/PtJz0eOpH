@@ -19,7 +19,7 @@ object RegionalTierParser {
     fun canonical(value: String): String = value.lowercase(Locale.ROOT)
         .filter { it.isLetterOrDigit() }.let {
             when (it) {
-                "nunu", "nunuwillump", "nunuywillump", "nunuandwillump" -> "nunuwillump"
+                "nunu", "nunuwillump", "nunuywillump", "nunuandwillump", "nunuampwillump" -> "nunuwillump"
                 "monkeyking", "wukong" -> "wukong"
                 "mundo", "drmundo" -> "drmundo"
                 "asol", "aurelionsol" -> "aurelionsol"

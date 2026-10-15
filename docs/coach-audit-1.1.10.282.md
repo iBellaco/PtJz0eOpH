@@ -29,7 +29,7 @@ Fuentes nuevas verificadas:
 - https://wildlegends.net/en/tier-list
 - https://wildrifter.com/en?patch=7.3b
 
-Historial publicado: https://www.wildriftfire.com/stats. La cobertura combinada de tasas se verifica sin inventar los valores ausentes. La pantalla no promete cinco fuentes sanas cuando alguna está incompleta o desactualizada.
+Historial publicado: https://www.wildriftfire.com/stats. La cobertura combinada de tasas se verifica sin inventar los valores ausentes. Se normaliza el identificador publicado `nunu-amp-willump` para no perder las estadísticas e historial de Nunu y Willump. La pantalla no promete cinco fuentes sanas cuando alguna está incompleta o desactualizada.
 
 ## Archivos modificados
 
