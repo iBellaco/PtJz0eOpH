@@ -183,7 +183,8 @@ object WildRiftRepository {
     fun applyRegionalTierList(
         region: String,
         tiers: Map<String, String>,
-        stats: Map<String, ChampionMetaStats> = emptyMap()
+        stats: Map<String, ChampionMetaStats> = emptyMap(),
+        previousStats: Map<String, ChampionMetaStats> = emptyMap()
     ) {
         if (!region.equals(com.example.data.sync.MetaRegion.DEFAULT, ignoreCase = true)) return
         val normalized = com.example.data.sync.MetaRegion.normalize(region)
@@ -194,12 +195,23 @@ object WildRiftRepository {
             val meta = stats[com.example.data.sync.RegionalTierParser.canonical(champion.id)]
                 ?: stats[com.example.data.sync.RegionalTierParser.canonical(champion.name)]
 
+            // Rates are supplied by the current snapshot. Keep the movement
+            // indicator tied to the previous snapshot instead of the static
+            // values bundled in the catalog.
+            val previous = previousStats[com.example.data.sync.RegionalTierParser.canonical(champion.id)]
+                ?: previousStats[com.example.data.sync.RegionalTierParser.canonical(champion.name)]
+            fun change(current: Double?, old: Double?, fallback: Double): Double =
+                if (current != null && old != null && current.isFinite() && old.isFinite()) current - old else fallback
+
             champion.copy(
                 hasRegionalStats = meta?.isUsable() == true,
                 tier = category,
                 winrate = meta?.winRate ?: champion.winrate,
                 pickRate = meta?.pickRate ?: champion.pickRate,
-                banRate = meta?.banRate ?: champion.banRate
+                banRate = meta?.banRate ?: champion.banRate,
+                winrateDelta = change(meta?.winRate, previous?.winRate, champion.winrateDelta),
+                pickRateDelta = change(meta?.pickRate, previous?.pickRate, champion.pickRateDelta),
+                banRateDelta = change(meta?.banRate, previous?.banRate, champion.banRateDelta)
             )
         }
         regionalChampions[normalized] = updated

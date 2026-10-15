@@ -630,7 +630,10 @@ fun DraftingApp() {
         // Inicializar listado maestro de campeones desde assets JSON
         com.example.data.WildRiftRepository.initChampions(context)
         com.example.data.sync.GlobalMetaSyncService.loadRegion(context)
-        launch { com.example.data.sync.GlobalMetaSyncService.syncGlobalMeta(context) }
+        // Las tasas de win/pick/ban y las categorías cambian con cada parche.
+        // Forzar la consulta al abrir evita que una caché de menos de 15 minutos
+        // deje visible una Tier List anterior.
+        launch { com.example.data.sync.GlobalMetaSyncService.syncGlobalMeta(context, forceRefresh = true) }
 
         // La consulta del meta ya se lanzó arriba; no duplicar las tres peticiones al arrancar.
         com.example.data.GlobalAnnouncementManager.init(context)

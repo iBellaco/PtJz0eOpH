@@ -5,6 +5,7 @@ import com.example.data.WildRiftRepository
 import com.example.data.sync.GlobalMetaSyncService
 import com.example.data.sync.MetaRegion
 import com.example.data.sync.RegionalTierParser
+import com.example.data.sync.ChampionMetaStats
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -118,6 +119,35 @@ class MetaRegionRegressionTest {
         } finally {
             WildRiftRepository.initChampions(context, forceReload = true)
         }
+    }
+
+    @Test fun `new rate snapshot replaces old win pick and ban values`() {
+        val champion = WildRiftRepository.baseChampionsList.first()
+        val id = RegionalTierParser.canonical(champion.id)
+        val first = ChampionMetaStats(winRate = 51.2, pickRate = 3.4, banRate = 2.1)
+        val second = ChampionMetaStats(winRate = 54.7, pickRate = 7.9, banRate = 8.6)
+
+        WildRiftRepository.applyRegionalTierList("GLOBAL", mapOf(id to "A"), mapOf(id to first))
+        val firstVisible = WildRiftRepository.champions.first { it.id == champion.id }
+        assertTrue(firstVisible.hasRegionalStats)
+        assertEquals(51.2, firstVisible.winrate, 0.001)
+        assertEquals(3.4, firstVisible.pickRate, 0.001)
+        assertEquals(2.1, firstVisible.banRate, 0.001)
+
+        WildRiftRepository.applyRegionalTierList(
+            "GLOBAL",
+            mapOf(id to "S"),
+            mapOf(id to second),
+            previousStats = mapOf(id to first)
+        )
+        val secondVisible = WildRiftRepository.champions.first { it.id == champion.id }
+        assertEquals("S", secondVisible.tier)
+        assertEquals(54.7, secondVisible.winrate, 0.001)
+        assertEquals(7.9, secondVisible.pickRate, 0.001)
+        assertEquals(8.6, secondVisible.banRate, 0.001)
+        assertEquals(3.5, secondVisible.winrateDelta, 0.001)
+        assertEquals(4.5, secondVisible.pickRateDelta, 0.001)
+        assertEquals(6.5, secondVisible.banRateDelta, 0.001)
     }
     @Test fun `unsupported server regions cannot produce a fabricated regional top list`() {
         assertEquals("GLOBAL", MetaRegion.normalize("NA"))

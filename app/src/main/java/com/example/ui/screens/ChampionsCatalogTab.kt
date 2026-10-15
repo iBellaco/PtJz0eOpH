@@ -99,6 +99,7 @@ fun ChampionsCatalogTab(
     val haptic = LocalHapticFeedback.current
     val syncState by GlobalMetaSyncService.syncState.collectAsStateWithLifecycle()
     val currentRegion by GlobalMetaSyncService.currentRegion.collectAsStateWithLifecycle()
+    val metaRevision = WildRiftRepository.regionRevision
     val favorites by FavoriteChampionsManager.favoritesFlow.collectAsStateWithLifecycle()
 
     var searchQuery by remember { mutableStateOf("") }
@@ -109,7 +110,7 @@ fun ChampionsCatalogTab(
     var isGridView by remember { mutableStateOf(true) }
     var showFilterChips by remember { mutableStateOf(true) }
 
-    val filteredChampions = remember(searchQuery, selectedRoleFilter, selectedTierFilter, showOnlyFavorites, favorites, syncState, currentRegion, WildRiftRepository.activeRegionName, WildRiftRepository.champions.toList()) {
+    val filteredChampions = remember(searchQuery, selectedRoleFilter, selectedTierFilter, showOnlyFavorites, favorites, syncState, currentRegion, metaRevision, WildRiftRepository.activeRegionName, WildRiftRepository.champions.toList()) {
         val trimmedQuery = searchQuery.trim()
         val list = WildRiftRepository.champions.filter { champ ->
             val matchesQuery = trimmedQuery.isBlank() ||

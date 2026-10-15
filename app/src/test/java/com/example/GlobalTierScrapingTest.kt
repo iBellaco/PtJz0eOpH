@@ -2,6 +2,7 @@ package com.example
 
 import com.example.data.sync.GlobalTierConsensus
 import com.example.data.sync.RegionalTierParser
+import com.example.data.sync.ChampionMetaStats
 import org.junit.Assert.*
 import org.junit.Test
 
@@ -42,5 +43,13 @@ class GlobalTierScrapingTest {
     @Test fun `a single publisher tier is preserved and invalid votes do not become A`() {
         assertEquals(mapOf("ahri" to "S"), GlobalTierConsensus.fuse(listOf(mapOf("ahri" to "S", "zed" to "invalid"))))
         assertEquals(mapOf("ahri" to "A+"), GlobalTierConsensus.fuse(listOf(mapOf("ahri" to "S"),mapOf("ahri" to "B"))))
+    }
+
+    @Test fun `fresh published rates override the cached snapshot`() {
+        val old = ChampionMetaStats(winRate = 50.0, pickRate = 2.0, banRate = 1.0)
+        val fresh = ChampionMetaStats(winRate = 54.0, pickRate = 8.0, banRate = 5.0)
+        val merged = GlobalTierConsensus.mergeStats(mapOf("Ahri" to old), mapOf("ahri" to fresh))
+        assertEquals(1, merged.size)
+        assertEquals(fresh, merged["ahri"])
     }
 }

@@ -138,21 +138,32 @@ object BestBuildWrScraper {
                 _sourceStatuses.value = results.associate { "global_${it.source.id}" to it.status }
                 val validSources = results.filter { it.status.isHealthy }
                 val fusedTiers = GlobalTierConsensus.fuse(validSources.map { it.tiers })
-                if (fusedTiers.isNotEmpty()) {
-                    val saved = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-                        .getString("snapshot_$requested", null)
-                    val previousTiers = runCatching {
-                        val json = JSONObject(saved.orEmpty())
-                        json.keys().asSequence().associateWith { json.getString(it) }
-                    }.getOrDefault(emptyMap())
+                val saved = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+                    .getString("snapshot_$requested", null)
+                val previousTiers = runCatching {
+                    val json = JSONObject(saved.orEmpty())
+                    json.keys().asSequence().associateWith { json.getString(it) }
+                }.getOrDefault(emptyMap())
+                val previousStats = decodeStats(
+                    context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+                        .getString(STATS_SNAPSHOT_PREFIX + requested, null)
+                )
+                val freshStats = GlobalTierConsensus.fuseStats(validSources.map { it.stats })
+
+                // Categories and rates are independent publications. A source
+                // can expose current win/pick/ban values while its tier markup
+                // is temporarily unavailable (and vice versa). Do not discard
+                // a valid rate update just because the category parser returned
+                // an empty map.
+                if (fusedTiers.isNotEmpty() || freshStats.isNotEmpty()) {
                     val merged = GlobalTierConsensus.mergeSnapshot(previousTiers, fusedTiers)
-                    val previousStats = decodeStats(
-                        context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-                            .getString(STATS_SNAPSHOT_PREFIX + requested, null)
+                    val mergedStats = GlobalTierConsensus.mergeStats(previousStats, freshStats)
+                    WildRiftRepository.applyRegionalTierList(
+                        "GLOBAL",
+                        merged,
+                        mergedStats,
+                        previousStats = previousStats
                     )
-                    val freshStats = GlobalTierConsensus.fuseStats(validSources.map { it.stats })
-                    val mergedStats = previousStats + freshStats
-                    WildRiftRepository.applyRegionalTierList("GLOBAL", merged, mergedStats)
                     cache = JSONObject(merged)
                     statsCache = encodeStats(mergedStats)
                     success = true
