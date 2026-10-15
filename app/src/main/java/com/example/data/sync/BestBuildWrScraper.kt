@@ -200,7 +200,7 @@ object BestBuildWrScraper {
                     _freshness.value = oldHealth.copy(
                         tiersCheckedAt = if (fusedTiers.isNotEmpty()) started else oldHealth.tiersCheckedAt,
                         ratesCheckedAt = if (freshStats.isNotEmpty()) started else oldHealth.ratesCheckedAt,
-                        lastChangedAt = if (changedIds > 0) started else oldHealth.lastChangedAt,
+                        lastChangedAt = if (changedIds > 0 || oldHealth.lastChangedAt == 0L) started else oldHealth.lastChangedAt,
                         unchangedChecks = if (changedIds > 0) 0 else oldHealth.unchangedChecks + 1,
                         tierCount = fusedTiers.size, statsCount = freshStats.size, changedChampions = changedIds)
                     prefs.edit().putString("rate_history", encodeHistory(history).toString())
