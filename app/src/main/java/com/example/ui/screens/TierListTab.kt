@@ -131,24 +131,22 @@ fun TierListTab(
     val rawChampionsToDisplay = remember(selectedLane, showFavoritesOnly, favorites, syncState, currentRegion, metaRevision, WildRiftRepository.champions.toList()) {
         val champs = if (selectedLane == null) WildRiftRepository.champions.toList()
         else WildRiftRepository.getChampionsByRole(selectedLane!!)
-        if (showFavoritesOnly) champs.filter { it.id in favorites } else champs
+        val visibleTiers = champs.filter { it.tier in setOf("S+", "S", "A+", "A") }
+        if (showFavoritesOnly) visibleTiers.filter { it.id in favorites } else visibleTiers
     }
 
     val championsToDisplay = remember(rawChampionsToDisplay, selectedSort, currentRegion) {
         when (selectedSort) {
             TierSortOption.BY_TIER -> rawChampionsToDisplay
-            TierSortOption.WIN_RATE -> rawChampionsToDisplay.sortedByDescending { it.winrate }
-            TierSortOption.PICK_RATE -> rawChampionsToDisplay.sortedByDescending { it.pickRate }
-            TierSortOption.BAN_RATE -> rawChampionsToDisplay.sortedByDescending { it.banRate }
+            TierSortOption.WIN_RATE -> rawChampionsToDisplay.sortedByDescending { if (it.hasRegionalStats && it.winrate.isFinite()) it.winrate else Double.NEGATIVE_INFINITY }
+            TierSortOption.PICK_RATE -> rawChampionsToDisplay.sortedByDescending { if (it.hasRegionalStats && it.pickRate.isFinite()) it.pickRate else Double.NEGATIVE_INFINITY }
+            TierSortOption.BAN_RATE -> rawChampionsToDisplay.sortedByDescending { if (it.hasRegionalStats && it.banRate.isFinite()) it.banRate else Double.NEGATIVE_INFINITY }
         }
     }
 
     val tierSPlus = championsToDisplay.filter { it.tier == "S+" }
     val tierS = championsToDisplay.filter { (it.tier == "S") && it !in tierSPlus }
     val tierA = championsToDisplay.filter { (it.tier == "A+" || it.tier == "A") && it !in tierSPlus && it !in tierS }
-    val tierB = championsToDisplay.filter { (it.tier == "B" || it.tier == "B+") && it !in tierSPlus && it !in tierS && it !in tierA }
-    val tierC = championsToDisplay.filter { (it.tier == "C" || it.tier == "C+") && it !in tierSPlus && it !in tierS && it !in tierA && it !in tierB }
-    val tierD = championsToDisplay.filter { it !in tierSPlus && it !in tierS && it !in tierA && it !in tierB && it !in tierC }
 
     LazyColumn(
         modifier = Modifier
@@ -158,6 +156,7 @@ fun TierListTab(
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
         item {
+            com.example.ui.components.MetaSyncSummary()
             Spacer(modifier = Modifier.height(4.dp))
 
         }
@@ -424,7 +423,7 @@ fun TierListTab(
                                         .background(Color(0xFF00FF7F))
                                 )
                                 Text(
-                                    text = tr("En vivo"),
+                                    text = tr("Consulta automática"),
                                     color = Color(0xFF00FF7F),
                                     fontSize = if (isOverlay) 8.sp else 9.5.sp,
                                     fontWeight = FontWeight.Bold
@@ -495,48 +494,6 @@ fun TierListTab(
                         tierName = "TIER A (${tr("Opciones Sólidas y Balanceadas")})",
                         tierColor = TierAColor,
                         champions = tierA,
-                        onSelectChampion = onSelectChampion
-                    )
-                }
-            }
-
-            // Tier B / T4
-            if (tierB.isNotEmpty()) {
-                item {
-                    TierSectionCard(
-                        isOverlay = isOverlay,
-                        showTrend = isSignedIn,
-                        tierName = "TIER B (${tr("Opciones Viables")})",
-                        tierColor = com.example.ui.theme.TierBColor,
-                        champions = tierB,
-                        onSelectChampion = onSelectChampion
-                    )
-                }
-            }
-
-            // Tier C / T5
-            if (tierC.isNotEmpty()) {
-                item {
-                    TierSectionCard(
-                        isOverlay = isOverlay,
-                        showTrend = isSignedIn,
-                        tierName = "TIER C (${tr("Situacionales")})",
-                        tierColor = com.example.ui.theme.TierCColor,
-                        champions = tierC,
-                        onSelectChampion = onSelectChampion
-                    )
-                }
-            }
-
-            // Tier D
-            if (tierD.isNotEmpty()) {
-                item {
-                    TierSectionCard(
-                        isOverlay = isOverlay,
-                        showTrend = isSignedIn,
-                        tierName = "TIER D / OTROS",
-                        tierColor = com.example.ui.theme.TierDColor,
-                        champions = tierD,
                         onSelectChampion = onSelectChampion
                     )
                 }
@@ -708,10 +665,12 @@ fun TierListTab(
                                         fontSize = 9.sp,
                                         fontWeight = FontWeight.Medium
                                     )
-                                    val safeWr = if (champ.winrate > 0.0) champ.winrate else (when(champ.tier) { "S+" -> 53.8; "S" -> 52.2; "A+", "A" -> 50.8; "B+", "B" -> 49.4; "C+", "C" -> 48.1; else -> 46.8 })
-                                    val safeDelta = if (champ.winrateDelta != 0.0) champ.winrateDelta else (when(champ.tier) { "S+" -> 0.48; "S" -> 0.32; "A+", "A" -> 0.12; "B+", "B" -> -0.18; "C+", "C" -> -0.35; else -> -0.52 })
+                                    val safeWr = champ.winrate
+                                    val safeDelta = champ.winrateDelta
                                     SparklineTrendGraph(
-                                        winrate = safeWr,
+                                        winrate = if (champ.hasRegionalStats) safeWr else Double.NaN,
+                                        observed24h = champ.winrate24h,
+                                        observed12h = champ.winrate12h,
                                         delta = safeDelta,
                                         modifier = Modifier.weight(1f).padding(start = 8.dp),
                                         showTimeLabels = true,
@@ -879,10 +838,12 @@ fun TierSectionCard(
                                         fontSize = 9.sp,
                                         fontWeight = FontWeight.Medium
                                     )
-                                    val safeWr = if (champ.winrate > 0.0) champ.winrate else (when(champ.tier) { "S+" -> 53.8; "S" -> 52.2; "A+", "A" -> 50.8; "B+", "B" -> 49.4; "C+", "C" -> 48.1; else -> 46.8 })
-                                    val safeDelta = if (champ.winrateDelta != 0.0) champ.winrateDelta else (when(champ.tier) { "S+" -> 0.48; "S" -> 0.32; "A+", "A" -> 0.12; "B+", "B" -> -0.18; "C+", "C" -> -0.35; else -> -0.52 })
+                                    val safeWr = champ.winrate
+                                    val safeDelta = champ.winrateDelta
                                     SparklineTrendGraph(
-                                        winrate = safeWr,
+                                        winrate = if (champ.hasRegionalStats) safeWr else Double.NaN,
+                                        observed24h = champ.winrate24h,
+                                        observed12h = champ.winrate12h,
                                         delta = safeDelta,
                                         modifier = Modifier.weight(1f).padding(start = 8.dp),
                                         showTimeLabels = true,

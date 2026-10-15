@@ -184,7 +184,9 @@ object WildRiftRepository {
         region: String,
         tiers: Map<String, String>,
         stats: Map<String, ChampionMetaStats> = emptyMap(),
-        previousStats: Map<String, ChampionMetaStats> = emptyMap()
+        previousStats: Map<String, ChampionMetaStats> = emptyMap(),
+        checkedAt: Long = 0L,
+        history: Map<String, List<com.example.data.sync.ObservedRate>> = emptyMap()
     ) {
         if (!region.equals(com.example.data.sync.MetaRegion.DEFAULT, ignoreCase = true)) return
         val normalized = com.example.data.sync.MetaRegion.normalize(region)
@@ -200,25 +202,30 @@ object WildRiftRepository {
             // values bundled in the catalog.
             val previous = previousStats[com.example.data.sync.RegionalTierParser.canonical(champion.id)]
                 ?: previousStats[com.example.data.sync.RegionalTierParser.canonical(champion.name)]
-            fun change(current: Double?, old: Double?, fallback: Double): Double =
-                if (current != null && old != null && current.isFinite() && old.isFinite()) current - old else fallback
+            fun change(current: Double?, old: Double?): Double =
+                if (current != null && old != null && current.isFinite() && old.isFinite()) current - old else 0.0
 
             champion.copy(
                 hasRegionalStats = meta?.isUsable() == true,
+                statsCheckedAt = if (meta?.isUsable() == true) history[com.example.data.sync.RegionalTierParser.canonical(champion.id)]?.lastOrNull()?.at ?: checkedAt else 0L,
+                winrate24h = com.example.data.sync.MetaRateHistory.atAge(history[com.example.data.sync.RegionalTierParser.canonical(champion.id)].orEmpty(), checkedAt, 24),
+                winrate12h = com.example.data.sync.MetaRateHistory.atAge(history[com.example.data.sync.RegionalTierParser.canonical(champion.id)].orEmpty(), checkedAt, 12),
                 tier = category,
-                winrate = meta?.winRate ?: champion.winrate,
-                pickRate = meta?.pickRate ?: champion.pickRate,
-                banRate = meta?.banRate ?: champion.banRate,
-                winrateDelta = change(meta?.winRate, previous?.winRate, champion.winrateDelta),
-                pickRateDelta = change(meta?.pickRate, previous?.pickRate, champion.pickRateDelta),
-                banRateDelta = change(meta?.banRate, previous?.banRate, champion.banRateDelta)
+                winrate = if (meta != null) meta.winRate ?: Double.NaN else champion.winrate,
+                pickRate = if (meta != null) meta.pickRate ?: Double.NaN else champion.pickRate,
+                banRate = if (meta != null) meta.banRate ?: Double.NaN else champion.banRate,
+                winrateDelta = change(meta?.winRate, previous?.winRate),
+                pickRateDelta = change(meta?.pickRate, previous?.pickRate),
+                banRateDelta = change(meta?.banRate, previous?.banRate)
             )
         }
         regionalChampions[normalized] = updated
-        regionRevision++
-        if (activeRegionName == normalized) {
-            champions.clear()
-            champions.addAll(updated)
+        androidx.compose.runtime.snapshots.Snapshot.withMutableSnapshot {
+            regionRevision++
+            if (activeRegionName == normalized) {
+                champions.clear()
+                champions.addAll(updated)
+            }
         }
     }
 
@@ -246,7 +253,8 @@ object WildRiftRepository {
                     } else updated.avatarUrl
                     updated.copy(
                         avatarUrl = resolvedAvatar,
-                        hasRegionalStats = false
+                        hasRegionalStats = false,
+                        winrateDelta = 0.0, pickRateDelta = 0.0, banRateDelta = 0.0
                     )
                 }
             }
@@ -258,7 +266,8 @@ object WildRiftRepository {
                     } else updated.avatarUrl
                     updated.copy(
                         avatarUrl = resolvedAvatar,
-                        hasRegionalStats = false
+                        hasRegionalStats = false,
+                        winrateDelta = 0.0, pickRateDelta = 0.0, banRateDelta = 0.0
                     )
                 }
             }
@@ -362,7 +371,7 @@ object WildRiftRepository {
         }.joinToString(" ").ifBlank { t(lang,"Nenhuma vantagem direta confirmada.","No hay una ventaja directa confirmada.") }
         val synergyText = if (synergies.isNotEmpty()) t(lang,"Combina com: ${names(synergies)}.","Combina con: ${names(synergies)}.")
             else t(lang,"Ajuste sua função aos aliados selecionados.","Ajusta tu función a los aliados seleccionados.")
-        return DraftRecommendation(champion=champ,estimatedWinrate=champ.winrate.coerceIn(0.0,100.0),
+        return DraftRecommendation(champion=champ,estimatedWinrate=(champ.winrate.takeIf { it.isFinite() } ?: 50.0).coerceIn(0.0,100.0),
             advantageBadge=badge,tacticalReason=reasons.joinToString(" "),runes=champ.recommendedRunes,
             synergyDetails=synergyText,counterDetails=counterText,
             draftFitScore=DraftScoringPolicy.score(champ,myRole,activeAllies,activeEnemies,lane,false,champions))
@@ -548,7 +557,7 @@ object WildRiftRepository {
 
                 DraftRecommendation(
                     champion = champ,
-                    estimatedWinrate = champ.winrate.coerceIn(0.0,100.0),
+                    estimatedWinrate = (champ.winrate.takeIf { it.isFinite() } ?: 50.0).coerceIn(0.0,100.0),
                     draftFitScore = DraftScoringPolicy.score(champ,effectiveRole,activeAllies,activeEnemies,lane,isFirstPickEffective,champions),
                     advantageBadge = badge,
                     tacticalReason = reason,
@@ -628,7 +637,7 @@ object WildRiftRepository {
 
                 DraftRecommendation(
                     champion = champ,
-                    estimatedWinrate = champ.winrate.coerceIn(0.0,100.0),
+                    estimatedWinrate = (champ.winrate.takeIf { it.isFinite() } ?: 50.0).coerceIn(0.0,100.0),
                     draftFitScore = DraftScoringPolicy.score(champ,effectiveRole,activeAllies,activeEnemies,lane,isFirstPickEffective,champions),
                     advantageBadge = badge,
                     tacticalReason = reasonParts.joinToString(" "),

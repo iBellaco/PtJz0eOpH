@@ -339,50 +339,12 @@ object ChampionRoleAdapter {
         val resolvedCountered = matchup.counters
         val resolvedSynergies = matchup.synergies
 
-        val baseChamp = WildRiftRepository.getBaseChampion(champ.id)
-            ?: WildRiftRepository.getBaseChampion(champ.name)
-            ?: champ
-
-        val effectiveWinrate = when {
-            champ.winrate > 0.0 -> champ.winrate
-            baseChamp.winrate > 0.0 -> baseChamp.winrate
-            else -> when (champ.tier) {
-                "S+" -> 53.85
-                "S" -> 52.30
-                "A+", "A" -> 50.80
-                "B+", "B" -> 49.40
-                "C+", "C" -> 48.10
-                else -> 47.20
-            }
-        }
-
-        val effectivePickRate = when {
-            champ.pickRate > 0.0 -> champ.pickRate
-            baseChamp.pickRate > 0.0 -> baseChamp.pickRate
-            else -> when (champ.tier) {
-                "S+" -> 14.50
-                "S" -> 11.20
-                "A+", "A" -> 8.40
-                "B+", "B" -> 5.60
-                else -> 3.20
-            }
-        }
-
-        val effectiveBanRate = when {
-            champ.banRate > 0.0 -> champ.banRate
-            baseChamp.banRate > 0.0 -> baseChamp.banRate
-            else -> when (champ.tier) {
-                "S+" -> 22.00
-                "S" -> 12.50
-                "A+", "A" -> 5.00
-                "B+", "B" -> 2.10
-                else -> 0.80
-            }
-        }
-
-        val effectiveWinDelta = if (champ.winrateDelta != 0.0) champ.winrateDelta else if (baseChamp.winrateDelta != 0.0) baseChamp.winrateDelta else 0.28
-        val effectivePickDelta = if (champ.pickRateDelta != 0.0) champ.pickRateDelta else if (baseChamp.pickRateDelta != 0.0) baseChamp.pickRateDelta else 0.15
-        val effectiveBanDelta = if (champ.banRateDelta != 0.0) champ.banRateDelta else if (baseChamp.banRateDelta != 0.0) baseChamp.banRateDelta else 0.45
+        val effectiveWinrate = champ.winrate
+        val effectivePickRate = champ.pickRate
+        val effectiveBanRate = champ.banRate
+        val effectiveWinDelta = champ.winrateDelta
+        val effectivePickDelta = champ.pickRateDelta
+        val effectiveBanDelta = champ.banRateDelta
 
         return ChampionRoleProfile(
             role = champ.primaryRole,
@@ -481,47 +443,15 @@ object ChampionRoleAdapter {
 
         val syncedSwaps = generateSituationalSwaps(situationalItems, champ.damageType, isTank, emptyList(), role = role, fullBuild = build8)
 
-        val baseChamp = WildRiftRepository.getBaseChampion(champ.id)
-            ?: WildRiftRepository.getBaseChampion(champ.name)
-            ?: champ
-
-        val baseWinrate = when {
-            champ.winrate > 0.0 -> champ.winrate
-            baseChamp.winrate > 0.0 -> baseChamp.winrate
-            else -> when (champ.tier) {
-                "S+" -> 53.85
-                "S" -> 52.30
-                "A+", "A" -> 50.80
-                "B+", "B" -> 49.40
-                "C+", "C" -> 48.10
-                else -> 47.20
-            }
-        }
-        val basePickRate = when {
-            champ.pickRate > 0.0 -> champ.pickRate
-            baseChamp.pickRate > 0.0 -> baseChamp.pickRate
-            else -> 8.50
-        }
-        val baseBanRate = when {
-            champ.banRate > 0.0 -> champ.banRate
-            baseChamp.banRate > 0.0 -> baseChamp.banRate
-            else -> 12.00
-        }
-
-        val flexWinrate = (baseWinrate - 1.2).coerceIn(40.0, 65.0)
-        val flexPickRate = (basePickRate * 0.45).coerceIn(0.5, 30.0)
-        val flexBanRate = baseBanRate
-
-        val flexWinDelta = if (champ.winrateDelta != 0.0) champ.winrateDelta else -0.15
-        val flexPickDelta = if (champ.pickRateDelta != 0.0) champ.pickRateDelta else 0.05
-        val flexBanDelta = if (champ.banRateDelta != 0.0) champ.banRateDelta else 0.20
-
-        val flexTier = when {
-            flexWinrate >= 52.0 -> "S"
-            flexWinrate >= 50.0 -> "A"
-            flexWinrate >= 48.5 -> "B"
-            else -> "C"
-        }
+        // No publisher supplied separate rates for this role. Keep the
+        // observed champion metrics rather than inventing a flex penalty.
+        val flexWinrate = champ.winrate
+        val flexPickRate = champ.pickRate
+        val flexBanRate = champ.banRate
+        val flexWinDelta = champ.winrateDelta
+        val flexPickDelta = champ.pickRateDelta
+        val flexBanDelta = champ.banRateDelta
+        val flexTier = champ.tier
 
         val buildOptions = generate4BuildOptions(
             champ = champ,

@@ -11,7 +11,7 @@ data class ChampionMetaStats(
     val pickRate: Double? = null,
     val banRate: Double? = null
 ) {
-    fun isUsable(): Boolean = listOf(winRate, pickRate, banRate).any { it != null && it.isFinite() && it >= 0.0 }
+    fun isUsable(): Boolean = listOf(winRate, pickRate, banRate).any { it != null && it.isFinite() && it in 0.0..100.0 }
 }
 
 /** Each publisher has its own schema. Never carry a tier into navigation/footer links. */
@@ -110,7 +110,7 @@ object RegionalTierParser {
                 ?.replace(',', '.')
                 ?.replace(Regex("[^0-9.+-]"), "")
                 ?.toDoubleOrNull()
-                ?.takeIf { it.isFinite() && it >= 0.0 }
+                ?.takeIf { it.isFinite() && it in 0.0..100.0 }
 
             val win = number(".tl-cell__wr b")
             val rates = cell.selectFirst(".tl-cell__rates")?.text().orEmpty()
@@ -127,6 +127,27 @@ object RegionalTierParser {
             if (previous == null || (stats.pickRate ?: 0.0) > (previous.pickRate ?: 0.0)) {
                 output[id] = stats
             }
+        }
+        // Complete tiles are also usable when the rankings request fails.
+        doc.select("a.tl-champ-tile[href]").forEach { tile ->
+            val id = canonical(tile.attr("href").trimEnd('/').substringAfterLast('/'))
+            fun rate(selector: String): Double? = tile.selectFirst(selector)?.text()
+                ?.let { Regex("[0-9]+(?:[.,][0-9]+)?").find(it)?.value }
+                ?.replace(',', '.')?.toDoubleOrNull()?.takeIf { it in 0.0..100.0 }
+            val stats = ChampionMetaStats(rate(".tl-champ-wr"), rate(".tl-champ-pr"), rate(".tl-champ-br"))
+            if (id.length in 2..30 && stats.isUsable()) output[id] = stats
+        }
+        // The complete rankings table publishes rates for the entire roster;
+        // tierlist's podium only contains a small subset of champions.
+        doc.select("tr.rk-row").forEach { row ->
+            val link = row.selectFirst("a.rk-champ[href]") ?: return@forEach
+            val id = canonical(link.attr("href").trimEnd('/').substringAfterLast('/'))
+            fun rate(selector: String): Double? = row.selectFirst(selector)?.text()
+                ?.replace(',', '.')?.replace("%", "")?.trim()?.toDoubleOrNull()
+                ?.takeIf { it.isFinite() && it in 0.0..100.0 }
+            val stats = ChampionMetaStats(rate(".rk-val--win, .rk-stat--win"),
+                rate(".rk-stat--pick"), rate(".rk-stat--ban"))
+            if (id.length in 2..30 && stats.isUsable()) output[id] = stats
         }
         return output
     }

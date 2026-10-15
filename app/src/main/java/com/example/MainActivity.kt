@@ -67,6 +67,7 @@ import com.example.ui.screens.MetaAndDraftScreen
 import com.example.ui.screens.TutorialScreen
 import com.example.ui.theme.HextechDarkBg
 import com.example.ui.theme.MyApplicationTheme
+import com.example.ui.theme.TextPrimary
 import com.example.ui.theme.HextechCyan
 import com.example.ui.theme.HextechGold
 import com.example.ui.theme.AppThemeManager
@@ -397,6 +398,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onStart() {
         super.onStart()
+        com.example.data.sync.GlobalMetaSyncService.startLive(this, "activity")
         val user = com.example.util.AuthManager.getAuth()?.currentUser
         if (user != null && !com.example.util.AuthManager.isGuestOrUnauthenticated(user)) {
             com.example.util.SubscriptionManager.startHeartbeat(user.uid)
@@ -405,6 +407,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onStop() {
         super.onStop()
+        com.example.data.sync.GlobalMetaSyncService.stopLive("activity")
         com.example.util.SubscriptionManager.stopHeartbeat()
     }
 }
@@ -622,6 +625,7 @@ fun DraftingApp() {
     var secondRole by remember { mutableStateOf(com.example.util.UserPreferences.getSecondRole(context)) }
     var autofillRole by remember { mutableStateOf(com.example.util.UserPreferences.getAutofillRole(context)) }
     val activeUpdateInfo by AppUpdateManager.updateInfo.collectAsStateWithLifecycle()
+    val versionVerified by AppUpdateManager.verificationFinished.collectAsStateWithLifecycle()
     val isBanned by com.example.util.SubscriptionManager.isBanned.collectAsStateWithLifecycle()
     val currentGlobalAnnouncement by com.example.data.GlobalAnnouncementManager.currentAnnouncement.collectAsStateWithLifecycle()
     val isAnnouncementVisible by com.example.data.GlobalAnnouncementManager.isAnnouncementVisible.collectAsStateWithLifecycle()
@@ -630,15 +634,11 @@ fun DraftingApp() {
         // Inicializar listado maestro de campeones desde assets JSON
         com.example.data.WildRiftRepository.initChampions(context)
         com.example.data.sync.GlobalMetaSyncService.loadRegion(context)
-        // Las tasas de win/pick/ban y las categorías cambian con cada parche.
-        // Forzar la consulta al abrir evita que una caché de menos de 15 minutos
-        // deje visible una Tier List anterior.
-        launch { com.example.data.sync.GlobalMetaSyncService.syncGlobalMeta(context, forceRefresh = true) }
+        com.example.util.AppUpdateManager.restore(context)
 
-        // La consulta del meta ya se lanzó arriba; no duplicar las tres peticiones al arrancar.
+        // onStart mantiene el único ciclo de consulta compartido con el hub.
         com.example.data.GlobalAnnouncementManager.init(context)
         com.example.data.GlobalAnnouncementManager.refreshFromCloud(context)
-        // AppUpdateManager.checkForUpdates disabled
     }
 
     val selectedLanguage by com.example.util.AppLanguage.current.collectAsStateWithLifecycle()
@@ -660,14 +660,19 @@ fun DraftingApp() {
             return@CompositionLocalProvider
         }
 
-        // Modal de Alerta de Actualización Disponible con opción de descarga directa
-        activeUpdateInfo?.let { update ->
-            if (update.isUpdateAvailable) {
-                AppUpdateDialog(
-                    updateInfo = update,
-                    onDismiss = { AppUpdateManager.dismissAlert() }
-                )
+        activeUpdateInfo?.takeIf { it.isUpdateAvailable && it.isMandatory }?.let { update ->
+            AppUpdateDialog(updateInfo = update, onDismiss = {})
+            return@CompositionLocalProvider
+        }
+
+        if (!versionVerified) {
+            Box(Modifier.fillMaxSize().background(HextechDarkBg), contentAlignment = Alignment.Center) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    androidx.compose.material3.CircularProgressIndicator(color = HextechCyan)
+                    Text(tr("Comprobando versión..."), color = TextPrimary)
+                }
             }
+            return@CompositionLocalProvider
         }
 
     BackHandler(enabled = !hasAcceptedLegal) {
@@ -733,8 +738,7 @@ fun DraftingApp() {
                         } else {
                             currentScreen = if (!hasSeenOnboarding) AppScreen.ONBOARDING else AppScreen.MAIN
                         }
-                        // AppUpdateManager.checkForUpdates disabled
-                    }
+                                    }
                 )
             }
             AppScreen.MAIN -> {

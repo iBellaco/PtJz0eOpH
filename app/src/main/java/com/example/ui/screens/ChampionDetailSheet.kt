@@ -245,7 +245,7 @@ fun ChampionDetailSheet(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    ChampionAvatar(champion = champion, size = avatarSize)
+                    ChampionAvatar(champion = liveChampion, size = avatarSize)
                     Spacer(modifier = Modifier.width(if (isCompact) 8.dp else 14.dp))
                     Column {
                         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -451,7 +451,7 @@ fun ChampionDetailSheet(
                             Icon(Icons.Filled.TrendingUp, contentDescription = null, tint = HextechGold, modifier = Modifier.size(16.dp))
                             Spacer(modifier = Modifier.width(6.dp))
                             Text(
-                                text = tr("Estadísticas del Meta Oficial"),
+                                text = tr("Estadísticas publicadas del campeón"),
                                 color = HextechGold,
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.Bold
@@ -463,7 +463,7 @@ fun ChampionDetailSheet(
                             horizontalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
                             Text(
-                                text = tr("Tendencia en Vivo"),
+                                text = tr("Consulta automática"),
                                 color = HextechCyan,
                                 fontSize = 10.sp,
                                 fontWeight = FontWeight.SemiBold
@@ -471,6 +471,7 @@ fun ChampionDetailSheet(
                         }
                     }
 
+                    Text(tr("Última consulta válida") + ": " + com.example.ui.components.metaTime(liveChampion.statsCheckedAt), color = TextMuted, fontSize = 10.sp)
                     Spacer(modifier = Modifier.height(8.dp))
 
                     Row(
@@ -480,7 +481,7 @@ fun ChampionDetailSheet(
                         // Winrate + Delta
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Text(tr("Tasa de Victoria"), color = TextMuted, fontSize = 11.sp)
-                            Text(com.example.util.tr("${String.format(java.util.Locale.US, "%.2f", roleProfile.winrate)}%"), color = HextechGold, fontSize = 17.sp, fontWeight = FontWeight.Bold)
+                            Text(com.example.util.regionalPercent(liveChampion, roleProfile.winrate), color = HextechGold, fontSize = 17.sp, fontWeight = FontWeight.Bold)
                             val winDelta = roleProfile.winrateDelta
                             val formattedWinDelta = String.format(java.util.Locale.US, "%.2f", winDelta)
                             val winDeltaText = if (winDelta >= 0) "+${formattedWinDelta}%" else "${formattedWinDelta}%"
@@ -496,7 +497,7 @@ fun ChampionDetailSheet(
                         // Pick Rate + Delta
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Text(tr("Tasa de Selección"), color = TextMuted, fontSize = 11.sp)
-                            Text(com.example.util.tr("${String.format(java.util.Locale.US, "%.2f", roleProfile.pickRate)}%"), color = HextechCyan, fontSize = 17.sp, fontWeight = FontWeight.Bold)
+                            Text(com.example.util.regionalPercent(liveChampion, roleProfile.pickRate), color = HextechCyan, fontSize = 17.sp, fontWeight = FontWeight.Bold)
                             val pickDelta = roleProfile.pickRateDelta
                             val formattedPickDelta = String.format(java.util.Locale.US, "%.2f", pickDelta)
                             val pickDeltaText = if (pickDelta >= 0) "+${formattedPickDelta}%" else "${formattedPickDelta}%"
@@ -512,7 +513,7 @@ fun ChampionDetailSheet(
                         // Ban Rate + Delta
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Text(tr("Tasa de Bloqueo"), color = TextMuted, fontSize = 11.sp)
-                            Text(com.example.util.tr("${String.format(java.util.Locale.US, "%.2f", roleProfile.banRate)}%"), color = DangerRed, fontSize = 17.sp, fontWeight = FontWeight.Bold)
+                            Text(com.example.util.regionalPercent(liveChampion, roleProfile.banRate), color = DangerRed, fontSize = 17.sp, fontWeight = FontWeight.Bold)
                             val banDelta = roleProfile.banRateDelta
                             val formattedBanDelta = String.format(java.util.Locale.US, "%.2f", banDelta)
                             val banDeltaText = if (banDelta >= 0) "+${formattedBanDelta}%" else "${formattedBanDelta}%"
@@ -531,8 +532,10 @@ fun ChampionDetailSheet(
                     // Tarjeta analítica de tendencia: hace 24 horas vs. hace 12 horas vs. actual
                     if (isSignedIn) {
                         DetailedTrendGraphCard(
-                            winrate = roleProfile.winrate,
-                            delta = roleProfile.winrateDelta
+                            winrate = if (liveChampion.hasRegionalStats) roleProfile.winrate else Double.NaN,
+                            delta = roleProfile.winrateDelta,
+                            observed24h = liveChampion.winrate24h,
+                            observed12h = liveChampion.winrate12h
                         )
                     }
                 }
