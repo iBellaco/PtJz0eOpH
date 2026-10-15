@@ -127,6 +127,7 @@ fun AdminDashboardDialog(
         return
     }
 
+    var showUsers by remember { mutableStateOf(false) }
     var showReportsPanel by remember { mutableStateOf(false) }
     var showSupportReportsPanel by remember { mutableStateOf(false) }
     var showBroadcastDialog by remember { mutableStateOf(false) }
@@ -145,6 +146,22 @@ fun AdminDashboardDialog(
 
     val userRoleForRequests = com.example.util.SubscriptionManager.userRole.collectAsState().value
     val isAdminUserForRequests = userRoleForRequests == "admin" || com.example.util.AuthManager.isCurrentUserAdmin()
+
+    if (showUsers) {
+        Dialog(onDismissRequest = { showUsers = false }, properties = DialogProperties(usePlatformDefaultWidth = false)) {
+            Surface(Modifier.fillMaxSize().safeDrawingPadding(), color = HextechDarkBg) {
+                Column {
+                    Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Text(tr("Gestión de usuarios"), Modifier.weight(1f), color = HextechGold, fontWeight = FontWeight.Bold)
+                        IconButton(onClick = { showUsers = false }, modifier = Modifier.size(48.dp).testTag("close_user_directory")) {
+                            Icon(Icons.Default.Close, contentDescription = tr("Cerrar"))
+                        }
+                    }
+                    EnhancedUserManagementPanel(showMonitoring = false)
+                }
+            }
+        }
+    }
 
     // Sub-dialogs
     if (showModeratorRequestsDialog) {
@@ -237,11 +254,12 @@ fun AdminDashboardDialog(
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .systemBarsPadding()
+                    .safeDrawingPadding()
             ) {
                 // Header Premium Hextech
                 AdminDashboardHeader(
                     onClose = onDismiss,
+                    onOpenUsers = { showUsers = true },
                     onOpenFeedbackAndSupport = { showReportsPanel = true },
                     onOpenModeratorRequests = { showModeratorRequestsDialog = true },
                     pendingModeratorRequestsCount = pendingModeratorRequestsCount,
@@ -261,10 +279,9 @@ fun AdminDashboardDialog(
                         .weight(1f)
                 ) {
                     if (userRole == "admin" || userRole == "moderador" || com.example.util.AuthManager.isCurrentUserAdmin()) {
-                        EnhancedUserManagementPanel(
-                        isMinimized = isMonitoringMinimized,
-                        onToggleMinimize = { isMonitoringMinimized = !isMonitoringMinimized }
-                    )
+                        Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
+                            MetaMonitoringCard()
+                        }
                     } else {
                         // Moderador View
                         Column(
@@ -285,9 +302,11 @@ fun AdminDashboardDialog(
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun AdminDashboardHeader(
+internal fun AdminDashboardHeader(
     onClose: () -> Unit,
+    onOpenUsers: () -> Unit,
     onOpenFeedbackAndSupport: () -> Unit,
     onOpenModeratorRequests: () -> Unit = {},
     pendingModeratorRequestsCount: Int = 0,
@@ -314,7 +333,7 @@ private fun AdminDashboardHeader(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
+                Row(Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically) {
                     Box(
                         modifier = Modifier
                             .size(36.dp)
@@ -330,7 +349,7 @@ private fun AdminDashboardHeader(
                         )
                     }
                     Spacer(modifier = Modifier.width(10.dp))
-                    Column {
+                    Column(Modifier.weight(1f)) {
                         Text(
                             text = tr("Panel de Administración"),
                             style = MaterialTheme.typography.titleMedium,
@@ -349,7 +368,7 @@ private fun AdminDashboardHeader(
                 IconButton(
                     onClick = onClose,
                     modifier = Modifier
-                        .size(36.dp)
+                        .size(48.dp).testTag("close_admin_dashboard")
                         .background(Color.White.copy(alpha = 0.05f), CircleShape)
                 ) {
                     Icon(
@@ -362,17 +381,33 @@ private fun AdminDashboardHeader(
 
             Spacer(modifier = Modifier.height(10.dp))
 
-            // Botones de acción rápida superiores con scroll suave
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .horizontalScroll(rememberScrollState()),
-                horizontalArrangement = Arrangement.spacedBy(6.dp)
+            // Wrap every action onto the next row. No horizontal scrolling or hidden actions.
+            FlowRow(
+                modifier = Modifier.fillMaxWidth().testTag("admin_action_grid"),
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
+                AnimatedAdminActionButton(onClick = onOpenUsers,
+                    modifier = Modifier.heightIn(min = 48.dp).testTag("open_user_directory"),
+                    colors = ButtonDefaults.buttonColors(containerColor = HextechGold.copy(alpha = 0.2f))) {
+                    Icon(Icons.Default.ManageAccounts, null, tint = HextechGold, modifier = Modifier.size(16.dp))
+                    Text(tr("Usuarios"), color = HextechGold, fontSize = 12.sp)
+                }
+                AnimatedAdminActionButton(onClick = onOpenFeedbackAndSupport,
+                    modifier = Modifier.heightIn(min = 48.dp).testTag("open_admin_support"),
+                    colors = ButtonDefaults.buttonColors(containerColor = HextechCyan.copy(alpha = 0.2f))) {
+                    Text(tr("Soporte"), color = HextechCyan, fontSize = 12.sp)
+                }
+                if (isFullAdmin) AnimatedAdminActionButton(onClick = onOpenSponsorPanel,
+                    modifier = Modifier.heightIn(min = 48.dp).testTag("open_admin_sponsor_panel"),
+                    colors = ButtonDefaults.buttonColors(containerColor = HextechGold.copy(alpha = 0.2f))) {
+                    Text(tr("Patrocinio"), color = HextechGold, fontSize = 12.sp)
+                }
                 // Botón Moderación (Peticiones de Moderadores con badge de notificación)
                 Box {
                     AnimatedAdminActionButton(
                         onClick = onOpenModeratorRequests,
+                        modifier = Modifier.heightIn(min = 48.dp).testTag("open_admin_moderation"),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = if (pendingModeratorRequestsCount > 0) HextechGold.copy(alpha = 0.28f) else HextechSurfaceVariant.copy(alpha = 0.6f)
                         ),
@@ -407,6 +442,7 @@ private fun AdminDashboardHeader(
                 // Botón Broadcast
                 AnimatedAdminActionButton(
                     onClick = onOpenBroadcast,
+                        modifier = Modifier.heightIn(min = 48.dp).testTag("open_admin_broadcast"),
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF7C3AED).copy(alpha = 0.2f)),
                     shape = RoundedCornerShape(8.dp),
                     contentPadding = PaddingValues(horizontal = 8.dp, vertical = 6.dp)
@@ -419,6 +455,7 @@ private fun AdminDashboardHeader(
                 // Botón Avisos
                 AnimatedAdminActionButton(
                     onClick = onOpenNotice,
+                        modifier = Modifier.heightIn(min = 48.dp).testTag("open_admin_notice"),
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0D9488).copy(alpha = 0.2f)),
                     shape = RoundedCornerShape(8.dp),
                     contentPadding = PaddingValues(horizontal = 8.dp, vertical = 6.dp)
@@ -431,6 +468,7 @@ private fun AdminDashboardHeader(
                 // Botón CPM
                 AnimatedAdminActionButton(
                     onClick = onOpenCpmAnalytics,
+                        modifier = Modifier.heightIn(min = 48.dp).testTag("open_admin_cpm"),
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF00FF66).copy(alpha = 0.2f)),
                     shape = RoundedCornerShape(8.dp),
                     contentPadding = PaddingValues(horizontal = 8.dp, vertical = 6.dp)
@@ -443,6 +481,7 @@ private fun AdminDashboardHeader(
                 // Botón Base de Datos
                 AnimatedAdminActionButton(
                     onClick = onOpenDatabaseConsumption,
+                        modifier = Modifier.heightIn(min = 48.dp).testTag("open_admin_database"),
                     colors = ButtonDefaults.buttonColors(containerColor = HextechGold.copy(alpha = 0.2f)),
                     shape = RoundedCornerShape(8.dp),
                     contentPadding = PaddingValues(horizontal = 8.dp, vertical = 6.dp)

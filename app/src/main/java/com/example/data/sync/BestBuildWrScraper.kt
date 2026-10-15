@@ -22,26 +22,28 @@ object BestBuildWrScraper {
     private const val PREFS_NAME = "wr_tier_list_cache"
     private const val STATS_SNAPSHOT_PREFIX = "stats_snapshot_"
 
-    // Los 3 sitios web exactos para la fusión del meta global
+    // Five independent publishers; incompatible patches are monitored but never enter the consensus.
     val GLOBAL_SCRAPING_SOURCES = listOf(
         GlobalScrapingSource(
             id = "bestbuildwr",
             name = "BestBuildWR",
             url = "https://bestbuildwr.com/tierlist",
-            displayUrl = "bestbuildwr.com/tierlist"
+            displayUrl = "bestbuildwr.com/tierlist", expectedPatch = "7.3b"
         ),
         GlobalScrapingSource(
             id = "wildriftfire",
             name = "WildRiftFire",
             url = "https://www.wildriftfire.com/tier-list",
-            displayUrl = "wildriftfire.com/tier-list"
+            displayUrl = "wildriftfire.com/tier-list", expectedPatch = "7.3b"
         ),
         GlobalScrapingSource(
             id = "wildriftcore",
             name = "WildRiftCore",
-            url = "https://wildriftcore.com/es/tierlist/",
-            displayUrl = "wildriftcore.com/es/tierlist/"
-        )
+            url = "https://wildriftcore.com/es/tierlist/?patch=7.3b",
+            displayUrl = "wildriftcore.com/es/tierlist/", expectedPatch = "7.3b"
+        ),
+        GlobalScrapingSource("wildlegends", "WildLegends", "https://wildlegends.net/en/tier-list", "wildlegends.net", "7.3b"),
+        GlobalScrapingSource("wildrifter", "WildRifter", "https://wildrifter.com/en?patch=7.3b", "wildrifter.com", "7.3b")
     )
 
     private val _freshness = MutableStateFlow(MetaFreshness())
@@ -106,7 +108,7 @@ object BestBuildWrScraper {
                 val stats = decodeStats(prefs.getString(STATS_SNAPSHOT_PREFIX + region, null))
                 val at = prefs.getLong("timestamp_$region", 0)
                 WildRiftRepository.applyRegionalTierList(region, tiers, stats,
-                    checkedAt = at, history = decodeHistory(prefs.getString("rate_history", null)))
+                    checkedAt = at, history = decodeHistory(prefs.getString("rate_history_v2", null)))
                 _freshness.value = MetaFreshness(
                     tiersCheckedAt = prefs.getLong("tiers_checked", 0),
                     ratesCheckedAt = prefs.getLong("rates_checked", 0),
@@ -148,7 +150,19 @@ object BestBuildWrScraper {
                     listOf(it.id, it.name, it.ddragonId).filter(String::isNotBlank)
                 }.toSet()
                 val results = coroutineScope {
-                    GLOBAL_SCRAPING_SOURCES.map { source -> async { sourceClient.fetch(source, knownIds) } }.awaitAll()
+                    GLOBAL_SCRAPING_SOURCES.map { source -> async {
+                        sourceClient.fetch(source, knownIds).also { result ->
+                            synchronized(this@BestBuildWrScraper) {
+                                val key = "global_${source.id}"
+                                val old = _sourceStatuses.value[key]
+                                _sourceStatuses.value = _sourceStatuses.value + (key to result.status.copy(
+                                    lastSuccessAt = old?.lastSuccessAt ?: 0,
+                                    lastChangedAt = old?.lastChangedAt ?: 0,
+                                    lastRatesChangedAt = old?.lastRatesChangedAt ?: 0,
+                                    unchangedChecks = old?.unchangedChecks ?: 0))
+                            }
+                        }
+                    } }.awaitAll()
                 }
                 val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
                 _sourceStatuses.value = results.associate { result ->
@@ -158,14 +172,28 @@ object BestBuildWrScraper {
                         .let { bytes -> java.security.MessageDigest.getInstance("SHA-256")
                             .digest(bytes.toByteArray()).joinToString("") { "%02x".format(it) } }
                     val changed = fingerprint != prefs.getString("hash_$key", null)
+                    val ratesFingerprint = result.stats.toSortedMap().toString().let { bytes ->
+                        java.security.MessageDigest.getInstance("SHA-256").digest(bytes.toByteArray())
+                            .joinToString("") { "%02x".format(it) }
+                    }
+                    val previousRatesChange = old?.lastRatesChangedAt?.takeIf { it > 0 }
+                        ?: prefs.getLong("rates_changed_$key", 0)
+                    val ratesChangedAt = if (result.stats.isNotEmpty() && (previousRatesChange == 0L ||
+                        ratesFingerprint != prefs.getString("rates_hash_$key", null))) started else previousRatesChange
                     val priorChanged = old?.lastChangedAt?.takeIf { it > 0 }
                         ?: prefs.getLong("changed_$key", 0)
                     val status = result.status.copy(
                         lastSuccessAt = if (result.status.isHealthy) started else old?.lastSuccessAt ?: prefs.getLong("success_$key", 0),
                         lastChangedAt = if (result.status.isHealthy && changed) started else priorChanged,
+                        lastRatesChangedAt = ratesChangedAt,
                         unchangedChecks = if (changed) 0 else (old?.unchangedChecks ?: 0) + 1)
-                    if (result.status.isHealthy) prefs.edit().putString("hash_$key", fingerprint)
-                        .putLong("changed_$key", status.lastChangedAt).putLong("success_$key", started).apply()
+                    if (result.status.isHealthy) {
+                        val editor = prefs.edit().putString("hash_$key", fingerprint)
+                            .putLong("changed_$key", status.lastChangedAt).putLong("success_$key", started)
+                        if (result.stats.isNotEmpty()) editor.putString("rates_hash_$key", ratesFingerprint)
+                            .putLong("rates_changed_$key", ratesChangedAt)
+                        editor.apply()
+                    }
                     key to status
                 }
                 val validSources = results.filter { it.status.isHealthy }
@@ -180,7 +208,18 @@ object BestBuildWrScraper {
                     context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
                         .getString(STATS_SNAPSHOT_PREFIX + requested, null)
                 )
-                val freshStats = GlobalTierConsensus.fuseStats(validSources.map { it.stats })
+                // Keep the same rank bracket and publisher for current and dated history.
+                // Fallback publishers only fill champions absent from the primary report.
+                val freshStats = linkedMapOf<String, ChampionMetaStats>()
+                val statOrigins = mutableMapOf<String, String>()
+                listOf("wildriftfire", "wildriftcore", "wildrifter").forEach { id ->
+                    validSources.firstOrNull { it.source.id == id }?.stats?.forEach { (champion, rates) ->
+                        if (champion !in freshStats) {
+                            freshStats[champion] = rates
+                            statOrigins[champion] = id
+                        }
+                    }
+                }
 
                 // Categories and rates are independent publications. A source
                 // can expose current win/pick/ban values while its tier markup
@@ -190,9 +229,17 @@ object BestBuildWrScraper {
                 if (fusedTiers.isNotEmpty() || freshStats.isNotEmpty()) {
                     val merged = GlobalTierConsensus.mergeSnapshot(previousTiers, fusedTiers)
                     val mergedStats = GlobalTierConsensus.mergeStats(previousStats, freshStats)
-                    val history = decodeHistory(prefs.getString("rate_history", null)).toMutableMap()
+                    val history = decodeHistory(prefs.getString("rate_history_v2", null)).toMutableMap()
+                    val publishedHistory = validSources.firstOrNull { it.source.id == "wildriftfire" }?.history.orEmpty()
+                    publishedHistory.forEach { (id, rows) ->
+                        if (statOrigins[id] != "wildriftfire") return@forEach
+                        val ownRows = history[id].orEmpty().filter { !it.daily && it.source == "wildriftfire" }
+                        history[id] = (ownRows + rows).distinctBy { Pair(it.at, it.daily) }.sortedBy { it.at }
+                    }
                     freshStats.forEach { (id, rates) -> rates.winRate?.let { value ->
-                        history[id] = MetaRateHistory.record(history[id].orEmpty(), ObservedRate(started, value))
+                        val origin = statOrigins[id].orEmpty()
+                        history[id] = MetaRateHistory.record(history[id].orEmpty().filter { it.source == origin },
+                            ObservedRate(started, value, rates.pickRate, rates.banRate, source = origin))
                     } }
                     val changedIds = (fusedTiers.filter { (id, tier) -> previousTiers[id] != tier }.keys +
                         freshStats.filter { (id, rates) -> previousStats[id] != rates }.keys).size
@@ -203,7 +250,7 @@ object BestBuildWrScraper {
                         lastChangedAt = if (changedIds > 0 || oldHealth.lastChangedAt == 0L) started else oldHealth.lastChangedAt,
                         unchangedChecks = if (changedIds > 0) 0 else oldHealth.unchangedChecks + 1,
                         tierCount = fusedTiers.size, statsCount = freshStats.size, changedChampions = changedIds)
-                    prefs.edit().putString("rate_history", encodeHistory(history).toString())
+                    prefs.edit().putString("rate_history_v2", encodeHistory(history).toString())
                         .putLong("tiers_checked", _freshness.value.tiersCheckedAt)
                         .putLong("rates_checked", _freshness.value.ratesCheckedAt)
                         .putLong("last_changed", _freshness.value.lastChangedAt)
@@ -218,7 +265,7 @@ object BestBuildWrScraper {
                     statsCache = encodeStats(mergedStats)
                     success = true
                 }
-                message = if (success) "Categorías y estadísticas globales actualizadas (${validSources.size}/3 fuentes)"
+                message = if (success) "Categorías y estadísticas globales actualizadas (${validSources.size}/${GLOBAL_SCRAPING_SOURCES.size} fuentes)"
                     else "Sin actualizar; conservando datos."
 
             }
@@ -253,13 +300,14 @@ object BestBuildWrScraper {
         root.keys().asSequence().associateWith { id ->
             val rows = root.getJSONArray(id)
             (0 until rows.length()).map { i -> val row = rows.getJSONArray(i)
-                ObservedRate(row.getLong(0), row.getDouble(1)) }
+                ObservedRate(row.getLong(0), row.getDouble(1), row.optDouble(2, Double.NaN).takeIf(Double::isFinite),
+                    row.optDouble(3, Double.NaN).takeIf(Double::isFinite), row.optBoolean(4, false), row.optString(5)) }
         }
     }.getOrDefault(emptyMap())
 
     private fun encodeHistory(history: Map<String, List<ObservedRate>>): JSONObject = JSONObject().apply {
         history.forEach { (id, samples) -> put(id, JSONArray().apply {
-            samples.forEach { put(JSONArray().put(it.at).put(it.value)) }
+            samples.forEach { put(JSONArray().put(it.at).put(it.value).put(it.pick ?: JSONObject.NULL).put(it.ban ?: JSONObject.NULL).put(it.daily).put(it.source)) }
         }) }
     }
 

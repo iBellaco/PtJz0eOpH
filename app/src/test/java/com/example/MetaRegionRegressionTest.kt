@@ -138,7 +138,10 @@ class MetaRegionRegressionTest {
             "GLOBAL",
             mapOf(id to "S"),
             mapOf(id to second),
-            previousStats = mapOf(id to first)
+            previousStats = mapOf(id to first),
+            checkedAt = 200_000_000L,
+            history = mapOf(id to listOf(com.example.data.sync.ObservedRate(
+                200_000_000L - 24 * 60 * 60_000L, first.winRate!!, first.pickRate, first.banRate)))
         )
         val secondVisible = WildRiftRepository.champions.first { it.id == champion.id }
         assertEquals("S", secondVisible.tier)

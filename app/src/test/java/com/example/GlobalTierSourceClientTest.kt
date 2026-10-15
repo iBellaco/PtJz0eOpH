@@ -74,6 +74,19 @@ class GlobalTierSourceClientTest {
             assertEquals("/rankings/", server.takeRequest().path)
         }
     }
+    @Test fun `outdated patch cannot enter the live consensus even with full champion coverage`() = runBlocking {
+        MockWebServer().use { server ->
+            server.enqueue(MockResponse().setBody("<span class='nav-patch-badge'>7.3a</span>" + html()))
+            val guarded = source(server).copy(expectedPatch = "7.3b")
+            val result = GlobalTierSourceClient().fetch(guarded, known)
+            assertFalse(result.status.isHealthy)
+            assertEquals("7.3a", result.status.publishedPatch)
+            assertTrue(result.tiers.isEmpty())
+            assertTrue(result.stats.isEmpty())
+            assertEquals(1, server.requestCount)
+        }
+    }
+
     @Test fun `partial snapshots preserve previous champions and reject invalid categories`() {
         assertEquals(mapOf("ahri" to "S","garen" to "B"), GlobalTierConsensus.mergeSnapshot(
             mapOf("ahri" to "A","garen" to "B","unknown" to "invalid"), mapOf("ahri" to "S")))

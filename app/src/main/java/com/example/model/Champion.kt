@@ -108,6 +108,10 @@ data class Champion(
     val statsCheckedAt: Long = 0L,
     val winrate24h: Double? = null,
     val winrate12h: Double? = null,
+    val historyUsesDailyReports: Boolean = false,
+    val history24hAt: Long = 0L,
+    val history12hAt: Long = 0L,
+    val has24hComparison: Boolean = false,
     val winrate: Double = 50.0, // e.g. 53.8
     val pickRate: Double = 0.0,
     val banRate: Double = 0.0,

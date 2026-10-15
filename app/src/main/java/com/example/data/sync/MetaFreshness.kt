@@ -19,18 +19,23 @@ data class MetaFreshness(
     companion object { const val POLL_INTERVAL_MS = 60_000L }
 }
 
-data class ObservedRate(val at: Long, val value: Double)
+data class ObservedRate(val at: Long, val value: Double, val pick: Double? = null,
+    val ban: Double? = null, val daily: Boolean = false, val source: String = "")
 
 /** Never interpolate a historical percentage that was not actually observed. */
 object MetaRateHistory {
     fun record(previous: List<ObservedRate>, sample: ObservedRate): List<ObservedRate> =
-        (previous.distinctBy { it.at / (10 * 60_000L) } + sample).distinctBy { it.at }
-            .filter { it.at >= sample.at - 26 * 60 * 60_000L }
-            .sortedBy { it.at }.takeLast(160)
+        (previous.distinctBy { Pair(it.daily, it.at / (10 * 60_000L)) } + sample)
+            .distinctBy { Pair(it.at, it.daily) }.filter { it.at >= sample.at - (if (it.daily) 72 else 26) * 60 * 60_000L && it.value.isFinite() }
+            .sortedBy { it.at }.takeLast(170)
 
-    fun atAge(samples: List<ObservedRate>, now: Long, hours: Int): Double? {
+    fun sampleAtAge(samples: List<ObservedRate>, now: Long, hours: Int): ObservedRate? {
         val target = now - hours * 60 * 60_000L
-        return samples.filter { it.at <= target && target - it.at <= 15 * 60_000L }
-            .maxByOrNull { it.at }?.value
+        val hourly = samples.filter { !it.daily && it.at <= target && target - it.at <= 90 * 60_000L }
+            .maxByOrNull { it.at }
+        return hourly ?: samples.filter { it.daily && it.at <= target && target - it.at < 48 * 60 * 60_000L }
+            .maxByOrNull { it.at }
     }
+
+    fun atAge(samples: List<ObservedRate>, now: Long, hours: Int): Double? = sampleAtAge(samples, now, hours)?.value
 }
