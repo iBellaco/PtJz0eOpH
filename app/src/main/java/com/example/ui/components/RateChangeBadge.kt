@@ -18,7 +18,7 @@ fun RateChangeBadge(delta: Double, dailyReference: Boolean = false) {
     }
     Text(tr(text), color = when {
         !delta.isFinite() || kotlin.math.abs(delta) < 0.005 -> TextMuted
-        delta > 0 -> HextechCyan
+        delta > 0 -> HextechGreen
         else -> DangerRed
     }, fontSize = 10.sp)
 }
