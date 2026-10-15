@@ -331,7 +331,7 @@ fun FAQScreen(
                     )
                 }
             } else {
-                filteredFaqs.forEachIndexed { index, pair ->
+                filteredFaqs.forEach { pair ->
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -350,7 +350,7 @@ fun FAQScreen(
                             Icon(Icons.Default.Info, contentDescription = null, tint = HextechGold, modifier = Modifier.size(20.dp))
                             Spacer(modifier = Modifier.width(12.dp))
                             Text(
-                                text = tr("${index + 1}. ${pair.first}"),
+                                text = tr(pair.first),
                                 color = HextechGoldLight,
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.Bold,
