@@ -25,6 +25,12 @@ fun SparklineTrendGraph(
     observed24h: Double? = null, observed12h: Double? = null,
     dailyReferences: Boolean = false, reference24hAt: Long = 0L, reference12hAt: Long = 0L
 ) {
+    // Pulso visual del punto actual: confirma que la vista sigue viva mientras
+    // esperamos la siguiente publicación real de la fuente.
+    // El contenedor de clasificación se repinta cada segundo. Usamos ese
+    // reloj para el pulso y evitamos dejar una animación infinita viva en
+    // pantallas de prueba o cuando la vista deja de estar visible.
+    val livePulse = if ((System.currentTimeMillis() / 900L) % 2L == 0L) 0.35f else 0.95f
     val samples = listOf(observed24h, observed12h, winrate).map { it?.takeIf { v -> v.isFinite() && v in 0.0..100.0 } }
     val present = samples.filterNotNull()
     val labels = listOf(tr("hace 24h"), tr("hace 12h"), tr("actual"))
@@ -47,6 +53,7 @@ fun SparklineTrendGraph(
                 if (a != null && b != null) drawLine(HextechCyan, a, b, strokeWidth = 2.dp.toPx())
             }
             points.forEachIndexed { i, point -> if (point != null) {
+                if (i == 2) drawCircle(HextechCyan.copy(alpha = livePulse * 0.28f), 7.dp.toPx(), point)
                 drawCircle(if (i == 1) HextechGold else HextechCyan, 3.dp.toPx(), point)
             } }
         }
