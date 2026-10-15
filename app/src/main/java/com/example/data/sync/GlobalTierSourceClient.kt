@@ -43,6 +43,7 @@ class GlobalTierSourceClient(
 
     suspend fun fetch(source: GlobalScrapingSource, knownIds: Set<String>): SourceResult {
         val started = System.currentTimeMillis()
+        val knownCanonicalIds = knownIds.map(RegionalTierParser::canonical).toSet()
         var parsed = emptyMap<String, String>()
         var parsedStats = emptyMap<String, ChampionMetaStats>()
         var error: String? = null
@@ -64,11 +65,16 @@ class GlobalTierSourceClient(
                         parsed = if (html.length <= 4_000_000)
                             GlobalTierConsensus.validated(RegionalTierParser.parse(html, source.id), knownIds)
                             else emptyMap()
-                        parsedStats = if (parsed.isNotEmpty() && html.length <= 4_000_000) {
+                        // Rates are independent of the tier categories. Parse
+                        // them even when the category markup is incomplete so
+                        // a current patch snapshot can still refresh the UI.
+                        parsedStats = if (html.length <= 4_000_000) {
                             RegionalTierParser.parseStats(html, source.id)
-                                .filterKeys { id -> knownIds.map(RegionalTierParser::canonical).contains(id) }
+                                .filterKeys { id -> id in knownCanonicalIds }
                         } else emptyMap()
-                        error = if (parsed.isEmpty()) "No se encontraron suficientes categorías válidas" else null
+                        error = if (parsed.isEmpty() && parsedStats.isEmpty()) {
+                            "No se encontraron categorías ni estadísticas válidas"
+                        } else null
                     }
                 }
                 currentCoroutineContext().ensureActive()
@@ -86,7 +92,7 @@ class GlobalTierSourceClient(
         }
         return SourceResult(source, parsed, ScraperSourceStatus(
             name = "${source.name} (${source.displayUrl})", url = source.url,
-            isHealthy = parsed.isNotEmpty(), lastChecked = System.currentTimeMillis(),
+            isHealthy = parsed.isNotEmpty() || parsedStats.isNotEmpty(), lastChecked = System.currentTimeMillis(),
             responseTimeMs = System.currentTimeMillis() - started, errorMessage = error
         ), parsedStats)
     }

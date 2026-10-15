@@ -45,6 +45,19 @@ class GlobalTierSourceClientTest {
             assertEquals(1,server.requestCount)
         }
     }
+
+    @Test fun `published rates keep a source usable when tier markup is missing`() = runBlocking {
+        MockWebServer().use { server ->
+            server.enqueue(MockResponse().setBody("""
+                <ul><li class="tl-cell"><a class="tl-cell__name" href="/es/champions/champ1/">Champ 1</a>
+                <p class="tl-cell__wr"><b>53.4</b><span>%</span></p>
+                <p class="tl-cell__rates">6.2% pick · 4.1% ban</p></li></ul>
+            """.trimIndent()))
+            val result = GlobalTierSourceClient().fetch(source(server), setOf("champ1"))
+            assertTrue(result.status.isHealthy)
+            assertEquals(53.4, result.stats["champ1"]?.winRate ?: 0.0, 0.001)
+        }
+    }
     @Test fun `partial snapshots preserve previous champions and reject invalid categories`() {
         assertEquals(mapOf("ahri" to "S","garen" to "B"), GlobalTierConsensus.mergeSnapshot(
             mapOf("ahri" to "A","garen" to "B","unknown" to "invalid"), mapOf("ahri" to "S")))

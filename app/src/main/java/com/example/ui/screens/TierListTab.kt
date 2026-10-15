@@ -35,6 +35,7 @@ import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.Refresh
 import android.widget.Toast
 import com.example.data.local.FavoriteChampionsManager
 import androidx.compose.material.icons.filled.Star
@@ -66,6 +67,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import kotlinx.coroutines.launch
 import com.example.data.WildRiftRepository
 import com.example.data.sync.GlobalMetaSyncService
 import com.example.model.Champion
@@ -118,6 +120,7 @@ fun TierListTab(
     val coroutineScope = rememberCoroutineScope()
     val syncState by GlobalMetaSyncService.syncState.collectAsStateWithLifecycle()
     val currentRegion by GlobalMetaSyncService.currentRegion.collectAsStateWithLifecycle()
+    val metaRevision = WildRiftRepository.regionRevision
 
     val favorites by FavoriteChampionsManager.favoritesFlow.collectAsStateWithLifecycle()
     var showFavoritesOnly by remember { mutableStateOf(false) }
@@ -125,7 +128,7 @@ fun TierListTab(
     var selectedSort by remember { mutableStateOf(TierSortOption.BY_TIER) }
     var showTierFilters by rememberSaveable { mutableStateOf(true) }
 
-    val rawChampionsToDisplay = remember(selectedLane, showFavoritesOnly, favorites, syncState, currentRegion, WildRiftRepository.champions.toList()) {
+    val rawChampionsToDisplay = remember(selectedLane, showFavoritesOnly, favorites, syncState, currentRegion, metaRevision, WildRiftRepository.champions.toList()) {
         val champs = if (selectedLane == null) WildRiftRepository.champions.toList()
         else WildRiftRepository.getChampionsByRole(selectedLane!!)
         if (showFavoritesOnly) champs.filter { it.id in favorites } else champs
@@ -202,16 +205,35 @@ fun TierListTab(
                         }
                     }
                 }
-                IconButton(
-                    onClick = { showTierFilters = !showTierFilters },
-                    modifier = Modifier.size(24.dp)
-                ) {
-                    Icon(
-                        imageVector = if (showTierFilters) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
-                        contentDescription = com.example.util.trNullable(if (showTierFilters) tr("Minimizar filtros") else tr("Expandir filtros")),
-                        tint = HextechGold,
-                        modifier = Modifier.size(20.dp)
-                    )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    IconButton(
+                        onClick = {
+                            if (syncState !is com.example.data.sync.MetaSyncState.Syncing) {
+                                coroutineScope.launch {
+                                    GlobalMetaSyncService.syncGlobalMeta(context, forceRefresh = true)
+                                }
+                            }
+                        },
+                        modifier = Modifier.size(32.dp).testTag("tier_list_refresh_button")
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Refresh,
+                            contentDescription = tr("Actualizar"),
+                            tint = if (syncState is com.example.data.sync.MetaSyncState.Syncing) TextMuted else HextechCyan,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                    IconButton(
+                        onClick = { showTierFilters = !showTierFilters },
+                        modifier = Modifier.size(32.dp)
+                    ) {
+                        Icon(
+                            imageVector = if (showTierFilters) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                            contentDescription = com.example.util.trNullable(if (showTierFilters) tr("Minimizar filtros") else tr("Expandir filtros")),
+                            tint = HextechGold,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
                 }
             }
         }

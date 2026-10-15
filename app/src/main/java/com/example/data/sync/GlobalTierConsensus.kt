@@ -15,6 +15,19 @@ object GlobalTierConsensus {
     fun mergeSnapshot(previous: Map<String, String>, fresh: Map<String, String>): Map<String, String> =
         previous.filterValues { it in weights } + fresh.filterValues { it in weights }
 
+    /**
+     * Replaces every champion published by the newest rate snapshot while
+     * retaining older entries when a publisher only exposes a partial table.
+     * The right-hand side always wins, so a changed patch value cannot be
+     * hidden behind a cached percentage.
+     */
+    fun mergeStats(
+        previous: Map<String, ChampionMetaStats>,
+        fresh: Map<String, ChampionMetaStats>
+    ): Map<String, ChampionMetaStats> =
+        previous.mapKeys { (id, _) -> RegionalTierParser.canonical(id) } +
+            fresh.mapKeys { (id, _) -> RegionalTierParser.canonical(id) }
+
     fun fuse(sources: List<Map<String, String>>): Map<String, String> {
         val votes = mutableMapOf<String, MutableList<Double>>()
         sources.forEach { source -> source.forEach { (id, tier) ->
@@ -38,7 +51,9 @@ object GlobalTierConsensus {
         val grouped = mutableMapOf<String, MutableList<ChampionMetaStats>>()
         sources.forEach { source ->
             source.forEach { (id, stats) ->
-                if (stats.isUsable()) grouped.getOrPut(id) { mutableListOf() }.add(stats)
+                if (stats.isUsable()) {
+                    grouped.getOrPut(RegionalTierParser.canonical(id)) { mutableListOf() }.add(stats)
+                }
             }
         }
         fun average(values: List<Double?>): Double? {
