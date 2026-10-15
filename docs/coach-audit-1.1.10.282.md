@@ -20,7 +20,7 @@ Las cuentas indican datos reconocidos del catálogo local, no enlaces de navegac
 | Fuente | Parche recibido | Categorías | Tasas en la página principal | Resultado |
 |---|---|---:|---:|---|
 | BestBuildWR | 7.3a | 142 | 0 | Excluida del consenso 7.3b y señalada en monitoreo |
-| WildRiftFire | 7.3b | 141 | 0 | Categorías parciales; informe separado con 137 tasas e historiales Maestro+ |
+| WildRiftFire | 7.3b | 142 | 0 | Informe separado con 137 tasas e historiales Maestro+ |
 | WildRiftCore | 7.3b | 142 | 137 | Aceptada |
 | WildLegends | 7.3b | 142 | 0 | Aceptada; catálogo completo de 142 |
 | WildRifter | 7.3b | 141 | 141 | Catálogo de 142; Master Yi sin datos publicados |
@@ -29,7 +29,7 @@ Fuentes nuevas verificadas:
 - https://wildlegends.net/en/tier-list
 - https://wildrifter.com/en?patch=7.3b
 
-Historial publicado: https://www.wildriftfire.com/stats. La cobertura combinada de tasas se verifica sin inventar los valores ausentes. Se normaliza el identificador publicado `nunu-amp-willump` para no perder las estadísticas e historial de Nunu y Willump. La pantalla no promete cinco fuentes sanas cuando alguna está incompleta o desactualizada.
+Historial publicado: https://www.wildriftfire.com/stats. La cobertura combinada verificada es de 142/142 tasas completas, sin inventar valores. Se normaliza el identificador publicado `nunu-amp-willump` para no perder las estadísticas e historial de Nunu y Willump. La pantalla no promete cinco fuentes sanas cuando alguna está incompleta o desactualizada.
 
 ## Archivos modificados
 
@@ -40,7 +40,7 @@ Historial publicado: https://www.wildriftfire.com/stats. La cobertura combinada 
 
 ## Verificación
 
-- Nueve pruebas JVM de parser, validación del parche, historial y comparación de versiones aprobadas localmente.
+- Dieciséis pruebas JVM de parser, cliente HTTP, validación del parche, historial y comparación de versiones aprobadas localmente.
 - Parseo con las respuestas reales de los cinco editores; se detectó y descartó el parche anterior de BestBuildWR.
 - Regresiones Android para la referencia de 24 horas, rechazo de un parche anterior, tres valores visibles, cero neutral y accesos en varias filas en una pantalla estrecha.
 - Comprobaciones obligatorias de Android, idioma portugués, R8, firma persistente y APK instalado en español y portugués antes de fusionar y publicar.
