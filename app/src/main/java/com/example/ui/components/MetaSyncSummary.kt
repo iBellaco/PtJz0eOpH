@@ -39,7 +39,7 @@ fun MetaSyncSummary() {
         if (health.statsCount < health.expectedCount && health.lastAttemptAt > 0) {
             Text(tr("Cobertura incompleta: algunos valores no están publicados en la fuente"), color = HextechGold, fontSize = 10.sp)
             val missing = com.example.data.WildRiftRepository.champions.filter { !it.hasRegionalStats }
-            if (missing.isNotEmpty()) Text(tr("Sin tasas publicadas") + ": " + missing.joinToString { it.name }, color = TextMuted, fontSize = 10.sp)
+            if (missing.isNotEmpty()) Text(tr("Sin tasas publicadas") + ": " + missing.joinToString { tr(it.name) }, color = TextMuted, fontSize = 10.sp)
         }
         Text(tr("Último cambio de valores") + ": " + metaTime(health.lastChangedAt), color = TextMuted, fontSize = 10.sp)
     }

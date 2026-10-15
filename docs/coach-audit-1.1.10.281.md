@@ -37,4 +37,5 @@ Versión anterior: 1.1.10.280 (996). Versión nueva: 1.1.10.281 (997).
 - Regresión de Compose para comprobar que una ficha de enfrentamiento abierta recibe nuevas tasas aunque el parámetro original del campeón siga siendo la misma copia.
 - Auditoría portuguesa de código fuente: sin residuos en español.
 - Se corrigió una importación faltante de color que la primera compilación Android detectó antes de publicar.
+- La auditoría instalada portuguesa detectó nombres traducibles sin localizar en el aviso de cobertura; se aplica el traductor existente a cada campeón antes de repetir la validación.
 - Validación Android, R8, firma persistente y APK instalado en español y portugués mediante las comprobaciones obligatorias de Actions antes de fusionar.
