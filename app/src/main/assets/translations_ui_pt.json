@@ -524,5 +524,7 @@
   "Estadísticas no disponibles": "Estatísticas indisponíveis",
   "No se pudieron consultar las estadísticas": "Não foi possível consultar as estatísticas",
   "Categorías y estadísticas globales actualizadas ({0}/{1} fuentes)": "Categorias e estatísticas globais atualizadas ({0}/{1} fontes)",
-  "ref. diaria": "ref. diária"
+  "ref. diaria": "ref. diária",
+  "Historial no disponible": "Histórico indisponível",
+  "Tasas sin cambios desde hace 24 horas": "Taxas sem alterações há 24 horas"
 }

@@ -14,7 +14,8 @@ data class ScraperSourceStatus(
     val responseTimeMs: Long, val errorMessage: String?, val region: String = "GLOBAL",
     val tierCount: Int = 0, val statsCount: Int = 0, val lastSuccessAt: Long = 0,
     val lastChangedAt: Long = 0, val unchangedChecks: Int = 0,
-    val publishedPatch: String = "", val rosterCount: Int = 0, val historyCount: Int = 0
+    val publishedPatch: String = "", val rosterCount: Int = 0, val historyCount: Int = 0,
+    val lastRatesChangedAt: Long = 0L
 )
 
 data class GlobalScrapingSource(val id: String, val name: String, val url: String,
@@ -84,6 +85,7 @@ class GlobalTierSourceClient(
                     if (source.expectedPatch == null || report.patch == source.expectedPatch) {
                         stats = stats + report.stats.filterKeys { it in known }
                         history = report.history.filterKeys { it in known }
+                        if (history.values.none { it.isNotEmpty() }) error = "Historial no disponible"
                     } else error = "El historial pertenece a otro parche"
                 } else {
                     val extraPatch = PublishedStatsParser.patch(html, source.id)

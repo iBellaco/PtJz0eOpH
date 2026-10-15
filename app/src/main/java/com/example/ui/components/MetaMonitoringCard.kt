@@ -35,6 +35,7 @@ fun MetaMonitoringCard() {
         now - status.lastChecked > 3 * MetaFreshness.POLL_INTERVAL_MS -> "Consulta detenida"
         !status.isHealthy -> status.errorMessage ?: "Error de conexión"
         status.errorMessage != null -> status.errorMessage
+        status.lastRatesChangedAt > 0 && now - status.lastRatesChangedAt >= 24 * 60 * 60_000L -> "Tasas sin cambios desde hace 24 horas"
         status.tierCount < expected -> "Cobertura incompleta"
         status.lastChangedAt > 0 && now - status.lastChangedAt >= 24 * 60 * 60_000L -> "Sin cambios desde hace 24 horas"
         else -> null

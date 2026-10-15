@@ -158,6 +158,7 @@ object BestBuildWrScraper {
                                 _sourceStatuses.value = _sourceStatuses.value + (key to result.status.copy(
                                     lastSuccessAt = old?.lastSuccessAt ?: 0,
                                     lastChangedAt = old?.lastChangedAt ?: 0,
+                                    lastRatesChangedAt = old?.lastRatesChangedAt ?: 0,
                                     unchangedChecks = old?.unchangedChecks ?: 0))
                             }
                         }
@@ -171,14 +172,28 @@ object BestBuildWrScraper {
                         .let { bytes -> java.security.MessageDigest.getInstance("SHA-256")
                             .digest(bytes.toByteArray()).joinToString("") { "%02x".format(it) } }
                     val changed = fingerprint != prefs.getString("hash_$key", null)
+                    val ratesFingerprint = result.stats.toSortedMap().toString().let { bytes ->
+                        java.security.MessageDigest.getInstance("SHA-256").digest(bytes.toByteArray())
+                            .joinToString("") { "%02x".format(it) }
+                    }
+                    val previousRatesChange = old?.lastRatesChangedAt?.takeIf { it > 0 }
+                        ?: prefs.getLong("rates_changed_$key", 0)
+                    val ratesChangedAt = if (result.stats.isNotEmpty() && (previousRatesChange == 0L ||
+                        ratesFingerprint != prefs.getString("rates_hash_$key", null))) started else previousRatesChange
                     val priorChanged = old?.lastChangedAt?.takeIf { it > 0 }
                         ?: prefs.getLong("changed_$key", 0)
                     val status = result.status.copy(
                         lastSuccessAt = if (result.status.isHealthy) started else old?.lastSuccessAt ?: prefs.getLong("success_$key", 0),
                         lastChangedAt = if (result.status.isHealthy && changed) started else priorChanged,
+                        lastRatesChangedAt = ratesChangedAt,
                         unchangedChecks = if (changed) 0 else (old?.unchangedChecks ?: 0) + 1)
-                    if (result.status.isHealthy) prefs.edit().putString("hash_$key", fingerprint)
-                        .putLong("changed_$key", status.lastChangedAt).putLong("success_$key", started).apply()
+                    if (result.status.isHealthy) {
+                        val editor = prefs.edit().putString("hash_$key", fingerprint)
+                            .putLong("changed_$key", status.lastChangedAt).putLong("success_$key", started)
+                        if (result.stats.isNotEmpty()) editor.putString("rates_hash_$key", ratesFingerprint)
+                            .putLong("rates_changed_$key", ratesChangedAt)
+                        editor.apply()
+                    }
                     key to status
                 }
                 val validSources = results.filter { it.status.isHealthy }
