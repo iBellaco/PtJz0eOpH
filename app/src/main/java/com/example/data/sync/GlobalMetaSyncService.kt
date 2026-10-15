@@ -29,7 +29,7 @@ object GlobalMetaSyncService {
                 val cycleStarted = android.os.SystemClock.elapsedRealtime()
                 // Version verification is independent of source latency/failure.
                 launch { com.example.util.AppUpdateManager.checkForUpdates(app) }
-                syncGlobalMeta(app)
+                syncGlobalMeta(app, forceRefresh = true)
                 delay((MetaFreshness.POLL_INTERVAL_MS - (android.os.SystemClock.elapsedRealtime() - cycleStarted)).coerceAtLeast(1_000L))
             }
         }
