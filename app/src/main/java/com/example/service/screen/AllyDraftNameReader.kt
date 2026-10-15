@@ -7,6 +7,10 @@ import com.example.model.LaneRole
 object AllyDraftNameReader {
     data class Reading(val lane: LaneRole? = null, val champion: Champion? = null, val ambiguous: Boolean = false)
 
+    /** An exact intact title takes precedence over a destructively processed alternative. */
+    internal fun preferOriginal(original: Reading, withoutBadge: Reading): Reading =
+        if (original.ambiguous || original.champion != null || original.lane != null) original else withoutBadge
+
     fun readTitleRows(lines: List<Pair<String, Int>>, rowDistance: Int, catalog: List<Champion>,
         titleMaxCenterY: Int = Int.MAX_VALUE): Reading {
         val titleLines = lines.filter { it.second <= titleMaxCenterY }

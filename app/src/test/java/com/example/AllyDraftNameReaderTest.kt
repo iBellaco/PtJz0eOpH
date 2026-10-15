@@ -8,6 +8,16 @@ import org.junit.Assert.*
 import org.junit.Test
 
 class AllyDraftNameReaderTest {
+    @Test fun intactTitleWinsOverBadgeRemovalAndUnknownTitlesCanUseTheAlternative() {
+        val original = AllyDraftNameReader.Reading(champion = Champion(id = "jhin", name = "Jhin"))
+        val altered = AllyDraftNameReader.Reading(champion = Champion(id = "jinx", name = "Jinx"))
+        assertEquals(original, AllyDraftNameReader.preferOriginal(original, altered))
+        val lane = AllyDraftNameReader.Reading(lane = LaneRole.MID)
+        assertEquals(lane, AllyDraftNameReader.preferOriginal(lane, altered))
+        assertEquals(original, AllyDraftNameReader.preferOriginal(AllyDraftNameReader.Reading(), original))
+        val ambiguous = AllyDraftNameReader.Reading(ambiguous = true)
+        assertEquals(ambiguous, AllyDraftNameReader.preferOriginal(ambiguous, altered))
+    }
     private val catalog = listOf("yuumi", "jinx", "brand", "skarner", "pantheon", "vi", "lee_sin").map {
         Champion(id = it, name = if (it == "lee_sin") "Lee Sin" else it)
     }
