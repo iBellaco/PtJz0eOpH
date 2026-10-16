@@ -7,3 +7,4 @@
 - El cierre de sesión usa un botón directo con icono de salida, sin animación.
 - La descarga de tier list usa formato vertical 9:16, solo S+, S y A, avatares locales, fecha, marca Coach centrada y lockup de League of Legends: Wild Rift.
 - Se actualizó la descripción de beneficios Premium.
+- Cada tarjeta de actividad abre la lista actual de cuentas conectadas de ese rol.

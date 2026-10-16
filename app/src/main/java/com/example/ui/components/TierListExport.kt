@@ -6,12 +6,10 @@ import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.Typeface
-import android.graphics.drawable.Drawable
 import android.os.Build
 import android.provider.MediaStore
 import android.widget.Toast
 import androidx.compose.foundation.layout.wrapContentWidth
-import androidx.compose.ui.Alignment
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material3.Button
@@ -19,11 +17,11 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.layout.height
 import com.example.model.Champion
 import com.example.ui.theme.HextechDarkBg
 import com.example.ui.theme.HextechGold
@@ -90,8 +88,7 @@ private fun saveTierListImage(context: Context, champions: List<Champion>): Bool
                 val avatarY = y + 38f
                 val avatarPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = android.graphics.Color.rgb(38, 83, 115) }
                 canvas.drawCircle(avatarX, avatarY, 35f, avatarPaint)
-                loadAssetBitmap(context, champion.imageUrl)?.let { source ->
-                    val size = 70
+                loadAssetBitmap(context, champion.avatarUrl.ifBlank { champion.getLocalAvatarUri() })?.let { source ->
                     val clipped = android.graphics.Path().apply { addCircle(avatarX, avatarY, 35f, android.graphics.Path.Direction.CW) }
                     canvas.save(); canvas.clipPath(clipped)
                     canvas.drawBitmap(source, null, android.graphics.RectF(avatarX - 35f, avatarY - 35f, avatarX + 35f, avatarY + 35f), null)

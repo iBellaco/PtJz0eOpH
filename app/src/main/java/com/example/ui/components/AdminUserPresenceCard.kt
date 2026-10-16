@@ -8,6 +8,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AdminPanelSettings
@@ -20,6 +23,8 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -67,6 +72,7 @@ private data class PresenceMetrics(
 fun AdminUserPresenceCard(modifier: Modifier = Modifier) {
     var users by remember { mutableStateOf<List<Map<String, Any>>>(emptyList()) }
     var now by remember { mutableStateOf(System.currentTimeMillis()) }
+    var selectedRole by remember { mutableStateOf<String?>(null) }
 
     DisposableEffect(Unit) {
         val registration = FirebaseFirestore.getInstance().collection("users")
@@ -112,6 +118,19 @@ fun AdminUserPresenceCard(modifier: Modifier = Modifier) {
         freeUsers = users.count { roles(it).any { role -> role in setOf("gratis", "gratuito", "free") } },
         freeUsersOnline = users.count { roles(it).any { role -> role in setOf("gratis", "gratuito", "free") } && online(it) }
     )
+    fun matchesSelection(user: Map<String, Any>, selection: String): Boolean = when (selection) {
+        "__all__" -> true
+        "admin" -> roles(user).any { it == "admin" || it == "administrador" }
+        "moderador" -> roles(user).any { it == "moderador" || it == "moderator" }
+        "patrocinador" -> roles(user).any { it == "patrocinador" || it == "sponsor" }
+        "creador" -> roles(user).any { it.startsWith("creador") }
+        "gratis" -> roles(user).any { it == "gratis" || it == "gratuito" || it == "free" }
+        else -> selection in roles(user)
+    }
+    val selectedUsers = selectedRole?.let { selection ->
+        users.filter { online(it) && matchesSelection(it, selection) }
+            .sortedBy { ((it["name"] ?: it["username"] ?: it["displayName"] ?: "Usuario") as? String).orEmpty().lowercase() }
+    }.orEmpty()
 
     Card(
         modifier = modifier.fillMaxWidth().padding(12.dp).testTag("admin_user_presence_card"),
@@ -126,25 +145,46 @@ fun AdminUserPresenceCard(modifier: Modifier = Modifier) {
                     Text(tr("Actividad de usuarios"), color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 13.sp)
                     Text("${metrics.registered} ${tr("registrados")}", color = TextMuted, fontSize = 10.sp)
                 }
-                MetricValue(Icons.Default.Sensors, metrics.online, HextechGreen, tr("conectados"))
+                MetricValue(Icons.Default.Sensors, metrics.online, HextechGreen, tr("conectados"), onClick = { selectedRole = "__all__" })
             }
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                RoleMetric(Icons.Default.AdminPanelSettings, tr("admins"), metrics.admins, metrics.adminsOnline, HextechGold, Modifier.weight(1f))
-                RoleMetric(Icons.Default.Shield, tr("moderadores"), metrics.moderators, metrics.moderatorsOnline, HextechCyan, Modifier.weight(1f))
-                RoleMetric(Icons.Default.VerifiedUser, tr("patrocinadores"), metrics.sponsors, metrics.sponsorsOnline, HextechGreen, Modifier.weight(1f))
+                RoleMetric(Icons.Default.AdminPanelSettings, tr("admins"), metrics.admins, metrics.adminsOnline, HextechGold, Modifier.weight(1f)) { selectedRole = "admin" }
+                RoleMetric(Icons.Default.Shield, tr("moderadores"), metrics.moderators, metrics.moderatorsOnline, HextechCyan, Modifier.weight(1f)) { selectedRole = "moderador" }
+                RoleMetric(Icons.Default.VerifiedUser, tr("patrocinadores"), metrics.sponsors, metrics.sponsorsOnline, HextechGreen, Modifier.weight(1f)) { selectedRole = "patrocinador" }
             }
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                RoleMetric(Icons.Default.Groups, tr("streamers"), metrics.streamers, metrics.streamersOnline, HextechCyan, Modifier.weight(1f))
-                RoleMetric(Icons.Default.VerifiedUser, tr("creadores"), metrics.creators, metrics.creatorsOnline, HextechGold, Modifier.weight(1f))
-                RoleMetric(Icons.Default.People, tr("gratuitos"), metrics.freeUsers, metrics.freeUsersOnline, HextechCyan, Modifier.weight(1f))
+                RoleMetric(Icons.Default.Groups, tr("streamers"), metrics.streamers, metrics.streamersOnline, HextechCyan, Modifier.weight(1f)) { selectedRole = "streamer" }
+                RoleMetric(Icons.Default.VerifiedUser, tr("creadores"), metrics.creators, metrics.creatorsOnline, HextechGold, Modifier.weight(1f)) { selectedRole = "creador" }
+                RoleMetric(Icons.Default.People, tr("gratuitos"), metrics.freeUsers, metrics.freeUsersOnline, HextechCyan, Modifier.weight(1f)) { selectedRole = "gratis" }
             }
         }
+    }
+    selectedRole?.let { selection ->
+        val title = if (selection == "__all__") tr("Usuarios conectados") else tr("Conectados: ${selection.replaceFirstChar { it.uppercase() }}")
+        AlertDialog(
+            onDismissRequest = { selectedRole = null },
+            title = { Text(title, color = HextechGold) },
+            text = {
+                if (selectedUsers.isEmpty()) Text(tr("No hay usuarios conectados en esta sección."), color = TextMuted)
+                else LazyColumn(modifier = Modifier.fillMaxWidth().fillMaxHeight(0.45f)) {
+                    items(selectedUsers, key = { it["uid"]?.toString().orEmpty() }) { user ->
+                        val displayName = (user["name"] ?: user["username"] ?: user["displayName"] ?: "Usuario").toString()
+                        Row(Modifier.fillMaxWidth().padding(vertical = 7.dp), verticalAlignment = Alignment.CenterVertically) {
+                            Icon(Icons.Default.Sensors, null, tint = HextechGreen, modifier = Modifier.size(15.dp))
+                            Spacer(Modifier.width(8.dp))
+                            Text(displayName, color = TextPrimary, fontSize = 13.sp)
+                        }
+                    }
+                }
+            },
+            confirmButton = { TextButton(onClick = { selectedRole = null }) { Text(tr("Cerrar"), color = HextechCyan) } }
+        )
     }
 }
 
 @Composable
-private fun MetricValue(icon: ImageVector, value: Int, color: androidx.compose.ui.graphics.Color, label: String, modifier: Modifier = Modifier) {
-    Row(modifier, verticalAlignment = Alignment.CenterVertically) {
+private fun MetricValue(icon: ImageVector, value: Int, color: androidx.compose.ui.graphics.Color, label: String, modifier: Modifier = Modifier, onClick: () -> Unit = {}) {
+    Row(modifier.coachClickable(onClick = onClick), verticalAlignment = Alignment.CenterVertically) {
         Icon(icon, null, tint = color, modifier = Modifier.size(14.dp))
         Spacer(Modifier.width(4.dp))
         Column {
@@ -155,8 +195,8 @@ private fun MetricValue(icon: ImageVector, value: Int, color: androidx.compose.u
 }
 
 @Composable
-private fun RoleMetric(icon: ImageVector, label: String, total: Int, online: Int, color: androidx.compose.ui.graphics.Color, modifier: Modifier = Modifier) {
-    Column(modifier, horizontalAlignment = Alignment.CenterHorizontally) {
+private fun RoleMetric(icon: ImageVector, label: String, total: Int, online: Int, color: androidx.compose.ui.graphics.Color, modifier: Modifier = Modifier, onClick: () -> Unit = {}) {
+    Column(modifier.coachClickable(onClick = onClick), horizontalAlignment = Alignment.CenterHorizontally) {
         Icon(icon, null, tint = color, modifier = Modifier.size(15.dp))
         Text("$total", color = TextPrimary, fontWeight = FontWeight.Bold, fontSize = 13.sp)
         Text(
