@@ -34,7 +34,8 @@ class TierCategoriesRenderedTest {
             compose.onNodeWithTag("tier_list_export_button").assertDoesNotExist()
             tiers.forEach { tier ->
                 val title = "TIER $tier" + if (tier in listOf("S+", "S", "A")) " (" else ""
-                compose.onNodeWithText(title, substring = true).performScrollTo().assertIsDisplayed()
+                compose.onNodeWithTag("tier_list").performScrollToNode(hasText(title, substring = true))
+                compose.onNodeWithText(title, substring = true).assertIsDisplayed()
             }
         } finally {
             WildRiftRepository.champions.clear()
