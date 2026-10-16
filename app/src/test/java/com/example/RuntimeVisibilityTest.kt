@@ -606,13 +606,13 @@ class RuntimeVisibilityTest(private val screen: String) {
                 inspect("account-hint")
             }
             "champion-premium", "champion-registered" -> {
-                val amount = if (screen == "champion-premium") 12 else 6
+                val amount = if (screen == "champion-premium") 24 else 6
                 compose.onNodeWithTag("advantage_insight_card").performScrollTo()
                 compose.onNodeWithText("Vantagem ($amount)").assertExists()
                 compose.onNodeWithText("Fraca ($amount)").assertExists()
                 compose.onNodeWithText("Sinergia ($amount)").assertExists()
-                compose.onNodeWithTag("champion_trend_header").performScrollTo().assertExists()
-                compose.onNodeWithTag("detailed_trend_graph").performScrollTo().assertExists()
+                compose.onNodeWithTag("champion_trend_header").assertDoesNotExist()
+                compose.onNodeWithTag("detailed_trend_graph").assertDoesNotExist()
                 compose.onNodeWithTag("matchup_sign_in_hint").assertDoesNotExist()
             }
             "draft-empty", "draft-placeholder" -> {
