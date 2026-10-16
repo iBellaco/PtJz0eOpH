@@ -616,8 +616,7 @@ class RuntimeVisibilityTest(private val screen: String) {
                     compose.onNodeWithText("Fraca (6)").assertExists()
                     compose.onNodeWithText("Sinergia (6)").assertExists()
                 }
-                if (screen == "champion-registered") compose.onNodeWithTag("champion_trend_header").assertExists()
-                else compose.onNodeWithTag("champion_trend_header").assertDoesNotExist()
+                compose.onNodeWithTag("champion_trend_header").assertExists()
                 compose.onNodeWithTag("detailed_trend_graph").assertDoesNotExist()
                 compose.onNodeWithTag("matchup_sign_in_hint").assertDoesNotExist()
             }
