@@ -197,11 +197,6 @@ internal fun FloatingOverlayContent(
     var autoScanEnabled by state::autoScanEnabled
     var scanNoticeMessage by state::scanNoticeMessage
 
-    // La captura y el escáner automático son una función exclusiva de Premium.
-    LaunchedEffect(isPremium) {
-        if (!isPremium) autoScanEnabled = false
-    }
-
     var isDraggingBubble by state::isDraggingBubble
     var dragAccumulatedY by state::dragAccumulatedY
     var isNearCloseThreshold by state::isNearCloseThreshold
