@@ -1233,6 +1233,10 @@ object ChampionRoleMatchupAdvisor {
         val reverseCounters = catalog.filter { candidate ->
             ReviewedMatchupReferences.byChampion[candidate.id]?.counters?.any(::matchesSelf) == true
         }.map { it.name }
+        val reverseThreats = catalog.filter { candidate ->
+            WebMatchupReferences.byChampion[candidate.id]?.advantages?.any(::matchesSelf) == true ||
+                ReviewedLaneMatchups.byChampion[candidate.id]?.get(role)?.advantages?.any(::matchesSelf) == true
+        }.map { it.name }
         val reverseSynergies = catalog.filter { candidate ->
             ReviewedMatchupReferences.byChampion[candidate.id]?.synergies?.any(::matchesSelf) == true
         }.map { it.name }
@@ -1240,7 +1244,7 @@ object ChampionRoleMatchupAdvisor {
         val acrossMap = (listOfNotNull(expanded[role]) + expanded.filterKeys { it != role }.values +
             ReviewedLaneMatchups.byChampion[champion.id].orEmpty().filterKeys { it != role }.values).toList()
         val counters = clean((published?.counters ?: emptyList()) + (reference?.counters ?: emptyList()) + (laneReference?.counters ?: emptyList()) + known.counters.take(3) +
-            (if (primaryRole) champion.counteredBy.take(3) else emptyList()), true) + clean(acrossMap.flatMap { it.counters }, false)
+            (if (primaryRole) champion.counteredBy.take(3) else emptyList()) + reverseThreats, true) + clean(acrossMap.flatMap { it.counters }, false)
         val advantages = clean((published?.advantages ?: emptyList()) + (reference?.advantages ?: emptyList()) + (laneReference?.advantages ?: emptyList()) + reverseCounters + known.advantages.take(3) +
             (if (primaryRole) champion.advantageAgainst.take(3) else emptyList()), true) + clean(acrossMap.flatMap { it.advantages }, false)
         val synergies = clean((reference?.synergies ?: emptyList()) + known.synergies.take(3) +
