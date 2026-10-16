@@ -20,6 +20,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.layout.height
@@ -51,7 +52,7 @@ fun TierListExportButton(champions: List<Champion>, modifier: Modifier = Modifie
                 }
             }
         },
-        modifier = modifier.wrapContentWidth().height(34.dp),
+        modifier = modifier.wrapContentWidth().height(48.dp).then(Modifier.testTag("tier_list_export")),
         contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 10.dp, vertical = 4.dp),
         colors = ButtonDefaults.buttonColors(containerColor = HextechGold, contentColor = HextechDarkBg)
     ) {
@@ -61,58 +62,8 @@ fun TierListExportButton(champions: List<Champion>, modifier: Modifier = Modifie
 }
 
 private fun saveTierListImage(context: Context, champions: List<Champion>): Boolean = runCatching {
-    val groups = listOf("S+", "S", "A").map { tier -> tier to champions.filter { it.tier == tier } }
-    val rows = groups.sumOf { (_, entries) -> (entries.size + 1) / 2 + 1 }
-    // Formato vertical 9:16 para compartir directamente en el teléfono.
-    val width = 1080
-    val height = 1920
-    val rowHeight = 112
-    val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
-    val canvas = Canvas(bitmap)
-    val bg = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = android.graphics.Color.rgb(6, 17, 34) }
-    canvas.drawColor(bg.color)
-    val title = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = android.graphics.Color.WHITE; textSize = 46f; typeface = Typeface.DEFAULT_BOLD }
-    val subtitle = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = android.graphics.Color.rgb(35, 220, 207); textSize = 25f }
-    val datePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = android.graphics.Color.rgb(180, 198, 216); textSize = 20f; textAlign = Paint.Align.RIGHT }
-    canvas.drawText("Coach · Tier List", 52f, 78f, title)
-    canvas.drawText("S+ · S · A  |  Wild Rift", 52f, 120f, subtitle)
-    canvas.drawText(SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault()).format(Date()), width - 52f, 78f, datePaint)
-    var y = 180f
-    groups.forEach { (tier, entries) ->
-        if (entries.isEmpty()) return@forEach
-        val tierPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = when (tier) { "S+" -> android.graphics.Color.rgb(35,220,207); "S" -> android.graphics.Color.rgb(80,220,150); else -> android.graphics.Color.rgb(242,201,76) }; textSize = 30f; typeface = Typeface.DEFAULT_BOLD }
-        canvas.drawText("TIER $tier", 48f, y, tierPaint)
-        y += 34f
-        entries.chunked(3).forEach { row ->
-            row.forEachIndexed { index, champion ->
-                val x = 42f + index * 344f
-                val avatarX = x + 48f
-                val avatarY = y + 38f
-                val avatarPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = android.graphics.Color.rgb(38, 83, 115) }
-                canvas.drawCircle(avatarX, avatarY, 35f, avatarPaint)
-                loadAssetBitmap(context, champion.avatarUrl.ifBlank { champion.getLocalAvatarUri() })?.let { source ->
-                    val clipped = android.graphics.Path().apply { addCircle(avatarX, avatarY, 35f, android.graphics.Path.Direction.CW) }
-                    canvas.save(); canvas.clipPath(clipped)
-                    canvas.drawBitmap(source, null, android.graphics.RectF(avatarX - 35f, avatarY - 35f, avatarX + 35f, avatarY + 35f), null)
-                    canvas.restore(); source.recycle()
-                }
-                val namePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = android.graphics.Color.WHITE; textSize = 22f; typeface = Typeface.DEFAULT_BOLD }
-                canvas.drawText(champion.name, x + 96f, y + 31f, namePaint)
-                val stats = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = android.graphics.Color.rgb(170, 190, 210); textSize = 17f }
-                canvas.drawText("WR ${percent(champion.winrate)}", x + 96f, y + 60f, stats)
-                canvas.drawText("P ${percent(champion.pickRate)} · B ${percent(champion.banRate)}", x + 96f, y + 84f, stats)
-            }
-            y += rowHeight
-        }
-        y += 22f
-    }
-    val logo = android.graphics.BitmapFactory.decodeResource(context.resources, com.example.R.drawable.ic_app_logo)
-    if (logo != null) {
-        val scaled = Bitmap.createScaledBitmap(logo, 68, 68, true)
-        canvas.drawBitmap(scaled, (width - 68) / 2f, height - 170f, null)
-    }
-    val wildRiftLogo = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = android.graphics.Color.WHITE; textSize = 20f; typeface = Typeface.DEFAULT_BOLD; textAlign = Paint.Align.CENTER }
-    canvas.drawText("LEAGUE OF LEGENDS: WILD RIFT", width / 2f, height - 82f, wildRiftLogo)
+    val bitmap = renderTierListImage(context, champions)
+    try {
     val filename = "Coach-TierList-${System.currentTimeMillis()}.png"
     val resolver = context.contentResolver
     val values = ContentValues().apply {
@@ -124,18 +75,97 @@ private fun saveTierListImage(context: Context, champions: List<Champion>): Bool
         }
     }
     val uri = resolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values) ?: return false
-    resolver.openOutputStream(uri)?.use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
-        ?: return false
+    val written = resolver.openOutputStream(uri)?.use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
+    if (written != true) {
+        resolver.delete(uri, null, null)
+        return false
+    }
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
         resolver.update(uri, ContentValues().apply { put(MediaStore.Images.Media.IS_PENDING, 0) }, null, null)
     }
     true
+    } finally { bitmap.recycle() }
 }.getOrDefault(false)
 
-private fun percent(value: Double): String = if (value.isFinite()) String.format(Locale.US, "%.2f%%", value) else "—"
+internal fun renderTierListImage(context: Context, champions: List<Champion>): Bitmap {
+    val groups = listOf("S+", "S", "A").map { tier -> tier to champions.filter { it.tier == tier || tier == "A" && it.tier == "A+" } }
+    val columns = if (champions.size > 80) 5 else 4
+    val rowCount = groups.sumOf { (_, entries) -> (entries.size + columns - 1) / columns }
+    val bitmap = Bitmap.createBitmap(2160, 3840, Bitmap.Config.ARGB_8888)
+    val canvas = Canvas(bitmap)
+    canvas.scale(2f, 2f)
+    canvas.drawColor(android.graphics.Color.rgb(6, 17, 30))
+    loadAssetBitmap(context, "file:///android_asset/summoners_rift.png")?.let { map ->
+        val scale = maxOf(1080f / map.width, 1920f / map.height)
+        val dw = map.width * scale; val dh = map.height * scale
+        canvas.drawBitmap(map, null, android.graphics.RectF((1080-dw)/2, (1920-dh)/2, (1080+dw)/2, (1920+dh)/2), Paint().apply { alpha=95 })
+        map.recycle()
+    }
+    val paint = Paint(Paint.ANTI_ALIAS_FLAG)
+    fun text(value: String, x: Float, y: Float, size: Float, color: Int, maxWidth: Float,
+             centered: Boolean = false) {
+        paint.color=color; paint.textSize=size; paint.typeface=Typeface.DEFAULT_BOLD
+        paint.textAlign=if (centered) Paint.Align.CENTER else Paint.Align.LEFT
+        while (paint.measureText(value)>maxWidth && paint.textSize>7f) paint.textSize-=.5f
+        canvas.drawText(value,x,y,paint)
+    }
+    val white=android.graphics.Color.WHITE
+    text("COACH",40f,62f,34f,white,500f)
+    text("TIER LIST · S+ / S / A",40f,100f,20f,0xFF32D8CC.toInt(),650f)
+    paint.textAlign=Paint.Align.RIGHT;paint.textSize=18f;paint.color=white
+    canvas.drawText(SimpleDateFormat("dd/MM/yyyy HH:mm",Locale.getDefault()).format(Date()),1040f,56f,paint)
+    val groupSpace=groups.count { it.second.isNotEmpty() } * 50f
+    val cellHeight=minOf(118f,(1540f-groupSpace)/rowCount.coerceAtLeast(1))
+    val cellWidth=1000f/columns
+    var y=140f
+    groups.forEach { (tier, entries) ->
+        if (entries.isEmpty()) return@forEach
+        val accent=when(tier) { "S+"->0xFF32D8CC.toInt();"S"->0xFF6BDE9C.toInt();else->0xFFE8CA82.toInt() }
+        paint.color=0xDD0C2434.toInt(); canvas.drawRoundRect(32f,y,1048f,y+36,10f,10f,paint)
+        text(tier,48f,y+26,27f,accent,120f)
+        text("${entries.size}",990f,y+24,17f,white,45f,true)
+        y+=44f
+        entries.chunked(columns).forEach { row ->
+            row.forEachIndexed { index, champion ->
+                val x=40f+index*cellWidth; val center=x+cellWidth/2
+                paint.color=0xCC071521.toInt(); canvas.drawRoundRect(x+3,y,x+cellWidth-3,y+cellHeight-3,8f,8f,paint)
+                val radius=minOf(28f,cellHeight*.20f)
+                val cy=y+radius+3
+                paint.color=accent;canvas.drawCircle(center,cy,radius+1.5f,paint)
+                val source = loadAssetBitmap(context,champion.getLocalAvatarUri())
+                    ?: loadAssetBitmap(context,champion.avatarUrl)
+                source?.let {
+                    canvas.save()
+                    canvas.clipPath(android.graphics.Path().apply { addCircle(center,cy,radius,android.graphics.Path.Direction.CW) })
+                    canvas.drawBitmap(it,null,android.graphics.RectF(center-radius,cy-radius,center+radius,cy+radius),null)
+                    canvas.restore();it.recycle()
+                }
+                val nameY=y+cellHeight*.68f
+                text(champion.name,center,nameY,minOf(21f,cellHeight*.23f),white,cellWidth-12,true)
+                text("WR ${percent(champion.winrate)} · P ${percent(champion.pickRate)} · B ${percent(champion.banRate)}",
+                    center,y+cellHeight*.94f,minOf(15f,cellHeight*.21f),0xFFB4D8DE.toInt(),cellWidth-12,true)
+                if(champion.tierMovement!=0) text(if(champion.tierMovement>0) "↑" else "↓",x+cellWidth-24,y+19,20f,
+                    if(champion.tierMovement>0)0xFF6BDE9C.toInt() else 0xFFFF6677.toInt(),20f,true)
+            }
+            y+=cellHeight
+        }
+        y+=6f
+    }
+    // Footer is reserved regardless of roster size. Logos never cover a champion.
+    paint.color=0xE806121F.toInt();canvas.drawRoundRect(32f,1710f,1048f,1890f,20f,20f,paint)
+    android.graphics.BitmapFactory.decodeResource(context.resources,com.example.R.drawable.ic_app_logo)?.let { logo ->
+        canvas.drawBitmap(logo,null,android.graphics.RectF(470f,1730f,610f,1870f),null);logo.recycle()
+    }
+    loadAssetBitmap(context,"file:///android_asset/wild_rift_logo.png")?.let { logo ->
+        canvas.drawBitmap(logo,null,android.graphics.RectF(825f,1750f,1025f,1886f),null);logo.recycle()
+    }
+    return bitmap
+}
+
+private fun percent(value: Double): String = if(value.isFinite()) String.format(Locale.US,"%.2f%%",value) else "—"
 
 private fun loadAssetBitmap(context: Context, url: String): Bitmap? = runCatching {
-    val path = url.removePrefix("file:///android_asset/")
-    if (!url.startsWith("file:///android_asset/")) return@runCatching null
+    val path=url.removePrefix("file:///android_asset/")
+    if(!url.startsWith("file:///android_asset/")) return@runCatching null
     context.assets.open(path).use { android.graphics.BitmapFactory.decodeStream(it) }
 }.getOrNull()

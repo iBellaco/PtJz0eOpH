@@ -59,7 +59,6 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import com.example.ui.components.SparklineTrendGraph
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
@@ -637,31 +636,7 @@ fun ChampionsCatalogTab(
                                 lineHeight = if (isOverlay) 12.sp else 15.sp,
                                 overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                             )
-                            if (!isOverlay && catalogSignedIn) {
-                                Spacer(modifier = Modifier.height(6.dp))
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .clip(RoundedCornerShape(6.dp))
-                                        .background(HextechDarkBg.copy(alpha = 0.5f))
-                                        .padding(horizontal = 8.dp, vertical = 4.dp),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.SpaceBetween
-                                ) {
-                                    val safeWr = champion.winrate
-                                    val safeDelta = champion.winrateDelta
-                                    SparklineTrendGraph(
-                                        winrate = if (champion.hasRegionalStats) safeWr else Double.NaN,
-                                        observed24h = champion.winrate24h,
-                                        observed12h = champion.winrate12h,
-                                        delta = safeDelta,
-                                        modifier = Modifier.fillMaxWidth(),
-                                        showTimeLabels = true,
-                                        showFullText = true,
-                                        canvasHeight = 16
-                                    )
-                                }
-                            }
+
                             Spacer(modifier = Modifier.height(6.dp))
                             // Skill icons preview
                             Row(

@@ -22,32 +22,10 @@ object BestBuildWrScraper {
     private const val PREFS_NAME = "wr_tier_list_cache"
     private const val STATS_SNAPSHOT_PREFIX = "stats_snapshot_"
 
-    // Five independent publishers for the active Wild Rift patch.
+    // Only publishers used by the statistics pipeline belong in live monitoring.
     val GLOBAL_SCRAPING_SOURCES = listOf(
-        GlobalScrapingSource(
-            id = "bestbuildwr", name = "BestBuildWR", url = "https://bestbuildwr.com/champions",
-            displayUrl = "bestbuildwr.com/champions", expectedPatch = null
-        ),
-        GlobalScrapingSource(
-            id = "wildriftfire",
-            name = "WildRiftFire",
-            url = "https://www.wildriftfire.com/tier-list",
-            displayUrl = "wildriftfire.com/tier-list", expectedPatch = "7.3b"
-        ),
-        GlobalScrapingSource(
-            id = "wildriftcore",
-            name = "WildRiftCore",
-            url = "https://wildriftcore.com/es/tierlist/?patch=7.3b",
-            displayUrl = "wildriftcore.com/es/tierlist/", expectedPatch = "7.3b"
-        ),
-        GlobalScrapingSource(
-            id = "wildriftcounter", name = "WildRiftCounter", url = "https://wildriftcounter.com/",
-            displayUrl = "wildriftcounter.com", expectedPatch = null
-        ),
-        GlobalScrapingSource(
-            id = "thewildpick", name = "TheWildPick", url = "https://thewildpick.com/counter/",
-            displayUrl = "thewildpick.com/counter", expectedPatch = null
-        ),
+        GlobalScrapingSource("wildriftfire", "WildRiftFire", "https://www.wildriftfire.com/tier-list", "wildriftfire.com/tier-list", "7.3b"),
+        GlobalScrapingSource("wildriftcore", "WildRiftCore", "https://wildriftcore.com/es/tierlist/?patch=7.3b", "wildriftcore.com/es/tierlist/", "7.3b")
     )
 
     private val _freshness = MutableStateFlow(MetaFreshness())

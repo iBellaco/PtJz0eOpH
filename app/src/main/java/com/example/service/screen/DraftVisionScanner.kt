@@ -152,7 +152,7 @@ object DraftVisionScanner {
         banDetectionActiveFlow.value=true
         DraftBanFrame(bitmap.copy(Bitmap.Config.ARGB_8888,false) ?: error("Ban frame unavailable"),
             diagnosticTextForFrame(bitmap.width,bitmap.height)+listOfNotNull(overlayForFrame(bitmap.width,bitmap.height)),
-            AdaptiveScreenLayoutEngine.computeAdaptiveConfig(bitmap.width,bitmap.height,calibrationConfig),
+            configForFrame(bitmap),
             pickedIds,banGeneration)
     }
 
@@ -232,7 +232,7 @@ object DraftVisionScanner {
         if (turn.turnNumber == 10) {
             val w = bitmap.width
             val h = bitmap.height
-            val calib = AdaptiveScreenLayoutEngine.computeAdaptiveConfig(w, h, calibrationConfig)
+            val calib = configForFrame(bitmap)
             val crop = AdaptiveScreenLayoutEngine.extractSlotAvatarBitmap(
                 sourceBitmap = bitmap,
                 width = w,
@@ -351,6 +351,31 @@ object DraftVisionScanner {
         }
     }
 
+    val alignedConfigFlow = kotlinx.coroutines.flow.MutableStateFlow(VisionCalibrationConfig())
+    private var alignedBase: VisionCalibrationConfig? = null
+    private var alignedSize = 0 to 0
+    private var lastAlignmentAt = 0L
+    @Synchronized
+    internal fun configForFrame(bitmap: Bitmap): VisionCalibrationConfig {
+        val base = AdaptiveScreenLayoutEngine.computeAdaptiveConfig(bitmap.width, bitmap.height, calibrationConfig)
+        val defaults = VisionCalibrationConfig.defaultsForDevice(android.os.Build.MANUFACTURER, android.os.Build.MODEL)
+        val manual = calibrationConfig.allySlotXRatios != defaults.allySlotXRatios ||
+            calibrationConfig.enemySlotXRatios != defaults.enemySlotXRatios ||
+            calibrationConfig.allySlotYRatios != defaults.allySlotYRatios ||
+            calibrationConfig.enemySlotYRatios != defaults.enemySlotYRatios
+        val now = android.os.SystemClock.elapsedRealtime()
+        if (alignedBase != base || alignedSize != (bitmap.width to bitmap.height)) {
+            alignedConfigFlow.value = base
+            alignedBase = base; alignedSize = bitmap.width to bitmap.height
+            lastAlignmentAt = 0L
+        }
+        if (!manual && (lastAlignmentAt == 0L || now-lastAlignmentAt >= 2000)) {
+            alignedConfigFlow.value = DraftRingAlignment.align(bitmap, alignedConfigFlow.value,
+                overlayForFrame(bitmap.width, bitmap.height))
+            lastAlignmentAt = now
+        }
+        return alignedConfigFlow.value
+    }
     @Volatile var calibrationConfig = VisionCalibrationConfig()
     val calibrationConfigFlow = kotlinx.coroutines.flow.MutableStateFlow(VisionCalibrationConfig())
 
@@ -402,7 +427,7 @@ object DraftVisionScanner {
     fun observeSelectionSlots(bitmap: Bitmap, confirmedPicksCount: Int): DraftSlotLifecycle.Observation {
         if (bitmap.isRecycled) return DraftSlotLifecycle.Observation.DISAPPEARING
         if (bitmap.width < bitmap.height) return slotLifecycle.observe(false,confirmedPicksCount>=9)
-        val config = AdaptiveScreenLayoutEngine.computeAdaptiveConfig(bitmap.width, bitmap.height, calibrationConfig)
+        val config = configForFrame(bitmap)
         val visibleSlots = listOf(true, false).sumOf { isAlly ->
             (0..4).count { index ->
                 val crop = AdaptiveScreenLayoutEngine.extractSlotAvatarBitmap(
@@ -517,7 +542,7 @@ object DraftVisionScanner {
         val freshAllyChampions = mutableMapOf<Int, Champion>()
 
         // Calibración adaptativa multipantalla para cualquier relación de aspecto (16:9, 18:9, 19.5:9, 20:9, 21:9, tablets)
-        val calib = AdaptiveScreenLayoutEngine.computeAdaptiveConfig(width, height, calibrationConfig)
+        val calib = configForFrame(bitmap)
 
         // 5 slots para aliados y 5 slots para enemigos
         val allySlots = (0..4).map { ScannedSlotInfo(slotIndex = it, isAlly = true) }

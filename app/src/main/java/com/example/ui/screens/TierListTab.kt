@@ -55,7 +55,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import com.example.ui.components.SparklineTrendGraph
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
@@ -103,19 +102,6 @@ fun TierListTab(
     horizontalPadding: androidx.compose.ui.unit.Dp = if (isOverlay) 4.dp else 16.dp
 ) {
     val isSignedIn by com.example.util.AuthManager.isSignedIn.collectAsStateWithLifecycle()
-    var showTrendSignIn by remember { mutableStateOf(false) }
-    if (showTrendSignIn) {
-        androidx.compose.ui.window.Dialog(onDismissRequest = { showTrendSignIn = false },
-            properties = androidx.compose.ui.window.DialogProperties(usePlatformDefaultWidth = false)) {
-            Surface(Modifier.fillMaxWidth(0.95f).heightIn(max = 680.dp),
-                color = HextechDarkBg, shape = RoundedCornerShape(16.dp)) {
-                Column(Modifier.verticalScroll(rememberScrollState()).padding(12.dp)) {
-                    TextButton(onClick = { showTrendSignIn = false }) { Text(tr("Cerrar")) }
-                    com.example.ui.auth.AuthFlowContainer(onLoginSuccess = { showTrendSignIn = false })
-                }
-            }
-        }
-    }
     val context = LocalContext.current
     val syncState by GlobalMetaSyncService.syncState.collectAsStateWithLifecycle()
     val currentRegion by GlobalMetaSyncService.currentRegion.collectAsStateWithLifecycle()
@@ -359,92 +345,7 @@ fun TierListTab(
                 }
             }
 
-            item {
-                if (!isSignedIn) {
-                    Column(Modifier.fillMaxWidth().testTag("tier_trend_sign_in")) {
-                        Text(tr("Inicia sesión o regístrate para ver la evolución de 24 y 12 horas."),
-                            color = TextSecondary, fontSize = 12.sp)
-                        TextButton(onClick = { showTrendSignIn = true }, modifier = Modifier.testTag("tier_trend_sign_in_button")) {
-                            Text(tr("Iniciar sesión o registrarse"))
-                        }
-                    }
-                } else Card(
-                    modifier = Modifier.fillMaxWidth().testTag("tier_trend_header"),
-                    shape = RoundedCornerShape(8.dp),
-                    colors = CardDefaults.cardColors(containerColor = HextechSurface.copy(alpha = 0.85f)),
-                    border = androidx.compose.foundation.BorderStroke(0.6.dp, HextechCardBorder)
-                ) {
-                    Column(modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(6.dp)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.TrendingUp,
-                                    contentDescription = null,
-                                    tint = HextechGold,
-                                    modifier = Modifier.size(13.dp)
-                                )
-                                Text(
-                                    text = tr("Gráfica de Tendencia:"),
-                                    color = HextechGold,
-                                    fontSize = if (isOverlay) 9.5.sp else 11.sp,
-                                    fontWeight = FontWeight.Bold
-                                )
-                                Text(
-                                    text = tr("hace 24h, 12h y actual"),
-                                    color = HextechCyan,
-                                    fontSize = if (isOverlay) 8.5.sp else 10.sp,
-                                    fontWeight = FontWeight.Medium
-                                )
-                            }
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(4.dp)
-                            ) {
-                                Box(
-                                    modifier = Modifier
-                                        .size(6.dp)
-                                        .clip(CircleShape)
-                                        .background(Color(0xFF00FF7F))
-                                )
-                                Text(
-                                    text = tr("Consulta automática"),
-                                    color = Color(0xFF00FF7F),
-                                    fontSize = if (isOverlay) 8.sp else 9.5.sp,
-                                    fontWeight = FontWeight.Bold
-                                )
-                            }
-                        }
-                        Spacer(modifier = Modifier.height(3.dp))
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(3.dp)) {
-                                Box(modifier = Modifier.size(5.dp).clip(CircleShape).background(HextechCyan))
-                                Text(tr("hace 24 horas"), color = HextechCyan, fontSize = 8.5.sp, fontWeight = FontWeight.SemiBold)
-                            }
-                            Text(com.example.util.tr("➔"), color = TextMuted, fontSize = 8.sp)
-                            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(3.dp)) {
-                                Box(modifier = Modifier.size(5.dp).clip(CircleShape).background(HextechGold))
-                                Text(tr("hace 12 horas"), color = HextechGold, fontSize = 8.5.sp, fontWeight = FontWeight.Bold)
-                            }
-                            Text(com.example.util.tr("➔"), color = TextMuted, fontSize = 8.sp)
-                            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(3.dp)) {
-                                Box(modifier = Modifier.size(5.dp).clip(CircleShape).background(Color(0xFF00FF7F)))
-                                Text(tr("actual"), color = Color(0xFF00FF7F), fontSize = 8.5.sp, fontWeight = FontWeight.Bold)
-                            }
-                        }
-                    }
-                }
-            }
+
         }
 
         if (selectedSort == TierSortOption.BY_TIER) {
@@ -628,34 +529,7 @@ fun TierListTab(
                             }
 
                             // History is available only to registered, signed-in accounts.
-                            if (!isOverlay && isSignedIn) {
-                                Spacer(modifier = Modifier.height(8.dp))
-                                Row(
-                                    modifier = Modifier
-                                        .testTag("tier_trend_graph")
-                                        .fillMaxWidth()
-                                        .clip(RoundedCornerShape(6.dp))
-                                        .background(HextechDarkBg.copy(alpha = 0.5f))
-                                        .padding(horizontal = 8.dp, vertical = 4.dp),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.SpaceBetween
-                                ) {
-                                    val safeWr = champ.winrate
-                                    val safeDelta = champ.winrateDelta
-                                    SparklineTrendGraph(
-                                        winrate = if (champ.hasRegionalStats) safeWr else Double.NaN,
-                                        observed24h = champ.winrate24h,
-                                        observed12h = champ.winrate12h,
-                                        dailyReferences = champ.historyUsesDailyReports,
-                                        reference24hAt = champ.history24hAt, reference12hAt = champ.history12hAt,
-                                        delta = safeDelta,
-                                        modifier = Modifier.fillMaxWidth(),
-                                        showTimeLabels = true,
-                                        showFullText = true,
-                                        canvasHeight = 16
-                                    )
-                                }
-                            }
+
                         }
                     }
                 }
@@ -787,34 +661,7 @@ fun TierSectionCard(
                             }
 
                             // Gráfica de tendencia (hace 24h, 12h y actual) para todos los campeones
-                            if (!isOverlay && showTrend) {
-                                Spacer(modifier = Modifier.height(8.dp))
-                                Row(
-                                    modifier = Modifier
-                                        .testTag("tier_trend_graph")
-                                        .fillMaxWidth()
-                                        .clip(RoundedCornerShape(6.dp))
-                                        .background(HextechDarkBg.copy(alpha = 0.5f))
-                                        .padding(horizontal = 8.dp, vertical = 4.dp),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.SpaceBetween
-                                ) {
-                                    val safeWr = champ.winrate
-                                    val safeDelta = champ.winrateDelta
-                                    SparklineTrendGraph(
-                                        winrate = if (champ.hasRegionalStats) safeWr else Double.NaN,
-                                        observed24h = champ.winrate24h,
-                                        observed12h = champ.winrate12h,
-                                        dailyReferences = champ.historyUsesDailyReports,
-                                        reference24hAt = champ.history24hAt, reference12hAt = champ.history12hAt,
-                                        delta = safeDelta,
-                                        modifier = Modifier.fillMaxWidth(),
-                                        showTimeLabels = true,
-                                        showFullText = true,
-                                        canvasHeight = 16
-                                    )
-                                }
-                            }
+
                         }
                     }
                 }
