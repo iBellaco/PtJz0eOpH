@@ -93,6 +93,7 @@ import com.example.util.tr
 @Composable
 fun AuthFlowContainer(
     viewModel: AuthViewModel = viewModel(),
+    initialScreen: AuthScreenType = AuthScreenType.LOGIN,
     onLoginSuccess: (() -> Unit)? = null
 ) {
     val auth = AuthManager.getAuth()
@@ -109,7 +110,8 @@ fun AuthFlowContainer(
         onDispose { auth?.removeAuthStateListener(listener) }
     }
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(initialScreen) {
+        viewModel.navigateTo(initialScreen)
         currentUser = auth?.currentUser
     }
 

@@ -1140,7 +1140,13 @@ internal fun FloatingOverlayContent(
                                     isOverlay = true,
                                     champion = selectedChampionDetail,
                                     onDismiss = { selectedChampionDetail = null },
-                                    onChampionSelected = { openChampionDetails(it) }
+                                    onChampionSelected = { openChampionDetails(it) },
+                                    onNavigateToRegister = {
+                                        context.startActivity(Intent(context, com.example.MainActivity::class.java).apply {
+                                            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                            putExtra("OPEN_REGISTER", true)
+                                        })
+                                    }
                                 )
                             } else {
                                 when (overlayHubTab) {
@@ -1265,13 +1271,15 @@ internal fun FloatingOverlayContent(
                                     fontSize = 9.5.sp,
                                     modifier = Modifier.padding(end = 4.dp)
                                 )
-                                Box(
-                                    modifier = Modifier
-                                        .clip(RoundedCornerShape(3.dp))
-                                        .background(HextechGold.copy(alpha = 0.9f))
-                                        .padding(horizontal = 3.dp, vertical = 1.dp)
-                                ) {
-                                    Text("PRO", color = HextechDarkBg, fontSize = 7.sp, fontWeight = FontWeight.Black)
+                                if (!isPremium) {
+                                    Box(
+                                        modifier = Modifier
+                                            .clip(RoundedCornerShape(3.dp))
+                                            .background(HextechGold.copy(alpha = 0.9f))
+                                            .padding(horizontal = 3.dp, vertical = 1.dp)
+                                    ) {
+                                        Text("PRO", color = HextechDarkBg, fontSize = 7.sp, fontWeight = FontWeight.Black)
+                                    }
                                 }
                                 Spacer(Modifier.width(3.dp))
                                 Switch(

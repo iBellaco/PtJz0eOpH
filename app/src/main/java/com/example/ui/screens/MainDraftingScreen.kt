@@ -782,11 +782,9 @@ fun MainDraftingScreen(
                     Button(onClick = {
                         showCaptureDisclosure = false
                         val manager = context.getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
-                        val captureIntent = if (android.os.Build.VERSION.SDK_INT >= 34) {
-                            manager.createScreenCaptureIntent(
-                                android.media.projection.MediaProjectionConfig.createConfigForDefaultDisplay()
-                            )
-                        } else manager.createScreenCaptureIntent()
+                        // Android 14+ puede autorizar una aplicación concreta o toda la
+                        // pantalla. No se fuerza el display completo para conservar ambas opciones.
+                        val captureIntent = manager.createScreenCaptureIntent()
                         mediaProjectionLauncher.launch(captureIntent)
                     }, modifier = Modifier.heightIn(min = 48.dp).testTag("capture_disclosure_continue")) {
                         Text(com.example.util.localizedString(com.example.R.string.legal_capture_continue))

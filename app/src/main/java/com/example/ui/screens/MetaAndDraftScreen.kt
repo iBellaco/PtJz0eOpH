@@ -122,6 +122,7 @@ fun MetaAndDraftScreen(
     userMainRole: LaneRole,
     initialChampionId: String? = null,
     isOverlay: Boolean = false,
+    onNavigateToRegister: () -> Unit = {},
     onNavigateBack: () -> Unit
 ) {
     val screenContext = LocalContext.current
@@ -707,7 +708,8 @@ fun MetaAndDraftScreen(
         ChampionDetailSheet(
             champion = selectedDetailChampion,
             onDismiss = { selectedDetailChampion = null },
-            onChampionSelected = { openChampionDetails(it) }
+            onChampionSelected = { openChampionDetails(it) },
+            onNavigateToRegister = onNavigateToRegister
         )
     }
 
