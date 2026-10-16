@@ -21,6 +21,7 @@ import java.util.Locale
 object BestBuildWrScraper {
     private const val PREFS_NAME = "wr_tier_list_cache"
     private const val STATS_SNAPSHOT_PREFIX = "stats_snapshot_"
+    private const val ROLE_STATS_SNAPSHOT_PREFIX = "role_stats_snapshot_"
 
     // Only publishers used by the statistics pipeline belong in live monitoring.
     val GLOBAL_SCRAPING_SOURCES = listOf(
@@ -89,8 +90,9 @@ object BestBuildWrScraper {
                 val data = JSONObject(saved)
                 val tiers = data.keys().asSequence().associateWith { data.getString(it) }
                 val stats = decodeStats(prefs.getString(STATS_SNAPSHOT_PREFIX + region, null))
+                val roleStats = decodeRoleStats(prefs.getString(ROLE_STATS_SNAPSHOT_PREFIX + region, null))
                 val at = prefs.getLong("timestamp_$region", 0)
-                WildRiftRepository.applyRegionalTierList(region, tiers, stats,
+                WildRiftRepository.applyRegionalTierList(region, tiers, stats, roleStats = roleStats,
                     checkedAt = at, history = decodeHistory(prefs.getString("rate_history_v2", null)))
                 _freshness.value = MetaFreshness(
                     tiersCheckedAt = prefs.getLong("tiers_checked", 0),
@@ -122,6 +124,7 @@ object BestBuildWrScraper {
             var message: String
             var cache: JSONObject? = null
             var statsCache: JSONObject? = null
+            var roleStatsCache: JSONObject? = null
 
             if (!_isOnline.value) {
                 message = "Sin conexión; conservando datos guardados."
@@ -191,6 +194,10 @@ object BestBuildWrScraper {
                     context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
                         .getString(STATS_SNAPSHOT_PREFIX + requested, null)
                 )
+                val previousRoleStats = decodeRoleStats(
+                    context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+                        .getString(ROLE_STATS_SNAPSHOT_PREFIX + requested, null)
+                )
                 // Keep the same rank bracket and publisher for current and dated history.
                 // Fallback publishers only fill champions absent from the primary report.
                 val freshStats = linkedMapOf<String, ChampionMetaStats>()
@@ -203,6 +210,9 @@ object BestBuildWrScraper {
                         }
                     }
                 }
+                val freshRoleStats = GlobalTierConsensus.fuseRoleStats(
+                    validSources.sortedBy { it.source.id == "wildriftfire" }.map { it.roleStats }
+                )
 
                 // Categories and rates are independent publications. A source
                 // can expose current win/pick/ban values while its tier markup
@@ -212,6 +222,7 @@ object BestBuildWrScraper {
                 if (fusedTiers.isNotEmpty() || freshStats.isNotEmpty()) {
                     val merged = GlobalTierConsensus.mergeSnapshot(previousTiers, fusedTiers)
                     val mergedStats = GlobalTierConsensus.mergeStats(previousStats, freshStats)
+                    val mergedRoleStats = GlobalTierConsensus.mergeRoleStats(previousRoleStats, freshRoleStats)
                     val history = decodeHistory(prefs.getString("rate_history_v2", null)).toMutableMap()
                     val publishedHistory = validSources.firstOrNull { it.source.id == "wildriftfire" }?.history.orEmpty()
                     publishedHistory.forEach { (id, rows) ->
@@ -225,7 +236,8 @@ object BestBuildWrScraper {
                             ObservedRate(started, value, rates.pickRate, rates.banRate, source = origin))
                     } }
                     val changedIds = (fusedTiers.filter { (id, tier) -> previousTiers[id] != tier }.keys +
-                        freshStats.filter { (id, rates) -> previousStats[id] != rates }.keys).size
+                        freshStats.filter { (id, rates) -> previousStats[id] != rates }.keys +
+                        freshRoleStats.filter { (id, rates) -> previousRoleStats[id] != rates }.keys).size
                     val oldHealth = _freshness.value
                     _freshness.value = oldHealth.copy(
                         tiersCheckedAt = if (fusedTiers.isNotEmpty()) started else oldHealth.tiersCheckedAt,
@@ -242,11 +254,14 @@ object BestBuildWrScraper {
                         "GLOBAL",
                         merged,
                         mergedStats,
+                        roleStats = mergedRoleStats,
+                        previousRoleStats = previousRoleStats,
                         previousStats = previousStats, previousTiers = previousTiers,
                         checkedAt = started, history = history
                     )
                     cache = JSONObject(merged)
                     statsCache = encodeStats(mergedStats)
+                    roleStatsCache = encodeRoleStats(mergedRoleStats)
                     success = true
                 }
                 message = if (success) "Categorías y estadísticas globales actualizadas (${validSources.size}/${GLOBAL_SCRAPING_SOURCES.size} fuentes)"
@@ -261,6 +276,7 @@ object BestBuildWrScraper {
                         .putLong("timestamp_$requested", started)
                         .putString("snapshot_$requested", cache.toString())
                         .also { editor -> statsCache?.let { editor.putString(STATS_SNAPSHOT_PREFIX + requested, it.toString()) } }
+                        .also { editor -> roleStatsCache?.let { editor.putString(ROLE_STATS_SNAPSHOT_PREFIX + requested, it.toString()) } }
                         .apply()
                 }
             }
@@ -319,5 +335,34 @@ object BestBuildWrScraper {
                 value.banRate?.let { put("banRate", it) }
             })
         }
+    }
+
+    private fun decodeRoleStats(raw: String?): Map<String, Map<com.example.model.LaneRole, ChampionMetaStats>> {
+        if (raw.isNullOrBlank()) return emptyMap()
+        return runCatching {
+            val root = JSONObject(raw)
+            root.keys().asSequence().associateWith { id ->
+                val lanes = root.getJSONObject(id)
+                lanes.keys().asSequence().mapNotNull { name ->
+                    val lane = runCatching { com.example.model.LaneRole.valueOf(name) }.getOrNull() ?: return@mapNotNull null
+                    val value = lanes.getJSONObject(name)
+                    lane to ChampionMetaStats(
+                        value.optDouble("winRate", Double.NaN).takeIf(Double::isFinite),
+                        value.optDouble("pickRate", Double.NaN).takeIf(Double::isFinite),
+                        value.optDouble("banRate", Double.NaN).takeIf(Double::isFinite)
+                    )
+                }.toMap()
+            }
+        }.getOrDefault(emptyMap())
+    }
+
+    private fun encodeRoleStats(stats: Map<String, Map<com.example.model.LaneRole, ChampionMetaStats>>): JSONObject = JSONObject().apply {
+        stats.forEach { (id, lanes) -> put(id, JSONObject().apply {
+            lanes.forEach { (lane, value) -> put(lane.name, JSONObject().apply {
+                value.winRate?.let { put("winRate", it) }
+                value.pickRate?.let { put("pickRate", it) }
+                value.banRate?.let { put("banRate", it) }
+            }) }
+        }) }
     }
 }

@@ -636,18 +636,12 @@ fun SupportReportDialog(
                                     }
                                     val userName = exactUserName
 
-                                    val initialMessageMap = mapOf<String, Any>(
-                                        "id" to java.util.UUID.randomUUID().toString(),
-                                        "senderName" to userName.ifBlank { "Invocador" },
-                                        "senderRole" to "USER",
-                                        "text" to cleanDesc,
-                                        "timestampMillis" to System.currentTimeMillis(),
-                                        "isGreeting" to false
-                                    )
-                                    val initialConversation = listOf(initialMessageMap)
-
                                     val reportId = java.util.UUID.randomUUID().toString()
                                     val finalTag = when (selectedTag) { "PATROCINADOR" -> "PATROCINADOR"; "VERIFICAR" -> "VERIFICAR"; else -> "SOPORTE" }
+                                    val detectedLanguage = com.example.data.SupportLanguageDetector.detect(cleanTitle, cleanDesc, com.example.util.AppLanguage.current.value)
+                                    val initialConversation = com.example.data.SupportConversationPolicy.initial(
+                                        reportId, userName.ifBlank { "Invocador" }, cleanDesc, System.currentTimeMillis(), language = detectedLanguage
+                                    ).map { com.example.data.SupportConversationPolicy.encode(it, if (it.senderRole == "USER") userId else "") }
                                     if (finalTag == "VERIFICAR") {
                                         FeedbackRepository.submitFeedback(
                                             type = finalTag, title = cleanTitle, description = cleanDesc,
@@ -666,6 +660,7 @@ fun SupportReportDialog(
                                         "description" to cleanDesc,
                                         "tag" to finalTag,
                                         "type" to finalTag,
+                                        "language" to detectedLanguage,
                                         "userId" to userId,
                                         "userEmail" to userEmail,
                                         "userName" to userName,
@@ -713,6 +708,7 @@ fun SupportReportDialog(
                                             "createdAt" to Timestamp.now(),
                                             "isRead" to true,
                                             "tag" to finalTag,
+                                            "language" to detectedLanguage,
                                             "sender" to userName,
                                             "reportId" to reportId,
                                             "status" to "PENDIENTE",

@@ -339,12 +339,13 @@ object ChampionRoleAdapter {
         val resolvedCountered = matchup.counters
         val resolvedSynergies = matchup.synergies
 
-        val effectiveWinrate = champ.winrate
-        val effectivePickRate = champ.pickRate
-        val effectiveBanRate = champ.banRate
-        val effectiveWinDelta = champ.winrateDelta
-        val effectivePickDelta = champ.pickRateDelta
-        val effectiveBanDelta = champ.banRateDelta
+        val lane = champ.laneStats[champ.primaryRole.name]
+        val effectiveWinrate = lane?.winRate?.takeIf(Double::isFinite) ?: champ.winrate
+        val effectivePickRate = lane?.pickRate?.takeIf(Double::isFinite) ?: champ.pickRate
+        val effectiveBanRate = lane?.banRate?.takeIf(Double::isFinite) ?: champ.banRate
+        val effectiveWinDelta = lane?.winRateDelta ?: champ.winrateDelta
+        val effectivePickDelta = lane?.pickRateDelta ?: champ.pickRateDelta
+        val effectiveBanDelta = lane?.banRateDelta ?: champ.banRateDelta
 
         return ChampionRoleProfile(
             role = champ.primaryRole,
@@ -443,14 +444,15 @@ object ChampionRoleAdapter {
 
         val syncedSwaps = generateSituationalSwaps(situationalItems, champ.damageType, isTank, emptyList(), role = role, fullBuild = build8)
 
-        // No publisher supplied separate rates for this role. Keep the
-        // observed champion metrics rather than inventing a flex penalty.
-        val flexWinrate = champ.winrate
-        val flexPickRate = champ.pickRate
-        val flexBanRate = champ.banRate
-        val flexWinDelta = champ.winrateDelta
-        val flexPickDelta = champ.pickRateDelta
-        val flexBanDelta = champ.banRateDelta
+        // Use the publisher's lane row when available; never derive a flex
+        // percentage from the champion's global or primary-lane rate.
+        val lane = champ.laneStats[role.name]
+        val flexWinrate = lane?.winRate?.takeIf(Double::isFinite) ?: Double.NaN
+        val flexPickRate = lane?.pickRate?.takeIf(Double::isFinite) ?: Double.NaN
+        val flexBanRate = lane?.banRate?.takeIf(Double::isFinite) ?: Double.NaN
+        val flexWinDelta = lane?.winRateDelta ?: 0.0
+        val flexPickDelta = lane?.pickRateDelta ?: 0.0
+        val flexBanDelta = lane?.banRateDelta ?: 0.0
         val flexTier = champ.tier
 
         val buildOptions = generate4BuildOptions(

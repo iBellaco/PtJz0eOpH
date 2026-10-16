@@ -197,7 +197,9 @@ object WildRiftRepository {
         region: String,
         tiers: Map<String, String>,
         stats: Map<String, ChampionMetaStats> = emptyMap(),
+        roleStats: Map<String, Map<com.example.model.LaneRole, ChampionMetaStats>> = emptyMap(),
         previousStats: Map<String, ChampionMetaStats> = emptyMap(),
+        previousRoleStats: Map<String, Map<com.example.model.LaneRole, ChampionMetaStats>> = emptyMap(),
         previousTiers: Map<String, String> = emptyMap(),
         checkedAt: Long = 0L,
         history: Map<String, List<com.example.data.sync.ObservedRate>> = emptyMap()
@@ -221,6 +223,10 @@ object WildRiftRepository {
             }
             val meta = stats[com.example.data.sync.RegionalTierParser.canonical(champion.id)]
                 ?: stats[com.example.data.sync.RegionalTierParser.canonical(champion.name)]
+            val championRoleStats = roleStats[com.example.data.sync.RegionalTierParser.canonical(champion.id)]
+                ?: roleStats[com.example.data.sync.RegionalTierParser.canonical(champion.name)].orEmpty()
+            val oldChampionRoleStats = previousRoleStats[com.example.data.sync.RegionalTierParser.canonical(champion.id)]
+                ?: previousRoleStats[com.example.data.sync.RegionalTierParser.canonical(champion.name)].orEmpty()
 
             // Rates are supplied by the current snapshot. Keep the movement
             // indicator tied to the previous snapshot instead of the static
@@ -258,7 +264,18 @@ object WildRiftRepository {
                 banRate = if (meta != null) meta.banRate ?: Double.NaN else champion.banRate,
                 winrateDelta = change(meta?.winRate, day?.value),
                 pickRateDelta = change(meta?.pickRate, day?.pick),
-                banRateDelta = change(meta?.banRate, day?.ban)
+                banRateDelta = change(meta?.banRate, day?.ban),
+                laneStats = championRoleStats.mapValues { (lane, rates) ->
+                    val old = oldChampionRoleStats[lane]
+                    com.example.model.ChampionLaneStats(
+                        winRate = rates.winRate ?: Double.NaN,
+                        pickRate = rates.pickRate ?: Double.NaN,
+                        banRate = rates.banRate ?: Double.NaN,
+                        winRateDelta = change(rates.winRate, old?.winRate),
+                        pickRateDelta = change(rates.pickRate, old?.pickRate),
+                        banRateDelta = change(rates.banRate, old?.banRate)
+                    )
+                }.mapKeys { it.key.name }
             )
         }
         regionalChampions[normalized] = updated

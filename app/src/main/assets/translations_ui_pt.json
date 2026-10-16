@@ -526,5 +526,11 @@
   "Categorías y estadísticas globales actualizadas ({0}/{1} fuentes)": "Categorias e estatísticas globais atualizadas ({0}/{1} fontes)",
   "ref. diaria": "ref. diária",
   "Historial no disponible": "Histórico indisponível",
-  "Tasas sin cambios desde hace 24 horas": "Taxas sem alterações há 24 horas"
+  "Tasas sin cambios desde hace 24 horas": "Taxas sem alterações há 24 horas",
+  "Verificación de actualización": "Verificação de atualização",
+  "La aplicación exige la versión publicada más reciente.": "O aplicativo exige a versão publicada mais recente.",
+  "La comprobación de versión está desactivada.": "A verificação de versão está desativada.",
+  "No se pudo guardar el cambio.": "Não foi possível salvar a alteração.",
+  "Suscripciones": "Assinaturas",
+  "SUSCRIPCIÓN": "ASSINATURA"
 }

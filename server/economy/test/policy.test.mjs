@@ -40,6 +40,12 @@ test('payload rejects price, actor and arbitrary document paths', () => {
   for (const forged of [{cost: 0}, {uid: 'other'}, {actorUid: 'admin'}]) assert.throws(() => validateInput({action: 'PURCHASE', id: 'purchase_1234', plan: 'MONTHLY', currency: 'BLUE', ...forged}));
   assert.throws(() => validateInput({action: 'ADJUST', id: 'adjust_1234', uid: '../admin'}));
 });
+
+test('premium purchase accepts only supported notification languages', () => {
+  assert.equal(validateInput({action:'PURCHASE', id:'purchase_lang_es', plan:'MONTHLY', currency:'BLUE', language:'es'}).language, 'es');
+  assert.equal(validateInput({action:'PURCHASE', id:'purchase_lang_pt', plan:'MONTHLY', currency:'BLUE', language:'pt'}).language, 'pt');
+  assert.throws(() => validateInput({action:'PURCHASE', id:'purchase_lang_bad', plan:'MONTHLY', currency:'BLUE', language:'en'}));
+});
 test('sponsor pricing uses server publication count and verified fields', () => {
   const notice = {title: 'Anuncio', content: 'Contenido', videoUrl: '', expandedImageUrl: '', externalUrl: '', durationValue: 1, durationUnit: 'day'};
   assert.deepEqual(sponsorPrice(notice, 1), {budget: 2.5, cost: 25});

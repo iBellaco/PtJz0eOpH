@@ -6,8 +6,9 @@ object SupportConversationPolicy {
     // Keep the accepted wire greeting compatible; UI renders the full localized privacy notice.
     const val LEGACY_SYSTEM_GREETING = "Hola. El sistema ha recibido tu mensaje. El equipo de Coach te responderá aquí."
     const val SYSTEM_GREETING = "Hola. El sistema ha recibido tu mensaje. El equipo de Coach te responderá aquí. Ningún miembro del staff te pedirá información privada sobre tu cuenta de juego ni sobre tu vida personal."
+    const val PORTUGUESE_SYSTEM_GREETING = "Olá. O sistema recebeu sua mensagem. A equipe do Coach responderá por aqui."
     fun isSponsor(tag: String): Boolean = tag.trim().uppercase(Locale.ROOT) in setOf("PATROCINADOR", "PATROCINIO", "SPONSOR", "PUBLICIDAD")
-    fun isAdministratorOnly(tag: String): Boolean = isSponsor(tag) || tag.trim().uppercase(Locale.ROOT) in setOf("PAGO", "PAYMENT", "PAGAMENTO")
+    fun isAdministratorOnly(tag: String): Boolean = isSponsor(tag) || tag.trim().uppercase(Locale.ROOT) in setOf("PAGO", "PAYMENT", "PAGAMENTO", "SUSCRIPCION", "SUSCRIPCIÓN", "SUBSCRIPTION", "ASSINATURA")
     fun ticketTag(data: Map<String, Any>, fallback: String = "SOPORTE"): String {
         val tags = listOf("tag", "type", "category").mapNotNull { (data[it] as? String)?.takeIf(String::isNotBlank) }
         return tags.firstOrNull(::isAdministratorOnly) ?: tags.firstOrNull() ?: fallback
@@ -25,10 +26,12 @@ object SupportConversationPolicy {
         return data["isRead"] == true && data["hasNewAdminReply"] != true
     }
     fun initial(reportId: String, userName: String, text: String, timestamp: Long,
-        legacyReply: String = "", legacyAuthor: String = "Soporte Coach", legacyTimestamp: Long = timestamp): List<SupportMessageEntry> {
+        legacyReply: String = "", legacyAuthor: String = "Soporte Coach", legacyTimestamp: Long = timestamp,
+        language: String = "es"): List<SupportMessageEntry> {
+        val greeting = if (com.example.util.AppLanguage.normalize(language) == "pt") PORTUGUESE_SYSTEM_GREETING else LEGACY_SYSTEM_GREETING
         val initial = listOf(
             SupportMessageEntry(id = "${reportId}_initial", senderName = userName, senderRole = "USER", text = text, timestampMillis = timestamp),
-            SupportMessageEntry(id = "${reportId}_system", senderName = "Sistema Coach", senderRole = "SYSTEM", text = LEGACY_SYSTEM_GREETING, timestampMillis = timestamp + 1, isGreeting = true)
+            SupportMessageEntry(id = "${reportId}_system", senderName = "Sistema Coach", senderRole = "SYSTEM", text = greeting, timestampMillis = timestamp + 1, isGreeting = true)
         )
         val answers = legacyReply.split("\n\n---\n\n").map { it.trim() }
             .filter { it.isNotBlank() && !SupportReplyManager.isDefaultGreeting(it) }

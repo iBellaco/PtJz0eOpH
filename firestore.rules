@@ -37,11 +37,11 @@ service cloud.firestore {
       );
     }
     function sponsor(data) {
-      let tags = ['PATROCINADOR', 'PATROCINIO', 'SPONSOR', 'PUBLICIDAD', 'PAGO', 'PAYMENT', 'PAGAMENTO'];
+      let tags = ['PATROCINADOR', 'PATROCINIO', 'SPONSOR', 'PUBLICIDAD', 'PAGO', 'PAYMENT', 'PAGAMENTO', 'SUSCRIPCION', 'SUSCRIPCIÓN', 'SUBSCRIPTION', 'ASSINATURA'];
       return data.get('tag', '').upper() in tags || data.get('type', '').upper() in tags || data.get('category', '').upper() in tags;
     }
     function ownsTicket(data) {
-      return signedIn() && (data.get('userId', '') == request.auth.uid ||
+      return signedIn() && data.get('adminOnly', false) != true && (data.get('userId', '') == request.auth.uid ||
         (data.get('userId', '') == '' && request.auth.token.get('email', '') != '' && data.get('userEmail', '') == request.auth.token.email));
     }
     function staffTicket(data) { return isAdmin() || (isModerator() && data.get('staffVisible', false) == true && !sponsor(data)); }
@@ -69,7 +69,8 @@ service cloud.firestore {
         && last.senderRole == 'SUPPORT' && last.senderUid == request.auth.uid
         && last.get('isGreeting', false) == false
         && last.text != 'Hola. El sistema ha recibido tu mensaje. El equipo de Coach te responderá aquí.'
-        && last.text != 'Hola. El sistema ha recibido tu mensaje. El equipo de Coach te responderá aquí. Ningún miembro del staff te pedirá información privada sobre tu cuenta de juego ni sobre tu vida personal.';
+        && last.text != 'Hola. El sistema ha recibido tu mensaje. El equipo de Coach te responderá aquí. Ningún miembro del staff te pedirá información privada sobre tu cuenta de juego ni sobre tu vida personal.'
+        && last.text != 'Olá. O sistema recebeu sua mensagem. A equipe do Coach responderá por aqui.';
     }
     match /account_deletions/{userId} {
       function owner() { return request.auth != null && request.auth.uid == userId; }
@@ -331,7 +332,7 @@ service cloud.firestore {
           && request.resource.data.conversation[0].senderRole == 'USER' && request.resource.data.conversation[0].senderUid == request.auth.uid
           && request.resource.data.conversation[1].senderRole == 'SYSTEM'
           && request.resource.data.conversation[1].senderUid == ''
-          && request.resource.data.conversation[1].text in ['Hola. El sistema ha recibido tu mensaje. El equipo de Coach te responderá aquí.', 'Hola. El sistema ha recibido tu mensaje. El equipo de Coach te responderá aquí. Ningún miembro del staff te pedirá información privada sobre tu cuenta de juego ni sobre tu vida personal.']);
+          && request.resource.data.conversation[1].text in ['Hola. El sistema ha recibido tu mensaje. El equipo de Coach te responderá aquí.', 'Hola. El sistema ha recibido tu mensaje. El equipo de Coach te responderá aquí. Ningún miembro del staff te pedirá información privada sobre tu cuenta de juego ni sobre tu vida personal.', 'Olá. O sistema recebeu sua mensagem. A equipe do Coach responderá por aqui.']);
       allow read: if ownsTicket(resource.data) || staffTicket(resource.data);
       allow update: if isAdmin() || (staffTicket(resource.data)
         && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['userId','userEmail','tag','type','staffVisible'])
@@ -432,6 +433,10 @@ service cloud.firestore {
     match /system_config/{document} {
       allow read: if signedIn();
       allow write: if !(document in ['streamer_live','economy_service','account_deletion_service']) && isAdmin();
+    }
+    match /system_config/app_update_verification {
+      allow get: if true;
+      allow write: if isAdmin();
     }
     match /system_config/{document}/{nested=**} {
       allow read: if signedIn();

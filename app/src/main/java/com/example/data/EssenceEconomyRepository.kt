@@ -7,7 +7,8 @@ object EssenceEconomyRepository {
     const val CASH_HISTORY_RETENTION_MILLIS = 14L * 24 * 60 * 60 * 1000L
 
     suspend fun purchase(id: String, plan: EssencePremiumPlan, currency: EssenceCurrency): Result<Unit> = runCatching {
-        EconomyServiceClient.call("PURCHASE", mapOf("plan" to plan.name, "currency" to currency.name), id)
+        EconomyServiceClient.call("PURCHASE", mapOf("plan" to plan.name, "currency" to currency.name,
+            "language" to com.example.util.AppLanguage.current.value), id)
         Unit
     }
 

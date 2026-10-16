@@ -12,6 +12,8 @@ import okhttp3.CacheControl
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.json.JSONObject
+import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.tasks.await
 import java.util.concurrent.TimeUnit
 
 data class AppUpdateInfo(
@@ -39,16 +41,21 @@ object AppUpdateManager {
     val checkStatus = _checkStatus.asStateFlow()
     private val _verificationFinished = MutableStateFlow(false)
     val verificationFinished = _verificationFinished.asStateFlow()
+    private val _verificationEnabled = MutableStateFlow(true)
+    val verificationEnabled = _verificationEnabled.asStateFlow()
+    private var settingLoaded = false
     private val client = OkHttpClient.Builder().connectTimeout(10, TimeUnit.SECONDS)
         .readTimeout(10, TimeUnit.SECONDS).callTimeout(20, TimeUnit.SECONDS).build()
 
     fun restore(context: Context) {
+        if (!_verificationEnabled.value) return
         val prefs = context.getSharedPreferences(PREFS, 0)
         val version = PublishedAppVersion.parse(prefs.getString("tag", "").orEmpty()) ?: return
         publish(version)
     }
 
     private fun publish(version: PublishedAppVersion) {
+        if (!_verificationEnabled.value) { _updateInfo.value = null; return }
         _updateInfo.value = if (version.newerThan(BuildConfig.VERSION_NAME, BuildConfig.VERSION_CODE))
             AppUpdateInfo(true, version.code, version.name, isMandatory = true) else null
     }
@@ -56,6 +63,12 @@ object AppUpdateManager {
     suspend fun checkForUpdates(context: Context, forceManualCheck: Boolean = false): AppUpdateInfo = withContext(Dispatchers.IO) {
         mutex.lock()
         try {
+            refreshVerificationSetting()
+            if (!_verificationEnabled.value) {
+                _updateInfo.value = null
+                _verificationFinished.value = true
+                return@withContext AppUpdateInfo()
+            }
             restore(context)
             val now = System.currentTimeMillis()
             if (!forceManualCheck && now - lastAttemptAt < 5 * 60_000L)
@@ -87,6 +100,29 @@ object AppUpdateManager {
             }
             _updateInfo.value ?: AppUpdateInfo()
         } finally { _verificationFinished.value = true; mutex.unlock() }
+    }
+
+    suspend fun refreshVerificationSetting(): Boolean {
+        val enabled = runCatching {
+            FirebaseFirestore.getInstance().collection("system_config")
+                .document("app_update_verification").get().await()
+                .getBoolean("enabled") ?: true
+        }.getOrElse { if (settingLoaded) _verificationEnabled.value else true }
+        settingLoaded = true
+        _verificationEnabled.value = enabled
+        if (!enabled) _updateInfo.value = null
+        return enabled
+    }
+
+    suspend fun setVerificationEnabled(context: Context, enabled: Boolean) {
+        FirebaseFirestore.getInstance().collection("system_config")
+            .document("app_update_verification")
+            .set(mapOf("enabled" to enabled, "updatedAt" to com.google.firebase.Timestamp.now()))
+            .await()
+        settingLoaded = true
+        _verificationEnabled.value = enabled
+        _verificationFinished.value = !enabled
+        if (!enabled) _updateInfo.value = null else checkForUpdates(context, forceManualCheck = true)
     }
 
     fun dismissAlert() { if (_updateInfo.value?.isMandatory != true) _updateInfo.value = null }

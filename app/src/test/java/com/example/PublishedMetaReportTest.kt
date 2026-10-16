@@ -27,6 +27,8 @@ class PublishedMetaReportTest {
         {"date":"2026-10-13","win":49,"pick":3,"ban":1},{"date":"2026-10-14","win":51,"pick":3.4,"ban":0}]}}}</script>"""
         val report = PublishedStatsParser.fire(html)
         assertEquals(52.4, report.stats["ahri"]!!.winRate!!, 0.0)
+        assertEquals(52.4, report.roleStats["ahri"]!![com.example.model.LaneRole.MID]!!.winRate!!, 0.0)
+        assertEquals(60.0, report.roleStats["ahri"]!![com.example.model.LaneRole.SUPPORT]!!.winRate!!, 0.0)
         assertEquals(1, report.history["ahri"]!!.size)
         assertTrue(report.history["ahri"]!!.single().daily)
         val sample = report.history["ahri"]!!.single()

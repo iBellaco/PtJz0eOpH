@@ -11,6 +11,7 @@ data class FeedbackReport(
     val userEmail: String = "",
     val photosBase64: List<String> = emptyList(),
     val type: String = "BUG",
+    val language: String = "es",
     val title: String = "",
     val description: String = "",
     @SerialName("app_version") val appVersion: String = "",

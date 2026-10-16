@@ -67,6 +67,7 @@ import androidx.compose.material.icons.filled.RestartAlt
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.VerifiedUser
+import androidx.compose.material.icons.filled.WorkspacePremium
 import androidx.compose.material.icons.filled.ZoomIn
 import androidx.compose.material.icons.filled.ZoomOut
 import androidx.compose.material3.AlertDialog
@@ -139,6 +140,7 @@ enum class FeedbackCategoryTab(val titleKey: String, val icon: ImageVector) {
     BUILDS("Builds", Icons.Default.SportsEsports),
     SUPPORT("Soporte", Icons.Default.SupportAgent),
     VERIFY("Verificar", Icons.Default.VerifiedUser),
+    SUBSCRIPTIONS("Suscripciones", Icons.Default.WorkspacePremium),
     SPONSOR("Patrocinador", Icons.Default.Star)
 }
 
@@ -152,6 +154,7 @@ fun getFeedbackCategory(report: FeedbackReport): String {
 
     return when {
         rawType in listOf("PAGO", "PAYMENT", "PAGAMENTO") -> "PAGO"
+        rawType in listOf("SUSCRIPCION", "SUSCRIPCIÓN", "SUBSCRIPTION", "ASSINATURA") -> "SUBSCRIPTION"
         com.example.data.SupportConversationPolicy.isSponsor(rawType) -> "PATROCINADOR"
         rawType in listOf("BUG", "ERROR", "BUG_REPORT", "BUG / ERROR") -> "BUG"
         rawType in listOf("BUILD_SUGGESTION", "BUILD", "SUGERIR BUILD", "SUGERENCIA DE BUILD") || parseBuildSuggestionFromText(desc, title) != null -> "BUILD"
@@ -261,11 +264,13 @@ fun AdminFeedbackBottomSheet(
 
     // Reportes visibles según el rol del usuario (Los reportes de Patrocinador son exclusivos del Administrador)
     val visibleReports = remember(reports, isAdmin) {
-        if (isAdmin) reports else reports.filter { getFeedbackCategory(it) !in setOf("PATROCINADOR", "PAGO") }
+        if (isAdmin) reports else reports.filter { getFeedbackCategory(it) !in setOf("PATROCINADOR", "PAGO", "SUBSCRIPTION") }
     }
 
     val availableTabs = remember(isAdmin) {
-        if (isAdmin) FeedbackCategoryTab.entries else FeedbackCategoryTab.entries.filter { it != FeedbackCategoryTab.SPONSOR }
+        if (isAdmin) FeedbackCategoryTab.entries else FeedbackCategoryTab.entries.filter {
+            it !in setOf(FeedbackCategoryTab.SPONSOR, FeedbackCategoryTab.SUBSCRIPTIONS)
+        }
     }
 
     // Contadores y listas clasificadas
@@ -275,9 +280,10 @@ fun AdminFeedbackBottomSheet(
     val buildList = remember(visibleReports) { visibleReports.filter { getFeedbackCategory(it) == "BUILD" } }
     val supportList = remember(visibleReports) { visibleReports.filter { getFeedbackCategory(it) == "SUPPORT" } }
     val verifyList = remember(visibleReports) { visibleReports.filter { getFeedbackCategory(it) == "VERIFY" } }
+    val subscriptionList = remember(visibleReports) { visibleReports.filter { getFeedbackCategory(it) == "SUBSCRIPTION" } }
     val sponsorList = remember(visibleReports) { visibleReports.filter { getFeedbackCategory(it) == "PATROCINADOR" } }
 
-    val currentCategoryItems = remember(visibleReports, currentCategoryTab, bugList, suggestionList, buildList, supportList, verifyList, sponsorList) {
+    val currentCategoryItems = remember(visibleReports, currentCategoryTab, bugList, suggestionList, buildList, supportList, verifyList, subscriptionList, sponsorList) {
         when (currentCategoryTab) {
             FeedbackCategoryTab.ALL -> visibleReports
             FeedbackCategoryTab.BUGS -> bugList
@@ -285,6 +291,7 @@ fun AdminFeedbackBottomSheet(
             FeedbackCategoryTab.BUILDS -> buildList
             FeedbackCategoryTab.SUPPORT -> supportList
             FeedbackCategoryTab.VERIFY -> verifyList
+            FeedbackCategoryTab.SUBSCRIPTIONS -> subscriptionList
             FeedbackCategoryTab.SPONSOR -> sponsorList
         }
     }
@@ -340,6 +347,7 @@ fun AdminFeedbackBottomSheet(
                 FeedbackCategoryTab.BUILDS -> cat == "BUILD"
                 FeedbackCategoryTab.SUPPORT -> cat == "SUPPORT"
                 FeedbackCategoryTab.VERIFY -> cat == "VERIFY"
+                FeedbackCategoryTab.SUBSCRIPTIONS -> cat == "SUBSCRIPTION"
                 FeedbackCategoryTab.SPONSOR -> cat == "PATROCINADOR"
             }
 
@@ -519,6 +527,7 @@ fun AdminFeedbackBottomSheet(
                         FeedbackCategoryTab.BUILDS -> buildList.size
                         FeedbackCategoryTab.SUPPORT -> supportList.size
                         FeedbackCategoryTab.VERIFY -> verifyList.size
+                        FeedbackCategoryTab.SUBSCRIPTIONS -> subscriptionList.size
                         FeedbackCategoryTab.SPONSOR -> sponsorList.size
                     }
                     Tab(
@@ -569,6 +578,7 @@ fun AdminFeedbackBottomSheet(
                             FeedbackCategoryTab.BUILDS -> buildList.size
                             FeedbackCategoryTab.SUPPORT -> supportList.size
                             FeedbackCategoryTab.VERIFY -> verifyList.size
+                            FeedbackCategoryTab.SUBSCRIPTIONS -> subscriptionList.size
                             FeedbackCategoryTab.SPONSOR -> sponsorList.size
                         },
                         isSelected = selectedSubFilter == "ALL",
@@ -806,7 +816,7 @@ fun AdminFeedbackBottomSheet(
                                         Toast.makeText(context, com.example.util.appTr(if (ok) "Estado actualizado" else "No se pudo sincronizar el estado. Inténtalo de nuevo."), Toast.LENGTH_SHORT).show()
                                     }
                                 },
-                                onReply = { reportToReply = report },
+                                onReply = if (getFeedbackCategory(report) == "SUBSCRIPTION") null else ({ reportToReply = report }),
                                 onReviewVerification = if (getFeedbackCategory(report) == "VERIFY") ({ approved -> verificationReview = report to approved }) else null,
                                 onDelete = if (isAdmin) ({ reportToDelete = report }) else null,
                                 onCopy = {

@@ -75,7 +75,7 @@ export function sponsorPrice(notice, activeCount) {
 export function validateInput(input) {
   ensure(input && typeof input === 'object' && !Array.isArray(input), 'invalid-argument', 'Operación no válida');
   const fields = {
-    PURCHASE: ['plan', 'currency'], REDEEM: ['amount', 'network', 'wallet', 'binanceEmail', 'expectedFee'],
+    PURCHASE: ['plan', 'currency', 'language'], REDEEM: ['amount', 'network', 'wallet', 'binanceEmail', 'expectedFee'],
     RESOLVE: ['redemptionId', 'paid'], ADJUST: ['uid', 'amount', 'currency', 'addition', 'notify', 'title', 'customBody'],
     PREMIUM_GRANT: ['uid', 'days', 'extend'], PREMIUM_REMOVE: ['uid'], ROLE: ['uid', 'role'],
     SPONSOR: ['notice', 'expectedCost'], SUBSCRIBE: ['creatorUid'], UNSUBSCRIBE: ['creatorUid'], CLEANUP: []
@@ -83,5 +83,6 @@ export function validateInput(input) {
   ensure(fields[input.action] && Object.keys(input).every(k => ['action', 'id', ...fields[input.action]].includes(k)), 'invalid-argument', 'Operación no válida');
   ensure(typeof input.id === 'string' && /^[a-zA-Z0-9_-]{8,80}$/.test(input.id), 'invalid-argument', 'Identificador no válido');
   if (input.uid !== undefined) ensure(typeof input.uid === 'string' && /^[a-zA-Z0-9_-]{1,128}$/.test(input.uid), 'invalid-argument', 'Usuario no válido');
+  if (input.language !== undefined) ensure(['es', 'pt'].includes(input.language), 'invalid-argument', 'Idioma no válido');
   return input;
 }

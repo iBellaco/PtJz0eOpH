@@ -72,12 +72,14 @@ object FeedbackRepository {
                 }
             }
             val now = System.currentTimeMillis()
-            val history = SupportConversationPolicy.initial(reportId, userName ?: "Invocador", description.trim(), now)
+            val language = SupportLanguageDetector.detect(title, description, com.example.util.AppLanguage.current.value)
+            val history = SupportConversationPolicy.initial(reportId, userName ?: "Invocador", description.trim(), now, language = language)
             val firestoreMap = hashMapOf<String, Any>(
                 "id" to reportId,
                 "reportId" to reportId,
                 "type" to type,
                 "tag" to type,
+                "language" to language,
                 "title" to title.trim(),
                 "description" to finalDescription,
                 "content" to finalDescription,

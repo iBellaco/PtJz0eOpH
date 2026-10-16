@@ -91,6 +91,16 @@ data class ChampionBuild(
 )
 
 @Serializable
+data class ChampionLaneStats(
+    val winRate: Double = Double.NaN,
+    val pickRate: Double = Double.NaN,
+    val banRate: Double = Double.NaN,
+    val winRateDelta: Double = 0.0,
+    val pickRateDelta: Double = 0.0,
+    val banRateDelta: Double = 0.0
+)
+
+@Serializable
 data class Champion(
     val id: String = "",
     val name: String = "",
@@ -120,6 +130,7 @@ data class Champion(
     val winrateDelta: Double = 0.0, // vs. ayer (+0.3%, -0.2%)
     val pickRateDelta: Double = 0.0,
     val banRateDelta: Double = 0.0,
+    val laneStats: Map<String, ChampionLaneStats> = emptyMap(),
     val cnTier: String = "", // Legacy serialized field; no longer populated or used by synchronization.
     val damageType: DamageType = DamageType.PHYSICAL,
     val summary: String = "",
