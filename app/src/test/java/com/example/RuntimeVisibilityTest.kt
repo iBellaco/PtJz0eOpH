@@ -639,24 +639,10 @@ class RuntimeVisibilityTest(private val screen: String) {
                 compose.onNodeWithTag("open_matchup_preview_button").performScrollTo().assertExists()
                 compose.onNodeWithTag("draft_recommendations").assertExists()
             }
-            "tier-registered" -> {
-                compose.onNodeWithTag("tier_list").performScrollToNode(hasTestTag("tier_trend_header"))
-                compose.onNodeWithTag("tier_trend_header").assertExists()
-                compose.onNodeWithTag("tier_trend_sign_in").assertDoesNotExist()
-                inspect("legend")
-                compose.onNodeWithTag("tier_list", useUnmergedTree = true).performScrollToNode(hasTestTag("tier_trend_graph"))
-                Assert.assertTrue(compose.onAllNodesWithTag("tier_trend_graph", useUnmergedTree = true).fetchSemanticsNodes().isNotEmpty())
-            }
-            "tier-guest", "tier-registration" -> {
-                compose.onNodeWithTag("tier_list").performScrollToNode(hasTestTag("tier_trend_sign_in_button"))
+            "tier-registered", "tier-guest", "tier-registration" -> {
                 compose.onNodeWithTag("tier_trend_header").assertDoesNotExist()
+                compose.onNodeWithTag("tier_trend_sign_in").assertDoesNotExist()
                 compose.onNodeWithTag("tier_trend_graph").assertDoesNotExist()
-                if (screen == "tier-registration") {
-                    compose.onNodeWithTag("tier_trend_sign_in_button").performClick()
-                    inspect("login")
-                    compose.onNodeWithText("Cadastre-se").performScrollTo().performClick()
-                    compose.onNodeWithText("Criar uma conta").assertExists()
-                }
             }
             "streamer-live-name-preserved" -> {
                 compose.onNodeWithTag("streamer_channel_name", useUnmergedTree = true).assertTextEquals("hola")

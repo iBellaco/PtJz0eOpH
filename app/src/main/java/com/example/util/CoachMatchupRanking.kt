@@ -54,13 +54,13 @@ object CoachMatchupRanking {
         // Include documented relations first. Fill shortages by concrete kit/role interactions.
         fun ranked(candidates: List<Champion>, score: (Champion) -> Int) =
             candidates.sortedWith(compareByDescending(score).thenBy { it.id }).map { it.name }
-        val counters = (known.counters + ranked(rivals.filterNot { it.name in known.advantages }) { pressure(it, champion) - pressure(champion, it) })
-            .distinct().take(12)
-        val advantages = (known.advantages + ranked(rivals) { pressure(champion, it) - pressure(it, champion) })
-            .distinct().filterNot { it in counters }.take(12)
+        val counters = (known.counters + ranked(others.filterNot { it.name in known.advantages }) { pressure(it, champion) - pressure(champion, it) + if (it in rivals) 2 else 0 })
+            .distinct().take(24)
+        val advantages = (known.advantages + ranked(others) { pressure(champion, it) - pressure(it, champion) })
+            .distinct().filterNot { it in counters }.take(24)
         val teammates = others.filter { it.primaryRole != role || it.secondaryRoles.any { candidateRole -> candidateRole != role } }
         val synergies = (known.synergies + ranked(teammates) { allyScore(champion, role, it) })
-            .distinct().take(12)
+            .distinct().take(24)
         return MatchupRoleResult(advantages, counters, synergies)
     }
 }

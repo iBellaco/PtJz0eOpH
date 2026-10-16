@@ -68,7 +68,7 @@ class RuntimeBehaviorTest {
         println("DRAFT_COHERENCE_AUDIT: ${roster.size} champions; $checked lane recommendations")
     }
 
-    @Test fun `every champion and lane exposes exactly three six and twelve unique relations`() {
+    @Test fun `every champion and lane exposes exactly three six and twenty four unique relations`() {
         WildRiftRepository.initChampions(RuntimeEnvironment.getApplication(), forceReload = true)
         val roster = WildRiftRepository.baseChampionsList
         assertEquals(142, roster.size)
@@ -76,11 +76,11 @@ class RuntimeBehaviorTest {
         for (champion in roster) for (role in (listOf(champion.primaryRole) + champion.secondaryRoles).distinct()) {
             val result = com.example.util.ChampionRoleMatchupAdvisor.getMatchups(champion, role)
             for (names in listOf(result.advantages, result.counters, result.synergies)) {
-                assertEquals("${champion.id}/$role: $names", 12, names.size)
+                assertEquals("${champion.id}/$role: $names", 24, names.size)
                 assertEquals(names.size, names.distinct().size)
                 assertFalse(champion.name in names)
                 assertTrue(names.all { name -> roster.any { it.name == name } })
-                for ((signedIn, premium, expected) in listOf(Triple(false, false, 3), Triple(true, false, 6), Triple(true, true, 12))) {
+                for ((signedIn, premium, expected) in listOf(Triple(false, false, 3), Triple(true, false, 6), Triple(true, true, 24))) {
                     assertEquals(expected, names.take(com.example.util.BuildChoiceRules.matchupLimit(premium, signedIn)).size)
                 }
             }
@@ -90,7 +90,7 @@ class RuntimeBehaviorTest {
             }
             profiles++
         }
-        println("MATCHUP_ACCESS_AUDIT: ${roster.size} champions; $profiles lane profiles; exact 3/6/12 in every category")
+        println("MATCHUP_ACCESS_AUDIT: ${roster.size} champions; $profiles lane profiles; exact 3/6/24 in every category")
     }
 
     @Test fun `orange redemption requires the signed administrator claim exclusively`() {

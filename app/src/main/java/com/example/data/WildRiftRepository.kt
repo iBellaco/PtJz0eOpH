@@ -40,18 +40,25 @@ object WildRiftRepository {
     // ==========================================
     // FUENTES DE DATOS Y META ACTUAL
     // ==========================================
-    val metaSources: List<MetaDataSource> = listOf(
+    val matchupSources: List<MetaDataSource> = listOf(
         MetaDataSource(id = "global_bestbuildwr", name = "BestBuildWR", description = "Guías y tier list Global",
             url = "https://bestbuildwr.com/champions", focusArea = "Categorías y builds"),
         MetaDataSource(id = "global_wildriftfire", name = "WildRiftFire", description = "Guías y tier list Global",
-            url = "https://www.wildriftfire.com/tier-list", focusArea = "Categorías y builds"),
+            url = "https://www.wildriftfire.com/", focusArea = "Categorías y builds"),
         MetaDataSource(id = "global_wildriftcore", name = "WildRiftCore", description = "Tier list Global",
-            url = "https://wildriftcore.com/es/tierlist/", focusArea = "Categorías de campeones"),
+            url = "https://wildriftcore.com/es/champions/", focusArea = "Ventajas, debilidades y sinergias"),
         MetaDataSource(id = "global_wildriftcounter", name = "WildRiftCounter", description = "Counters y enfrentamientos",
             url = "https://wildriftcounter.com/", focusArea = "Ventajas y debilidades"),
         MetaDataSource(id = "global_thewildpick", name = "TheWildPick", description = "Counters y selecciones",
             url = "https://thewildpick.com/counter/", focusArea = "Ventajas y debilidades")
     )
+    val metaSources: List<MetaDataSource> = listOf(
+        MetaDataSource(id = "global_wildriftfire", name = "WildRiftFire", description = "Guías y tier list Global",
+            url = "https://www.wildriftfire.com/tier-list", focusArea = "Categorías y builds"),
+        MetaDataSource(id = "global_wildriftcore", name = "WildRiftCore", description = "Tier list Global",
+            url = "https://wildriftcore.com/es/tierlist/", focusArea = "Categorías de campeones")
+    )
+
 
     // CATÁLOGO DE HECHIZOS DE INVOCADOR (SUMMONER SPELLS)
     // ==========================================
@@ -195,6 +202,7 @@ object WildRiftRepository {
     ) {
         if (!region.equals(com.example.data.sync.MetaRegion.DEFAULT, ignoreCase = true)) return
         val normalized = com.example.data.sync.MetaRegion.normalize(region)
+        val priorMovements = regionalChampions[normalized].orEmpty().associate { it.id to it.tierMovement }
         val updated = baseChampions.map { champion ->
             val category = tiers[com.example.data.sync.RegionalTierParser.canonical(champion.id)]
                 ?: tiers[com.example.data.sync.RegionalTierParser.canonical(champion.name)]
@@ -203,7 +211,8 @@ object WildRiftRepository {
                 ?: previousTiers[com.example.data.sync.RegionalTierParser.canonical(champion.name)]
             fun tierRank(value: String): Int = when (value.trim().uppercase()) {
                 "S+" -> 3
-                "S", "A+", "A" -> 2
+                "S" -> 2
+                "A+", "A" -> 1
                 else -> 1
             }
             val meta = stats[com.example.data.sync.RegionalTierParser.canonical(champion.id)]
@@ -237,9 +246,9 @@ object WildRiftRepository {
                     when {
                         tierRank(category) > tierRank(it) -> 1
                         tierRank(category) < tierRank(it) -> -1
-                        else -> 0
+                        else -> priorMovements[champion.id] ?: champion.tierMovement
                     }
-                } ?: 0,
+                } ?: (priorMovements[champion.id] ?: champion.tierMovement),
                 winrate = if (meta != null) meta.winRate ?: Double.NaN else champion.winrate,
                 pickRate = if (meta != null) meta.pickRate ?: Double.NaN else champion.pickRate,
                 banRate = if (meta != null) meta.banRate ?: Double.NaN else champion.banRate,
@@ -273,6 +282,7 @@ object WildRiftRepository {
     fun initChampions(context: android.content.Context, forceReload: Boolean = false) {
         if (champions.isNotEmpty() && !forceReload) return
         try {
+            com.example.util.WebMatchupReferences.load(context)
             val format = kotlinx.serialization.json.Json { ignoreUnknownKeys = true }
             val parsed1 = context.resources.openRawResource(com.example.R.raw.champions_part1).bufferedReader().use { reader ->
                 format.decodeFromString<List<Champion>>(reader.readText()).map {

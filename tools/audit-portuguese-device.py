@@ -201,11 +201,6 @@ if MODE in ("pt", "both"):
             if any("Melhor Opção segundo" in text for text in texts):
                 raise AssertionError("Empty draft must not show team recommendations")
         if tab == "Classificação":
-            tap("Entrar ou cadastrar-se", scrolling=3)
-            snapshot("tier-login")
-            tap("Cadastre-se", scrolling=3)
-            snapshot("tier-registration")
-            back()
             for page in range(2):
                 scroll()
                 snapshot("tier-guest-scroll-" + str(page + 1))
@@ -218,6 +213,10 @@ if MODE in ("pt", "both"):
         if tab == "Usuário":
             scroll()
             snapshot("user-scroll")
+            # Authentication lives in User; the removed trend graph no longer
+            # contributes a login invitation to the tier list.
+            tap("Cadastre-se", scrolling=3)
+            snapshot("user-registration")
     # Validate new components in the real installed APK while Portuguese remains selected.
     tap("Catálogo")
     tap("Itens")

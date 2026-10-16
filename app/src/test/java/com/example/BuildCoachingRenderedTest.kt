@@ -124,7 +124,7 @@ class BuildCoachingRenderedTest {
             ChampionDetailSheet(champion = champion, isOverlay = false, onDismiss = {},
                 onChampionSelected = { navigations++ })
         } }
-        for ((signed, pro, count) in listOf(Triple(false, false, 3), Triple(true, false, 6), Triple(true, true, 12))) {
+        for ((signed, pro, count) in listOf(Triple(false, false, 3), Triple(true, false, 6), Triple(true, true, 24))) {
             compose.runOnIdle { signedIn.value = signed; premium.value = pro }
             for (group in listOf("advantage", "weakness", "synergy")) {
                 compose.onAllNodesWithTag("build_matchup_name_$group").assertCountEquals(count)

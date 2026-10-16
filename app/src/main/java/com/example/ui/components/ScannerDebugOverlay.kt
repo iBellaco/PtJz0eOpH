@@ -26,7 +26,7 @@ fun ScannerDebugOverlay(
 ) {
     val detectingBans by DraftVisionScanner.banDetectionActiveFlow.collectAsStateWithLifecycle()
     val banSlots by DraftVisionScanner.banSlotsFlow.collectAsStateWithLifecycle()
-    val rawConfig by DraftVisionScanner.calibrationConfigFlow.collectAsStateWithLifecycle()
+    val rawConfig by DraftVisionScanner.alignedConfigFlow.collectAsStateWithLifecycle()
     val debugMatches by DraftVisionScanner.debugVisualMatches.collectAsStateWithLifecycle()
     val language = com.example.util.currentAppLanguage()
     val density = LocalDensity.current

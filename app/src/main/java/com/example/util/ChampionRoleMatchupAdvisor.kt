@@ -1227,25 +1227,33 @@ object ChampionRoleMatchupAdvisor {
             .filterNot { it.id.equals(champion.id, true) }
             .filter { !rivals || sameLane(it) }.map { it.name }.distinct()
         val primaryRole = role == champion.primaryRole
+        val published = WebMatchupReferences.byChampion[champion.id]
+        val publishedLane = WebMatchupReferences.byRole[champion.id]?.get(role)
         val reference = ReviewedMatchupReferences.byChampion[champion.id]
         val laneReference = ReviewedLaneMatchups.byChampion[champion.id]?.get(role)
         val reverseCounters = catalog.filter { candidate ->
-            ReviewedMatchupReferences.byChampion[candidate.id]?.counters?.any(::matchesSelf) == true
+            WebMatchupReferences.byChampion[candidate.id]?.counters?.any(::matchesSelf) == true ||
+                ReviewedMatchupReferences.byChampion[candidate.id]?.counters?.any(::matchesSelf) == true
+        }.map { it.name }
+        val reverseThreats = catalog.filter { candidate ->
+            WebMatchupReferences.byChampion[candidate.id]?.advantages?.any(::matchesSelf) == true ||
+                ReviewedLaneMatchups.byChampion[candidate.id]?.get(role)?.advantages?.any(::matchesSelf) == true
         }.map { it.name }
         val reverseSynergies = catalog.filter { candidate ->
-            ReviewedMatchupReferences.byChampion[candidate.id]?.synergies?.any(::matchesSelf) == true
+            WebMatchupReferences.byChampion[candidate.id]?.synergies?.any(::matchesSelf) == true ||
+                ReviewedMatchupReferences.byChampion[candidate.id]?.synergies?.any(::matchesSelf) == true
         }.map { it.name }
         val expanded = ExpandedMatchupReferences.byChampion[champion.id].orEmpty()
-        val acrossMap = (listOfNotNull(expanded[role]) + expanded.filterKeys { it != role }.values +
+        val acrossMap = (WebMatchupReferences.byRole[champion.id].orEmpty().filterKeys { it != role }.values + listOfNotNull(expanded[role]) + expanded.filterKeys { it != role }.values +
             ReviewedLaneMatchups.byChampion[champion.id].orEmpty().filterKeys { it != role }.values).toList()
-        val counters = clean((reference?.counters ?: emptyList()) + (laneReference?.counters ?: emptyList()) + known.counters.take(3) +
-            (if (primaryRole) champion.counteredBy.take(3) else emptyList()), true) + clean(acrossMap.flatMap { it.counters }, false)
-        val advantages = clean((reference?.advantages ?: emptyList()) + (laneReference?.advantages ?: emptyList()) + reverseCounters + known.advantages.take(3) +
+        val counters = clean((published?.counters ?: emptyList()) + (publishedLane?.counters ?: emptyList()) + (reference?.counters ?: emptyList()) + (laneReference?.counters ?: emptyList()) + known.counters.take(3) +
+            (if (primaryRole) champion.counteredBy.take(3) else emptyList()) + reverseThreats, true) + clean(acrossMap.flatMap { it.counters }, false)
+        val advantages = clean((published?.advantages ?: emptyList()) + (publishedLane?.advantages ?: emptyList()) + (reference?.advantages ?: emptyList()) + (laneReference?.advantages ?: emptyList()) + reverseCounters + known.advantages.take(3) +
             (if (primaryRole) champion.advantageAgainst.take(3) else emptyList()), true) + clean(acrossMap.flatMap { it.advantages }, false)
-        val synergies = clean((reference?.synergies ?: emptyList()) + known.synergies.take(3) +
+        val synergies = clean((published?.synergies ?: emptyList()) + (publishedLane?.synergies ?: emptyList()) + (reference?.synergies ?: emptyList()) + known.synergies.take(3) +
             champion.synergies.take(3) + reverseSynergies + acrossMap.flatMap { it.synergies }, false)
         return CoachMatchupRanking.complete(champion, role,
-            MatchupRoleResult(advantages.distinct().filterNot { it in counters.distinct().take(12) }.take(12), counters.distinct().take(12), synergies.take(12)), catalog)
+            MatchupRoleResult(advantages.distinct().filterNot { it in counters.distinct().take(24) }.take(24), counters.distinct().take(24), synergies.take(24)), catalog)
     }
 
     private val completed = mutableMapOf<Triple<String, LaneRole, LaneRole>, MatchupRoleResult>()
