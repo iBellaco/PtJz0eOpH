@@ -22,5 +22,11 @@
   "Conteo en vivo del directorio": "Contagem ao vivo do diretório",
   "Tier list guardada en imágenes": "Tier list salva nas imagens",
   "No se pudo guardar la tier list": "Não foi possível salvar a tier list",
-  "Descargar tier list": "Baixar tier list"
+  "Descargar tier list": "Baixar tier list",
+  "Cambiar nombre de usuario": "Alterar nome de usuário",
+  "Guardar nombre": "Salvar nome",
+  "Nuevo nombre": "Novo nome",
+  "El nombre debe tener al menos 3 caracteres": "O nome deve ter pelo menos 3 caracteres",
+  "Nombre de usuario actualizado": "Nome de usuário atualizado",
+  "Error al actualizar nombre: {0}": "Erro ao atualizar nome: {0}"
 }
