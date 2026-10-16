@@ -29,6 +29,7 @@ class MatchupReferenceSourcesTest {
             assertTrue((result.advantages+result.counters+result.synergies).all { it in roster && it!=id })
         }
         val feeds=BestBuildWrScraper.GLOBAL_SCRAPING_SOURCES.map { it.id }.toSet()
+        assertEquals(setOf("wildriftcore","wildriftguides","wildriftfire"),feeds)
         assertFalse(feeds.contains("bestbuildwr"))
         assertFalse(feeds.contains("wildriftcounter"))
         assertFalse(feeds.contains("thewildpick"))

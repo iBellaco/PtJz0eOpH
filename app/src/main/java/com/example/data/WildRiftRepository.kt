@@ -56,7 +56,9 @@ object WildRiftRepository {
         MetaDataSource(id = "global_wildriftfire", name = "WildRiftFire", description = "Guías y tier list Global",
             url = "https://www.wildriftfire.com/tier-list", focusArea = "Categorías y builds"),
         MetaDataSource(id = "global_wildriftcore", name = "WildRiftCore", description = "Tier list Global",
-            url = "https://wildriftcore.com/es/tierlist/", focusArea = "Categorías de campeones")
+            url = "https://wildriftcore.com/en/tierlist/", focusArea = "Categorías de campeones"),
+        MetaDataSource(id = "global_wildriftguides", name = "WildRiftGuides", description = "Tier list Global",
+            url = "https://www.wildriftguides.com/tier-list", focusArea = "Categorías de campeones")
     )
 
 
@@ -204,16 +206,18 @@ object WildRiftRepository {
         val normalized = com.example.data.sync.MetaRegion.normalize(region)
         val priorMovements = regionalChampions[normalized].orEmpty().associate { it.id to it.tierMovement }
         val updated = baseChampions.map { champion ->
-            val category = tiers[com.example.data.sync.RegionalTierParser.canonical(champion.id)]
+            val category = com.example.data.sync.GlobalTierConsensus.displayCategory(tiers[com.example.data.sync.RegionalTierParser.canonical(champion.id)]
                 ?: tiers[com.example.data.sync.RegionalTierParser.canonical(champion.name)]
-                ?: champion.tier.ifBlank { "A" }
+                ?: champion.tier.ifBlank { "A" })
             val previousTier = previousTiers[com.example.data.sync.RegionalTierParser.canonical(champion.id)]
                 ?: previousTiers[com.example.data.sync.RegionalTierParser.canonical(champion.name)]
             fun tierRank(value: String): Int = when (value.trim().uppercase()) {
-                "S+" -> 3
-                "S" -> 2
-                "A+", "A" -> 1
-                else -> 1
+                "S+" -> 5
+                "S" -> 4
+                "A+", "A" -> 3
+                "B" -> 2
+                "C", "D" -> 1
+                else -> 0
             }
             val meta = stats[com.example.data.sync.RegionalTierParser.canonical(champion.id)]
                 ?: stats[com.example.data.sync.RegionalTierParser.canonical(champion.name)]
@@ -292,6 +296,7 @@ object WildRiftRepository {
                     } else updated.avatarUrl
                     updated.copy(
                         avatarUrl = resolvedAvatar,
+                        tier = com.example.data.sync.GlobalTierConsensus.displayCategory(updated.tier),
                         hasRegionalStats = false,
                         winrateDelta = 0.0, pickRateDelta = 0.0, banRateDelta = 0.0
                     )
@@ -305,6 +310,7 @@ object WildRiftRepository {
                     } else updated.avatarUrl
                     updated.copy(
                         avatarUrl = resolvedAvatar,
+                        tier = com.example.data.sync.GlobalTierConsensus.displayCategory(updated.tier),
                         hasRegionalStats = false,
                         winrateDelta = 0.0, pickRateDelta = 0.0, banRateDelta = 0.0
                     )

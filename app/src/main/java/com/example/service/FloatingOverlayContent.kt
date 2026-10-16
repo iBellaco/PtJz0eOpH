@@ -358,7 +358,7 @@ internal fun FloatingOverlayContent(
                                         syncAlliedHud(result)
                                         syncEnemyHud(result)
                                         commitLastPickToHud(result)
-                                        state.stopAutomaticScanIfComplete(result.isLastPickFinalized)
+                                        state.stopAutomaticScanIfComplete(result.isLastPickConfirmed)
                                     }
                                 } else if (!isGlobalSyncCycle && hasActiveTurns) {
                                     quickReadCount++
@@ -400,7 +400,7 @@ internal fun FloatingOverlayContent(
                                                 val totalAllies = allies.filterNotNull().size
                                                 val totalEnemies = enemies.filterNotNull().size
                                                 if (totalAllies == 5 && totalEnemies == 5) {
-                                                    state.stopAutomaticScanIfComplete(com.example.service.screen.LiteRTVisionClassifier.reportFlow.value.isSelectionFinalized)
+                                                    state.stopAutomaticScanIfComplete(com.example.service.screen.LiteRTVisionClassifier.reportFlow.value.isConfirmed)
                                                 }
                                             }
                                         }
@@ -454,7 +454,7 @@ internal fun FloatingOverlayContent(
                                             val finalAlliesPicked = allies.filterNotNull().size
                                             val finalEnemiesPicked = enemies.filterNotNull().size
                                             val isDraftFullyConfirmed = (finalAlliesPicked == 5 && finalEnemiesPicked == 5)
-                                            if(isDraftFullyConfirmed) state.stopAutomaticScanIfComplete(result.isLastPickFinalized)
+                                            if(isDraftFullyConfirmed) state.stopAutomaticScanIfComplete(result.isLastPickConfirmed)
 
                                             if (result.userExplicitlyDetectedRole != null && activeRole != result.userExplicitlyDetectedRole) {
                                                 activeRole = result.userExplicitlyDetectedRole

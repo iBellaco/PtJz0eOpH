@@ -15,7 +15,7 @@ import org.robolectric.annotation.Config
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk=[34],application=Application::class)
 class DraftAutoStopTest {
-    @Test fun ninthSelectionAndProvisionalPortraitKeepScanningFinalConfirmedSelectionStops() {
+    @Test fun ninthAndUnconfirmedPortraitKeepScanningTenthConfirmedOpensSaveOnce() {
         val hud=OverlayState()
         (0..4).forEach { hud.allies[it]=Champion(id="ally_$it",name="Ally $it") }
         (0..3).forEach { hud.enemies[it]=Champion(id="enemy_$it",name="Enemy $it") }
@@ -31,10 +31,14 @@ class DraftAutoStopTest {
             assertTrue(hud.autoScanEnabled)
             assertNull(hud.enemies[4])
             hud.applyConfirmedLastPick(report.copy(isLastPickConfirmed=true))
-            assertTrue("A stable preview can still change",hud.autoScanEnabled)
-            val lastVisible=Champion(id="last_visible",name="Last visible")
-            hud.applyConfirmedLastPick(report.copy(isLastPickConfirmed=true,isLastPickFinalized=true,lastPickChampion=lastVisible))
-            assertEquals(lastVisible,hud.enemies[4])
+            assertEquals(final,hud.enemies[4])
+            assertTrue(hud.showSaveDraftDialog)
+            hud.applyConfirmedLastPick(report.copy(isLastPickConfirmed=true,
+                lastPickChampion=Champion(id="late_report",name="Late report")))
+            assertEquals("Save dialog must retain the completed draft",final,hud.enemies[4])
+            hud.showSaveDraftDialog = false
+            hud.applyConfirmedLastPick(report.copy(isLastPickConfirmed=true))
+            assertFalse("Dismissing the save dialog must not reopen it on the next report",hud.showSaveDraftDialog)
             assertTrue((hud.allies+hud.enemies).filterNotNull().map {it.id}.toSet().containsAll(ninth))
             assertFalse(hud.autoScanEnabled)
             assertFalse(TenthPickDiagnosticManager.automaticScanActiveFlow.value)
@@ -46,7 +50,7 @@ class DraftAutoStopTest {
         hud.autoScanEnabled=true
         try {
             (0..4).forEach { hud.allies[it]=Champion(id="same",name="Same"); hud.enemies[it]=Champion(id="enemy_$it",name="Enemy") }
-            assertFalse(hud.stopAutomaticScanIfComplete(finalized=true))
+            assertFalse(hud.stopAutomaticScanIfComplete(confirmed=true))
             assertTrue(hud.autoScanEnabled)
         } finally { hud.autoScanEnabled=false }
     }

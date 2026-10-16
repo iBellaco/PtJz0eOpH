@@ -23,5 +23,9 @@ class TierMovementRegressionTest {
         assertEquals(1,WildRiftRepository.champions.first { it.id=="ahri" }.tierMovement)
         change("A","S")
         assertEquals(-1,WildRiftRepository.champions.first { it.id=="ahri" }.tierMovement)
+        change("B","A")
+        assertEquals(-1,WildRiftRepository.champions.first { it.id=="ahri" }.tierMovement)
+        change("B","C")
+        assertEquals(1,WildRiftRepository.champions.first { it.id=="ahri" }.tierMovement)
     }
 }

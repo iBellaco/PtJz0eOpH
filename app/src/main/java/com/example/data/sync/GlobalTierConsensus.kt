@@ -2,6 +2,11 @@ package com.example.data.sync
 
 /** Pure validation/fusion so a successful HTTP response is not mistaken for useful data. */
 object GlobalTierConsensus {
+    fun displayCategory(value: String): String = when (val tier = value.trim().uppercase()) {
+        "A+" -> "A"
+        "D" -> "C"
+        else -> tier
+    }
     private val weights = mapOf("S+" to 7.0, "S" to 6.0, "A+" to 5.0, "A" to 4.0,
         "B" to 3.0, "C" to 2.0, "D" to 1.0)
 
@@ -38,11 +43,10 @@ object GlobalTierConsensus {
             when {
                 mean >= 6.5 -> "S+"
                 mean >= 5.5 -> "S"
-                mean >= 4.5 -> "A+"
                 mean >= 3.5 -> "A"
                 mean >= 2.5 -> "B"
                 mean >= 1.5 -> "C"
-                else -> "D"
+                else -> "C"
             }
         }
     }

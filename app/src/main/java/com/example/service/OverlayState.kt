@@ -51,15 +51,17 @@ class OverlayState {
         scanner.resetSlotLifecycle()
         autoScanEnabled = true
     }
-    internal fun stopAutomaticScanIfComplete(finalized: Boolean = false): Boolean {
+    internal fun stopAutomaticScanIfComplete(confirmed: Boolean = false): Boolean {
         val picks=(allies+enemies).filterNotNull()
-        if (!finalized || !autoScanEnabled || picks.size!=10 || picks.map {it.id}.distinct().size!=10) return false
+        if ((!confirmed && trackedLastPick == null) || !autoScanEnabled || picks.size!=10 || picks.map {it.id}.distinct().size!=10) return false
         autoScanEnabled=false
         scanNoticeMessage="10/10 Campeones confirmados"
+        showSaveDraftDialog = true
         return true
     }
     internal fun clearDraftAndCrops(context: android.content.Context) {
         autoScanEnabled = false
+        showSaveDraftDialog = false
         trackedLastPick = null
         allies.indices.forEach { allies[it] = null; enemies[it] = null }
         manualLockedAllySlots.clear(); manualLockedEnemySlots.clear()

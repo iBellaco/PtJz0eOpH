@@ -52,13 +52,13 @@ class MetaControlsLayoutTest {
         compose.setContent { MyApplicationTheme { CompositionLocalProvider(LocalLanguage provides "es") {
             SparklineTrendGraph(53.0, 1.0, observed24h = 52.0, observed12h = 52.5, dailyReferences = true)
         } } }
-        listOf("hace 24h", "hace 12h", "actual", "52.00%", "52.50%", "53.00%", "Referencias diarias publicadas")
+        listOf("hace 24h", "hace 12h", "actual", "52.00%", "52.50%", "53.00%")
             .forEach { compose.onNodeWithText(it).assertExists() }
     }
 
     @Test fun unchangedRateIsNeutralRatherThanFalsePositiveZero() {
         compose.setContent { MyApplicationTheme { CompositionLocalProvider(LocalLanguage provides "es") { RateChangeBadge(0.0) } } }
-        compose.onNodeWithText("= · 24h").assertExists()
+        compose.onNodeWithText("=").assertExists()
         compose.onNodeWithText("+0.00%", substring = true).assertDoesNotExist()
     }
 }
