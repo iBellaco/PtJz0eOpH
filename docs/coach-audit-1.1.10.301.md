@@ -26,3 +26,4 @@
 - Versión: `app/build.gradle.kts`.
 - Verificación local de la captura: columna rival visible ≈1170/1280; posición previa 1227/1280. `git diff --check`.
 - Se requieren las comprobaciones completas de Actions, el APK firmado y ofuscado instalado y las pantallas en portugués antes de integrar. La prueba en un S26 físico sigue pendiente del tester; la captura se conserva para reproducir el desplazamiento.
+- La primera auditoría instalada detectó un recorrido obsoleto: buscaba el acceso de la gráfica eliminada. Se conserva la verificación de registro desde Usuario en `tools/audit-portuguese-device.py`. La auditoría instalada en español, compilación, firma, ofuscación y pruebas Android de esa ejecución pasaron.
