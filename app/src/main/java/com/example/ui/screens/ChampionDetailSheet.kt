@@ -141,6 +141,16 @@ fun ChampionDetailSheet(
     var selectedBuildOptionIndex by remember(champion.id, selectedRole) { mutableStateOf(0) }
 
     val currentLang = com.example.util.currentAppLanguage()
+    var liveTick by remember { mutableStateOf(0L) }
+    LaunchedEffect(champion.id) {
+        while (true) {
+            kotlinx.coroutines.delay(1_000L)
+            liveTick = System.currentTimeMillis()
+        }
+    }
+    // Fuerza una lectura del snapshot cada segundo para que una sincronización
+    // terminada en segundo plano se refleje sin cerrar la ficha.
+    liveTick
     val liveChampion = WildRiftRepository.champions.firstOrNull {
         it.id.equals(champion.id, ignoreCase = true)
     } ?: champion
@@ -167,7 +177,7 @@ fun ChampionDetailSheet(
     }
 
     // Perfil dinámico de estadísticas, build, runas y counters adaptados a la línea elegida
-    val roleProfile = remember(champion.id, selectedRole, currentLang, WildRiftRepository.regionRevision) {
+    val roleProfile = remember(champion.id, selectedRole, currentLang, WildRiftRepository.regionRevision, liveTick) {
         ChampionRoleAdapter.getProfile(liveChampion, selectedRole, currentLang)
     }
 

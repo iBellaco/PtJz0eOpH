@@ -281,6 +281,7 @@ fun AdminDashboardDialog(
                     if (userRole == "admin" || userRole == "moderador" || com.example.util.AuthManager.isCurrentUserAdmin()) {
                         Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
                             MetaMonitoringCard()
+                            AdminUserPresenceCard()
                         }
                     } else {
                         // Moderador View

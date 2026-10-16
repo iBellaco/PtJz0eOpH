@@ -22,14 +22,8 @@ object BestBuildWrScraper {
     private const val PREFS_NAME = "wr_tier_list_cache"
     private const val STATS_SNAPSHOT_PREFIX = "stats_snapshot_"
 
-    // Five independent publishers; incompatible patches are monitored but never enter the consensus.
+    // Three independent publishers; incompatible patches are monitored but never enter the consensus.
     val GLOBAL_SCRAPING_SOURCES = listOf(
-        GlobalScrapingSource(
-            id = "bestbuildwr",
-            name = "BestBuildWR",
-            url = "https://bestbuildwr.com/tierlist",
-            displayUrl = "bestbuildwr.com/tierlist", expectedPatch = "7.3b"
-        ),
         GlobalScrapingSource(
             id = "wildriftfire",
             name = "WildRiftFire",
@@ -43,7 +37,6 @@ object BestBuildWrScraper {
             displayUrl = "wildriftcore.com/es/tierlist/", expectedPatch = "7.3b"
         ),
         GlobalScrapingSource("wildlegends", "WildLegends", "https://wildlegends.net/en/tier-list", "wildlegends.net", "7.3b"),
-        GlobalScrapingSource("wildrifter", "WildRifter", "https://wildrifter.com/en?patch=7.3b", "wildrifter.com", "7.3b")
     )
 
     private val _freshness = MutableStateFlow(MetaFreshness())
@@ -212,7 +205,7 @@ object BestBuildWrScraper {
                 // Fallback publishers only fill champions absent from the primary report.
                 val freshStats = linkedMapOf<String, ChampionMetaStats>()
                 val statOrigins = mutableMapOf<String, String>()
-                listOf("wildriftfire", "wildriftcore", "wildrifter").forEach { id ->
+                listOf("wildriftfire", "wildriftcore", "wildlegends").forEach { id ->
                     validSources.firstOrNull { it.source.id == id }?.stats?.forEach { (champion, rates) ->
                         if (champion !in freshStats) {
                             freshStats[champion] = rates
