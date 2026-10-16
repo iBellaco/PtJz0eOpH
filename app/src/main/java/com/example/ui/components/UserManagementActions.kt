@@ -261,6 +261,35 @@ internal fun updateUserEmail(
         }
 }
 
+/** Updates the public username shown throughout user management and support views. */
+internal fun updateUserName(
+    context: Context,
+    uid: String,
+    newName: String,
+    onSuccess: (String) -> Unit
+) {
+    val normalized = newName.trim().replace(Regex("\\s+"), " ")
+    if (normalized.length < 3) {
+        Toast.makeText(context, com.example.util.appTr("El nombre debe tener al menos 3 caracteres"), Toast.LENGTH_SHORT).show()
+        return
+    }
+    val updatePayload = hashMapOf<String, Any>(
+        "name" to normalized,
+        "username" to normalized,
+        "displayName" to normalized,
+        "lastModifiedByAdmin" to System.currentTimeMillis()
+    )
+    FirebaseFirestore.getInstance().collection("users").document(uid)
+        .set(updatePayload, SetOptions.merge())
+        .addOnSuccessListener {
+            Toast.makeText(context, com.example.util.appTr("Nombre de usuario actualizado"), Toast.LENGTH_SHORT).show()
+            onSuccess(normalized)
+        }
+        .addOnFailureListener { error ->
+            Toast.makeText(context, com.example.util.appTr("Error al actualizar nombre: ${error.message}"), Toast.LENGTH_LONG).show()
+        }
+}
+
 internal fun createUserManagementApprovalRequest(
     context: Context,
     requestType: String,

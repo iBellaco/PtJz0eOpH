@@ -12,8 +12,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AdminPanelSettings
 import androidx.compose.material.icons.filled.Groups
-import androidx.compose.material.icons.filled.Login
-import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.People
 import androidx.compose.material.icons.filled.Sensors
 import androidx.compose.material.icons.filled.Shield
@@ -59,7 +57,9 @@ private data class PresenceMetrics(
     val streamers: Int = 0,
     val streamersOnline: Int = 0,
     val creators: Int = 0,
-    val creatorsOnline: Int = 0
+    val creatorsOnline: Int = 0,
+    val freeUsers: Int = 0,
+    val freeUsersOnline: Int = 0
 )
 
 /** Estado compacto de cuentas y actividad, actualizado desde el directorio de usuarios. */
@@ -108,7 +108,9 @@ fun AdminUserPresenceCard(modifier: Modifier = Modifier) {
         streamers = countRole("streamer"),
         streamersOnline = countRoleOnline("streamer"),
         creators = users.count { roles(it).any { role -> role.startsWith("creador") } },
-        creatorsOnline = users.count { roles(it).any { role -> role.startsWith("creador") } && online(it) }
+        creatorsOnline = users.count { roles(it).any { role -> role.startsWith("creador") } && online(it) },
+        freeUsers = users.count { roles(it).any { role -> role in setOf("gratis", "gratuito", "free") } },
+        freeUsersOnline = users.count { roles(it).any { role -> role in setOf("gratis", "gratuito", "free") } && online(it) }
     )
 
     Card(
@@ -122,14 +124,9 @@ fun AdminUserPresenceCard(modifier: Modifier = Modifier) {
                 Spacer(Modifier.width(8.dp))
                 Column(Modifier.weight(1f)) {
                     Text(tr("Actividad de usuarios"), color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 13.sp)
-                    Text(tr("Conteo en vivo del directorio"), color = TextMuted, fontSize = 10.sp)
+                    Text("${metrics.registered} ${tr("registrados")}", color = TextMuted, fontSize = 10.sp)
                 }
                 MetricValue(Icons.Default.Sensors, metrics.online, HextechGreen, tr("conectados"))
-            }
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                MetricValue(Icons.Default.People, metrics.registered, HextechCyan, tr("registrados"), Modifier.weight(1f))
-                MetricValue(Icons.Default.Login, metrics.signedIn, HextechGold, tr("con sesión"), Modifier.weight(1f))
-                MetricValue(Icons.Default.Logout, (metrics.registered - metrics.signedIn).coerceAtLeast(0), TextMuted, tr("sin sesión"), Modifier.weight(1f))
             }
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                 RoleMetric(Icons.Default.AdminPanelSettings, tr("admins"), metrics.admins, metrics.adminsOnline, HextechGold, Modifier.weight(1f))
@@ -139,6 +136,7 @@ fun AdminUserPresenceCard(modifier: Modifier = Modifier) {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                 RoleMetric(Icons.Default.Groups, tr("streamers"), metrics.streamers, metrics.streamersOnline, HextechCyan, Modifier.weight(1f))
                 RoleMetric(Icons.Default.VerifiedUser, tr("creadores"), metrics.creators, metrics.creatorsOnline, HextechGold, Modifier.weight(1f))
+                RoleMetric(Icons.Default.People, tr("gratuitos"), metrics.freeUsers, metrics.freeUsersOnline, HextechCyan, Modifier.weight(1f))
             }
         }
     }
@@ -161,6 +159,12 @@ private fun RoleMetric(icon: ImageVector, label: String, total: Int, online: Int
     Column(modifier, horizontalAlignment = Alignment.CenterHorizontally) {
         Icon(icon, null, tint = color, modifier = Modifier.size(15.dp))
         Text("$total", color = TextPrimary, fontWeight = FontWeight.Bold, fontSize = 13.sp)
-        Text("$label · $online ${tr("en línea")}", color = TextMuted, fontSize = 8.sp, maxLines = 1)
+        Text(
+            "$online ${tr("en línea")}",
+            color = if (online > 0) HextechGreen else TextMuted,
+            fontSize = 8.sp,
+            maxLines = 1
+        )
+        Text(label, color = TextMuted, fontSize = 8.sp, maxLines = 1)
     }
 }

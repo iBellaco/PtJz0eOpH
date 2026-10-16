@@ -72,6 +72,7 @@ import com.example.model.Champion
 import com.example.model.LaneRole
 import com.example.ui.components.ChampionAvatar
 import com.example.ui.components.TierMovementBadge
+import com.example.ui.components.TierListExportButton
 import com.example.ui.theme.DangerRed
 import com.example.ui.theme.HextechCardBorder
 import com.example.ui.theme.HextechCyan
@@ -165,7 +166,7 @@ fun TierListTab(
         item {
             com.example.ui.components.MetaSyncSummary()
             Spacer(modifier = Modifier.height(4.dp))
-
+            TierListExportButton(championsToDisplay, Modifier.testTag("tier_list_export_button"))
         }
 
         item {
@@ -639,12 +640,6 @@ fun TierListTab(
                                     verticalAlignment = Alignment.CenterVertically,
                                     horizontalArrangement = Arrangement.SpaceBetween
                                 ) {
-                                    Text(
-                                        text = com.example.util.tr(tr("Tendencia") + ":"),
-                                        color = TextMuted,
-                                        fontSize = 9.sp,
-                                        fontWeight = FontWeight.Medium
-                                    )
                                     val safeWr = champ.winrate
                                     val safeDelta = champ.winrateDelta
                                     SparklineTrendGraph(
@@ -654,7 +649,7 @@ fun TierListTab(
                                         dailyReferences = champ.historyUsesDailyReports,
                                         reference24hAt = champ.history24hAt, reference12hAt = champ.history12hAt,
                                         delta = safeDelta,
-                                        modifier = Modifier.weight(1f).padding(start = 8.dp),
+                                        modifier = Modifier.fillMaxWidth(),
                                         showTimeLabels = true,
                                         showFullText = true,
                                         canvasHeight = 16
@@ -804,12 +799,6 @@ fun TierSectionCard(
                                     verticalAlignment = Alignment.CenterVertically,
                                     horizontalArrangement = Arrangement.SpaceBetween
                                 ) {
-                                    Text(
-                                        text = com.example.util.tr(tr("Tendencia") + ":"),
-                                        color = TextMuted,
-                                        fontSize = 9.sp,
-                                        fontWeight = FontWeight.Medium
-                                    )
                                     val safeWr = champ.winrate
                                     val safeDelta = champ.winrateDelta
                                     SparklineTrendGraph(
@@ -819,7 +808,7 @@ fun TierSectionCard(
                                         dailyReferences = champ.historyUsesDailyReports,
                                         reference24hAt = champ.history24hAt, reference12hAt = champ.history12hAt,
                                         delta = safeDelta,
-                                        modifier = Modifier.weight(1f).padding(start = 8.dp),
+                                        modifier = Modifier.fillMaxWidth(),
                                         showTimeLabels = true,
                                         showFullText = true,
                                         canvasHeight = 16

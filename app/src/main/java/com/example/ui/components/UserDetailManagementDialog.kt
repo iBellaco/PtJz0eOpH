@@ -384,6 +384,57 @@ fun UserDetailManagementDialog(
                         }
                     }
 
+                    // SECCIÓN: EDITAR NOMBRE DE USUARIO
+                    if (isAdmin) item {
+                        Surface(
+                            color = HextechSurfaceBg,
+                            shape = RoundedCornerShape(10.dp),
+                            border = androidx.compose.foundation.BorderStroke(1.dp, HextechCardBorder)
+                        ) {
+                            Column(modifier = Modifier.padding(12.dp)) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Icon(Icons.Default.Badge, contentDescription = null, tint = HextechGold, modifier = Modifier.size(18.dp))
+                                    Spacer(modifier = Modifier.width(6.dp))
+                                    Text(tr("Cambiar nombre de usuario"), fontWeight = FontWeight.Bold, color = HextechGold, fontSize = 13.sp)
+                                }
+                                Spacer(modifier = Modifier.height(8.dp))
+                                OutlinedTextField(
+                                    value = currentName,
+                                    onValueChange = { currentName = it.take(32) },
+                                    modifier = Modifier.fillMaxWidth().testTag("managed_username_input"),
+                                    singleLine = true,
+                                    label = { Text(tr("Nuevo nombre"), color = TextSecondary, fontSize = 11.sp) },
+                                    colors = OutlinedTextFieldDefaults.colors(
+                                        focusedBorderColor = HextechGold,
+                                        unfocusedBorderColor = HextechCardBorder,
+                                        focusedTextColor = Color.White,
+                                        unfocusedTextColor = Color.White,
+                                        cursorColor = HextechGold
+                                    )
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Button(
+                                    onClick = {
+                                        updateUserName(context, uid, currentName) { newName ->
+                                            currentName = newName
+                                            onUserUpdated(user.toMutableMap().apply {
+                                                put("name", newName)
+                                                put("username", newName)
+                                                put("displayName", newName)
+                                            })
+                                        }
+                                    },
+                                    modifier = Modifier.align(Alignment.End).testTag("managed_username_save"),
+                                    colors = ButtonDefaults.buttonColors(containerColor = HextechGold),
+                                    shape = RoundedCornerShape(6.dp),
+                                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
+                                ) {
+                                    Text(tr("Guardar nombre"), color = HextechDarkBg, fontWeight = FontWeight.Bold, fontSize = 11.sp)
+                                }
+                            }
+                        }
+                    }
+
                     if (currentRole in setOf("admin", "administrador") || user["admin"] == true) item(key = "premium-status") {
                         PremiumStatusCard(currentRole, currentSecondaryRole, currentPremiumUntil,
                             adminClaim = user["admin"] == true, banned = currentBanned,

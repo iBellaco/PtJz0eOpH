@@ -648,12 +648,6 @@ fun ChampionsCatalogTab(
                                     verticalAlignment = Alignment.CenterVertically,
                                     horizontalArrangement = Arrangement.SpaceBetween
                                 ) {
-                                    Text(
-                                        text = com.example.util.tr(tr("Tendencia") + ":"),
-                                        color = TextMuted,
-                                        fontSize = 9.sp,
-                                        fontWeight = FontWeight.Medium
-                                    )
                                     val safeWr = champion.winrate
                                     val safeDelta = champion.winrateDelta
                                     SparklineTrendGraph(
@@ -661,7 +655,7 @@ fun ChampionsCatalogTab(
                                         observed24h = champion.winrate24h,
                                         observed12h = champion.winrate12h,
                                         delta = safeDelta,
-                                        modifier = Modifier.weight(1f).padding(start = 8.dp),
+                                        modifier = Modifier.fillMaxWidth(),
                                         showTimeLabels = true,
                                         showFullText = true,
                                         canvasHeight = 16
