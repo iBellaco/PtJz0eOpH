@@ -15,9 +15,8 @@ class PublishedMetaReportTest {
         assertEquals("nunuwillump", RegionalTierParser.canonical("nunu-amp-willump"))
         val legends = """<div><span class="relative z-10">S</span><div class="tier-list-grid"><a href="/en/guia/Ahri?role=3">Ahri</a></div></div>"""
         assertEquals("S", RegionalTierParser.parse(legends, "wildlegends")["ahri"])
-        val rifter = """<a href="/en/champion/ahri"><span aria-label="Tier A">A</span><dl><div><dt>Win</dt><dd>51.2%</dd></div><div><dt>Pick</dt><dd>4.1%</dd></div><div><dt>Ban</dt><dd>0.0%</dd></div></dl></a>"""
-        assertEquals("A", RegionalTierParser.parse(rifter, "wildrifter")["ahri"])
-        assertEquals(0.0, PublishedStatsParser.rifter(rifter)["ahri"]!!.banRate!!, 0.0)
+        val counter = """<a href="/en/champion/ahri" data-tier="A">Ahri</a>"""
+        assertEquals("A", RegionalTierParser.parse(counter, "wildriftcounter")["ahri"])
     }
 
     @Test fun `dated archive selects primary role in the same bracket and excludes earlier patches`() {
