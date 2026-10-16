@@ -1,6 +1,11 @@
 package com.example.ui.components
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -25,12 +30,15 @@ fun SparklineTrendGraph(
     observed24h: Double? = null, observed12h: Double? = null,
     dailyReferences: Boolean = false, reference24hAt: Long = 0L, reference12hAt: Long = 0L
 ) {
-    // Pulso visual del punto actual: confirma que la vista sigue viva mientras
-    // esperamos la siguiente publicación real de la fuente.
-    // El contenedor de clasificación se repinta cada segundo. Usamos ese
-    // reloj para el pulso y evitamos dejar una animación infinita viva en
-    // pantallas de prueba o cuando la vista deja de estar visible.
-    val livePulse = if ((System.currentTimeMillis() / 900L) % 2L == 0L) 0.35f else 0.95f
+    // Pulso continuo del punto actual y del trazo para que la gráfica no parezca
+    // estática entre dos consultas de datos reales.
+    val trendAnimation = rememberInfiniteTransition(label = "tier_trend_animation")
+    val livePulse by trendAnimation.animateFloat(
+        initialValue = 0.35f,
+        targetValue = 0.95f,
+        animationSpec = infiniteRepeatable(tween(950), RepeatMode.Reverse),
+        label = "tier_trend_pulse"
+    )
     val trendColor = when {
         delta > 0.005 -> HextechGreen
         delta < -0.005 -> DangerRed
