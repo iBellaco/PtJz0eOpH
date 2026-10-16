@@ -6,6 +6,7 @@
 - La cantidad conectada usa verde cuando es mayor que cero y gris cuando es cero.
 - Se retiraron las filas redundantes de sesión y sin sesión.
 - Se añadió el rol gratuito junto a administradores, moderadores, patrocinadores, streamers y creadores.
+- La gestión de usuarios ahora permite editar y guardar el nombre público, sincronizando los campos usados por la aplicación.
 
 ## Tier list
 
