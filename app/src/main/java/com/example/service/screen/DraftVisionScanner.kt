@@ -371,7 +371,7 @@ object DraftVisionScanner {
         }
         if (!manual && (lastAlignmentAt == 0L || now-lastAlignmentAt >= 2000)) {
             alignedConfigFlow.value = DraftRingAlignment.align(bitmap, alignedConfigFlow.value,
-                overlayForFrame(bitmap.width, bitmap.height))
+                overlayForFrame(bitmap.width, bitmap.height), showCalibrationBoxes.value)
             lastAlignmentAt = now
         }
         return alignedConfigFlow.value

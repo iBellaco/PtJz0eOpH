@@ -6,7 +6,7 @@ import kotlin.math.*
 
 /** Fits visible portrait rings, rather than inferring game margins from the phone model. */
 internal object DraftRingAlignment {
-    fun align(bitmap: Bitmap, base: VisionCalibrationConfig, excluded: Rect?): VisionCalibrationConfig {
+    fun align(bitmap: Bitmap, base: VisionCalibrationConfig, excluded: Rect?, ignoreDebugRings: Boolean = false): VisionCalibrationConfig {
         val w = bitmap.width; val h = bitmap.height
         val pixels = IntArray(w * h)
         bitmap.getPixels(pixels, 0, w, 0, 0, w, h)
@@ -24,6 +24,7 @@ internal object DraftRingAlignment {
             }
             for (slot in 0..4) {
                 val nominalY = (ys[slot] * h).toInt()
+                val nominalX = w * (if(ally) base.getAllySlotX(slot) else base.getEnemySlotX(slot))
                 var best = 0; var center: Pair<Int, Int>? = null
                 val minX = (w * if (ally) .035 else .76).toInt()
                 val maxX = (w * if (ally) .24 else .975).toInt()
@@ -44,6 +45,8 @@ internal object DraftRingAlignment {
                             for (dr in -2..2) {
                                 val x = (cx + dx + dx * dr / radius).coerceIn(0,w-1)
                                 val y = (cy + dy + dy * dr / radius).coerceIn(0,h-1)
+                                // Do not use our own diagnostic outline as evidence of a game ring.
+                                if(ignoreDebugRings && abs(hypot(x-nominalX,(y-nominalY).toFloat())-radius)<3f) continue
                                 val color = pixels[y*w+x]
                                 val r = (color shr 16) and 255; val g = (color shr 8) and 255; val b = color and 255
                                 if (if (ally) b > 85 && g > 65 && b > r * 1.25 && g > r * 1.15

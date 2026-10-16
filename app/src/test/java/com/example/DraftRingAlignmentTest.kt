@@ -19,7 +19,7 @@ class DraftRingAlignmentTest {
     @Test fun s26VisibleRivalRingsReplaceAnotherPhonesCoordinates() {
         val bitmap=javaClass.getResourceAsStream("/s26/draft.jpg").use { BitmapFactory.decodeStream(it) }
         try {
-            val aligned=DraftRingAlignment.align(bitmap,VisionCalibrationConfig(),Rect(60,0,590,591))
+            val aligned=DraftRingAlignment.align(bitmap,VisionCalibrationConfig(),Rect(60,0,590,591),ignoreDebugRings=true)
             assertEquals(1168f/1280f,aligned.enemyAvatarCenterX,.012f)
             assertTrue(aligned.enemySlotXRatios.all { kotlin.math.abs(it-1168f/1280f)<.012f })
             // Occluded allies cannot be located from the HUD's cyan borders.
@@ -45,7 +45,14 @@ class DraftRingAlignmentTest {
                     paint.color=if(ally)android.graphics.Color.rgb(30,190,220) else android.graphics.Color.rgb(220,40,60)
                     canvas.drawCircle(cx,cy,radius,paint)
                 }
-                val aligned=DraftRingAlignment.align(bitmap,base,null)
+                // Reproduce a viewer still drawing the wrong default columns over the live frame.
+                paint.strokeWidth=1.5f
+                for(ally in listOf(true,false)) for(slot in 0..4) {
+                    paint.color=if(ally)android.graphics.Color.CYAN else android.graphics.Color.RED
+                    canvas.drawCircle(w*(if(ally)base.getAllySlotX(slot) else base.getEnemySlotX(slot)),
+                        h*(if(ally)base.allySlotYRatios else base.enemySlotYRatios)[slot],h*.055f,paint)
+                }
+                val aligned=DraftRingAlignment.align(bitmap,base,null,ignoreDebugRings=true)
                 assertEquals(.106f,aligned.allyAvatarCenterX,.008f)
                 assertEquals(.891f,aligned.enemyAvatarCenterX,.008f)
             } finally {bitmap.recycle()}
