@@ -23,6 +23,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.size
 import com.example.model.Champion
 import com.example.ui.theme.HextechDarkBg
 import com.example.ui.theme.HextechGold
