@@ -52,6 +52,16 @@ class GlobalTierScrapingTest {
         assertEquals(8.1, stats.pickRate!!, 0.001)
         assertEquals(12.4, stats.banRate!!, 0.001)
     }
+    @Test fun `WildRiftCore keeps independent rates for each lane`() {
+        val html = """
+            <section data-role="MID"><li class="tl-cell"><a class="tl-cell__name" href="/en/champions/hwei/">Hwei</a><p class="tl-cell__wr"><b>52.5</b></p><p class="tl-cell__rates">7.4% pick · 61% ban</p></li></section>
+            <section data-role="SUPPORT"><li class="tl-cell"><a class="tl-cell__name" href="/en/champions/hwei/">Hwei</a><p class="tl-cell__wr"><b>54.6</b></p><p class="tl-cell__rates">1.1% pick · 76.6% ban</p></li></section>
+        """.trimIndent()
+        val lanes = RegionalTierParser.parseRoleStats(html, "wildriftcore")["hwei"]!!
+        assertEquals(52.5, lanes[com.example.model.LaneRole.MID]!!.winRate!!, 0.001)
+        assertEquals(54.6, lanes[com.example.model.LaneRole.SUPPORT]!!.winRate!!, 0.001)
+        assertNotEquals(lanes[com.example.model.LaneRole.MID], lanes[com.example.model.LaneRole.SUPPORT])
+    }
     @Test fun `empty error pages and insufficient unknown champions fail validation`() {
         assertTrue(RegionalTierParser.parse("<html>Service unavailable</html>").isEmpty())
         val known=(1..100).map { "champ$it" }.toSet()

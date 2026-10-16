@@ -72,4 +72,18 @@ object GlobalTierConsensus {
             )
         }
     }
+
+    fun fuseRoleStats(sources: List<Map<String, Map<com.example.model.LaneRole, ChampionMetaStats>>>): Map<String, Map<com.example.model.LaneRole, ChampionMetaStats>> {
+        val output = linkedMapOf<String, MutableMap<com.example.model.LaneRole, ChampionMetaStats>>()
+        sources.forEach { source -> source.forEach { (id, lanes) -> lanes.forEach { (lane, stats) ->
+            if (stats.isUsable()) output.getOrPut(RegionalTierParser.canonical(id)) { linkedMapOf() }[lane] = stats
+        } } }
+        return output
+    }
+
+    fun mergeRoleStats(
+        previous: Map<String, Map<com.example.model.LaneRole, ChampionMetaStats>>,
+        fresh: Map<String, Map<com.example.model.LaneRole, ChampionMetaStats>>
+    ): Map<String, Map<com.example.model.LaneRole, ChampionMetaStats>> =
+        (previous.keys + fresh.keys).associateWith { id -> previous[id].orEmpty() + fresh[id].orEmpty() }
 }

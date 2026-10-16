@@ -60,6 +60,7 @@ import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VerifiedUser
+import androidx.compose.material.icons.filled.WorkspacePremium
 import androidx.compose.material.icons.filled.ZoomIn
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -153,6 +154,7 @@ internal fun ComprehensiveFeedbackCard(
     // Información del tipo
     val (typeColor, typeIcon, typeLabel) = when (itemCategory) {
         "PAGO" -> Triple(HextechGold, Icons.Default.Payments, "Pago")
+        "SUBSCRIPTION" -> Triple(HextechGold, Icons.Default.WorkspacePremium, "SUSCRIPCIÓN")
         "PATROCINADOR" -> Triple(HextechGold, Icons.Default.Star, "PATROCINADOR")
         "BUG" -> Triple(DangerRed, Icons.Default.BugReport, "BUG / ERROR")
         "SUPPORT" -> Triple(HextechCyan, Icons.Default.SupportAgent, "SOPORTE")
@@ -227,6 +229,13 @@ internal fun ComprehensiveFeedbackCard(
                     }
 
                     // Badge de Estado Actual
+                    Text(
+                        text = com.example.data.SupportLanguageDetector.flag(report.language),
+                        fontSize = 15.sp,
+                        modifier = Modifier.testTag("support_language_flag_${report.language}")
+                    )
+
+                    // Badge de Estado Actual
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(6.dp))
@@ -267,11 +276,6 @@ internal fun ComprehensiveFeedbackCard(
                         }
                     }
 
-                    Text(
-                        text = com.example.util.tr(formattedDate),
-                        color = TextMuted,
-                        fontSize = 10.sp
-                    )
                 }
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -291,6 +295,13 @@ internal fun ComprehensiveFeedbackCard(
                     }
                 }
             }
+
+            Text(
+                text = com.example.util.tr(formattedDate),
+                color = TextMuted,
+                fontSize = 10.sp,
+                modifier = Modifier.padding(top = 3.dp)
+            )
 
             Spacer(modifier = Modifier.height(6.dp))
 

@@ -66,6 +66,9 @@ object SupportReportDecoder {
             userName = text("userName", "user_name", "senderName").ifBlank { initial?.senderName.orEmpty() },
             userEmail = text("contactEmail", "userEmail", "user_email", "email"),
             type = SupportConversationPolicy.ticketTag(data),
+            language = text("language", "lang", "idioma").ifBlank {
+                SupportLanguageDetector.detect(title, body, "es")
+            },
             title = title.ifBlank { "Ticket de soporte" }, description = body,
             photosBase64 = ((data["photos"] ?: data["photosBase64"]) as? List<*>)?.filterIsInstance<String>().orEmpty(),
             appVersion = text("appVersion", "app_version", "version"),

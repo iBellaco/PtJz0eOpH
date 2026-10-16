@@ -28,7 +28,8 @@ class GlobalTierSourceClient(
 ) {
     data class SourceResult(val source: GlobalScrapingSource, val tiers: Map<String, String>,
         val status: ScraperSourceStatus, val stats: Map<String, ChampionMetaStats> = emptyMap(),
-        val history: Map<String, List<ObservedRate>> = emptyMap())
+        val history: Map<String, List<ObservedRate>> = emptyMap(),
+        val roleStats: Map<String, Map<com.example.model.LaneRole, ChampionMetaStats>> = emptyMap())
 
     private fun request(url: String): String = client.newCall(Request.Builder().url(url)
         .header("User-Agent", "Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 Chrome/130.0.0.0 Mobile Safari/537.36")
@@ -47,6 +48,7 @@ class GlobalTierSourceClient(
         var parsed = emptyMap<String, String>()
         var stats = emptyMap<String, ChampionMetaStats>()
         var history = emptyMap<String, List<ObservedRate>>()
+        var roleStats = emptyMap<String, Map<com.example.model.LaneRole, ChampionMetaStats>>()
         var error: String? = null
         var patch = ""
         for (attempt in 0..1) {
@@ -60,6 +62,7 @@ class GlobalTierSourceClient(
                 }
                 parsed = GlobalTierConsensus.validated(RegionalTierParser.parse(html, source.id), knownIds)
                 stats = RegionalTierParser.parseStats(html, source.id).filterKeys { it in known }
+                roleStats = RegionalTierParser.parseRoleStats(html, source.id).filterKeys { it in known }
                 error = if (parsed.isEmpty() && stats.isEmpty()) "No se encontraron categorías ni estadísticas válidas" else null
                 break
             } catch (cancelled: CancellationException) { throw cancelled
@@ -85,13 +88,15 @@ class GlobalTierSourceClient(
                     if (source.expectedPatch == null || report.patch == source.expectedPatch) {
                         stats = stats + report.stats.filterKeys { it in known }
                         history = report.history.filterKeys { it in known }
+                        roleStats = roleStats + report.roleStats.filterKeys { it in known }
                         if (history.values.none { it.isNotEmpty() }) error = "Historial no disponible"
                     } else error = "El historial pertenece a otro parche"
                 } else {
                     val extraPatch = PublishedStatsParser.patch(html, source.id)
-                    if (source.expectedPatch == null || extraPatch == source.expectedPatch)
+                    if (source.expectedPatch == null || extraPatch == source.expectedPatch) {
                         stats = stats + RegionalTierParser.parseStats(html, source.id).filterKeys { it in known }
-                    else error = "Las estadísticas pertenecen a otro parche"
+                        roleStats = roleStats + RegionalTierParser.parseRoleStats(html, source.id).filterKeys { it in known }
+                    } else error = "Las estadísticas pertenecen a otro parche"
                 }
                 if (stats.isEmpty()) error = "Estadísticas no disponibles"
             } catch (cancelled: CancellationException) { throw cancelled
@@ -102,7 +107,7 @@ class GlobalTierSourceClient(
             isHealthy = parsed.isNotEmpty() || stats.isNotEmpty(), lastChecked = System.currentTimeMillis(),
             responseTimeMs = System.currentTimeMillis() - started, errorMessage = error,
             tierCount = parsed.size, statsCount = stats.size, publishedPatch = patch,
-            rosterCount = (parsed.keys + stats.keys).size, historyCount = history.count { it.value.isNotEmpty() }), stats, history)
+            rosterCount = (parsed.keys + stats.keys).size, historyCount = history.count { it.value.isNotEmpty() }), stats, history, roleStats)
     }
 
     private class SourceHttpException(val code: Int) : java.io.IOException()

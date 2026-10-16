@@ -118,6 +118,7 @@ try {
     await setDoc(doc(store,'cash_redemptions/cash-ten'),{userId:'economy',status:'PENDING',amount:10,totalDeducted:15});
     await setDoc(doc(store,'users/economy/subscription_history/cash-ten'),{source:'CASH_REDEMPTION',amount:'-15 EN'});
     await setDoc(doc(store,'support_reports/payment_cash-ten'),{...ticket('payment_cash-ten','PAGO'),userId:'economy',userEmail:'economy@test.invalid',staffVisible:false});
+    await setDoc(doc(store,'support_reports/subscription-private'),{...ticket('subscription-private','SUSCRIPCION'),userId:'',subscriberUid:'economy',userEmail:'economy@test.invalid',staffVisible:false,adminOnly:true});
   });
   await test('only a trusted claim grants access; emails, roles and borders cannot grant it',async()=>{
     for(const [uid,fields,claims] of [['forged-role',{role:'admin'},{}],['forged-flag',{admin:true},{}],['forged-border',{rankBorder:'ADMIN'},{}],['old-owner-email',{role:'free'},{email:'barbadiego695@gmail.com'}]]) {
@@ -164,6 +165,9 @@ try {
     await assertFails(getDocs(query(collection(economy,'cash_redemptions'),where('userId','==','economy'))));
     await assertSucceeds(getDoc(doc(admin,'support_reports/payment_cash-ten')));
     await assertFails(getDoc(doc(moderator,'support_reports/payment_cash-ten')));
+    await assertSucceeds(getDoc(doc(admin,'support_reports/subscription-private')));
+    await assertFails(getDoc(doc(moderator,'support_reports/subscription-private')));
+    await assertFails(getDoc(doc(economy,'support_reports/subscription-private')));
   });
   await test('pending advertisements cannot bypass the server debit',async()=>{
     for(const store of [economy,admin]) await assertFails(setDoc(doc(store,'pending_sponsor_ads/free-ad'),{sponsorEmail:'economy@test.invalid',isApproved:false}));
@@ -436,7 +440,11 @@ try {
   });
   await test('guests read published channels but cannot read private configuration or history', async () => {
     const guest = env.unauthenticatedContext().firestore();
+    await env.withSecurityRulesDisabled(async context=>setDoc(doc(context.firestore(),'system_config/app_update_verification'),{enabled:true}));
     await assertSucceeds(getDoc(doc(guest,'system_config','streamer_live')));
+    await assertSucceeds(getDoc(doc(guest,'system_config','app_update_verification')));
+    await assertSucceeds(updateDoc(doc(admin,'system_config','app_update_verification'),{enabled:false}));
+    await assertFails(updateDoc(doc(user,'system_config','app_update_verification'),{enabled:true}));
     await assertFails(getDoc(doc(guest,'system_config','app_notice_analytics')));
     await assertFails(getDocs(collection(guest,'system_config')));
     await assertFails(getDocs(collection(guest,'streamer_requests/s2/history')));

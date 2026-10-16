@@ -16,6 +16,14 @@ data class ChampionMetaStats(
 
 /** Each publisher has its own schema. Never carry a tier into navigation/footer links. */
 object RegionalTierParser {
+    fun role(value: String?): com.example.model.LaneRole? = when (value?.trim()?.uppercase(Locale.ROOT)) {
+        "TOP", "BARON", "BARON LANE" -> com.example.model.LaneRole.TOP
+        "JUNGLE", "JG" -> com.example.model.LaneRole.JUNGLE
+        "MID", "MIDDLE" -> com.example.model.LaneRole.MID
+        "ADC", "DRAGON", "DUO", "BOT" -> com.example.model.LaneRole.ADC
+        "SUPPORT", "SUPP" -> com.example.model.LaneRole.SUPPORT
+        else -> null
+    }
     fun canonical(value: String): String = value.lowercase(Locale.ROOT)
         .filter { it.isLetterOrDigit() }.let {
             when (it) {
@@ -186,6 +194,31 @@ object RegionalTierParser {
             val stats = ChampionMetaStats(rate(".rk-val--win, .rk-stat--win"),
                 rate(".rk-stat--pick"), rate(".rk-stat--ban"))
             if (id.length in 2..30 && stats.isUsable()) output[id] = stats
+        }
+        return output
+    }
+
+    /** Rates indexed by the publisher's lane. Global rows are deliberately excluded. */
+    fun parseRoleStats(html: String, source: String? = null): Map<String, Map<com.example.model.LaneRole, ChampionMetaStats>> {
+        if (html.isBlank()) return emptyMap()
+        if (source == "wildriftfire") return PublishedStatsParser.fire(html).roleStats
+        if (source != null && source != "wildriftcore") return emptyMap()
+        val output = linkedMapOf<String, MutableMap<com.example.model.LaneRole, ChampionMetaStats>>()
+        Jsoup.parse(html).select("li.tl-cell, tr.rk-row").forEach { row ->
+            val lane = role(row.selectFirst("[data-role]")?.attr("data-role")
+                ?: row.parents().firstOrNull { it.hasAttr("data-role") }?.attr("data-role")) ?: return@forEach
+            val link = row.selectFirst("a.tl-cell__name[href], a.rk-champ[href]") ?: return@forEach
+            val id = canonical(link.attr("href").substringBefore('?').trimEnd('/').substringAfterLast('/'))
+            fun rate(selector: String): Double? = row.selectFirst(selector)?.text()
+                ?.replace(',', '.')?.replace(Regex("[^0-9.+-]"), "")?.toDoubleOrNull()
+                ?.takeIf { it.isFinite() && it in 0.0..100.0 }
+            val ratesText = row.selectFirst(".tl-cell__rates")?.text().orEmpty()
+            val pick = rate(".rk-stat--pick") ?: Regex("([0-9]+(?:[.,][0-9]+)?)%\\s*pick", RegexOption.IGNORE_CASE)
+                .find(ratesText)?.groupValues?.get(1)?.replace(',', '.')?.toDoubleOrNull()
+            val ban = rate(".rk-stat--ban") ?: Regex("([0-9]+(?:[.,][0-9]+)?)%\\s*ban", RegexOption.IGNORE_CASE)
+                .find(ratesText)?.groupValues?.get(1)?.replace(',', '.')?.toDoubleOrNull()
+            val stats = ChampionMetaStats(rate(".tl-cell__wr b, .rk-val--win, .rk-stat--win"), pick, ban)
+            if (id.length in 2..30 && stats.isUsable()) output.getOrPut(id) { linkedMapOf() }[lane] = stats
         }
         return output
     }

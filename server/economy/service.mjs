@@ -49,6 +49,18 @@ export async function executeEconomy(db, auth, raw, clock = Date.now, {requested
       updates.subscriptionPlan = input.plan === 'MONTHLY' ? 'Suscripción Premium mensual' : 'Suscripción Premium anual';
       record = receipt(input.id, now, 'ESSENCE_PURCHASE', updates.subscriptionPlan, `-${result.cost} ${input.currency === 'BLUE' ? 'EA' : 'EN'}`, 'Completado', result.days);
       metadata = {kind: 'PREMIUM', plan: input.plan, currency: input.currency, cost: result.cost, premiumUntil: result.until};
+      const noticeId = `subscription_${input.id}`;
+      const language = input.language === 'pt' ? 'pt' : 'es';
+      const planLabel = input.plan === 'MONTHLY' ? 'Mensual' : 'Anual';
+      const text = `${account.name ?? 'Usuario'} activó Premium ${planLabel} con ${result.cost} ${input.currency === 'BLUE' ? 'EA' : 'EN'}.`;
+      writes.push([db.doc(`support_reports/${noticeId}`), {
+        id: noticeId, reportId: noticeId, subscriberUid: uid, userId: '',
+        userEmail: auth.token.email ?? '', userName: account.name ?? 'Usuario',
+        title: 'Nueva suscripción Premium', description: text, content: text,
+        tag: 'SUSCRIPCION', type: 'SUSCRIPCION', language, panel: 'FEEDBACK',
+        staffVisible: false, adminOnly: true, userCanReply: false, staffRead: false,
+        status: 'PENDING', timestamp: now, createdAt: serverTime(), conversation: []
+      }]);
     } else if (input.action === 'REDEEM') {
       const request = db.doc(`cash_redemptions/${input.id}`), existing = await tx.get(request);
       ensure(!existing.exists, 'already-exists', 'El identificador ya pertenece a otra solicitud');

@@ -9,7 +9,8 @@ import java.util.TimeZone
 /** Publisher schemas and dated reports. A day is never presented as an exact hourly measurement. */
 object PublishedStatsParser {
     data class FireReport(val patch: String = "", val stats: Map<String, ChampionMetaStats> = emptyMap(),
-        val history: Map<String, List<ObservedRate>> = emptyMap())
+        val history: Map<String, List<ObservedRate>> = emptyMap(),
+        val roleStats: Map<String, Map<com.example.model.LaneRole, ChampionMetaStats>> = emptyMap())
 
     fun patch(html: String, source: String): String? {
         val doc = Jsoup.parse(html)
@@ -42,13 +43,17 @@ object PublishedStatsParser {
         val current = JSONObject(doc.selectFirst("script#wf-stats-data")?.data().orEmpty())
         val rows = current.getJSONObject("brackets").getJSONObject("master").getJSONArray("rows")
         val stats = linkedMapOf<String, ChampionMetaStats>()
+        val roleStats = linkedMapOf<String, MutableMap<com.example.model.LaneRole, ChampionMetaStats>>()
         val historyKeys = linkedMapOf<String, String>()
         for (i in 0 until rows.length()) {
             val row = rows.getJSONObject(i)
-            if (!row.optBoolean("main")) continue
             val id = RegionalTierParser.canonical(row.getString("slug"))
             fun rate(key: String) = row.optDouble(key, Double.NaN).takeIf { it.isFinite() && it in 0.0..100.0 }
             val value = ChampionMetaStats(rate("win"), rate("pick"), rate("ban"))
+            RegionalTierParser.role(row.optString("role"))?.let { role ->
+                if (value.isUsable()) roleStats.getOrPut(id) { linkedMapOf() }[role] = value
+            }
+            if (!row.optBoolean("main")) continue
             if (value.isUsable()) {
                 stats[id] = value
                 historyKeys[id] = row.getString("champion") + " (" + row.getString("role") + ")"
@@ -77,6 +82,6 @@ object PublishedStatsParser {
                     row.optDouble("ban", Double.NaN).takeIf(Double::isFinite), daily = true, source = "wildriftfire")
             }.takeLast(3)
         }
-        FireReport(patch, stats, history)
+        FireReport(patch, stats, history, roleStats)
     }.getOrDefault(FireReport())
 }
