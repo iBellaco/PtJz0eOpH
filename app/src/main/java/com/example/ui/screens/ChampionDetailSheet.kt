@@ -513,17 +513,6 @@ fun ChampionDetailSheet(
 
                     Spacer(modifier = Modifier.height(10.dp))
 
-                    // Tarjeta analítica de tendencia: hace 24 horas vs. hace 12 horas vs. actual
-                    if (isSignedIn) {
-                        DetailedTrendGraphCard(
-                            winrate = if (liveChampion.hasRegionalStats) roleProfile.winrate else Double.NaN,
-                            delta = roleProfile.winrateDelta,
-                            observed24h = liveChampion.winrate24h,
-                            observed12h = liveChampion.winrate12h,
-                            dailyReferences = liveChampion.historyUsesDailyReports,
-                            reference24hAt = liveChampion.history24hAt, reference12hAt = liveChampion.history12hAt
-                        )
-                    }
                 }
             }
 

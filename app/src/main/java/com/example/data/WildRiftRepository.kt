@@ -41,10 +41,16 @@ object WildRiftRepository {
     // FUENTES DE DATOS Y META ACTUAL
     // ==========================================
     val metaSources: List<MetaDataSource> = listOf(
+        MetaDataSource(id = "global_bestbuildwr", name = "BestBuildWR", description = "Guías y tier list Global",
+            url = "https://bestbuildwr.com/champions", focusArea = "Categorías y builds"),
         MetaDataSource(id = "global_wildriftfire", name = "WildRiftFire", description = "Guías y tier list Global",
             url = "https://www.wildriftfire.com/tier-list", focusArea = "Categorías y builds"),
         MetaDataSource(id = "global_wildriftcore", name = "WildRiftCore", description = "Tier list Global",
-            url = "https://wildriftcore.com/es/tierlist/", focusArea = "Categorías de campeones")
+            url = "https://wildriftcore.com/es/tierlist/", focusArea = "Categorías de campeones"),
+        MetaDataSource(id = "global_wildriftcounter", name = "WildRiftCounter", description = "Counters y enfrentamientos",
+            url = "https://wildriftcounter.com/", focusArea = "Ventajas y debilidades"),
+        MetaDataSource(id = "global_thewildpick", name = "TheWildPick", description = "Counters y selecciones",
+            url = "https://thewildpick.com/counter/", focusArea = "Ventajas y debilidades")
     )
 
     // CATÁLOGO DE HECHIZOS DE INVOCADOR (SUMMONER SPELLS)

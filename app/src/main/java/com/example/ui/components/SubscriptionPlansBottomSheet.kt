@@ -117,7 +117,16 @@ internal fun PremiumPlansOverview(blue: Long, orange: Long) {
         Text(tr("Herramientas para analizar tus partidas y personalizar tu experiencia."), color = TextSecondary, style = MaterialTheme.typography.bodyMedium)
         HorizontalDivider(color = HextechGold.copy(alpha = 0.25f))
         Text(tr("Saldo: $blue EA • $orange EN"), color = HextechCyan, style = MaterialTheme.typography.labelLarge)
-        listOf("Escáner Automático del draft", "Historial del draft", "Campeones Favoritos", "Temas Exclusivos", "Avatares Exclusivos").forEach { benefit ->
+        listOf(
+            "Escáner Automático del draft (función exclusiva Premium)",
+            "Historial del draft y perfiles de prueba",
+            "Campeones Favoritos y análisis ampliado",
+            "24 ventajas, 24 debilidades y 24 sinergias por campeón",
+            "Builds, runas y hechizos adaptados al parche",
+            "Tier list y estadísticas actualizadas",
+            "Temas de navegación y partículas exclusivos",
+            "Avatares y marcos exclusivos"
+        ).forEach { benefit ->
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Icon(Icons.Default.CheckCircle, contentDescription = null, tint = HextechGold, modifier = Modifier.size(18.dp))
                 Text(tr(benefit), color = TextPrimary, style = MaterialTheme.typography.bodyMedium)

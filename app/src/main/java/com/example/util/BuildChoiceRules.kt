@@ -68,7 +68,7 @@ object BuildChoiceRules {
 
     fun matchupLimit(premium: Boolean, signedIn: Boolean = true): Int = when {
         !signedIn -> 3
-        premium -> 12
+        premium -> 24
         else -> 6
     }
 

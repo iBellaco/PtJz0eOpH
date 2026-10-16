@@ -87,6 +87,20 @@ object RegionalTierParser {
                 links(row, category, "a.tl-champ-tile[href]")
             }
         }
+        if (source == "wildriftcounter" || source == "thewildpick") {
+            // Ambos sitios publican fichas de enfrentamiento; cuando incluyen una
+            // etiqueta de tier se aprovecha únicamente esa etiqueta verificable.
+            doc.select("[data-tier], [class*=tier], [aria-label*=Tier]").forEach { node ->
+                val category = tier(
+                    node.attr("data-tier").ifBlank { node.attr("aria-label").removePrefix("Tier ").ifBlank { node.text() } }
+                ) ?: return@forEach
+                val link = node.selectFirst("a[href]") ?: if (node.tagName() == "a") node else null
+                val href = link?.attr("href").orEmpty()
+                val name = href.substringBefore('?').substringBefore('#').trimEnd('/').substringAfterLast('/')
+                    .ifBlank { link?.text().orEmpty() }
+                add(name, category)
+            }
+        }
         if (source == null || source == "wildlegends") {
             doc.select(".tier-list-grid").forEach { grid ->
                 val category = grid.parent()?.selectFirst("span.relative.z-10")?.text()?.let(::tier)
@@ -94,13 +108,6 @@ object RegionalTierParser {
                 grid.select("a[href*=/guia/]").forEach { link ->
                     add(link.attr("href").substringBefore('?').substringAfterLast('/'), category)
                 }
-            }
-        }
-        if (source == null || source == "wildrifter") {
-            doc.select("a[href*=/champion/]").forEach { link ->
-                val category = link.selectFirst("[aria-label^=Tier]")?.attr("aria-label")
-                    ?.removePrefix("Tier ")?.let(::tier) ?: return@forEach
-                add(link.attr("href").substringAfterLast('/'), category)
             }
         }
         return result

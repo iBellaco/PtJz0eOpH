@@ -230,7 +230,6 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser? = nul
     var showBuyEssenceDialog by remember { mutableStateOf(false) }
     var showRedemptionDialog by remember { mutableStateOf(false) }
     var showSignOutConfirm by remember { mutableStateOf(false) }
-    var signOutConfirmed by remember { mutableStateOf(false) }
     val activeProfile by com.example.data.AccountProfileManager.activeProfile.collectAsState()
 
     val effectiveUserUid = user?.uid ?: activeProfile.id.ifBlank { "local-profile-test" }
@@ -1141,13 +1140,15 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser? = nul
             )
             Spacer(Modifier.height(12.dp))
 
-            com.example.ui.components.AnimatedLogoutButton(
-                onRequestConfirmation = { showSignOutConfirm = true },
-                startAnimation = signOutConfirmed,
-                onLogoutComplete = { signOutConfirmed = false; onSignOut() },
-                label = tr("Cerrar Sesión"),
-                modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp)
-            )
+            Button(
+                onClick = { showSignOutConfirm = true },
+                modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = DangerRed.copy(alpha = 0.9f))
+            ) {
+                Icon(Icons.Default.ExitToApp, contentDescription = null, tint = Color.White)
+                Spacer(Modifier.width(8.dp))
+                Text(tr("Cerrar Sesión"), color = Color.White, fontWeight = FontWeight.Bold)
+            }
         }
     }
 
@@ -1157,7 +1158,7 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser? = nul
             title = { Text(tr("Cerrar Sesión"), color = DangerRed, fontWeight = FontWeight.Bold) },
             text = { Text(tr("¿Estás seguro de que deseas cerrar sesión? Se recomienda mantener la sesión abierta para asegurar la sincronización correcta de tu cuenta y licencias."), color = activeTheme.textSecondary, fontSize = 13.sp) },
             confirmButton = {
-                TextButton(onClick = { showSignOutConfirm = false; signOutConfirmed = true }) {
+                TextButton(onClick = { showSignOutConfirm = false; onSignOut() }) {
                     Text(tr("Cerrar Sesión"), color = DangerRed)
                 }
             },

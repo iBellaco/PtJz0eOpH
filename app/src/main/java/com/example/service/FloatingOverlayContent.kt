@@ -197,6 +197,11 @@ internal fun FloatingOverlayContent(
     var autoScanEnabled by state::autoScanEnabled
     var scanNoticeMessage by state::scanNoticeMessage
 
+    // La captura y el escáner automático son una función exclusiva de Premium.
+    LaunchedEffect(isPremium) {
+        if (!isPremium) autoScanEnabled = false
+    }
+
     var isDraggingBubble by state::isDraggingBubble
     var dragAccumulatedY by state::dragAccumulatedY
     var isNearCloseThreshold by state::isNearCloseThreshold
@@ -1259,11 +1264,22 @@ internal fun FloatingOverlayContent(
                                     fontSize = 9.5.sp,
                                     modifier = Modifier.padding(end = 4.dp)
                                 )
+                                Box(
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(3.dp))
+                                        .background(HextechGold.copy(alpha = 0.9f))
+                                        .padding(horizontal = 3.dp, vertical = 1.dp)
+                                ) {
+                                    Text("PRO", color = HextechDarkBg, fontSize = 7.sp, fontWeight = FontWeight.Black)
+                                }
+                                Spacer(Modifier.width(3.dp))
                                 Switch(
                                     checked = autoScanEnabled,
-                                    enabled = true,
+                                    enabled = isPremium,
                                     onCheckedChange = { isChecked ->
-                                        if (isChecked) {
+                                        if (!isPremium) {
+                                            scanNoticeMessage = "El Auto-Scan requiere una suscripción Premium."
+                                        } else if (isChecked) {
                                             state.startAutomaticScan()
                                             if (screenCaptureManager?.isReady() != true) {
                                                 scanNoticeMessage = "Requiere permiso de pantalla. Toca aquí para activarlo."

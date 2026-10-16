@@ -28,5 +28,14 @@
   "Nuevo nombre": "Novo nome",
   "El nombre debe tener al menos 3 caracteres": "O nome deve ter pelo menos 3 caracteres",
   "Nombre de usuario actualizado": "Nome de usuário atualizado",
-  "Error al actualizar nombre: {0}": "Erro ao atualizar nome: {0}"
+  "Error al actualizar nombre: {0}": "Erro ao atualizar nome: {0}",
+  "Escáner Automático del draft (función exclusiva Premium)": "Scanner automático do draft (função exclusiva Premium)",
+  "Historial del draft y perfiles de prueba": "Histórico do draft e perfis de teste",
+  "Campeones Favoritos y análisis ampliado": "Campeões favoritos e análise ampliada",
+  "24 ventajas, 24 debilidades y 24 sinergias por campeón": "24 vantagens, 24 fraquezas e 24 sinergias por campeão",
+  "Builds, runas y hechizos adaptados al parche": "Builds, runas e feitiços adaptados ao patch",
+  "Tier list y estadísticas actualizadas": "Tier list e estatísticas atualizadas",
+  "Temas de navegación y partículas exclusivos": "Temas de navegação e partículas exclusivos",
+  "Avatares y marcos exclusivos": "Avatares e molduras exclusivos",
+  "El Auto-Scan requiere una suscripción Premium.": "O Auto-Scan requer uma assinatura Premium."
 }
