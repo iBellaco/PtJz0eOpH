@@ -34,6 +34,11 @@ object SubscriptionManager {
     private val _isPremium = MutableStateFlow(false)
     val isPremium: StateFlow<Boolean> = _isPremium.asStateFlow()
 
+    /** Sólo para las pruebas de UI: evita depender de una sesión remota para validar el flujo Premium. */
+    internal fun setPremiumForTesting(enabled: Boolean) {
+        _isPremium.value = enabled
+    }
+
     private var premiumPlan = ""
     private val _premiumUntil = MutableStateFlow<Long?>(null)
     val premiumUntil: StateFlow<Long?> = _premiumUntil.asStateFlow()

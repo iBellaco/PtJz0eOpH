@@ -60,6 +60,6 @@ class BuildChoiceRulesTest {
         assertEquals(3, BuildChoiceRules.matchupLimit(false, signedIn = false))
         assertEquals(3, BuildChoiceRules.matchupLimit(true, signedIn = false))
         assertEquals(6, BuildChoiceRules.matchupLimit(false))
-        assertEquals(12, BuildChoiceRules.matchupLimit(true))
+        assertEquals(24, BuildChoiceRules.matchupLimit(true))
     }
 }

@@ -28,9 +28,15 @@ import org.robolectric.annotation.Config
 @Config(sdk = [34], application = Application::class)
 class LiteRTViewerNavigationTest {
     @get:Rule val compose = createComposeRule()
-    @Before fun prepare() { AppLanguage.select(RuntimeEnvironment.getApplication(), "es") }
+    @Before fun prepare() {
+        AppLanguage.select(RuntimeEnvironment.getApplication(), "es")
+        com.example.util.SubscriptionManager.setPremiumForTesting(true)
+    }
 
-    @After fun clearScanner() { com.example.service.screen.DraftVisionScanner.resetSlotMemory() }
+    @After fun clearScanner() {
+        com.example.service.screen.DraftVisionScanner.resetSlotMemory()
+        com.example.util.SubscriptionManager.setPremiumForTesting(false)
+    }
 
     @Test fun `detected champion without observed lane is visible as pending in Spanish`() = exercisePendingLane("es", "Línea pendiente: Skarner")
     @Test fun `detected champion without observed lane is visible as pending in Portuguese`() = exercisePendingLane("pt", "Rota pendente: Skarner")
