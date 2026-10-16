@@ -379,11 +379,15 @@ object DraftVisionScanner {
     @Volatile var calibrationConfig = VisionCalibrationConfig()
     val calibrationConfigFlow = kotlinx.coroutines.flow.MutableStateFlow(VisionCalibrationConfig())
 
+    @Synchronized
     fun initCalibration(context: android.content.Context) {
         calibrationConfig = VisionCalibrationConfig.loadFromPrefs(context)
         calibrationConfigFlow.value = calibrationConfig
+        alignedConfigFlow.value = calibrationConfig
+        alignedBase = null
     }
 
+    @Synchronized
     fun updateCalibration(context: android.content.Context, newConfig: VisionCalibrationConfig) {
         val old = calibrationConfig
         if (old.allyBanXRatios != newConfig.allyBanXRatios || old.enemyBanXRatios != newConfig.enemyBanXRatios ||
@@ -396,12 +400,17 @@ object DraftVisionScanner {
         }
         calibrationConfig = newConfig
         calibrationConfigFlow.value = newConfig
+        alignedConfigFlow.value = newConfig
+        alignedBase = null
         newConfig.saveToPrefs(context)
     }
 
+    @Synchronized
     fun resetCalibration(context: android.content.Context) {
         calibrationConfig = VisionCalibrationConfig.resetToDefaults(context)
         calibrationConfigFlow.value = calibrationConfig
+        alignedConfigFlow.value = calibrationConfig
+        alignedBase = null
     }
 
     private var recognizerInstance: com.google.mlkit.vision.text.TextRecognizer? = null
