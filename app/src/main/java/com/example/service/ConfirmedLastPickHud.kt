@@ -39,6 +39,7 @@ internal fun OverlayState.syncScannedEnemies(result: DraftScanResult): Int {
 
 /** Apply the final confirmed portrait to the same state displayed by the overlay. */
 internal fun OverlayState.applyConfirmedLastPick(result: DraftScanResult) {
+    if (showSaveDraftDialog && !autoScanEnabled) return
     val champion = result.lastPickChampion ?: return
     val previousId = trackedLastPick?.takeIf { it.first == result.tenthPickIsAlly }?.second
     var applied = false
@@ -71,6 +72,6 @@ internal fun OverlayState.applyConfirmedLastPick(result: DraftScanResult) {
         (applied || previousId == champion.id || scannedTarget?.id == champion.id) &&
         ownTeam.any { it?.id == champion.id }) {
         trackedLastPick = result.tenthPickIsAlly to champion.id
-        stopAutomaticScanIfComplete(result.isLastPickFinalized)
+        stopAutomaticScanIfComplete(result.isLastPickConfirmed)
     }
 }

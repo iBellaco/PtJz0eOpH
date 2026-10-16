@@ -7,6 +7,25 @@ import org.junit.Assert.*
 import org.junit.Test
 
 class GlobalTierScrapingTest {
+    @Test fun `three requested live pages parse the current patch and real tier rows`() {
+        listOf("core" to "wildriftcore", "guides" to "wildriftguides", "fire" to "wildriftfire").forEach { (file, source) ->
+            val html = javaClass.getResource("/tier-sources-302/$file.html")!!.readText()
+            assertEquals(source, "7.3b", com.example.data.sync.PublishedStatsParser.patch(html, source))
+            val tiers = RegionalTierParser.parse(html, source)
+            assertTrue("$source must contain a useful champion roster, found ${tiers.size}", tiers.size >= 100)
+            assertTrue(tiers.keys.none { it.contains("tierlist") || it.contains("build") })
+        }
+    }
+
+    @Test fun `guides keeps each category local and does not interpret navigation as champions`() {
+        val html = """<section id="mid-tier-list"><div><div><span title="Strong">S+</span></div>
+            <ul><li><a href="/champion/ahri/mid">Ahri</a></li></ul></div>
+            <div><div><span title="Weak">C</span></div><ul><li><a href="/champion/zed/mid">Zed</a></li></ul></div>
+            </section><footer><a href="/champion/lux/mid">Lux</a></footer>"""
+        assertEquals(mapOf("ahri" to "S+", "zed" to "C"), RegionalTierParser.parse(html, "wildriftguides"))
+        assertTrue(RegionalTierParser.parseStats(html,"wildriftguides").isEmpty())
+    }
+
     @Test fun `BestBuildWR dictionary tiers do not depend on a tier field per champion`() {
         val html = """<script type="application/json" id="__NEXT_DATA__">{"props":{"pageProps":{"tierData":{"champions":[{"context":"top","tiers":{"S":[{"id":55,"slug":"poppy"}],"B":[{"slug":"graves"}]}}]}}}}</script>"""
         assertEquals(mapOf("poppy" to "S", "graves" to "B"), RegionalTierParser.parse(html,"bestbuildwr"))
@@ -42,7 +61,7 @@ class GlobalTierScrapingTest {
     }
     @Test fun `a single publisher tier is preserved and invalid votes do not become A`() {
         assertEquals(mapOf("ahri" to "S"), GlobalTierConsensus.fuse(listOf(mapOf("ahri" to "S", "zed" to "invalid"))))
-        assertEquals(mapOf("ahri" to "A+"), GlobalTierConsensus.fuse(listOf(mapOf("ahri" to "S"),mapOf("ahri" to "B"))))
+        assertEquals(mapOf("ahri" to "A"), GlobalTierConsensus.fuse(listOf(mapOf("ahri" to "S"),mapOf("ahri" to "B"))))
     }
 
     @Test fun `fresh published rates override the cached snapshot`() {

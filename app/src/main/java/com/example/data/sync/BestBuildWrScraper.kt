@@ -25,7 +25,8 @@ object BestBuildWrScraper {
     // Only publishers used by the statistics pipeline belong in live monitoring.
     val GLOBAL_SCRAPING_SOURCES = listOf(
         GlobalScrapingSource("wildriftfire", "WildRiftFire", "https://www.wildriftfire.com/tier-list", "wildriftfire.com/tier-list", "7.3b"),
-        GlobalScrapingSource("wildriftcore", "WildRiftCore", "https://wildriftcore.com/es/tierlist/?patch=7.3b", "wildriftcore.com/es/tierlist/", "7.3b")
+        GlobalScrapingSource("wildriftcore", "WildRiftCore", "https://wildriftcore.com/en/tierlist/", "wildriftcore.com/en/tierlist/", "7.3b"),
+        GlobalScrapingSource("wildriftguides", "WildRiftGuides", "https://www.wildriftguides.com/tier-list", "wildriftguides.com/tier-list", "7.3b")
     )
 
     private val _freshness = MutableStateFlow(MetaFreshness())

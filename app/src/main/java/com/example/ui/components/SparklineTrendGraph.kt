@@ -84,9 +84,7 @@ fun SparklineTrendGraph(
                 }
             }
         }
-        if (dailyReferences) Text(tr("Referencias diarias publicadas"), color = TextMuted, fontSize = 9.sp,
-            modifier = Modifier.testTag("trend_daily_reference"))
-        else if (observed24h == null || observed12h == null) Text(tr("Recopilando historial"),
+        if (observed24h == null || observed12h == null) Text(tr("Recopilando historial"),
             color = TextMuted, fontSize = 9.sp, modifier = Modifier.testTag("trend_history_pending"))
     }
 }

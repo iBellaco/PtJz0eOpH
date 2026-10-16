@@ -493,21 +493,21 @@ fun ChampionDetailSheet(
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Text(tr("Tasa de Victoria"), color = TextMuted, fontSize = 11.sp)
                             Text(com.example.util.regionalPercent(liveChampion, roleProfile.winrate), color = HextechGold, fontSize = 17.sp, fontWeight = FontWeight.Bold)
-                            RateChangeBadge(if (liveChampion.has24hComparison) roleProfile.winrateDelta else Double.NaN, liveChampion.historyUsesDailyReports)
+                            RateChangeBadge(if (liveChampion.has24hComparison) roleProfile.winrateDelta else Double.NaN)
                         }
 
                         // Pick Rate + Delta
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Text(tr("Tasa de Selección"), color = TextMuted, fontSize = 11.sp)
                             Text(com.example.util.regionalPercent(liveChampion, roleProfile.pickRate), color = HextechCyan, fontSize = 17.sp, fontWeight = FontWeight.Bold)
-                            RateChangeBadge(if (liveChampion.has24hComparison) roleProfile.pickRateDelta else Double.NaN, liveChampion.historyUsesDailyReports)
+                            RateChangeBadge(if (liveChampion.has24hComparison) roleProfile.pickRateDelta else Double.NaN)
                         }
 
                         // Ban Rate + Delta
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Text(tr("Tasa de Bloqueo"), color = TextMuted, fontSize = 11.sp)
                             Text(com.example.util.regionalPercent(liveChampion, roleProfile.banRate), color = DangerRed, fontSize = 17.sp, fontWeight = FontWeight.Bold)
-                            RateChangeBadge(if (liveChampion.has24hComparison) roleProfile.banRateDelta else Double.NaN, liveChampion.historyUsesDailyReports)
+                            RateChangeBadge(if (liveChampion.has24hComparison) roleProfile.banRateDelta else Double.NaN)
                         }
                     }
 
