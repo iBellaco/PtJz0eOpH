@@ -82,6 +82,8 @@ import com.example.ui.theme.TextMuted
 import com.example.ui.theme.TextPrimary
 import com.example.ui.theme.TextSecondary
 import com.example.ui.theme.TierAColor
+import com.example.ui.theme.TierBColor
+import com.example.ui.theme.TierCColor
 import com.example.ui.theme.TierSColor
 import com.example.ui.theme.TierSPlusColor
 
