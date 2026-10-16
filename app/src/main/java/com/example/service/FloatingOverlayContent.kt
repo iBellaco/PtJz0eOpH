@@ -727,10 +727,16 @@ internal fun FloatingOverlayContent(
             ) {
                 var isDraggingPanel by remember { mutableStateOf(false) }
 
-                val targetCardHeight = if (isLandscapeMode) 345.dp else 520.dp
+                val configuration = androidx.compose.ui.platform.LocalConfiguration.current
+                val availableWidth = (configuration.screenWidthDp - 16).coerceAtLeast(1).dp
+                val availableHeight = (configuration.screenHeightDp - 16).coerceAtLeast(1).dp
+                val targetCardHeight = minOf(if (isLandscapeMode) 345.dp else 520.dp, availableHeight)
                 Card(
                     modifier = Modifier
-                        .widthIn(min = if (isLandscapeMode) 520.dp else 300.dp, max = if (isLandscapeMode) 560.dp else 340.dp)
+                        .widthIn(
+                            min = minOf(if (isLandscapeMode) 520.dp else 300.dp, availableWidth),
+                            max = minOf(if (isLandscapeMode) 560.dp else 340.dp, availableWidth)
+                        )
                         .height(targetCardHeight)
                         .clip(RoundedCornerShape(16.dp)),
                     shape = RoundedCornerShape(16.dp),

@@ -56,9 +56,9 @@ class ScreenCaptureManager(private val context: Context) {
         try {
             val windowManager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
-                val bounds = windowManager.currentWindowMetrics.bounds
-                screenWidth = bounds.width().coerceAtLeast(720)
-                screenHeight = bounds.height().coerceAtLeast(720)
+                val bounds = windowManager.maximumWindowMetrics.bounds
+                screenWidth = bounds.width().coerceAtLeast(1)
+                screenHeight = bounds.height().coerceAtLeast(1)
                 screenDensity = context.resources.configuration.densityDpi
             } else {
                 val metrics = DisplayMetrics()
@@ -82,38 +82,8 @@ class ScreenCaptureManager(private val context: Context) {
 
     private fun processImageToBitmap(img: Image): Bitmap? {
         return try {
-            val planes = img.planes
-            if (planes.isNullOrEmpty()) return null
-            val buffer = planes[0].buffer ?: return null
-            val pixelStride = planes[0].pixelStride
-            val rowStride = planes[0].rowStride
-            val width = img.width
-            val height = img.height
-            if (width <= 0 || height <= 0 || pixelStride <= 0 || rowStride <= 0) return null
-
-            val rowPadding = rowStride - pixelStride * width
-            val bitmapWidth = width + rowPadding / pixelStride
-            if (bitmapWidth <= 0) return null
-
-            val requiredBytes = (height - 1) * rowStride + width * pixelStride
-            if (buffer.remaining() < requiredBytes) {
-                return null
-            }
-
-            val bmp = Bitmap.createBitmap(
-                bitmapWidth,
-                height,
-                Bitmap.Config.ARGB_8888
-            )
-            bmp.copyPixelsFromBuffer(buffer)
-
-            if (rowPadding != 0) {
-                val cropped = Bitmap.createBitmap(bmp, 0, 0, width, height)
-                bmp.recycle()
-                cropped
-            } else {
-                bmp
-            }
+            val plane = img.planes.firstOrNull() ?: return null
+            CaptureFrameDecoder.decode(plane.buffer, img.width, img.height, plane.pixelStride, plane.rowStride)
         } catch (oom: OutOfMemoryError) {
             AppLogger.e(TAG, "Memoria insuficiente (OOM) en frame: forzando recoleccion segura")
             System.gc()
@@ -131,8 +101,10 @@ class ScreenCaptureManager(private val context: Context) {
     fun initializeProjection(resultCode: Int, data: Intent): Boolean {
         synchronized(projectionLock) {
             try {
+                clearProjection(stop = true)
                 val projectionManager = context.getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
-                mediaProjection = projectionManager.getMediaProjection(resultCode, data)
+                val projection = projectionManager.getMediaProjection(resultCode, data)
+                mediaProjection = projection
 
                 if (mediaProjection == null) {
                     AppLogger.e(TAG, "MediaProjection no pudo ser creado a partir del Intent.")
@@ -144,15 +116,15 @@ class ScreenCaptureManager(private val context: Context) {
                         override fun onStop() {
                             super.onStop()
                             AppLogger.w(TAG, "MediaProjection detenido por el sistema.")
-                            synchronized(frameLock) {
-                                lastFrame?.recycle()
-                                lastFrame = null
+                            synchronized(projectionLock) {
+                                // A stopped, older consent session must not clear its replacement.
+                                if (mediaProjection === projection) clearProjection(stop = false)
                             }
-                            mediaProjection = null
                         }
                     }, handler)
                 } catch (e: Throwable) {
-                    AppLogger.w(TAG, "No se pudo registrar callback en MediaProjection: ${e.message}")
+                    clearProjection(stop = true)
+                    throw e
                 }
 
                 updateScreenDimensions()
@@ -169,9 +141,7 @@ class ScreenCaptureManager(private val context: Context) {
                 // En pantallas QHD+ (como Samsung Galaxy S24/S25/S26 Ultra 3120x1440), limitar la resolución de captura
                 // a un máximo de 1920x1080 para evitar consumo excesivo de memoria en la cola nativa de ImageReader
                 // y prevenir cierres forzados por falta de memoria (OOM) o saturación de Game Booster.
-                val scale = if (rawW > 1920) 1920f / rawW else 1.0f
-                val captureWidth = (((rawW * scale).toInt() / 2) * 2).coerceIn(1280, 1920)
-                val captureHeight = (((rawH * scale).toInt() / 2) * 2).coerceIn(720, 1080)
+                val (captureWidth, captureHeight) = CaptureFrameDecoder.captureSize(rawW, rawH)
 
                 // ImageReader configurado con 2 buffers bajo demanda para reducir huella de memoria en segundo plano
                 imageReader = ImageReader.newInstance(
@@ -195,6 +165,7 @@ class ScreenCaptureManager(private val context: Context) {
                 AppLogger.d(TAG, "MediaProjection y VirtualDisplay inicializados exitosamente ($captureWidth x $captureHeight).")
                 return true
             } catch (e: Throwable) {
+                clearProjection(stop = true)
                 AppLogger.e(TAG, "Fallo al inicializar captura de pantalla", e)
                 return false
             }
@@ -248,24 +219,28 @@ class ScreenCaptureManager(private val context: Context) {
         }
     }
 
-    fun isReady(): Boolean = mediaProjection != null && imageReader != null
+    fun isReady(): Boolean = synchronized(projectionLock) {
+        mediaProjection != null && imageReader != null && virtualDisplay != null
+    }
+
+    /** Call under projectionLock; detach references before stop can dispatch its callback. */
+    private fun clearProjection(stop: Boolean) {
+        val previous = mediaProjection
+        mediaProjection = null
+        synchronized(frameLock) {
+            lastFrame?.recycle()
+            lastFrame = null
+            try { virtualDisplay?.release() } catch (_: Exception) {}
+            virtualDisplay = null
+            try { imageReader?.close() } catch (_: Exception) {}
+            imageReader = null
+        }
+        if (stop) try { previous?.stop() } catch (_: Exception) {}
+    }
 
     fun release() {
-        try {
-            synchronized(frameLock) {
-                lastFrame?.recycle()
-                lastFrame = null
-            }
-            virtualDisplay?.release()
-            virtualDisplay = null
-            imageReader?.close()
-            imageReader = null
-            mediaProjection?.stop()
-            mediaProjection = null
-            captureThread.quitSafely()
-            AppLogger.d(TAG, "Recursos de MediaProjection y HandlerThread liberados.")
-        } catch (e: Throwable) {
-            AppLogger.e(TAG, "Error liberando MediaProjection", e)
-        }
+        synchronized(projectionLock) { clearProjection(stop = true) }
+        captureThread.quitSafely()
+        AppLogger.d(TAG, "Recursos de MediaProjection y HandlerThread liberados.")
     }
 }

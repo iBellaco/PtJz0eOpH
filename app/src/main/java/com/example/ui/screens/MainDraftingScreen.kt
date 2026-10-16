@@ -782,7 +782,12 @@ fun MainDraftingScreen(
                     Button(onClick = {
                         showCaptureDisclosure = false
                         val manager = context.getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
-                        mediaProjectionLauncher.launch(manager.createScreenCaptureIntent())
+                        val captureIntent = if (android.os.Build.VERSION.SDK_INT >= 34) {
+                            manager.createScreenCaptureIntent(
+                                android.media.projection.MediaProjectionConfig.createConfigForDefaultDisplay()
+                            )
+                        } else manager.createScreenCaptureIntent()
+                        mediaProjectionLauncher.launch(captureIntent)
                     }, modifier = Modifier.heightIn(min = 48.dp).testTag("capture_disclosure_continue")) {
                         Text(com.example.util.localizedString(com.example.R.string.legal_capture_continue))
                     }
