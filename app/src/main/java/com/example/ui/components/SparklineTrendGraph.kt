@@ -33,7 +33,7 @@ fun SparklineTrendGraph(
     // Pulso continuo del punto actual y del trazo para que la gráfica no parezca
     // estática entre dos consultas de datos reales.
     val trendAnimation = rememberInfiniteTransition(label = "tier_trend_animation")
-    val livePulse by trendAnimation.animateFloat(
+    val livePulse = trendAnimation.animateFloat(
         initialValue = 0.35f,
         targetValue = 0.95f,
         animationSpec = infiniteRepeatable(tween(950), RepeatMode.Reverse),
@@ -66,7 +66,7 @@ fun SparklineTrendGraph(
                 if (a != null && b != null) drawLine(trendColor, a, b, strokeWidth = 2.dp.toPx())
             }
             points.forEachIndexed { i, point -> if (point != null) {
-                if (i == 2) drawCircle(trendColor.copy(alpha = livePulse * 0.28f), 7.dp.toPx(), point)
+                if (i == 2) drawCircle(trendColor.copy(alpha = livePulse.value * 0.28f), 7.dp.toPx(), point)
                 drawCircle(if (i == 1) HextechGold else trendColor, 3.dp.toPx(), point)
             } }
         }
