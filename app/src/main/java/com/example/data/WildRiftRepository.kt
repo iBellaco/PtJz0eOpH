@@ -282,6 +282,7 @@ object WildRiftRepository {
     fun initChampions(context: android.content.Context, forceReload: Boolean = false) {
         if (champions.isNotEmpty() && !forceReload) return
         try {
+            com.example.util.WebMatchupReferences.load(context)
             val format = kotlinx.serialization.json.Json { ignoreUnknownKeys = true }
             val parsed1 = context.resources.openRawResource(com.example.R.raw.champions_part1).bufferedReader().use { reader ->
                 format.decodeFromString<List<Champion>>(reader.readText()).map {
