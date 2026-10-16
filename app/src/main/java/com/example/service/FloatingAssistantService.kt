@@ -453,6 +453,7 @@ class FloatingAssistantService : Service(), LifecycleOwner, ViewModelStoreOwner,
         val marginPx = (8 * density).toInt()
 
         val isLandscape = displayMetrics.widthPixels > displayMetrics.heightPixels
+        isDeviceLandscape.value = isLandscape
         val cardWidthPx = ((if (isLandscape) 560 else 330) * density).toInt()
         val cardHeightPx = ((if (isLandscape) 390 else 520) * density).toInt()
         var bubbleSizePx = (46 * density).toInt() // local
@@ -560,7 +561,7 @@ class FloatingAssistantService : Service(), LifecycleOwner, ViewModelStoreOwner,
                                 val currentWidth = if (overlayState.isExpanded) dynamicCardWidthPx else bubbleSizePx
                                 val dynamicCardHeightPx = ((if (currentIsLandscape) 390 else 520) * density).toInt()
                                 val currentHeight = if (overlayState.isExpanded) dynamicCardHeightPx else bubbleSizePx
-                                val maxX = currentScreenWidth - marginPx
+                                val maxX = (currentScreenWidth - currentWidth - marginPx).coerceAtLeast(0)
                                 val maxY = (currentScreenHeight - currentHeight - marginPx).coerceAtLeast(marginPx)
 
                                 params.x = (params.x + dx).coerceIn(0, maxX)
@@ -671,6 +672,22 @@ class FloatingAssistantService : Service(), LifecycleOwner, ViewModelStoreOwner,
             }
         }
 
+        // Recheck the measured window after expansion and OEM density/rotation changes.
+        floatingComposeView?.addOnLayoutChangeListener { view, _, _, _, _, _, _, _, _ ->
+            view.post {
+                if (view.isAttachedToWindow) {
+                    val metrics = resources.displayMetrics
+                    val newX = params.x.coerceIn(0, (metrics.widthPixels - view.width - marginPx).coerceAtLeast(0))
+                    val newY = params.y.coerceIn(0, (metrics.heightPixels - view.height - marginPx).coerceAtLeast(0))
+                    if (params.x != newX || params.y != newY) {
+                        params.x = newX
+                        params.y = newY
+                        try { windowManager?.updateViewLayout(view, params) } catch (_: Exception) {}
+                    }
+                    updateOverlayRect(params, isOverlayExpanded)
+                }
+            }
+        }
         try {
             windowManager?.addView(floatingComposeView, params)
         } catch (_: Exception) {}
