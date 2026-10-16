@@ -601,8 +601,7 @@ class RuntimeVisibilityTest(private val screen: String) {
                 compose.onNodeWithText("Fraca (3)").assertExists()
                 compose.onNodeWithText("Sinergia (3)").assertExists()
                 compose.onNodeWithTag("detailed_trend_graph").assertDoesNotExist()
-                if (screen == "champion-registered") compose.onNodeWithTag("champion_trend_header").assertExists()
-                else compose.onNodeWithTag("champion_trend_header").assertDoesNotExist()
+                compose.onNodeWithTag("champion_trend_header").assertDoesNotExist()
                 compose.onNodeWithTag("matchup_sign_in_hint").performScrollTo().assertExists()
                 inspect("account-hint")
             }
@@ -612,7 +611,8 @@ class RuntimeVisibilityTest(private val screen: String) {
                 compose.onNodeWithText("Vantagem ($amount)").assertExists()
                 compose.onNodeWithText("Fraca ($amount)").assertExists()
                 compose.onNodeWithText("Sinergia ($amount)").assertExists()
-                compose.onNodeWithTag("champion_trend_header").assertDoesNotExist()
+                if (screen == "champion-registered") compose.onNodeWithTag("champion_trend_header").assertExists()
+                else compose.onNodeWithTag("champion_trend_header").assertDoesNotExist()
                 compose.onNodeWithTag("detailed_trend_graph").assertDoesNotExist()
                 compose.onNodeWithTag("matchup_sign_in_hint").assertDoesNotExist()
             }
