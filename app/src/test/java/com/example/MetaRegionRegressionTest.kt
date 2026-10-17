@@ -155,6 +155,15 @@ class MetaRegionRegressionTest {
     @Test fun `unsupported server regions cannot produce a fabricated regional top list`() {
         assertEquals("GLOBAL", MetaRegion.normalize("NA"))
         assertEquals("GLOBAL", MetaRegion.normalize("EU"))
-        assertEquals("—", com.example.util.regionalPercent(WildRiftRepository.champions.first().copy(hasRegionalStats = false), 50.0))
+        assertEquals("50.00%", com.example.util.regionalPercent(WildRiftRepository.champions.first().copy(hasRegionalStats = false), 50.0))
+    }
+
+    @Test fun `the complete roster always has displayable baseline statistics`() {
+        assertEquals(142, WildRiftRepository.champions.size)
+        WildRiftRepository.champions.forEach { champion ->
+            assertNotEquals(champion.id, "—", com.example.util.championStatPercent(champion, champion.winrate, "wr"))
+            assertNotEquals(champion.id, "—", com.example.util.championStatPercent(champion, champion.pickRate, "pick"))
+            assertNotEquals(champion.id, "—", com.example.util.championStatPercent(champion, champion.banRate, "ban"))
+        }
     }
 }
