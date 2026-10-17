@@ -12,6 +12,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import com.example.ui.screens.shouldShowDraftRecommendations
 import org.robolectric.RuntimeEnvironment
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
@@ -75,5 +76,7 @@ class DraftRecommendationQualityTest {
         assertTrue("Blind Pick must not be a no-op", result.isFirstPickMode)
         assertTrue(result.recommendations.isNotEmpty())
         assertTrue(result.bestOverallPick != null)
+        assertTrue(shouldShowDraftRecommendations(LaneRole.MID, isFirstPick = true, hasDraftSelection = false))
+        assertFalse(shouldShowDraftRecommendations(null, isFirstPick = true, hasDraftSelection = false))
     }
 }

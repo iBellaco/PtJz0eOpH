@@ -10,11 +10,13 @@ import com.example.model.LaneRole
 
 class OverlayState {
     internal var trackedLastPick: Pair<Boolean, String>? = null
+    internal var completedDraftLocked = false
     var isExpanded by androidx.compose.runtime.mutableStateOf(false)
     var overlayHubTab by androidx.compose.runtime.mutableStateOf(OverlayHubTab.DRAFT)
     var showSaveDraftDialog by androidx.compose.runtime.mutableStateOf(false)
     var showRoleChangeDialog by androidx.compose.runtime.mutableStateOf(false)
     var isSavedRecently by androidx.compose.runtime.mutableStateOf(false)
+    var autoSavePendingRequested by androidx.compose.runtime.mutableStateOf(false)
     var activeRole by androidx.compose.runtime.mutableStateOf(LaneRole.MID)
     var isRoleManuallySelected by androidx.compose.runtime.mutableStateOf(false)
     var isFirstPick by androidx.compose.runtime.mutableStateOf(false)
@@ -55,14 +57,21 @@ class OverlayState {
         val picks=(allies+enemies).filterNotNull()
         if ((!confirmed && trackedLastPick == null) || !autoScanEnabled || picks.size!=10 || picks.map {it.id}.distinct().size!=10) return false
         autoScanEnabled=false
+        completedDraftLocked = true
         scanNoticeMessage="10/10 Campeones confirmados"
-        showSaveDraftDialog = true
+        showSaveDraftDialog = false
+        autoSavePendingRequested = true
         return true
     }
     internal fun clearDraftAndCrops(context: android.content.Context) {
         autoScanEnabled = false
         showSaveDraftDialog = false
+        autoSavePendingRequested = false
+        scanNoticeMessage = null
+        isSavedRecently = false
+        isScanning = false
         trackedLastPick = null
+        completedDraftLocked = false
         allies.indices.forEach { allies[it] = null; enemies[it] = null }
         manualLockedAllySlots.clear(); manualLockedEnemySlots.clear()
         unassignedAllies.clear(); enemyConfidences.clear()
@@ -70,7 +79,7 @@ class OverlayState {
         allySpells.clear(); enemySpells.clear()
         isRoleManuallySelected = false; isFirstPickManuallySelected = false
         isFirstPick = false
-        com.example.service.screen.DraftVisionScanner.resetSlotMemory()
+        com.example.service.screen.DraftVisionScanner.clearSessionState()
         com.example.service.screen.TenthPickDiagnosticManager.clearAllCaches(context)
     }
     var scanNoticeMessage by androidx.compose.runtime.mutableStateOf<String?>(null)

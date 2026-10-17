@@ -347,7 +347,7 @@ class FloatingAssistantService : Service(), LifecycleOwner, ViewModelStoreOwner,
         if (isDestroyed) return
         isDestroyed = true
         com.example.data.sync.GlobalMetaSyncService.stopLive("overlay")
-        com.example.service.screen.TenthPickDiagnosticManager.setAutomaticScanActive(false)
+        overlayState.clearDraftAndCrops(this)
 
         try {
             unregisterComponentCallbacks(this)

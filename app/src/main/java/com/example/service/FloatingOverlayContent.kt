@@ -222,6 +222,45 @@ internal fun FloatingOverlayContent(
         )
     }
 
+    LaunchedEffect(state.autoSavePendingRequested) {
+        if (!state.autoSavePendingRequested) return@LaunchedEffect
+        val roles = listOf(LaneRole.TOP, LaneRole.JUNGLE, LaneRole.MID, LaneRole.ADC, LaneRole.SUPPORT)
+        val allyDraft = allies.mapIndexedNotNull { index, champion ->
+            champion?.let { DraftSlot(it, roles[index]) }
+        }
+        val enemyDraft = enemies.mapIndexedNotNull { index, champion ->
+            champion?.let { DraftSlot(it, roles[index]) }
+        }
+        val complete = allyDraft.size == 5 && enemyDraft.size == 5 &&
+            (allyDraft + enemyDraft).map { it.champion.id }.distinct().size == 10
+        if (!complete) {
+            state.autoSavePendingRequested = false
+            scanNoticeMessage = "No se pudo guardar: el draft no tiene 10 campeones únicos."
+            return@LaunchedEffect
+        }
+        runCatching {
+            com.example.data.repository.DraftHistoryRepository.saveDraft(
+                context = context,
+                myRole = activeRole,
+                isFirstPick = isFirstPick,
+                allies = allyDraft,
+                enemies = enemyDraft,
+                analysis = analysis,
+                matchResult = "PENDING",
+                isLegendary = isLegendaryQueue,
+                matchMode = if (isLegendaryQueue) "LEGENDARY" else "RANKED",
+                allowDuplicate = false
+            )
+        }.onSuccess {
+            isSavedRecently = true
+            scanNoticeMessage = "Draft guardado automáticamente como pendiente"
+        }.onFailure {
+            AppLogger.e("FloatingService", "No se pudo guardar automáticamente el draft pendiente", it)
+            scanNoticeMessage = "No se pudo guardar el draft automáticamente"
+        }
+        state.autoSavePendingRequested = false
+    }
+
     val openChampionDetails: (com.example.model.Champion) -> Unit = { champion ->
         selectedChampionDetail = champion
     }

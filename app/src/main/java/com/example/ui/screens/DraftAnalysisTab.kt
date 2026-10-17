@@ -1046,17 +1046,18 @@ fun DraftAnalysisTab(
         // present. An entirely empty draft keeps the empty-state guidance.
         val hasDraftSelection = selectedOwnChampion != null || selectedEnemyChampion != null ||
             selectedAllySlots.isNotEmpty() || selectedEnemySlots.isNotEmpty()
-        if (activeRole != null && hasDraftSelection) {
+        if (shouldShowDraftRecommendations(activeRole, isFirstPick, hasDraftSelection)) {
+            val recommendationRole = requireNotNull(activeRole)
             // Live Recommendations Header
             Row(modifier = Modifier.testTag("draft_recommendations"), verticalAlignment = Alignment.CenterVertically) {
                 Image(
-                    painter = painterResource(id = activeRole.iconResId),
+                    painter = painterResource(id = recommendationRole.iconResId),
                     contentDescription = null,
                     modifier = Modifier.size(20.dp)
                 )
                 Spacer(modifier = Modifier.width(6.dp))
                 Text(
-                    text = com.example.util.tr(if (analysis.isFirstPickMode) tr("Mejor Primer Pick Seguro para") + " ${com.example.util.tr(activeRole.displayName)}" else tr("Mejor Opción según tu Equipo y el Rival")),
+                    text = com.example.util.tr(if (analysis.isFirstPickMode) tr("Mejor Primer Pick Seguro para") + " ${com.example.util.tr(recommendationRole.displayName)}" else tr("Mejor Opción según tu Equipo y el Rival")),
                     color = HextechGold,
                     fontSize = 15.sp,
                     fontWeight = FontWeight.Bold
@@ -1229,13 +1230,13 @@ fun DraftAnalysisTab(
             if (otherRecs.isNotEmpty()) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Image(
-                        painter = painterResource(id = activeRole.iconResId),
+                        painter = painterResource(id = recommendationRole.iconResId),
                         contentDescription = null,
                         modifier = Modifier.size(16.dp)
                     )
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
-                        text = com.example.util.tr(tr("Otras Opciones Viables para") + " ${com.example.util.tr(activeRole.displayName)}:"),
+                        text = com.example.util.tr(tr("Otras Opciones Viables para") + " ${com.example.util.tr(recommendationRole.displayName)}:"),
                         color = HextechCyan,
                         fontSize = 13.sp,
                         fontWeight = FontWeight.Bold
@@ -1338,6 +1339,12 @@ fun DraftAnalysisTab(
         }
     }
 }
+
+internal fun shouldShowDraftRecommendations(
+    activeRole: LaneRole?,
+    isFirstPick: Boolean,
+    hasDraftSelection: Boolean
+): Boolean = activeRole != null && (isFirstPick || hasDraftSelection)
 
 @Composable
 private fun TeamChampionSlot(

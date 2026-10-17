@@ -509,6 +509,18 @@ object DraftVisionScanner {
         AppLogger.d(TAG, "Memoria de roles, invocadores y motor LiteRT reiniciada por completo")
     }
 
+    fun clearSessionState() {
+        resetSlotMemory()
+        overlayRect = null
+        debugTextRects = emptyList()
+        showCalibrationBoxes.value = false
+        isVisionEngineBusy.value = false
+        isFirstPickState.value = false
+        updateFps(0f)
+        framesSkippedCount.value = 0L
+        lastProcessingDurationMs.value = 0L
+    }
+
     private fun getRecognizer(): com.google.mlkit.vision.text.TextRecognizer? {
         if (recognizerInstance == null) {
             try {
