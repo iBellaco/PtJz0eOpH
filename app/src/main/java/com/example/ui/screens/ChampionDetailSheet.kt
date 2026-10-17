@@ -110,7 +110,7 @@ private data class RuneDetailSelection(
 internal fun publishedChampionRoles(champion: Champion): List<LaneRole> {
     val publishedFlex = champion.secondaryRoles.filter { role ->
         champion.laneStats[role.name]?.let { stats ->
-            stats.winRate.isFinite() || stats.pickRate.isFinite() || stats.banRate.isFinite()
+            stats.winRate.isFinite() && stats.pickRate.isFinite() && stats.banRate.isFinite()
         } == true
     }
     return (listOf(champion.primaryRole) + publishedFlex).distinct()

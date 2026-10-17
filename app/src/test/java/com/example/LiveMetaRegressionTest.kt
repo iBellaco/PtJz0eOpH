@@ -2,10 +2,21 @@ package com.example
 
 import com.example.data.sync.*
 import com.example.util.PublishedAppVersion
+import com.example.util.parsePublishedReleases
 import org.junit.Assert.*
 import org.junit.Test
 
 class LiveMetaRegressionTest {
+    @Test fun `administrator can choose among the five latest installable releases`() {
+        val releases = (1..7).joinToString(prefix = "[", postfix = "]") { index ->
+            val draft = index == 2
+            val asset = if (index == 3) "Coach.zip" else "Coach.apk"
+            """{"tag_name":"v1.1.10.${310 - index}-b${1026 - index}","draft":$draft,"prerelease":false,"assets":[{"name":"$asset"}]}"""
+        }
+        val parsed = parsePublishedReleases(releases)
+        assertEquals(5, parsed.size)
+        assertEquals(listOf(1025, 1022, 1021, 1020, 1019), parsed.map { it.code })
+    }
     @Test fun `rankings reads full rows including zero ban without podium markup`() {
         val html = """<table><tbody>
           <tr class="rk-row"><td><a class="rk-champ" href="/es/champions/ahri/">Ahri</a></td>
