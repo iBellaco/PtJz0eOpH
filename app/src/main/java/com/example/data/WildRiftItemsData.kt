@@ -110,7 +110,7 @@ WildRiftItem(
             statsEn = "+55 Attack Damage • +15 Armor Penetration • +15 Ability Haste • +4% Movement Speed",
             passive = "Impulso: 3 s tras abandonar el combate contra campeones, obtiene 30 de velocidad de movimiento (20 para campeones a distancia).",
             passiveEn = "Momentum: 3s after exiting combat with champions, gain 30 Movement Speed (20 for ranged champions).",
-            coachTip = "Parche 7.3b: cuesta 2900 de oro. Mantiene su valor como primer objeto para asesinos AD y ahora permite cerrar antes las rotaciones y emboscadas.",
+            coachTip = "Primer objeto para asesinos AD que necesitan acelerar rotaciones, flancos y emboscadas.",
             coachTipEn = "Patch 7.3b: costs 2900 gold. Still a strong first item for AD assassins and now reaches roam and gank windows earlier.",
             iconUrl = "file:///android_asset/offline_images/f1b8c4afd751ba63ea7b8f0ff5f2c981.webp"
         ),
@@ -1004,8 +1004,9 @@ WildRiftItem(
             statsEn = "+200 Max Health • +75 Armor",
             passive = "Espinas: Al recibir un ataque, inflige 20 + 6% Armadura adicional + 1% Vida adicional de daño mágico al atacante.\nEntrelazar: Aplica un 50% de heridas graves a los campeones enemigos durante 3 s al ser objetivo de sus ataques o infligirles daño.",
             passiveEn = "Thorns: When struck by an attack, deal 20 + 6% bonus Armor + 1% bonus Health magic damage to the attacker.\nEntwine: Apply 50% Grievous Wounds to enemy champions for 3 second(s) when stuck by their attacks or dealing damage to them.Grievous Wounds reduces the effectiveness of Healing and Regeneration effects.",
-            coachTip = "Parche 7.3b: sube a 2850 de oro. Sigue siendo anti-curación para frontliners, pero debe comprarse cuando el robo de vida o las curaciones rivales ya deciden las peleas.",
-            coachTipEn = "Patch 7.3b: increased to 2850 gold. Still the frontline anti-heal item, but buy it when enemy healing or lifesteal is already deciding fights.",
+            coachTip = "Opción anti-curación para la primera línea cuando el robo de vida o las curaciones rivales deciden las peleas.",
+            coachTipEn = "Costs 2850 gold. It is the frontline anti-heal option when enemy healing or lifesteal is deciding fights.",
+            coachTipPt = "Custa 2850 de ouro. É a opção de corta-cura para a linha de frente quando a cura ou o roubo de vida inimigo decide as lutas.",
             iconUrl = "file:///android_asset/offline_images/b68d6e640042b5db9b2c77722c9187e5.webp"
         ),
 WildRiftItem(
@@ -1499,8 +1500,9 @@ WildRiftItem(
             passive = "Medallón activa: Te otorga un escudo a ti y a todos los campeones aliados cercanos que absorbe de 250 a 370 de daño durante 2,5 s, enfriamiento de 60 s. Este efecto disminuye un 50% si el objetivo se ha visto afectado por otro Medallón en los últimos 20 s.",
             passivePt = "Medalhão ativo: Concede a você e a todos os campeões aliados próximos um escudo que absorve 250 a 370 de dano por 2,5 s, tempo de recarga de 60 s. O efeito diminui em 50% se o alvo tiver recebido outro Medalhão nos últimos 20 s.",
             passiveEn = "Locket (Active): Grants a shield to yourself and nearby allied champions that each absorbs 250-370 damage for 2.5 seconds. (60s Cooldown)This effect is reduced by 50% if the target has been affected by another Locket in the last 20 seconds.",
-            coachTip = "Parche 7.3b: baja a 2500 de oro y sube a 300 de vida. Es una compra más eficiente para soportes y tanques contra ráfagas de área.",
-            coachTipEn = "Patch 7.3b: reduced to 2500 gold and increased to 300 Health. More efficient for supports and tanks against area burst.",
+            coachTip = "Aporta 300 de vida y una protección de área. Úsalo con soportes y tanques contra ráfagas que amenacen a varios aliados.",
+            coachTipEn = "Provides 300 Health and area protection. Use it on supports and tanks against burst that threatens several allies.",
+            coachTipPt = "Concede 300 de Vida e proteção em área. Use em suportes e tanques contra rajadas que ameaçam vários aliados.",
             iconUrl = "file:///android_asset/offline_images/90e64403fbbc718c296e56622bc21fac.webp"
         ),
 WildRiftItem(
@@ -1852,9 +1854,9 @@ WildRiftItem(
             passive = "La práctica hace al asesino: Al atacar, obtienes probabilidad de crítico permanente, 0,4% para campeones cuerpo a cuerpo y 0,2% para campeones a distancia por ataque, hasta un máximo de 25%.\nRáfaga: Al atacar a un campeón enemigo, obtienes un 35% de velocidad de ataque durante 6 s, enfriamiento de 25 s. Los ataques reducen el enfriamiento 1 s o 2 s si son impactos críticos.",
             passiveEn = "Flurry: Critical strikes grant 35% bonus Attack Speed for 4s (25s Cooldown).\nSerrated Blades: Critical strikes apply a bleed dealing bonus physical damage over 2s.",
             passivePt = "A Prática Faz o Assassino: Ao atacar, você recebe chance de acerto crítico permanente, 0,4% para campeões corpo a corpo e 0,2% para campeões de ataque à distância por ataque, até 25%.\nRajada: Ao atacar um campeão inimigo, você recebe 35% de velocidade de ataque por 6 s, tempo de recarga de 25 s. Os ataques reduzem o tempo de recarga em 1 s ou em 2 s se forem acertos críticos.",
-            coachTip = "Parche 7.3b: baja a 3000 de oro. Mantiene su función de primer pico para tiradores que escalan con ataques continuos y crítico.",
-            coachTipEn = "Patch 7.3b: reduced to 3000 gold. Keeps its role as a first spike for marksmen that scale through sustained attacks and crit.",
-            coachTipPt = "Patch 7.3b: custa 3000 de ouro. Mantém a função de primeiro pico para atiradores que escalam com ataques contínuos e crítico.",
+            coachTip = "Primer pico para tiradores que escalan con ataques continuos y crítico.",
+            coachTipEn = "Costs 3000 gold. It is a first power spike for marksmen that scale through sustained attacks and crit.",
+            coachTipPt = "Custa 3000 de ouro. É um primeiro pico de poder para atiradores que escalam com ataques contínuos e crítico.",
             iconUrl = "file:///android_asset/offline_images/yun_tal_wildarrows.webp"
         ),
 WildRiftItem(
@@ -1870,9 +1872,9 @@ WildRiftItem(
             passive = "Electrochoque: Los ataques otorgan 7 acumulaciones de vigor adicionales.\nElectrochispa: Moverte y atacar genera un ataque con vigor que emite rayos que rebotan a 4-7 objetivos, lo que inflige 60 de daño mágico, aumenta hasta 90 de daño mágico contra súbditos y monstruos y aplica efectos de impacto al rebotar a otros objetivos.",
             passiveEn = "Shiv Lightning: Energized attacks unleash a chain lightning dealing bonus magic damage to up to 5 targets.",
             passivePt = "Eletrochoque: Os ataques concedem 7 acúmulos adicionais de energia.\nEletrofaísca: Mover-se e atacar gera um ataque energizado que dispara raios que saltam entre 4-7 alvos, causando 60 de dano mágico, aumentado para 90 de dano mágico contra tropas e monstros, e aplica efeitos de contato ao atingir outros alvos.",
-            coachTip = "Parche 7.3b: baja a 2900 de oro y los ataques cargan 7 acumulaciones de vigor. Priorízalo cuando necesites limpiar oleadas y rotar antes.",
-            coachTipEn = "Patch 7.3b: reduced to 2900 gold and attacks now grant 7 Energized stacks. Prioritize it when you need faster wave clear and rotations.",
-            coachTipPt = "Patch 7.3b: custa 2900 de ouro e ataques concedem 7 acúmulos de energia. Priorize quando precisar limpar ondas e rotacionar antes.",
+            coachTip = "Cada ataque carga 7 acumulaciones de vigor. Priorízalo cuando necesites limpiar oleadas y rotar antes.",
+            coachTipEn = "Costs 2900 gold and each attack grants 7 Energized stacks. Prioritize it when you need faster wave clear and rotations.",
+            coachTipPt = "Custa 2900 de ouro e cada ataque concede 7 acúmulos de energia. Priorize quando precisar limpar ondas e rotacionar antes.",
             iconUrl = "file:///android_asset/offline_images/statikk_shiv.webp"
         ),
 WildRiftItem(

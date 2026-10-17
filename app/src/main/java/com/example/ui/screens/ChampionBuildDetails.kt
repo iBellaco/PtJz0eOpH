@@ -71,7 +71,7 @@ internal fun BuildMatchupList(
             Column(Modifier.fillMaxWidth()) {
                 Text("$title (${rows.sumOf { it.size }})", color = accent,
                     fontWeight = FontWeight.Bold, fontSize = 11.sp)
-                if (!premium) Text("PRO 12", color = HextechGold, fontSize = 9.sp)
+                if (!premium) Text("PRO 24", color = HextechGold, fontSize = 9.sp)
             }
             rows.forEachIndexed { index, row ->
                 Row(Modifier.fillMaxWidth().testTag("build_matchup_${group}_row_$index"),

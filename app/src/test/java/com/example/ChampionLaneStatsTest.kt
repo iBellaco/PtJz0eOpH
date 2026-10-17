@@ -4,6 +4,7 @@ import com.example.model.Champion
 import com.example.model.ChampionLaneStats
 import com.example.model.LaneRole
 import com.example.util.ChampionRoleAdapter
+import com.example.ui.screens.publishedChampionRoles
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -27,5 +28,19 @@ class ChampionLaneStatsTest {
 
         val unpublished = ChampionRoleAdapter.getProfile(champion.copy(laneStats = champion.laneStats - LaneRole.SUPPORT.name), LaneRole.SUPPORT)
         assertTrue(unpublished.winrate.isNaN())
+    }
+
+    @Test fun `flex selector only exposes lanes with complete published rates`() {
+        val champion = Champion(
+            id = "rammus", name = "Rammus", primaryRole = LaneRole.JUNGLE,
+            secondaryRoles = listOf(LaneRole.TOP, LaneRole.SUPPORT),
+            laneStats = mapOf(
+                LaneRole.JUNGLE.name to ChampionLaneStats(52.1, 4.2, 3.0),
+                LaneRole.SUPPORT.name to ChampionLaneStats(49.8, 0.4, 0.1),
+                LaneRole.TOP.name to ChampionLaneStats()
+            )
+        )
+
+        assertEquals(listOf(LaneRole.JUNGLE, LaneRole.SUPPORT), publishedChampionRoles(champion))
     }
 }

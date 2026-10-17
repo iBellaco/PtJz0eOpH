@@ -36,7 +36,8 @@
   <string name="h4">Definitiva (H4 / Ulti)</string>
   <string name="blue_essence">Esencia Azul</string>
   <string name="orange_essence">Esencia Naranja</string>
-    <string name="matchup_sign_in_hint">Crea una cuenta e inicia sesión para ver seis campeones en Ventaja, Débil y Sinergia.</string>
+    <string name="matchup_sign_in_hint">Crea una cuenta para ver 6 campeones por panel; Premium amplía cada panel a 24.</string>
+    <string name="matchup_register_action">Registrarme</string>
     <string name="streamer_history_active_retention">El conteo de 48 horas comenzará cuando finalice la publicación.</string>
     <string name="streamer_metrics_error">No se pudo activar el contador de clics. La aprobación no se completó. Revisa la sincronización en la nube.</string>
     <string name="streamer_clicks_cached">Último recuento guardado; esperando conexión en vivo.</string>

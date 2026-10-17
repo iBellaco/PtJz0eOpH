@@ -253,7 +253,7 @@ fun PurchaseHistoryDialog(
                                 )
                                 Spacer(modifier = Modifier.width(4.dp))
                                 Text(
-                                    text = com.example.util.tr(if (isPremium) "Exclusivo PRO" else "Cuenta Activa"),
+                                    text = com.example.util.tr(if (isPremium) "Suscripción activa" else "Cuenta activa"),
                                     color = if (isPremium) HextechGold else Color(0xFF10B981),
                                     fontSize = 11.sp,
                                     fontWeight = FontWeight.Bold

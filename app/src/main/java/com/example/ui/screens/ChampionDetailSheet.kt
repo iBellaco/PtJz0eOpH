@@ -43,6 +43,7 @@ import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.TrendingUp
+import androidx.compose.material.icons.filled.PersonAdd
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -55,9 +56,15 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -100,13 +107,23 @@ private data class RuneDetailSelection(
     val advice: String
 )
 
+internal fun publishedChampionRoles(champion: Champion): List<LaneRole> {
+    val publishedFlex = champion.secondaryRoles.filter { role ->
+        champion.laneStats[role.name]?.let { stats ->
+            stats.winRate.isFinite() || stats.pickRate.isFinite() || stats.banRate.isFinite()
+        } == true
+    }
+    return (listOf(champion.primaryRole) + publishedFlex).distinct()
+}
+
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun ChampionDetailSheet(
     isOverlay: Boolean = false,
     champion: Champion?,
     onDismiss: () -> Unit,
-    onChampionSelected: (Champion) -> Unit = {}
+    onChampionSelected: (Champion) -> Unit = {},
+    onNavigateToRegister: () -> Unit = {}
 ) {
     val isPremium by SubscriptionManager.isPremium.collectAsState()
     if (champion == null) return
@@ -117,18 +134,8 @@ fun ChampionDetailSheet(
     val isFavorite = favorites.contains(champion.id.lowercase())
 
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-    // Solo las líneas Main y Flex en las que realmente se juega el campeón
-    val availableRoles = remember(champion.id) {
-        (listOf(champion.primaryRole) + champion.secondaryRoles).distinct()
-    }
     var selectedRole by remember(champion.id) {
         mutableStateOf(champion.primaryRole)
-    }
-
-    LaunchedEffect(champion.id) {
-        if (selectedRole !in availableRoles) {
-            selectedRole = champion.primaryRole
-        }
     }
 
     var selectedMatchupName by remember(champion.id) { mutableStateOf<String?>(null) }
@@ -154,6 +161,16 @@ fun ChampionDetailSheet(
     val liveChampion = WildRiftRepository.champions.firstOrNull {
         it.id.equals(champion.id, ignoreCase = true)
     } ?: champion
+
+    // Una línea Flex solo se ofrece cuando las fuentes publican tasas propias
+    // para esa combinación campeón/línea. Así nunca se presenta un panel vacío.
+    val availableRoles = remember(liveChampion.id, liveChampion.laneStats, WildRiftRepository.regionRevision) {
+        publishedChampionRoles(liveChampion)
+    }
+
+    LaunchedEffect(liveChampion.id, availableRoles) {
+        if (selectedRole !in availableRoles) selectedRole = liveChampion.primaryRole
+    }
 
 
     // Service-hosted overlays have no activity back dispatcher; their visible
@@ -677,7 +694,9 @@ fun ChampionDetailSheet(
                         title = rec.buildTitle,
                         subtitle = "Línea: ${rec.role} • Análisis del coach",
                         source = "Criterio del coach • ${rec.creatorName}",
-                        badge = if (rec.role.contains("Flex", ignoreCase = true)) "FLEX PRO" else "CRITERIO COACH",
+                        badge = if (rec.role.contains("Flex", ignoreCase = true)) {
+                            if (isPremium) "FLEX" else "FLEX PRO"
+                        } else "CRITERIO COACH",
                         tacticalReason = rec.coachAdvice.ifBlank { CoachingGenerator.generateTacticalAnalysis(champion, selectedRole, "es") },
                         items = rec.coreItemsWithDesc.map { it.itemName }.ifEmpty { rec.coreItems },
                         bootBase = t2,
@@ -1534,9 +1553,37 @@ fun ChampionDetailSheet(
 
             if (!isSignedIn) {
                 Spacer(Modifier.height(10.dp))
-                Text(com.example.util.localizedString(com.example.R.string.matchup_sign_in_hint),
-                    color = TextMuted, fontSize = 11.sp,
-                    modifier = Modifier.fillMaxWidth().testTag("matchup_sign_in_hint"))
+                val registerPulse = rememberInfiniteTransition(label = "register_cta").animateFloat(
+                    initialValue = 0.72f,
+                    targetValue = 1f,
+                    animationSpec = infiniteRepeatable(tween(900), RepeatMode.Reverse),
+                    label = "register_cta_alpha"
+                )
+                androidx.compose.material3.Surface(
+                    modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)
+                        .alpha(registerPulse.value)
+                        .testTag("matchup_sign_in_hint").coachClickable(onClick = onNavigateToRegister),
+                    shape = RoundedCornerShape(10.dp),
+                    color = HextechCyan.copy(alpha = 0.12f),
+                    border = androidx.compose.foundation.BorderStroke(1.dp, HextechCyan.copy(alpha = 0.75f))
+                ) {
+                    Row(
+                        Modifier.padding(horizontal = 12.dp, vertical = 9.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Icon(Icons.Default.PersonAdd, contentDescription = null, tint = HextechGold)
+                        Text(
+                            com.example.util.localizedString(com.example.R.string.matchup_sign_in_hint),
+                            color = HextechCyan, fontSize = 11.sp, fontWeight = FontWeight.Bold,
+                            modifier = Modifier.weight(1f)
+                        )
+                        Text(
+                            com.example.util.localizedString(com.example.R.string.matchup_register_action),
+                            color = HextechGold, fontSize = 11.sp, fontWeight = FontWeight.ExtraBold
+                        )
+                    }
+                }
             }
 
             selectedMatchupName?.let { name ->

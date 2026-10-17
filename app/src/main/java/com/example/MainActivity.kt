@@ -429,8 +429,16 @@ fun DashboardScreen(
     val context = LocalContext.current
     val activity = context as? android.app.Activity
     val targetChampId = activity?.intent?.getStringExtra("OPEN_CHAMPION_DETAIL")
-    val initialPage = if (activity?.intent?.getBooleanExtra("OPEN_TIER_LIST", false) == true || targetChampId != null) 2 else 0
+    val openRegister = activity?.intent?.getBooleanExtra("OPEN_REGISTER", false) == true
+    val initialPage = when {
+        openRegister -> 4
+        activity?.intent?.getBooleanExtra("OPEN_TIER_LIST", false) == true || targetChampId != null -> 2
+        else -> 0
+    }
     val pagerState = rememberPagerState(initialPage = initialPage, pageCount = { 5 })
+    var authLanding by remember {
+        mutableStateOf(if (openRegister) com.example.ui.auth.AuthScreenType.REGISTER else com.example.ui.auth.AuthScreenType.LOGIN)
+    }
     val openInboxFromPhone by com.example.data.InboxPhoneNotifications.openInbox.collectAsStateWithLifecycle()
     LaunchedEffect(openInboxFromPhone) {
         if (openInboxFromPhone) pagerState.scrollToPage(4)
@@ -440,6 +448,7 @@ fun DashboardScreen(
     androidx.compose.runtime.LaunchedEffect(Unit) {
         activity?.intent?.removeExtra("OPEN_TIER_LIST")
         activity?.intent?.removeExtra("OPEN_CHAMPION_DETAIL")
+        activity?.intent?.removeExtra("OPEN_REGISTER")
     }
 
     var showExitDialog by remember { mutableStateOf(false) }
@@ -545,7 +554,10 @@ fun DashboardScreen(
                         onNavigateToInfo = onNavigateToInfo,
                         onNavigateToFAQ = onNavigateToFAQ,
                         onNavigateToMeta = { coroutineScope.launch { pagerState.animateScrollToPage(2) } },
-                        onNavigateToLogin = { coroutineScope.launch { pagerState.animateScrollToPage(4) } },
+                        onNavigateToLogin = {
+                            authLanding = com.example.ui.auth.AuthScreenType.LOGIN
+                            coroutineScope.launch { pagerState.animateScrollToPage(4) }
+                        },
                         mainRole = mainRole,
                         onMainRoleChange = onMainRoleChange,
                         secondRole = secondRole,
@@ -560,6 +572,10 @@ fun DashboardScreen(
                     MetaAndDraftScreen(
                         mode = MetaScreenMode.DRAFTING,
                         userMainRole = mainRole,
+                        onNavigateToRegister = {
+                            authLanding = com.example.ui.auth.AuthScreenType.REGISTER
+                            coroutineScope.launch { pagerState.animateScrollToPage(4) }
+                        },
                         onNavigateBack = { coroutineScope.launch { pagerState.animateScrollToPage(0) } }
                     )
                 }
@@ -568,6 +584,10 @@ fun DashboardScreen(
                         mode = MetaScreenMode.TIER_LIST,
                         userMainRole = mainRole,
                         initialChampionId = targetChampId,
+                        onNavigateToRegister = {
+                            authLanding = com.example.ui.auth.AuthScreenType.REGISTER
+                            coroutineScope.launch { pagerState.animateScrollToPage(4) }
+                        },
                         onNavigateBack = { coroutineScope.launch { pagerState.animateScrollToPage(0) } }
                     )
                 }
@@ -575,11 +595,16 @@ fun DashboardScreen(
                     MetaAndDraftScreen(
                         mode = MetaScreenMode.CATALOG,
                         userMainRole = mainRole,
+                        onNavigateToRegister = {
+                            authLanding = com.example.ui.auth.AuthScreenType.REGISTER
+                            coroutineScope.launch { pagerState.animateScrollToPage(4) }
+                        },
                         onNavigateBack = { coroutineScope.launch { pagerState.animateScrollToPage(0) } }
                     )
                 }
                 4 -> {
                     com.example.ui.auth.AuthFlowContainer(
+                        initialScreen = authLanding,
                         onLoginSuccess = {
                             coroutineScope.launch {
                                 pagerState.animateScrollToPage(0)
@@ -592,7 +617,10 @@ fun DashboardScreen(
                         onNavigateToInfo = onNavigateToInfo,
                         onNavigateToFAQ = onNavigateToFAQ,
                         onNavigateToMeta = { coroutineScope.launch { pagerState.animateScrollToPage(2) } },
-                        onNavigateToLogin = { coroutineScope.launch { pagerState.animateScrollToPage(4) } },
+                        onNavigateToLogin = {
+                            authLanding = com.example.ui.auth.AuthScreenType.LOGIN
+                            coroutineScope.launch { pagerState.animateScrollToPage(4) }
+                        },
                         mainRole = mainRole,
                         onMainRoleChange = onMainRoleChange,
                         secondRole = secondRole,

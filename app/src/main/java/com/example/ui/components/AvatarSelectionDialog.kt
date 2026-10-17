@@ -171,7 +171,7 @@ fun AvatarSelectionBottomSheet(
                             fontWeight = FontWeight.Bold
                         )
                         Text(
-                            text = com.example.util.tr(if (isPremium) tr("Acceso Total Premium Desbloqueado") else tr("Avatares Exclusivos de League of Legends")),
+                            text = com.example.util.tr(if (isPremium) tr("Colección desbloqueada") else tr("Avatares Exclusivos de League of Legends")),
                             color = if (isPremium) HextechCyan else TextSecondary,
                             fontSize = 12.sp
                         )
