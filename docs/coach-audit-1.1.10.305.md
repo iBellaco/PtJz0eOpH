@@ -1,4 +1,4 @@
-# Coach 1.1.10.304 — build 1020
+# Coach 1.1.10.305 — build 1021
 
 ## Cambios verificados
 
@@ -19,5 +19,11 @@
 
 ## Versión
 
-- `versionCode`: 1020
-- `versionName`: 1.1.10.304
+- `versionCode`: 1021
+- `versionName`: 1.1.10.305
+
+## Corrección posterior de catálogo
+
+- Se eliminaron referencias al precio anterior o a aumentos y reducciones de oro en el consejo táctico de objetos.
+- Se regeneraron los 300 perfiles de línea en español y portugués con criterios de uso actuales.
+- Se corrigió la traducción portuguesa de Flechas de los Yun Tal detectada por la suite completa.
