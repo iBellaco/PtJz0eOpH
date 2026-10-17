@@ -59,7 +59,6 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.contentDescription
@@ -75,7 +74,7 @@ import com.example.util.SubscriptionManager
 import com.example.model.LaneRole
 import com.example.ui.components.AppAssetImage
 import com.example.ui.components.ChampionAvatar
-import com.example.ui.theme.DangerRed
+import com.example.ui.components.RateChangeBadge
 import com.example.ui.theme.HextechCardBorder
 import com.example.ui.theme.HextechCyan
 import com.example.ui.theme.HextechDarkBg
@@ -116,7 +115,7 @@ fun ChampionsCatalogTab(
                     champ.name.contains(trimmedQuery, ignoreCase = true)
             val matchesRole = selectedRoleFilter == null ||
                     champ.primaryRole == selectedRoleFilter ||
-                    champ.secondaryRoles.contains(selectedRoleFilter)
+                    publishedChampionRoles(champ).contains(selectedRoleFilter)
             val matchesTier = selectedTierFilter == null || champ.tier == selectedTierFilter
             val matchesFavorite = !showOnlyFavorites || favorites.contains(champ.id.lowercase())
             matchesQuery && matchesRole && matchesTier && matchesFavorite
@@ -419,7 +418,7 @@ fun ChampionsCatalogTab(
                         )
                     )
                     LaneRole.entries.forEach { role ->
-                        val count = WildRiftRepository.champions.count { it.primaryRole == role || it.secondaryRoles.contains(role) }
+                        val count = WildRiftRepository.champions.count { publishedChampionRoles(it).contains(role) }
                         val isSelected = selectedRoleFilter == role && !showOnlyFavorites
                         FilterChip(
                             selected = isSelected,
@@ -555,16 +554,7 @@ fun ChampionsCatalogTab(
                                     verticalAlignment = Alignment.CenterVertically,
                                     horizontalArrangement = Arrangement.spacedBy(6.dp)
                                 ) {
-                                    val winDelta = champion.winrateDelta
-                                    val formattedDelta = String.format(java.util.Locale.US, "%.2f", winDelta)
-                                    val winDeltaText = if (winDelta >= 0) "+${formattedDelta}%" else "${formattedDelta}%"
-                                    val winDeltaColor = if (winDelta >= 0) Color(0xFF4CAF50) else DangerRed
-                                    Text(
-                                        text = com.example.util.tr(if (winDelta >= 0) "▲ $winDeltaText" else "▼ $winDeltaText"),
-                                        color = winDeltaColor,
-                                        fontSize = 10.5.sp,
-                                        fontWeight = FontWeight.Bold
-                                    )
+                                    RateChangeBadge(if (champion.has24hComparison) champion.winrateDelta else Double.NaN)
                                     val formattedWr = com.example.util.championStatPercent(champion, champion.winrate, "wr")
                                     val regionTag = "🌐 Global"
                                     Text(
@@ -608,7 +598,8 @@ fun ChampionsCatalogTab(
                                         color = HextechCyan,
                                         fontSize = if (isOverlay) 9.5.sp else 11.5.sp
                                     )
-                                    if (champion.secondaryRoles.isNotEmpty()) {
+                                    val publishedFlexRoles = publishedChampionRoles(champion).drop(1)
+                                    if (publishedFlexRoles.isNotEmpty()) {
                                         Box(
                                             modifier = Modifier
                                                 .clip(RoundedCornerShape(4.dp))
@@ -618,7 +609,7 @@ fun ChampionsCatalogTab(
                                         ) {
                                             val lang = com.example.util.currentAppLanguage()
                                             Text(
-                                                text = com.example.util.tr(tr("Flex: ") + champion.secondaryRoles.joinToString("/") { com.example.util.trStr(lang, it.shortName) }),
+                                                text = com.example.util.tr(tr("Flex: ") + publishedFlexRoles.joinToString("/") { com.example.util.trStr(lang, it.shortName) }),
                                                 color = HextechCyan,
                                                 fontSize = 9.5.sp,
                                                 fontWeight = FontWeight.Medium
