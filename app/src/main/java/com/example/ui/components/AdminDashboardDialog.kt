@@ -307,20 +307,16 @@ fun AdminDashboardDialog(
     }
 }
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun AppUpdateVerificationControl() {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val enabled by com.example.util.AppUpdateManager.verificationEnabled.collectAsState()
-    val requiredVersion by com.example.util.AppUpdateManager.requiredVersion.collectAsState()
-    val recentVersions by com.example.util.AppUpdateManager.recentVersions.collectAsState()
     var busy by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(Unit) {
         com.example.util.AppUpdateManager.refreshVerificationSetting()
-        com.example.util.AppUpdateManager.loadRecentVersions()
     }
     Card(
         modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 6.dp),
@@ -335,7 +331,7 @@ private fun AppUpdateVerificationControl() {
             Column(Modifier.weight(1f)) {
                 Text(tr("Verificación de actualización"), color = TextPrimary, fontWeight = FontWeight.Bold)
                 Text(
-                    tr(if (enabled) "La aplicación exige la versión mínima elegida." else "La comprobación de versión está desactivada."),
+                    tr(if (enabled) "La aplicación exige la versión publicada más reciente." else "La comprobación de versión está desactivada."),
                     color = TextSecondary, fontSize = 11.sp
                 )
                 error?.let { Text(tr(it), color = DangerRed, fontSize = 10.sp) }
@@ -352,38 +348,9 @@ private fun AppUpdateVerificationControl() {
                         busy = false
                     }
                 },
-                modifier = Modifier.testTag("toggle_app_update_verification")
+                modifier = Modifier.sizeIn(minWidth = 48.dp, minHeight = 48.dp)
+                    .testTag("toggle_app_update_verification")
             )
-          }
-          if (enabled) {
-            Spacer(Modifier.height(10.dp))
-            Text(tr("Versión mínima obligatoria"), color = HextechGold,
-                fontWeight = FontWeight.Bold, fontSize = 12.sp)
-            Spacer(Modifier.height(6.dp))
-            if (recentVersions.isEmpty()) {
-                Text(tr("Consultando las últimas cinco versiones…"), color = TextSecondary, fontSize = 11.sp)
-            } else {
-                FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp),
-                    verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                    recentVersions.forEach { version ->
-                        val selected = requiredVersion?.code == version.code
-                        FilterChip(
-                            selected = selected,
-                            enabled = !busy,
-                            onClick = {
-                                busy = true; error = null
-                                scope.launch {
-                                    runCatching { com.example.util.AppUpdateManager.setRequiredVersion(context, version) }
-                                        .onFailure { error = "No se pudo guardar la versión obligatoria." }
-                                    busy = false
-                                }
-                            },
-                            label = { Text("${version.name} (${version.code})", fontSize = 10.sp) },
-                            modifier = Modifier.heightIn(min = 48.dp).testTag("required_version_${version.code}")
-                        )
-                    }
-                }
-            }
           }
         }
     }

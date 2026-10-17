@@ -15,7 +15,7 @@ import org.robolectric.annotation.Config
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk=[34],application=Application::class)
 class DraftAutoStopTest {
-    @Test fun ninthAndUnconfirmedPortraitKeepScanningTenthConfirmedOpensSaveOnce() {
+    @Test fun ninthAndUnconfirmedPortraitKeepScanningTenthConfirmedRequestsOnePendingSave() {
         val hud=OverlayState()
         (0..4).forEach { hud.allies[it]=Champion(id="ally_$it",name="Ally $it") }
         (0..3).forEach { hud.enemies[it]=Champion(id="enemy_$it",name="Enemy $it") }
@@ -32,13 +32,14 @@ class DraftAutoStopTest {
             assertNull(hud.enemies[4])
             hud.applyConfirmedLastPick(report.copy(isLastPickConfirmed=true))
             assertEquals(final,hud.enemies[4])
-            assertTrue(hud.showSaveDraftDialog)
+            assertFalse(hud.showSaveDraftDialog)
+            assertTrue(hud.autoSavePendingRequested)
             hud.applyConfirmedLastPick(report.copy(isLastPickConfirmed=true,
                 lastPickChampion=Champion(id="late_report",name="Late report")))
-            assertEquals("Save dialog must retain the completed draft",final,hud.enemies[4])
-            hud.showSaveDraftDialog = false
+            assertEquals("Completed draft must remain intact until automatic persistence",final,hud.enemies[4])
+            hud.autoSavePendingRequested = false
             hud.applyConfirmedLastPick(report.copy(isLastPickConfirmed=true))
-            assertFalse("Dismissing the save dialog must not reopen it on the next report",hud.showSaveDraftDialog)
+            assertFalse("A repeated report must not request another automatic save",hud.autoSavePendingRequested)
             assertTrue((hud.allies+hud.enemies).filterNotNull().map {it.id}.toSet().containsAll(ninth))
             assertFalse(hud.autoScanEnabled)
             assertFalse(TenthPickDiagnosticManager.automaticScanActiveFlow.value)

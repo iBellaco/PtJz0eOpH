@@ -39,7 +39,9 @@ internal fun OverlayState.syncScannedEnemies(result: DraftScanResult): Int {
 
 /** Apply the final confirmed portrait to the same state displayed by the overlay. */
 internal fun OverlayState.applyConfirmedLastPick(result: DraftScanResult) {
-    if (showSaveDraftDialog && !autoScanEnabled) return
+    // Once the tenth pick closed this scan, late classifier reports belong to
+    // the completed frame sequence and must not replace the saved champion.
+    if (completedDraftLocked) return
     val champion = result.lastPickChampion ?: return
     val previousId = trackedLastPick?.takeIf { it.first == result.tenthPickIsAlly }?.second
     var applied = false
