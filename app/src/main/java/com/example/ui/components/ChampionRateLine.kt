@@ -12,11 +12,13 @@ import com.example.util.championStatPercent
 
 @Composable
 fun ChampionRateLine(champion: Champion, includeWin: Boolean = false,
-    includePick: Boolean = true, includeBan: Boolean = true) {
+    includePick: Boolean = true, includeBan: Boolean = true,
+    winRate: Double = champion.winrate, pickRate: Double = champion.pickRate,
+    banRate: Double = champion.banRate) {
     val rates = buildList {
-        if (includeWin) add(Triple("WR", championStatPercent(champion, champion.winrate, "wr"), HextechGold))
-        if (includePick) add(Triple("Pick", championStatPercent(champion, champion.pickRate, "pick"), HextechCyan))
-        if (includeBan) add(Triple("Ban", championStatPercent(champion, champion.banRate, "ban"), DangerRed))
+        if (includeWin) add(Triple("WR", championStatPercent(champion, winRate, "wr"), HextechGold))
+        if (includePick) add(Triple("Pick", championStatPercent(champion, pickRate, "pick"), HextechCyan))
+        if (includeBan) add(Triple("Ban", championStatPercent(champion, banRate, "ban"), DangerRed))
     }
     Text(buildAnnotatedString {
         rates.forEachIndexed { index, (label, value, color) ->

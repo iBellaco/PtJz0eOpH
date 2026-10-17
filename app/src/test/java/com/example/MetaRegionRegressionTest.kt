@@ -6,6 +6,9 @@ import com.example.data.sync.GlobalMetaSyncService
 import com.example.data.sync.MetaRegion
 import com.example.data.sync.RegionalTierParser
 import com.example.data.sync.ChampionMetaStats
+import com.example.ui.screens.publishedChampionRoles
+import com.example.ui.screens.tierDisplayedStats
+import com.example.util.ChampionRoleAdapter
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -164,6 +167,25 @@ class MetaRegionRegressionTest {
             assertNotEquals(champion.id, "—", com.example.util.championStatPercent(champion, champion.winrate, "wr"))
             assertNotEquals(champion.id, "—", com.example.util.championStatPercent(champion, champion.pickRate, "pick"))
             assertNotEquals(champion.id, "—", com.example.util.championStatPercent(champion, champion.banRate, "ban"))
+        }
+    }
+
+    @Test fun `tier cards and details match for every published lane in the complete roster`() {
+        assertEquals(142, WildRiftRepository.champions.size)
+        WildRiftRepository.champions.forEach { champion ->
+            publishedChampionRoles(champion).forEach { role ->
+                val card = tierDisplayedStats(champion, role)
+                val detail = ChampionRoleAdapter.getProfile(champion, role)
+                assertEquals("${champion.id} ${role.name} win", detail.winrate, card.win, 0.001)
+                assertEquals("${champion.id} ${role.name} pick", detail.pickRate, card.pick, 0.001)
+                assertEquals("${champion.id} ${role.name} ban", detail.banRate, card.ban, 0.001)
+            }
+
+            val defaultCard = tierDisplayedStats(champion, null)
+            val defaultDetail = ChampionRoleAdapter.getProfile(champion, champion.primaryRole)
+            assertEquals("${champion.id} default win", defaultDetail.winrate, defaultCard.win, 0.001)
+            assertEquals("${champion.id} default pick", defaultDetail.pickRate, defaultCard.pick, 0.001)
+            assertEquals("${champion.id} default ban", defaultDetail.banRate, defaultCard.ban, 0.001)
         }
     }
 }

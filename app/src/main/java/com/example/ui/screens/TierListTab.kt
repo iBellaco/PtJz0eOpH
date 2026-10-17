@@ -94,6 +94,22 @@ enum class TierSortOption(val displayName: String, val shortLabel: String) {
     BAN_RATE("Ban Rate", "Ban Rate ")
 }
 
+internal data class TierDisplayedStats(val role: LaneRole, val win: Double, val pick: Double,
+    val ban: Double, val winDelta: Double)
+
+internal fun tierDisplayedStats(champion: Champion, selectedLane: LaneRole?): TierDisplayedStats {
+    val role = selectedLane ?: champion.primaryRole
+    val lane = champion.laneStats[role.name]
+    val isPrimary = role == champion.primaryRole
+    return TierDisplayedStats(
+        role,
+        lane?.winRate?.takeIf(Double::isFinite) ?: if (isPrimary) champion.winrate else Double.NaN,
+        lane?.pickRate?.takeIf(Double::isFinite) ?: if (isPrimary) champion.pickRate else Double.NaN,
+        lane?.banRate?.takeIf(Double::isFinite) ?: if (isPrimary) champion.banRate else Double.NaN,
+        lane?.winRateDelta?.takeIf(Double::isFinite) ?: if (isPrimary) champion.winrateDelta else 0.0
+    )
+}
+
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun TierListTab(
@@ -125,17 +141,17 @@ fun TierListTab(
 
     val rawChampionsToDisplay = remember(selectedLane, showFavoritesOnly, favorites, syncState, currentRegion, metaRevision, liveTick, WildRiftRepository.champions.toList()) {
         val champs = if (selectedLane == null) WildRiftRepository.champions.toList()
-        else WildRiftRepository.getChampionsByRole(selectedLane!!)
+        else WildRiftRepository.champions.filter { publishedChampionRoles(it).contains(selectedLane) }
         val visibleTiers = champs.filter { it.tier in setOf("S+", "S", "A+", "A", "B", "C") }
         if (showFavoritesOnly) visibleTiers.filter { it.id in favorites } else visibleTiers
     }
 
-    val championsToDisplay = remember(rawChampionsToDisplay, selectedSort, currentRegion) {
+    val championsToDisplay = remember(rawChampionsToDisplay, selectedSort, selectedLane, currentRegion) {
         when (selectedSort) {
             TierSortOption.BY_TIER -> rawChampionsToDisplay
-            TierSortOption.WIN_RATE -> rawChampionsToDisplay.sortedByDescending { if (it.hasRegionalStats && it.winrate.isFinite()) it.winrate else Double.NEGATIVE_INFINITY }
-            TierSortOption.PICK_RATE -> rawChampionsToDisplay.sortedByDescending { if (it.hasRegionalStats && it.pickRate.isFinite()) it.pickRate else Double.NEGATIVE_INFINITY }
-            TierSortOption.BAN_RATE -> rawChampionsToDisplay.sortedByDescending { if (it.hasRegionalStats && it.banRate.isFinite()) it.banRate else Double.NEGATIVE_INFINITY }
+            TierSortOption.WIN_RATE -> rawChampionsToDisplay.sortedByDescending { tierDisplayedStats(it, selectedLane).win }
+            TierSortOption.PICK_RATE -> rawChampionsToDisplay.sortedByDescending { tierDisplayedStats(it, selectedLane).pick }
+            TierSortOption.BAN_RATE -> rawChampionsToDisplay.sortedByDescending { tierDisplayedStats(it, selectedLane).ban }
         }
     }
 
@@ -360,6 +376,7 @@ fun TierListTab(
                         tierName = "TIER S+ (${tr("Dominantes / Prioridad Pick & Ban")})",
                         tierColor = TierSPlusColor,
                         champions = tierSPlus,
+                        selectedLane = selectedLane,
                         onSelectChampion = onSelectChampion
                     )
                 }
@@ -374,6 +391,7 @@ fun TierListTab(
                         tierName = "TIER S (${tr("Meta Muy Fuerte / Alta Prioridad")})",
                         tierColor = TierSColor,
                         champions = tierS,
+                        selectedLane = selectedLane,
                         onSelectChampion = onSelectChampion
                     )
                 }
@@ -388,6 +406,7 @@ fun TierListTab(
                         tierName = "TIER A (${tr("Opciones Sólidas y Balanceadas")})",
                         tierColor = TierAColor,
                         champions = tierA,
+                        selectedLane = selectedLane,
                         onSelectChampion = onSelectChampion
                     )
                 }
@@ -397,7 +416,7 @@ fun TierListTab(
                 if (section.second.isNotEmpty()) item {
                     TierSectionCard(isOverlay = isOverlay, showTrend = isSignedIn,
                         tierName = "TIER $tier", tierColor = section.first,
-                        champions = section.second, onSelectChampion = onSelectChampion)
+                        champions = section.second, selectedLane = selectedLane, onSelectChampion = onSelectChampion)
                 }
             }
 
@@ -422,6 +441,7 @@ fun TierListTab(
                 }
 
                 itemsIndexed(championsToDisplay) { index, champ ->
+                    val displayed = tierDisplayedStats(champ, selectedLane)
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -490,7 +510,7 @@ fun TierListTab(
                                         TierMovementBadge(champ.tierMovement)
                                         Spacer(modifier = Modifier.height(2.dp))
                                         Text(
-                                            text = com.example.util.tr("${com.example.util.tr(champ.primaryRole.shortName)} • ${com.example.util.tr(champ.damageType.displayName)}"),
+                                            text = com.example.util.tr("${com.example.util.tr(displayed.role.shortName)} • ${com.example.util.tr(champ.damageType.displayName)}"),
                                             color = HextechCyan,
                                             fontSize = 11.sp,
                                             maxLines = 1,
@@ -510,21 +530,21 @@ fun TierListTab(
                                                     verticalAlignment = Alignment.CenterVertically,
                                                     horizontalArrangement = Arrangement.spacedBy(4.dp)
                                                 ) {
-                                                    if (!isOverlay) com.example.ui.components.RateChangeBadge(if (champ.has24hComparison) champ.winrateDelta else Double.NaN)
-                                                    Text(com.example.util.tr("WR: ${com.example.util.championStatPercent(champ, champ.winrate, "wr")}"), color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                                                    if (!isOverlay) com.example.ui.components.RateChangeBadge(displayed.winDelta)
+                                                    Text(com.example.util.tr("WR: ${com.example.util.championStatPercent(champ, displayed.win, "wr")}"), color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 13.sp)
                                                 }
                                                 Spacer(modifier = Modifier.height(2.dp))
-                                                com.example.ui.components.ChampionRateLine(champ)
+                                                com.example.ui.components.ChampionRateLine(champ, winRate = displayed.win, pickRate = displayed.pick, banRate = displayed.ban)
                                             }
                                             TierSortOption.PICK_RATE -> {
-                                                Text(com.example.util.tr("Pick: ${com.example.util.championStatPercent(champ, champ.pickRate, "pick")}"), color = HextechCyan, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                                                Text(com.example.util.tr("Pick: ${com.example.util.championStatPercent(champ, displayed.pick, "pick")}"), color = HextechCyan, fontWeight = FontWeight.Bold, fontSize = 13.sp)
                                                 Spacer(modifier = Modifier.height(2.dp))
-                                                com.example.ui.components.ChampionRateLine(champ, includeWin = true, includePick = false)
+                                                com.example.ui.components.ChampionRateLine(champ, includeWin = true, includePick = false, winRate = displayed.win, pickRate = displayed.pick, banRate = displayed.ban)
                                             }
                                             TierSortOption.BAN_RATE -> {
-                                                Text(com.example.util.tr("Ban: ${com.example.util.championStatPercent(champ, champ.banRate, "ban")}"), color = DangerRed, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                                                Text(com.example.util.tr("Ban: ${com.example.util.championStatPercent(champ, displayed.ban, "ban")}"), color = DangerRed, fontWeight = FontWeight.Bold, fontSize = 13.sp)
                                                 Spacer(modifier = Modifier.height(2.dp))
-                                                com.example.ui.components.ChampionRateLine(champ, includeWin = true, includeBan = false)
+                                                com.example.ui.components.ChampionRateLine(champ, includeWin = true, includeBan = false, winRate = displayed.win, pickRate = displayed.pick, banRate = displayed.ban)
                                             }
                                             else -> {}
                                         }
@@ -558,6 +578,7 @@ fun TierSectionCard(
     tierName: String,
     tierColor: Color,
     champions: List<Champion>,
+    selectedLane: LaneRole? = null,
     onSelectChampion: (Champion) -> Unit
 ) {
     Card(
@@ -587,6 +608,7 @@ fun TierSectionCard(
             Spacer(modifier = Modifier.height(10.dp))
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 champions.forEach { champ ->
+                    val displayed = tierDisplayedStats(champ, selectedLane)
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -625,7 +647,7 @@ fun TierSectionCard(
                                         TierMovementBadge(champ.tierMovement)
                                         Spacer(modifier = Modifier.height(2.dp))
                                         Text(
-                                            text = com.example.util.tr("${com.example.util.tr(champ.primaryRole.shortName)} • ${com.example.util.tr(champ.damageType.displayName)}"),
+                                            text = com.example.util.tr("${com.example.util.tr(displayed.role.shortName)} • ${com.example.util.tr(champ.damageType.displayName)}"),
                                             color = HextechCyan,
                                             fontSize = 11.sp,
                                             maxLines = 1,
@@ -643,9 +665,9 @@ fun TierSectionCard(
                                             verticalAlignment = Alignment.CenterVertically,
                                             horizontalArrangement = Arrangement.spacedBy(4.dp)
                                         ) {
-                                            if (!isOverlay) com.example.ui.components.RateChangeBadge(if (champ.has24hComparison) champ.winrateDelta else Double.NaN)
+                                            if (!isOverlay) com.example.ui.components.RateChangeBadge(displayed.winDelta)
                                             Text(
-                                                text = com.example.util.tr(tr("WR") + ": ${com.example.util.championStatPercent(champ, champ.winrate, "wr")}"),
+                                                text = com.example.util.tr(tr("WR") + ": ${com.example.util.championStatPercent(champ, displayed.win, "wr")}"),
                                                 color = HextechGold,
                                                 fontWeight = FontWeight.Bold,
                                                 fontSize = 12.5.sp
@@ -653,7 +675,7 @@ fun TierSectionCard(
                                         }
                                         if (!isOverlay) {
                                             Spacer(modifier = Modifier.height(2.dp))
-                                            com.example.ui.components.ChampionRateLine(champ)
+                                            com.example.ui.components.ChampionRateLine(champ, winRate = displayed.win, pickRate = displayed.pick, banRate = displayed.ban)
                                         }
                                     }
                                     Icon(

@@ -5,6 +5,7 @@ import com.example.model.ChampionLaneStats
 import com.example.model.LaneRole
 import com.example.util.ChampionRoleAdapter
 import com.example.ui.screens.publishedChampionRoles
+import com.example.ui.screens.tierDisplayedStats
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -42,5 +43,25 @@ class ChampionLaneStatsTest {
         )
 
         assertEquals(listOf(LaneRole.JUNGLE, LaneRole.SUPPORT), publishedChampionRoles(champion))
+
+        val partial = champion.copy(laneStats = champion.laneStats +
+            (LaneRole.TOP.name to ChampionLaneStats(winRate = 50.0)))
+        assertEquals(listOf(LaneRole.JUNGLE, LaneRole.SUPPORT), publishedChampionRoles(partial))
+    }
+
+    @Test fun `tier card and detail use the same active lane rates`() {
+        val champion = Champion(
+            id = "malphite", name = "Malphite", primaryRole = LaneRole.TOP,
+            secondaryRoles = listOf(LaneRole.SUPPORT), winrate = 51.72, pickRate = 8.75, banRate = 44.13,
+            laneStats = mapOf(
+                LaneRole.TOP.name to ChampionLaneStats(54.77, 7.81, 44.13),
+                LaneRole.SUPPORT.name to ChampionLaneStats(52.10, 2.20, 18.0)
+            )
+        )
+        val card = tierDisplayedStats(champion, null)
+        val detail = ChampionRoleAdapter.getProfile(champion, LaneRole.TOP)
+        assertEquals(detail.winrate, card.win, 0.001)
+        assertEquals(detail.pickRate, card.pick, 0.001)
+        assertEquals(detail.banRate, card.ban, 0.001)
     }
 }
