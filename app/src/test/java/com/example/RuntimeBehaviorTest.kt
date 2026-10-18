@@ -474,7 +474,7 @@ class RuntimeBehaviorTest {
 
     @Test fun `Premium gift activates free accounts and extends history without losing older gifts`() {
         val first = PremiumGrantPolicy.apply(mapOf("role" to "free"), 1, true, now, "gift-one")
-        assertEquals("free", first["role"])
+        assertEquals("premium", first["role"])
         assertEquals(now + PremiumAccessPolicy.DAY_MILLIS, first["premiumUntil"])
         assertTrue(PremiumAccessPolicy.isActiveAccount(first, now))
         val second = PremiumGrantPolicy.apply(first, 2, true, now, "gift-two")

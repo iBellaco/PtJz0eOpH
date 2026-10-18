@@ -13,7 +13,8 @@ object PremiumGrantPolicy {
         val record = mapOf<String, Any>("id" to id, "timestamp" to now, "durationMillis" to days.toLong() * PremiumAccessPolicy.DAY_MILLIS,
             "planName" to "Suscripción Premium regalada", "status" to "Completado", "amount" to "Regalo", "source" to "ADMIN_GIFT")
         val history = (account["subscriptionHistory"] as? List<*>).orEmpty().filterIsInstance<Map<String, Any>>()
-        val result = account + mapOf("premiumUntil" to until, "subscriptionPlan" to "ADMIN_GIFT",
+        val premiumRole = if (role == "free") "premium" else role
+        val result = account + mapOf("role" to premiumRole, "premiumUntil" to until, "subscriptionPlan" to "ADMIN_GIFT",
             "lastModifiedByAdmin" to now, "subscriptionHistory" to (history.filterNot { it["id"] == id } + record))
         return result
     }

@@ -25,10 +25,12 @@ object AdminPremiumPolicy {
             put("premiumUntil", until); put("subscriptionPlan", if (remove) "FREE" else "ADMIN_GIFT")
             put("subscriptionHistory", history + record)
             put("lastPremiumDays", days); put("lastPremiumExtend", extend); put("lastPremiumOperationId", id)
-            if (remove && account["role"] in setOf("premium", "moderador")) {
+            if (!remove && account["role"] == "free") {
+                put("role", "premium"); put("banned", false); put("bannedTimestamp", 0L)
+            }
+            if (remove && account["role"] == "premium") {
                 put("role", "free"); put("banned", false); put("bannedTimestamp", 0L)
             }
-            if (remove && account["secondaryRole"] == "moderador") put("secondaryRole", "")
         }
     }
 }
@@ -50,7 +52,7 @@ object AdminPremiumRepository {
                 val patch = AdminPremiumPolicy.patch(account, days, extend, System.currentTimeMillis(), id)
                 val stamps = mutableMapOf<String, Any>("lastModifiedByAdmin" to FieldValue.serverTimestamp(),
                     "lastPremiumChangedAt" to FieldValue.serverTimestamp(), "lastPremiumChangedBy" to actor.uid)
-                if (patch["role"] == "free") stamps["last_role_update"] = FieldValue.serverTimestamp()
+                if (patch.containsKey("role")) stamps["last_role_update"] = FieldValue.serverTimestamp()
                 tx.update(ref, patch + stamps)
                 account + patch + ("uid" to uid)
             }.await()

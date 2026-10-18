@@ -144,7 +144,9 @@ service cloud.firestore {
       let actor = account();
       let days = next.get('lastPremiumDays', -1);
       let removed = days == 0;
-      let demote = removed && old.get('role', '') in ['premium','moderador'];
+      let promote = !removed && old.get('role', '') == 'free';
+      let demote = removed && old.get('role', '') == 'premium';
+      let roleChanged = promote || demote;
       let base = next.get('lastPremiumExtend', false) && roleDeadline(old) > request.time.toMillis() ? roleDeadline(old) : request.time.toMillis();
       return isAdmin() && actor.get('banned', false) == false && !(actor.get('role', '') in ['banned']) && actor.get('secondaryRole', '') != 'banned'
         && availableRoleTarget(request.auth.uid) && availableRoleTarget(userId)
@@ -154,10 +156,10 @@ service cloud.firestore {
         && next.lastPremiumOperationId is string && next.lastPremiumOperationId.size() == 36
         && next.lastPremiumChangedAt == request.time && next.lastModifiedByAdmin == request.time && next.lastPremiumChangedBy == request.auth.uid
         && next.diff(old).affectedKeys().hasOnly(['premiumUntil','subscriptionPlan','subscriptionHistory','lastModifiedByAdmin','lastPremiumChangedAt','lastPremiumChangedBy','lastPremiumDays','lastPremiumExtend','lastPremiumOperationId','role','secondaryRole','banned','bannedTimestamp','last_role_update'])
-        && next.get('role', '') == (demote ? 'free' : old.get('role', ''))
-        && next.get('secondaryRole', '') == (removed && old.get('secondaryRole', '') == 'moderador' ? '' : old.get('secondaryRole', ''))
-        && next.get('banned', false) == false && next.get('bannedTimestamp', 0) == (demote ? 0 : old.get('bannedTimestamp', 0))
-        && next.get('last_role_update', 0) == (demote ? request.time : old.get('last_role_update', 0))
+        && next.get('role', '') == (promote ? 'premium' : (demote ? 'free' : old.get('role', '')))
+        && next.get('secondaryRole', '') == old.get('secondaryRole', '')
+        && next.get('banned', false) == false && next.get('bannedTimestamp', 0) == (roleChanged ? 0 : old.get('bannedTimestamp', 0))
+        && next.get('last_role_update', 0) == (roleChanged ? request.time : old.get('last_role_update', 0))
         && next.subscriptionPlan == (removed ? 'FREE' : 'ADMIN_GIFT') && next.premiumUntil is int
         && (removed ? next.premiumUntil == 0 : next.premiumUntil >= base + days * 86400000 - 300000 && next.premiumUntil <= base + days * 86400000 + 300000)
         && administrativePremiumReceipt();

@@ -741,14 +741,20 @@ try {
     await assertFails(updateDoc(target,patch(old,1,{orangeEssence:1000})));
     await assertFails(updateDoc(target,patch(old,1,{role:'premium'})));
     await assertFails(updateDoc(target,patch(old,1,{subscriptionHistory:[]})));
-    await assertSucceeds(updateDoc(target,patch(old,0,{secondaryRole:''})));
-    old=(await getDoc(target)).data();assert.equal(old.role,'creador');assert.equal(old.secondaryRole,'');assert.equal(old.premiumUntil,0);assert.equal(old.subscriptionHistory.length,2);
-    for(const role of ['premium','moderador']) {
-      await env.withSecurityRulesDisabled(async context=>updateDoc(doc(context.firestore(),`users/${uid}`),{role}));
-      old=(await getDoc(target)).data();
-      await assertSucceeds(updateDoc(target,patch(old,0,{role:'free',banned:false,bannedTimestamp:0,last_role_update:serverTimestamp()})));
-      assert.equal((await getDoc(target)).data().role,'free');
-    }
+    await assertSucceeds(updateDoc(target,patch(old,0)));
+    old=(await getDoc(target)).data();assert.equal(old.role,'creador');assert.equal(old.secondaryRole,'moderador');assert.equal(old.premiumUntil,0);assert.equal(old.subscriptionHistory.length,2);
+    await env.withSecurityRulesDisabled(async context=>updateDoc(doc(context.firestore(),`users/${uid}`),{role:'premium'}));
+    old=(await getDoc(target)).data();
+    await assertSucceeds(updateDoc(target,patch(old,0,{role:'free',banned:false,bannedTimestamp:0,last_role_update:serverTimestamp()})));
+    assert.equal((await getDoc(target)).data().role,'free');
+    old=(await getDoc(target)).data();
+    await assertSucceeds(updateDoc(target,patch(old,30,{role:'premium',banned:false,bannedTimestamp:0,last_role_update:serverTimestamp()})));
+    assert.equal((await getDoc(target)).data().role,'premium');
+    await env.withSecurityRulesDisabled(async context=>updateDoc(doc(context.firestore(),`users/${uid}`),{role:'moderador'}));
+    old=(await getDoc(target)).data();
+    await assertSucceeds(updateDoc(target,patch(old,0)));
+    assert.equal((await getDoc(target)).data().role,'moderador');
+    assert.equal((await getDoc(target)).data().secondaryRole,'moderador');
     await env.withSecurityRulesDisabled(async context=>updateDoc(doc(context.firestore(),`users/${uid}`),{role:'admin'}));
     await assertFails(updateDoc(target,patch((await getDoc(target)).data(),0)));
   });
