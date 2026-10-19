@@ -64,7 +64,7 @@ class DraftRingAlignmentTest {
         finally { bitmap.recycle() }
     }
 
-    @Test fun visibleRingsUpdateTheirOwnRowsWhenTheFrameHasA verticalOffset() {
+    @Test fun visibleRingsUpdateTheirOwnRowsWhenTheFrameHasAVerticalOffset() {
         val w = 1280
         val h = 720
         val bitmap = android.graphics.Bitmap.createBitmap(w, h, android.graphics.Bitmap.Config.ARGB_8888)
