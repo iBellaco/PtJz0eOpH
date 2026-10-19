@@ -1015,11 +1015,7 @@ fun ChampionDetailSheet(
                     Column(Modifier.padding(10.dp)) {
                         Text(tr("Objetos Situacionales"), color = HextechGold, fontWeight = FontWeight.Bold)
                         Text(
-                            text = if (currentLang == "pt") {
-                                "Regra de compra: troque um item somente quando a ameaça descrita for decisiva na partida."
-                            } else {
-                                "Regla de compra: cambia un objeto solo cuando la amenaza descrita sea decisiva en la partida."
-                            },
+                            text = tr("Regla de compra: cambia un objeto solo cuando la amenaza descrita sea decisiva en la partida."),
                             color = TextMuted,
                             fontSize = 10.sp,
                             modifier = Modifier.testTag("build_purchase_rule")
