@@ -12,7 +12,7 @@ internal object DraftRingAlignment {
         bitmap.getPixels(pixels, 0, w, 0, 0, w, h)
         fun fit(ally: Boolean): Pair<List<Float>, List<Float>>? {
             val ys = if (ally) base.allySlotYRatios else base.enemySlotYRatios
-            val fits = mutableListOf<Pair<Int, Int>>()
+            val fits = mutableListOf<Pair<Int, Pair<Int, Int>>>()
             val radius = (h * base.avatarDiameterRatio / 2).roundToInt().coerceAtLeast(8)
             val samples = List(40) { angle ->
                 val a = angle * 2 * Math.PI / 40
@@ -57,19 +57,30 @@ internal object DraftRingAlignment {
                         if (score > best) { best=score; center=cx to cy }
                     }
                 }
-                if (best >= 16 && center != null) fits += slot to center.first
+                if (best >= 16 && center != null) fits += slot to center
             }
             if (fits.size < 2) return null
-            val median = fits.map { it.second }.sorted()[fits.size/2]
-            if (fits.count { abs(it.second-median) <= radius/3 } < 2) return null
-            return List(5) { median.toFloat()/w } to ys
+            val medianX = fits.map { it.second.first }.sorted()[fits.size / 2]
+            if (fits.count { abs(it.second.first - medianX) <= radius / 3 } < 2) return null
+
+            // Keep each detected slot's Y instead of reusing another phone's row spacing.
+            // This matters when the captured frame includes a different top inset or letterbox.
+            val alignedYs = ys.toMutableList()
+            fits.forEach { (slot, center) ->
+                if (abs(center.first - medianX) <= radius / 3) {
+                    alignedYs[slot] = (center.second.toFloat() / h).coerceIn(0f, 1f)
+                }
+            }
+            return List(5) { medianX.toFloat() / w } to alignedYs
         }
         val ally = fit(true); val enemy = fit(false)
         return base.copy(
             allyAvatarCenterX = ally?.first?.first() ?: base.allyAvatarCenterX,
             allySlotXRatios = ally?.first ?: base.allySlotXRatios,
+            allySlotYRatios = ally?.second ?: base.allySlotYRatios,
             enemyAvatarCenterX = enemy?.first?.first() ?: base.enemyAvatarCenterX,
-            enemySlotXRatios = enemy?.first ?: base.enemySlotXRatios
+            enemySlotXRatios = enemy?.first ?: base.enemySlotXRatios,
+            enemySlotYRatios = enemy?.second ?: base.enemySlotYRatios
         )
     }
 }

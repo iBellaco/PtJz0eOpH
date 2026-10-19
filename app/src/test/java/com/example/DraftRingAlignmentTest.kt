@@ -63,4 +63,35 @@ class DraftRingAlignmentTest {
         try { assertEquals(VisionCalibrationConfig(),DraftRingAlignment.align(bitmap,VisionCalibrationConfig(),null)) }
         finally { bitmap.recycle() }
     }
+
+    @Test fun visibleRingsUpdateTheirOwnRowsWhenTheFrameHasA verticalOffset() {
+        val w = 1280
+        val h = 720
+        val bitmap = android.graphics.Bitmap.createBitmap(w, h, android.graphics.Bitmap.Config.ARGB_8888)
+        try {
+            val canvas = android.graphics.Canvas(bitmap)
+            canvas.drawColor(android.graphics.Color.rgb(10, 15, 30))
+            val paint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply {
+                style = android.graphics.Paint.Style.STROKE
+                strokeWidth = 5f
+                color = android.graphics.Color.rgb(220, 40, 60)
+            }
+            val base = VisionCalibrationConfig()
+            for (slot in 0..4) {
+                val shiftedY = h * base.enemySlotYRatios[slot] + 10f
+                canvas.drawCircle(w * .891f, shiftedY, h * .055f, paint)
+                paint.style = android.graphics.Paint.Style.FILL
+                paint.color = android.graphics.Color.WHITE
+                canvas.drawCircle(w * .891f, shiftedY, h * .02f, paint)
+                paint.style = android.graphics.Paint.Style.STROKE
+                paint.color = android.graphics.Color.rgb(220, 40, 60)
+            }
+            val aligned = DraftRingAlignment.align(bitmap, base, null, ignoreDebugRings = true)
+            assertNotNull(aligned)
+            assertEquals(.891f, aligned.enemyAvatarCenterX, .008f)
+            base.enemySlotYRatios.forEachIndexed { index, y ->
+                assertEquals(y + 10f / h, aligned.enemySlotYRatios[index], .012f)
+            }
+        } finally { bitmap.recycle() }
+    }
 }

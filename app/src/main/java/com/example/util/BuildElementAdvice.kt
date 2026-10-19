@@ -79,6 +79,7 @@ object BuildElementAdvice {
             }
             .take(8)
             .map { trStr(lang, it) }
+            .distinctBy(::adviceKey)
             .joinToString(", ")
         val trigger = strategic.recommendationTip.takeIf {
             it.isNotBlank() && !it.contains("según el estado de la partida", ignoreCase = true)
@@ -94,19 +95,17 @@ object BuildElementAdvice {
                 appendLine(decision)
                 if (against.isNotBlank()) appendLine("\nContra quais campeões/composições:\n$against")
                 if (additionalTip.isNotBlank()) {
-                    appendLine("\nComo aproveitar com $championName ($roleName):")
+                    appendLine("\nComo aproveitar:")
                     appendLine(additionalTip)
                 }
-                append("\nRegra de compra: não substitua o núcleo por padrão; troque um item apenas quando essa ameaça for uma das condições principais da partida.")
             } else buildString {
                 appendLine("Cuándo usar $localizedName:")
                 appendLine(decision)
                 if (against.isNotBlank()) appendLine("\nContra qué campeones/composiciones:\n$against")
                 if (additionalTip.isNotBlank()) {
-                    appendLine("\nCómo aprovecharlo con $championName ($roleName):")
+                    appendLine("\nCómo aprovecharlo:")
                     appendLine(additionalTip)
                 }
-                append("\nRegla de compra: no reemplaces el core por defecto; cambia un objeto solo cuando esa amenaza sea una de las condiciones principales de la partida.")
             }
         } else {
             if (pt) buildString {
@@ -126,6 +125,8 @@ object BuildElementAdvice {
             }
         }.trim()
     }
+
+    private fun adviceKey(value: String): String = key(value)
 
 
     fun contextualBootAdvice(

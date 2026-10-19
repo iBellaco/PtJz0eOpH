@@ -79,6 +79,14 @@ class BuildElementAdviceTest {
         assertNotEquals(serylda, maw)
     }
 
+    @Test fun `situational advice does not repeat champion context or purchase rule`() {
+        val advice = BuildElementAdvice.contextualItemAdvice("Corazón de hielo", "Nautilus", "Soporte", "es", true)
+        assertTrue(advice.contains("Cómo aprovecharlo:"))
+        assertFalse(advice.contains("Cómo aprovecharlo con"))
+        assertFalse(advice.contains("Regla de compra:"))
+        assertEquals(1, Regex("Maestro Yi").findAll(advice).count())
+    }
+
     @Test fun `core item advice is about the tapped item instead of a repeated champion plan`() {
         val rabadon = BuildElementAdvice.contextualItemAdvice("Sombrero mortal de Rabadon", "Hwei", "Línea Central", "es", false)
         val liandry = BuildElementAdvice.contextualItemAdvice("Tormento de Liandry", "Hwei", "Línea Central", "es", false)
