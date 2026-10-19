@@ -128,6 +128,11 @@ fun AdminDashboardDialog(
         return
     }
 
+    DisposableEffect(context) {
+        com.example.data.sync.GlobalMetaSyncService.startLive(context, "admin_dashboard")
+        onDispose { com.example.data.sync.GlobalMetaSyncService.stopLive("admin_dashboard") }
+    }
+
     var showUsers by remember { mutableStateOf(false) }
     var showReportsPanel by remember { mutableStateOf(false) }
     var showSupportReportsPanel by remember { mutableStateOf(false) }
@@ -312,11 +317,13 @@ private fun AppUpdateVerificationControl() {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val enabled by com.example.util.AppUpdateManager.verificationEnabled.collectAsState()
+    val versionStatus by com.example.util.AppUpdateManager.checkStatus.collectAsState()
     var busy by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(Unit) {
         com.example.util.AppUpdateManager.refreshVerificationSetting()
+        com.example.util.AppUpdateManager.checkForUpdates(context, forceManualCheck = true)
     }
     Card(
         modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 6.dp),
@@ -333,6 +340,11 @@ private fun AppUpdateVerificationControl() {
                 Text(
                     tr(if (enabled) "La aplicación exige la versión publicada más reciente." else "La comprobación de versión está desactivada."),
                     color = TextSecondary, fontSize = 11.sp
+                )
+                if (enabled) Text(
+                    tr("Versión disponible") + ": " + versionStatus.publishedName.ifBlank { "—" },
+                    color = HextechCyan, fontSize = 11.sp,
+                    modifier = Modifier.testTag("published_app_version")
                 )
                 error?.let { Text(tr(it), color = DangerRed, fontSize = 10.sp) }
             }

@@ -56,6 +56,13 @@ class LiveMetaRegressionTest {
         assertTrue(history.size <= 160)
     }
 
+    @Test fun `monitoring coverage includes categorized champions without inventing rates`() {
+        val publishedRates = (1..136).map { "champion$it" }.toSet()
+        val categoryOnly = (137..142).map { "champion$it" }.toSet()
+        assertEquals(142, MetaFreshness.coveredChampionCount(publishedRates + categoryOnly, publishedRates))
+        assertEquals(136, publishedRates.size)
+    }
+
     @Test fun `production release suffix compares the real build and full version`() {
         val latest = PublishedAppVersion.parse("v1.1.10.281-b997")!!
         assertEquals("1.1.10.281", latest.name)

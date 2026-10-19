@@ -51,6 +51,8 @@ object AppUpdateManager {
         if (!_verificationEnabled.value) return
         val prefs = context.getSharedPreferences(PREFS, 0)
         val version = PublishedAppVersion.parse(prefs.getString("tag", "").orEmpty()) ?: return
+        val checkedAt = prefs.getLong("last_success", 0L)
+        _checkStatus.value = VersionCheckStatus(checkedAt, checkedAt, version.name)
         publish(version)
     }
 
@@ -88,7 +90,8 @@ object AppUpdateManager {
                         }
                         if (version != null && hasApk && !release.optBoolean("draft") && !release.optBoolean("prerelease")) {
                             context.getSharedPreferences(PREFS, 0).edit()
-                                .putString("tag", release.getString("tag_name")).apply()
+                                .putString("tag", release.getString("tag_name"))
+                                .putLong("last_success", now).apply()
                             publish(version)
                             _checkStatus.value = VersionCheckStatus(now, now, version.name)
                         }

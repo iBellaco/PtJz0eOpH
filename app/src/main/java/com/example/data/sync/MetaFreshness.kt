@@ -10,13 +10,18 @@ data class MetaFreshness(
     val tierCount: Int = 0,
     val statsCount: Int = 0,
     val expectedCount: Int = 0,
+    val updatedChampionCount: Int = 0,
     val changedChampions: Int = 0
 ) {
     fun stale(now: Long): Boolean = tiersCheckedAt == 0L || ratesCheckedAt == 0L ||
         now - minOf(tiersCheckedAt, ratesCheckedAt) > 3 * POLL_INTERVAL_MS
     fun longUnchanged(now: Long): Boolean = lastChangedAt > 0 && unchangedChecks >= 3 &&
         now - lastChangedAt >= 24 * 60 * 60_000L
-    companion object { const val POLL_INTERVAL_MS = 60_000L }
+    companion object {
+        const val POLL_INTERVAL_MS = 60_000L
+        fun coveredChampionCount(tierIds: Set<String>, statsIds: Set<String>): Int =
+            (tierIds.map(RegionalTierParser::canonical) + statsIds.map(RegionalTierParser::canonical)).toSet().size
+    }
 }
 
 data class ObservedRate(val at: Long, val value: Double, val pick: Double? = null,

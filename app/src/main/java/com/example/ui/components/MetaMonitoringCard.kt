@@ -70,7 +70,8 @@ fun MetaMonitoringCard() {
                 }
             }
             HorizontalDivider(color = HextechCardBorder)
-            Text(tr("Campeones actualizados") + ": ${health.statsCount}/$expected", color = HextechCyan, fontSize = 11.sp)
+            val updated = health.updatedChampionCount.takeIf { it > 0 } ?: health.statsCount
+            Text(tr("Campeones actualizados") + ": $updated/$expected", color = HextechCyan, fontSize = 11.sp)
             val versionFailed = version.lastAttemptAt > version.lastSuccessAt && now - version.lastAttemptAt > 25_000L
             Text(tr(if (versionFailed) "No se pudo comprobar la versión publicada" else "Versión disponible") +
                 if (versionFailed) "" else ": " + version.publishedName.ifBlank { "—" },

@@ -19,6 +19,7 @@ import androidx.compose.material.icons.filled.People
 import androidx.compose.material.icons.filled.Sensors
 import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material.icons.filled.VerifiedUser
+import androidx.compose.material.icons.filled.WorkspacePremium
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -64,7 +65,9 @@ private data class PresenceMetrics(
     val creators: Int = 0,
     val creatorsOnline: Int = 0,
     val freeUsers: Int = 0,
-    val freeUsersOnline: Int = 0
+    val freeUsersOnline: Int = 0,
+    val premiumUsers: Int = 0,
+    val premiumUsersOnline: Int = 0
 )
 
 /** Estado compacto de cuentas y actividad, actualizado desde el directorio de usuarios. */
@@ -101,6 +104,7 @@ fun AdminUserPresenceCard(modifier: Modifier = Modifier) {
     }
     fun countRole(role: String) = users.count { role in roles(it) }
     fun countRoleOnline(role: String) = users.count { role in roles(it) && online(it) }
+    fun premium(user: Map<String, Any>) = com.example.model.PremiumAccessPolicy.hasActiveSubscription(user, now)
     val metrics = PresenceMetrics(
         registered = users.distinctBy { it["uid"] }.size,
         signedIn = users.count { (it["is_online"] as? Boolean) == true },
@@ -115,8 +119,10 @@ fun AdminUserPresenceCard(modifier: Modifier = Modifier) {
         streamersOnline = countRoleOnline("streamer"),
         creators = users.count { roles(it).any { role -> role.startsWith("creador") } },
         creatorsOnline = users.count { roles(it).any { role -> role.startsWith("creador") } && online(it) },
-        freeUsers = users.count { roles(it).any { role -> role in setOf("gratis", "gratuito", "free") } },
-        freeUsersOnline = users.count { roles(it).any { role -> role in setOf("gratis", "gratuito", "free") } && online(it) }
+        freeUsers = users.count { roles(it).any { role -> role in setOf("gratis", "gratuito", "free") } && !premium(it) },
+        freeUsersOnline = users.count { roles(it).any { role -> role in setOf("gratis", "gratuito", "free") } && !premium(it) && online(it) },
+        premiumUsers = users.count(::premium),
+        premiumUsersOnline = users.count { premium(it) && online(it) }
     )
     fun matchesSelection(user: Map<String, Any>, selection: String): Boolean = when (selection) {
         "__all__" -> true
@@ -124,7 +130,8 @@ fun AdminUserPresenceCard(modifier: Modifier = Modifier) {
         "moderador" -> roles(user).any { it == "moderador" || it == "moderator" }
         "patrocinador" -> roles(user).any { it == "patrocinador" || it == "sponsor" }
         "creador" -> roles(user).any { it.startsWith("creador") }
-        "gratis" -> roles(user).any { it == "gratis" || it == "gratuito" || it == "free" }
+        "gratis" -> roles(user).any { it == "gratis" || it == "gratuito" || it == "free" } && !premium(user)
+        "premium" -> premium(user)
         else -> selection in roles(user)
     }
     val selectedUsers = selectedRole?.let { selection ->
@@ -153,9 +160,14 @@ fun AdminUserPresenceCard(modifier: Modifier = Modifier) {
                 RoleMetric(Icons.Default.VerifiedUser, tr("patrocinadores"), metrics.sponsors, metrics.sponsorsOnline, HextechGreen, Modifier.weight(1f)) { selectedRole = "patrocinador" }
             }
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                RoleMetric(Icons.Default.WorkspacePremium, tr("Premium"), metrics.premiumUsers, metrics.premiumUsersOnline, HextechGold, Modifier.weight(1f)) { selectedRole = "premium" }
                 RoleMetric(Icons.Default.Groups, tr("streamers"), metrics.streamers, metrics.streamersOnline, HextechCyan, Modifier.weight(1f)) { selectedRole = "streamer" }
                 RoleMetric(Icons.Default.VerifiedUser, tr("creadores"), metrics.creators, metrics.creatorsOnline, HextechGold, Modifier.weight(1f)) { selectedRole = "creador" }
+            }
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                 RoleMetric(Icons.Default.People, tr("gratuitos"), metrics.freeUsers, metrics.freeUsersOnline, HextechCyan, Modifier.weight(1f)) { selectedRole = "gratis" }
+                Spacer(Modifier.weight(1f))
+                Spacer(Modifier.weight(1f))
             }
         }
     }
