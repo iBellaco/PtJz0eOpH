@@ -785,7 +785,7 @@ class RuntimeVisibilityTest(private val screen: String) {
                 }
                 compose.onNodeWithTag("premium_duration_+1 Día").assertIsEnabled()
                 compose.onNodeWithTag("premium_remaining_time").performScrollTo().assertExists()
-                Assert.assertEquals("free", grantedAccount!!["role"])
+                Assert.assertEquals("premium", grantedAccount!!["role"])
                 Assert.assertEquals(1, (grantedAccount!!["subscriptionHistory"] as List<*>).size)
             }
             "premium-editor-remove" -> {

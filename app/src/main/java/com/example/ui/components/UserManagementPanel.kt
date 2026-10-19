@@ -51,6 +51,7 @@ import com.example.util.AuthManager
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -86,7 +87,11 @@ fun EnhancedUserManagementPanel(
     var showRequestsDialog by remember { mutableStateOf(false) }
 
     val userRoleForRequests = com.example.util.SubscriptionManager.userRole.collectAsState().value
-    val isAdminUserForRequests = userRoleForRequests == "admin" || com.example.util.AuthManager.isCurrentUserAdmin()
+    val isAdminUserForRequests = userRoleForRequests in setOf("admin", "administrador") || com.example.util.AuthManager.isCurrentUserAdmin()
+    val managementUserUid = com.example.util.AuthManager.getAuth()?.currentUser?.uid.orEmpty()
+    val canReadManagedUsers = managementUserUid.isNotBlank() && (
+        isAdminUserForRequests || userRoleForRequests == "moderador"
+    )
 
     if (isAdminUserForRequests) {
         DisposableEffect(Unit) {
@@ -111,6 +116,9 @@ fun EnhancedUserManagementPanel(
     }
 
     var listenerReg by remember { mutableStateOf<com.google.firebase.firestore.ListenerRegistration?>(null) }
+    var listenerRetryGeneration by remember { mutableIntStateOf(0) }
+    var listenerRetryScheduled by remember { mutableStateOf(false) }
+    val listenerRetryScope = rememberCoroutineScope()
 
     fun loadUsers() {
         isLoading = true
@@ -122,6 +130,14 @@ fun EnhancedUserManagementPanel(
                     errorMessage = "Error al cargar usuarios: ${e.message}"
                     isLoading = false
                     isRefreshing = false
+                    if (canReadManagedUsers && !listenerRetryScheduled) {
+                        listenerRetryScheduled = true
+                        listenerRetryScope.launch {
+                            delay(1_500L)
+                            listenerRetryScheduled = false
+                            listenerRetryGeneration++
+                        }
+                    }
                     return@addSnapshotListener
                 }
                 if (snapshot != null) {
@@ -131,6 +147,8 @@ fun EnhancedUserManagementPanel(
                         data
                     }
                     users = list
+                    errorMessage = null
+                    listenerRetryScheduled = false
                     isLoading = false
                     isRefreshing = false
                 }
@@ -144,8 +162,14 @@ fun EnhancedUserManagementPanel(
     }
 
     var currentTime by remember { mutableStateOf(System.currentTimeMillis()) }
-    LaunchedEffect(Unit) {
-        loadUsers()
+    LaunchedEffect(managementUserUid, userRoleForRequests, canReadManagedUsers, listenerRetryGeneration) {
+        if (canReadManagedUsers) {
+            loadUsers()
+        } else {
+            listenerReg?.remove()
+            listenerReg = null
+            isLoading = false
+        }
         while (true) {
             kotlinx.coroutines.delay(1000L)
             currentTime = System.currentTimeMillis()

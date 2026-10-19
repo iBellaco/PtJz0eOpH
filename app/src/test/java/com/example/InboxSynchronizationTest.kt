@@ -32,16 +32,18 @@ class InboxSynchronizationTest {
         assertEquals("third", AdminDirectOperationIds.reserve("admin-grant", "third"))
         AdminDirectOperationIds.complete("admin-grant")
     }
-    @Test fun directPremiumRemovalDemotesOnlyPremiumAndModeratorAndRevokesSecondaryModerator() {
+    @Test fun directPremiumRemovalDemotesOnlyPremiumAndPreservesEveryOtherRole() {
         for (role in listOf("premium", "moderador", "streamer", "creador", "patrocinador")) {
             val patch = AdminPremiumPolicy.patch(mapOf("role" to role, "secondaryRole" to "moderador"), 0, true, 1000L, "test")
             assertEquals(0L, patch["premiumUntil"])
-            assertEquals("", patch["secondaryRole"])
-            if (role in listOf("premium", "moderador")) assertEquals("free", patch["role"])
+            assertFalse(patch.containsKey("secondaryRole"))
+            if (role == "premium") assertEquals("free", patch["role"])
             else assertFalse(patch.containsKey("role"))
         }
     }
-    @Test fun directPremiumGiftExtendsWithoutChangingTheExistingRoleAndCannotRemoveAdministrator() {
+    @Test fun directPremiumGiftPromotesOnlyFreeAndPreservesExistingRoles() {
+        val freePatch = AdminPremiumPolicy.patch(mapOf("role" to "free", "premiumUntil" to 0L), 7, true, 1000L, "free-test")
+        assertEquals("premium", freePatch["role"])
         val patch = AdminPremiumPolicy.patch(mapOf("role" to "creador", "premiumUntil" to 10000L), 7, true, 1000L, "test")
         assertEquals(10000L + 7L * 86400000L, patch["premiumUntil"])
         assertFalse(patch.containsKey("role"))
