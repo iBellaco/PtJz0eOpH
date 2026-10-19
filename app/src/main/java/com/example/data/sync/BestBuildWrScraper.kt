@@ -100,6 +100,7 @@ object BestBuildWrScraper {
                     lastChangedAt = prefs.getLong("last_changed", 0),
                     unchangedChecks = prefs.getInt("unchanged_checks", 0),
                     tierCount = tiers.size, statsCount = stats.size,
+                    updatedChampionCount = MetaFreshness.coveredChampionCount(tiers.keys, stats.keys),
                     expectedCount = WildRiftRepository.baseChampionsList.size)
                 regions[region] = RegionState(prefs.getLong("timestamp_$region", 0), false, "Datos guardados • Pendiente de actualización")
             } catch (_: Exception) { /* Leave other region caches intact. */ }
@@ -202,7 +203,7 @@ object BestBuildWrScraper {
                 // Fallback publishers only fill champions absent from the primary report.
                 val freshStats = linkedMapOf<String, ChampionMetaStats>()
                 val statOrigins = mutableMapOf<String, String>()
-                listOf("wildriftfire", "wildriftcore", "wildlegends").forEach { id ->
+                listOf("wildriftfire", "wildriftcore", "wildriftguides").forEach { id ->
                     validSources.firstOrNull { it.source.id == id }?.stats?.forEach { (champion, rates) ->
                         if (champion !in freshStats) {
                             freshStats[champion] = rates
@@ -244,7 +245,9 @@ object BestBuildWrScraper {
                         ratesCheckedAt = if (freshStats.isNotEmpty()) started else oldHealth.ratesCheckedAt,
                         lastChangedAt = if (changedIds > 0 || oldHealth.lastChangedAt == 0L) started else oldHealth.lastChangedAt,
                         unchangedChecks = if (changedIds > 0) 0 else oldHealth.unchangedChecks + 1,
-                        tierCount = fusedTiers.size, statsCount = freshStats.size, changedChampions = changedIds)
+                        tierCount = fusedTiers.size, statsCount = freshStats.size,
+                        updatedChampionCount = MetaFreshness.coveredChampionCount(merged.keys, mergedStats.keys),
+                        changedChampions = changedIds)
                     prefs.edit().putString("rate_history_v2", encodeHistory(history).toString())
                         .putLong("tiers_checked", _freshness.value.tiersCheckedAt)
                         .putLong("rates_checked", _freshness.value.ratesCheckedAt)

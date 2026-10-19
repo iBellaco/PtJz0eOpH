@@ -622,4 +622,14 @@ class RuntimeBehaviorTest {
         assertFalse(com.example.data.UserMessageReadRepository.canAcknowledge(emptyList(),current))
     }
 
+    @Test fun `legacy free account with active subscription is managed as premium`() {
+        val active = mapOf<String, Any>("role" to "free", "premiumUntil" to now + 60_000L)
+        assertTrue(PremiumAccessPolicy.hasActiveSubscription(active, now))
+        assertEquals("premium", PremiumAccessPolicy.managedPrimaryRole("free", premiumActive = true))
+        assertEquals("creador", PremiumAccessPolicy.managedPrimaryRole("creador", premiumActive = true))
+        assertEquals("free", PremiumAccessPolicy.managedPrimaryRole("free", premiumActive = false))
+        assertFalse(PremiumAccessPolicy.hasActiveSubscription(active + ("premiumUntil" to now), now))
+        assertFalse(PremiumAccessPolicy.hasActiveSubscription(active + ("banned" to true), now))
+    }
+
 }

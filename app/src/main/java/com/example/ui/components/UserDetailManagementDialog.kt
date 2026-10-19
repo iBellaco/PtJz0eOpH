@@ -124,6 +124,7 @@ fun UserDetailManagementDialog(
         }
     }
     val isPremiumActive = com.example.model.PremiumAccessPolicy.isActive(currentRole, currentPremiumUntil, now = premiumNow, secondary = currentSecondaryRole, adminClaim = user["admin"] == true, banned = currentBanned, granted = com.example.model.PremiumAccessPolicy.hasGrant(currentPremiumPlan))
+    val managedPrimaryRole = com.example.model.PremiumAccessPolicy.managedPrimaryRole(currentRole, isPremiumActive)
 
     fun acceptPremiumUpdate(updated: Map<String, Any>) {
         currentRole = (updated["role"] as? String) ?: currentRole
@@ -678,7 +679,7 @@ fun UserDetailManagementDialog(
 
                                     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                                         primaryRoles.forEach { targetRole ->
-                                            val isSelected = (currentRole.equals(targetRole.id, ignoreCase = true) && (!currentBanned || targetRole == AppUserRole.BANNED))
+                                            val isSelected = (managedPrimaryRole.equals(targetRole.id, ignoreCase = true) && (!currentBanned || targetRole == AppUserRole.BANNED))
 
                                             com.example.ui.components.CoachClickableSurface(
                                                 onClick = {

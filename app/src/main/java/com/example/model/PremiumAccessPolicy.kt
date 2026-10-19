@@ -42,6 +42,21 @@ object PremiumAccessPolicy {
         secondary = (account["secondaryRole"] as? String).orEmpty(), adminClaim = account["admin"] == true,
         banned = account["banned"] == true, granted = hasGrant(account["subscriptionPlan"] as? String))
 
+    /** Timed Premium is shown as the effective primary role only for legacy free accounts. */
+    fun managedPrimaryRole(role: String, premiumActive: Boolean): String {
+        val normalized = role.trim().lowercase(Locale.ROOT).ifBlank { "free" }
+        val canonical = if (normalized in setOf("free", "gratis", "gratuito")) "free" else normalized
+        return if (premiumActive && canonical == "free") "premium" else canonical
+    }
+
+    /** Counts an actual timed subscription without classifying staff lifetime access as a subscription. */
+    fun hasActiveSubscription(account: Map<String, Any>, now: Long = System.currentTimeMillis()): Boolean {
+        val role = (account["role"] as? String).orEmpty().lowercase(Locale.ROOT)
+        val secondary = (account["secondaryRole"] as? String).orEmpty().lowercase(Locale.ROOT)
+        val banned = account["banned"] == true || role == "banned" || secondary == "banned"
+        return !banned && deadline(account["premiumUntil"])?.let { it > now } == true
+    }
+
     fun isExpiringSoon(until: Long?, now: Long): Boolean = until != null && until - now in 1..3 * DAY_MILLIS
 
     fun remaining(until: Long, now: Long): String {
