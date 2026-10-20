@@ -149,6 +149,7 @@ fun AdminDashboardDialog(
     val pendingModeratorRequestsCount = adminNotificationSummary.count(com.example.data.NotificationPanel.ADMINISTRATION)
     val reviewScope = rememberCoroutineScope()
     var isMonitoringMinimized by remember { mutableStateOf(false) }
+    var presenceUserForManage by remember { mutableStateOf<Map<String, Any>?>(null) }
 
     val userRoleForRequests = com.example.util.SubscriptionManager.userRole.collectAsState().value
     val isAdminUserForRequests = userRoleForRequests == "admin" || com.example.util.AuthManager.isCurrentUserAdmin()
@@ -290,7 +291,7 @@ fun AdminDashboardDialog(
                             if (userRole == "admin" || com.example.util.AuthManager.isCurrentUserAdmin()) {
                                 AppUpdateVerificationControl()
                             }
-                            AdminUserPresenceCard()
+                            AdminUserPresenceCard(onUserClick = { presenceUserForManage = it })
                         }
                     } else {
                         // Moderador View
@@ -309,6 +310,16 @@ fun AdminDashboardDialog(
                 }
             }
         }
+    }
+
+    presenceUserForManage?.let { user ->
+        UserDetailManagementDialog(
+            user = user,
+            onDismiss = { presenceUserForManage = null },
+            onUserUpdated = { presenceUserForManage = user + it },
+            onOpenAvatarGift = {},
+            onReloadAll = {}
+        )
     }
 }
 

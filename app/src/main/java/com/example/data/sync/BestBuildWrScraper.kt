@@ -92,8 +92,9 @@ object BestBuildWrScraper {
                 val stats = decodeStats(prefs.getString(STATS_SNAPSHOT_PREFIX + region, null))
                 val roleStats = decodeRoleStats(prefs.getString(ROLE_STATS_SNAPSHOT_PREFIX + region, null))
                 val at = prefs.getLong("timestamp_$region", 0)
+                val patch = prefs.getString("tier_movement_patch_$region", "").orEmpty()
                 WildRiftRepository.applyRegionalTierList(region, tiers, stats, roleStats = roleStats,
-                    checkedAt = at, history = decodeHistory(prefs.getString("rate_history_v2", null)))
+                    checkedAt = at, history = decodeHistory(prefs.getString("rate_history_v2", null)), patch = patch)
                 _freshness.value = MetaFreshness(
                     tiersCheckedAt = prefs.getLong("tiers_checked", 0),
                     ratesCheckedAt = prefs.getLong("rates_checked", 0),
@@ -260,11 +261,13 @@ object BestBuildWrScraper {
                         roleStats = mergedRoleStats,
                         previousRoleStats = previousRoleStats,
                         previousStats = previousStats, previousTiers = previousTiers,
-                        checkedAt = started, history = history
+                        checkedAt = started, history = history,
+                        patch = WildRiftRepository.CURRENT_PATCH_VERSION
                     )
                     cache = JSONObject(merged)
                     statsCache = encodeStats(mergedStats)
                     roleStatsCache = encodeRoleStats(mergedRoleStats)
+                    prefs.edit().putString("tier_movement_patch_GLOBAL", WildRiftRepository.CURRENT_PATCH_VERSION.removePrefix("Parche ")).apply()
                     success = true
                 }
                 message = if (success) "Categorías y estadísticas globales actualizadas (${validSources.size}/${GLOBAL_SCRAPING_SOURCES.size} fuentes)"

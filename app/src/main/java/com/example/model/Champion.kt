@@ -116,6 +116,8 @@ data class Champion(
     val tier: String = "B", // "S+", "S", "A+", "A", "B"
     /** Movimiento de categoría en la última sincronización: 1 sube, -1 baja. */
     val tierMovement: Int = 0,
+    /** Parche en el que se detectó el último movimiento de categoría. */
+    val tierMovementPatch: String = "",
     val hasRegionalStats: Boolean = true,
     val statsCheckedAt: Long = 0L,
     val winrate24h: Double? = null,

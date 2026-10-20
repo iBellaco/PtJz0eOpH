@@ -20,6 +20,7 @@ import androidx.compose.material.icons.filled.Sensors
 import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material.icons.filled.VerifiedUser
 import androidx.compose.material.icons.filled.WorkspacePremium
+import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -47,6 +48,10 @@ import com.example.ui.theme.HextechSurface
 import com.example.ui.theme.TextMuted
 import com.example.ui.theme.TextPrimary
 import com.example.util.tr
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
+import android.widget.Toast
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.delay
 
@@ -72,7 +77,8 @@ private data class PresenceMetrics(
 
 /** Estado compacto de cuentas y actividad, actualizado desde el directorio de usuarios. */
 @Composable
-fun AdminUserPresenceCard(modifier: Modifier = Modifier) {
+fun AdminUserPresenceCard(modifier: Modifier = Modifier, onUserClick: (Map<String, Any>) -> Unit = {}) {
+    val context = androidx.compose.ui.platform.LocalContext.current
     var users by remember { mutableStateOf<List<Map<String, Any>>>(emptyList()) }
     var now by remember { mutableStateOf(System.currentTimeMillis()) }
     var selectedRole by remember { mutableStateOf<String?>(null) }
@@ -181,17 +187,42 @@ fun AdminUserPresenceCard(modifier: Modifier = Modifier) {
                 else LazyColumn(modifier = Modifier.fillMaxWidth().fillMaxHeight(0.45f)) {
                     items(selectedUsers, key = { it["uid"]?.toString().orEmpty() }) { user ->
                         val displayName = (user["name"] ?: user["username"] ?: user["displayName"] ?: "Usuario").toString()
-                        Row(Modifier.fillMaxWidth().padding(vertical = 7.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Row(Modifier.fillMaxWidth().heightIn(min = 48.dp).padding(vertical = 2.dp)
+                            .testTag("connected_user_${user["uid"]}")
+                            .coachClickable { onUserClick(user); selectedRole = null }, verticalAlignment = Alignment.CenterVertically) {
                             Icon(Icons.Default.Sensors, null, tint = HextechGreen, modifier = Modifier.size(15.dp))
                             Spacer(Modifier.width(8.dp))
-                            Text(displayName, color = TextPrimary, fontSize = 13.sp)
+                            Text(displayName, color = TextPrimary, fontSize = 13.sp, modifier = Modifier.weight(1f))
+                            androidx.compose.material3.IconButton(onClick = {
+                                copyPresence(context, userLine(user))
+                            }, modifier = Modifier.size(40.dp).testTag("copy_connected_user_${user["uid"]}")) {
+                                Icon(Icons.Default.ContentCopy, contentDescription = tr("Copiar usuario"), tint = HextechCyan)
+                            }
                         }
                     }
                 }
             },
-            confirmButton = { TextButton(onClick = { selectedRole = null }) { Text(tr("Cerrar"), color = HextechCyan) } }
+            confirmButton = {
+                Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                    TextButton(onClick = { copyPresence(context, selectedUsers.joinToString("\n", transform = ::userLine)) }, modifier = Modifier.testTag("copy_connected_users_all")) {
+                        Text(tr("Copiar todos"), color = HextechCyan)
+                    }
+                    TextButton(onClick = { selectedRole = null }) { Text(tr("Cerrar"), color = HextechCyan) }
+                }
+            }
         )
     }
+}
+
+private fun userLine(user: Map<String, Any>): String {
+    val name = (user["name"] ?: user["username"] ?: user["displayName"] ?: "Usuario").toString()
+    val role = (user["role"] as? String).orEmpty()
+    return if (role.isBlank()) name else "$name · $role"
+}
+
+private fun copyPresence(context: Context, value: String) {
+    (context.getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager)?.setPrimaryClip(ClipData.newPlainText("usuarios conectados", value))
+    Toast.makeText(context, tr("Copiado"), Toast.LENGTH_SHORT).show()
 }
 
 @Composable

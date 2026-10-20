@@ -40,6 +40,18 @@ fun MetaMonitoringCard() {
         status.lastChangedAt > 0 && now - status.lastChangedAt >= 24 * 60 * 60_000L -> "Sin cambios desde hace 24 horas"
         else -> null
     }
+    fun unchangedFor(status: ScraperSourceStatus): String {
+        val since = status.lastChangedAt.takeIf { it > 0L } ?: return "—"
+        val seconds = ((now - since).coerceAtLeast(0L)) / 1000L
+        val days = seconds / 86_400
+        val hours = (seconds % 86_400) / 3_600
+        val minutes = (seconds % 3_600) / 60
+        return when {
+            days > 0 -> "${days}d ${hours}h ${minutes}min"
+            hours > 0 -> "${hours}h ${minutes}min"
+            else -> "${minutes}min ${seconds % 60}s"
+        }
+    }
     val issues = sources.values.count { issue(it) != null }
     Surface(Modifier.fillMaxWidth().padding(12.dp).testTag("meta_monitoring_card"),
         color = HextechSurface, shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
@@ -91,6 +103,7 @@ fun MetaMonitoringCard() {
                 Text(tr("Historial disponible") + ": ${status.historyCount}/$expected")
                 Text(tr("Última consulta válida") + ": " + metaTime(status.lastSuccessAt))
                 Text(tr("Último cambio de valores") + ": " + metaTime(status.lastChangedAt))
+                Text(tr("Tiempo sin cambios") + ": " + unchangedFor(status))
                 Text(tr("Tiempo de respuesta") + ": ${status.responseTimeMs} ms")
             } }, confirmButton = { CoachTextButton(onClick = { selected = null },
                 modifier = Modifier.heightIn(min = 48.dp).testTag("close_meta_source_detail")) { Text(tr("Cerrar")) } })

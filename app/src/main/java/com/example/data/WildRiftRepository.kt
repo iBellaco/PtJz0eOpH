@@ -202,11 +202,13 @@ object WildRiftRepository {
         previousRoleStats: Map<String, Map<com.example.model.LaneRole, ChampionMetaStats>> = emptyMap(),
         previousTiers: Map<String, String> = emptyMap(),
         checkedAt: Long = 0L,
-        history: Map<String, List<com.example.data.sync.ObservedRate>> = emptyMap()
+        history: Map<String, List<com.example.data.sync.ObservedRate>> = emptyMap(),
+        patch: String = ""
     ) {
         if (!region.equals(com.example.data.sync.MetaRegion.DEFAULT, ignoreCase = true)) return
         val normalized = com.example.data.sync.MetaRegion.normalize(region)
         val priorMovements = regionalChampions[normalized].orEmpty().associate { it.id to it.tierMovement }
+        val priorMovementPatches = regionalChampions[normalized].orEmpty().associate { it.id to it.tierMovementPatch }
         val updated = baseChampions.map { champion ->
             val category = com.example.data.sync.GlobalTierConsensus.displayCategory(tiers[com.example.data.sync.RegionalTierParser.canonical(champion.id)]
                 ?: tiers[com.example.data.sync.RegionalTierParser.canonical(champion.name)]
@@ -221,6 +223,16 @@ object WildRiftRepository {
                 "C", "D" -> 1
                 else -> 0
             }
+            val normalizedPatch = patch.trim().removePrefix("Parche ")
+            val priorPatch = priorMovementPatches[champion.id].orEmpty()
+            val patchChanged = normalizedPatch.isNotBlank() && priorPatch.isNotBlank() && normalizedPatch != priorPatch
+            val movementForPatch = previousTier?.takeIf { it.isNotBlank() }?.let {
+                when {
+                    tierRank(category) > tierRank(it) -> 1
+                    tierRank(category) < tierRank(it) -> -1
+                    else -> priorMovements[champion.id] ?: champion.tierMovement
+                }
+            } ?: (priorMovements[champion.id] ?: champion.tierMovement)
             val meta = stats[com.example.data.sync.RegionalTierParser.canonical(champion.id)]
                 ?: stats[com.example.data.sync.RegionalTierParser.canonical(champion.name)]
             val championRoleStats = roleStats[com.example.data.sync.RegionalTierParser.canonical(champion.id)]
@@ -252,13 +264,9 @@ object WildRiftRepository {
                 history24hAt = day?.at ?: 0L,
                 history12hAt = halfDay?.at ?: 0L,
                 tier = category,
-                tierMovement = previousTier?.takeIf { it.isNotBlank() }?.let {
-                    when {
-                        tierRank(category) > tierRank(it) -> 1
-                        tierRank(category) < tierRank(it) -> -1
-                        else -> priorMovements[champion.id] ?: champion.tierMovement
-                    }
-                } ?: (priorMovements[champion.id] ?: champion.tierMovement),
+                tierMovement = if (normalizedPatch.isBlank() || patchChanged || priorPatch.isBlank()) movementForPatch
+                    else (priorMovements[champion.id] ?: champion.tierMovement),
+                tierMovementPatch = normalizedPatch.ifBlank { priorPatch },
                 winrate = if (meta != null) meta.winRate ?: Double.NaN else champion.winrate,
                 pickRate = if (meta != null) meta.pickRate ?: Double.NaN else champion.pickRate,
                 banRate = if (meta != null) meta.banRate ?: Double.NaN else champion.banRate,

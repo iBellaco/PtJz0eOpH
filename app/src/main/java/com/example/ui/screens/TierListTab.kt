@@ -530,7 +530,6 @@ fun TierListTab(
                                                     verticalAlignment = Alignment.CenterVertically,
                                                     horizontalArrangement = Arrangement.spacedBy(4.dp)
                                                 ) {
-                                                    if (!isOverlay) com.example.ui.components.RateChangeBadge(displayed.winDelta)
                                                     Text(com.example.util.tr("WR: ${com.example.util.championStatPercent(champ, displayed.win, "wr")}"), color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 13.sp)
                                                 }
                                                 Spacer(modifier = Modifier.height(2.dp))
@@ -665,7 +664,6 @@ fun TierSectionCard(
                                             verticalAlignment = Alignment.CenterVertically,
                                             horizontalArrangement = Arrangement.spacedBy(4.dp)
                                         ) {
-                                            if (!isOverlay) com.example.ui.components.RateChangeBadge(displayed.winDelta)
                                             Text(
                                                 text = com.example.util.tr(tr("WR") + ": ${com.example.util.championStatPercent(champ, displayed.win, "wr")}"),
                                                 color = HextechGold,

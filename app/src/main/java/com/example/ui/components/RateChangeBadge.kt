@@ -13,7 +13,7 @@ fun RateChangeBadge(delta: Double) {
     val text = when {
         !delta.isFinite() -> "—"
         kotlin.math.abs(delta) < 0.005 -> "="
-        else -> String.format(Locale.US, "%+.2f pp", delta)
+        else -> String.format(Locale.US, "%+.2f%%", delta)
     }
     Text(tr(text), color = when {
         !delta.isFinite() || kotlin.math.abs(delta) < 0.005 -> TextMuted
