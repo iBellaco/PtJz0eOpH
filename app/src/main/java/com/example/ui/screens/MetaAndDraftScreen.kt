@@ -418,15 +418,16 @@ fun MetaAndDraftScreen(
                 },
                 actions = {
                     if (mode == MetaScreenMode.DRAFTING && isPremium) {
-                        IconButton(
-                            onClick = { showDraftHistoryScreen = true },
-                            modifier = Modifier.testTag("nav_draft_history_button")
+                        Row(
+                            modifier = Modifier
+                                .testTag("nav_draft_history_button")
+                                .coachClickable { showDraftHistoryScreen = true }
+                                .padding(horizontal = 8.dp, vertical = 4.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
                         ) {
-                            Icon(
-                                imageVector = Icons.Default.History,
-                                contentDescription = tr("Historial de Drafts"),
-                                tint = HextechGold
-                            )
+                            Icon(Icons.Default.History, contentDescription = tr("Abrir historial de Drafts"), tint = HextechGold)
+                            Text(tr("Historial"), color = HextechGold, fontSize = 11.sp)
                         }
                     }
                 },

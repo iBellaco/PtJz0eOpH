@@ -348,8 +348,9 @@ object CustomChampionBuildsManager {
 
     fun addBuild(context: Context, record: CustomChampionBuildRecord) {
         init(context)
+        val safeRecord = CreatorBuildRules.normalize(record)
         val current = _customBuilds.value.toMutableList()
-        current.add(0, record)
+        current.add(0, safeRecord)
         _customBuilds.value = current
         saveToLocalStorage(context, current)
         saveToCloud(context, current)
@@ -357,12 +358,13 @@ object CustomChampionBuildsManager {
 
     fun updateBuild(context: Context, record: CustomChampionBuildRecord) {
         init(context)
+        val safeRecord = CreatorBuildRules.normalize(record)
         val current = _customBuilds.value.toMutableList()
         val index = current.indexOfFirst { it.id == record.id }
         if (index != -1) {
-            current[index] = record
+            current[index] = safeRecord
         } else {
-            current.add(0, record)
+            current.add(0, safeRecord)
         }
         _customBuilds.value = current
         saveToLocalStorage(context, current)

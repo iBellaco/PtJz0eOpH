@@ -57,7 +57,8 @@ object GlobalMetaSyncService {
     }
 
     fun setRegion(context: Context, regionId: String, scope: CoroutineScope) {
-        val region = MetaRegion.normalize(regionId)
+        // La estadística publicada es global y debe ser idéntica en todos los dispositivos.
+        val region = MetaRegion.DEFAULT
         _currentRegion.value = region
         context.getSharedPreferences("app_prefs", Context.MODE_PRIVATE).edit()
             .putString("selected_meta_region", region).apply()

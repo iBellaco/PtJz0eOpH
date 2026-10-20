@@ -138,7 +138,14 @@ fun AuthFlowContainer(
 
     // Triggered when login/register succeeds to force a recomposition with the new user state and redirect
     val onAuthSuccess: () -> Unit = {
-        com.example.util.DeviceAndSessionManager.registerDeviceAndSession(
+        val authenticated = auth?.currentUser
+        if (authenticated != null && !authenticated.isEmailVerified) {
+            auth.signOut()
+            Toast.makeText(context, com.example.util.appTr("Registro creado. Confirma tu correo electrónico para poder entrar."), Toast.LENGTH_LONG).show()
+            viewModel.resetSuccessState()
+            viewModel.navigateTo(AuthScreenType.LOGIN)
+        } else {
+            com.example.util.DeviceAndSessionManager.registerDeviceAndSession(
             context = context,
             onSuccess = {
                 currentUser = auth?.currentUser
@@ -156,7 +163,8 @@ fun AuthFlowContainer(
                 android.widget.Toast.makeText(context, com.example.util.appTr(errorMessage), android.widget.Toast.LENGTH_LONG).show()
                 viewModel.resetSuccessState()
             }
-        )
+            )
+        }
     }
 
     AuthFormContainer(screen = uiState.authScreen) {

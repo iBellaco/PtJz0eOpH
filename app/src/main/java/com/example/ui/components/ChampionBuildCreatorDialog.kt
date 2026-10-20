@@ -1243,6 +1243,15 @@ fun ChampionBuildCreatorDialog(
                                  Toast.makeText(context, com.example.util.appTr("Debes añadir exactamente 3 objetos core"), Toast.LENGTH_SHORT).show()
                                  return@Button
                              }
+                            if (com.example.data.local.CreatorBuildRules.overlap(coreItems.map { it.name }, situationalItems.map { it.name })) {
+                                Toast.makeText(context, com.example.util.appTr("Un objeto no puede estar a la vez en Core y Situacionales"), Toast.LENGTH_LONG).show()
+                                return@Button
+                            }
+                            if (selectedRole == com.example.model.LaneRole.SUPPORT &&
+                                com.example.data.local.CreatorBuildRules.supportStarterCount(coreItems.map { it.name }) != 1) {
+                                Toast.makeText(context, com.example.util.appTr("Soporte debe incluir exactamente Hoz espectral o Escudo reliquia en Core"), Toast.LENGTH_LONG).show()
+                                return@Button
+                            }
                             if (coreItems.any { it.description.trim().isBlank() }) {
                                 Toast.makeText(context, com.example.util.appTr("Todos los objetos core deben tener su descripción obligatoria"), Toast.LENGTH_SHORT).show()
                                 return@Button
@@ -1523,7 +1532,7 @@ fun ChampionBuildCreatorDialog(
                                      modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp, horizontal = 4.dp)
                                  ) {
                                      Text(
-                                         text = com.example.util.tr(categoryName),
+                                         text = com.example.util.tr(if (categoryName.equals("Defensa", true)) "Objetos defensivos" else categoryName),
                                          color = HextechGold,
                                          fontWeight = FontWeight.Bold,
                                          fontSize = 11.sp,

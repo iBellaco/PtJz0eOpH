@@ -106,6 +106,11 @@ class AuthViewModel : ViewModel() {
                 val result = auth.signInWithEmailAndPassword(_email.value.trim(), _password.value).await()
                 val firebaseUser = result.user
                 if (firebaseUser != null) {
+                    firebaseUser.reload().await()
+                    if (!firebaseUser.isEmailVerified) {
+                        firebaseUser.sendEmailVerification().await()
+                        throw IllegalStateException("Debes confirmar tu correo electrónico antes de entrar. Te hemos enviado un nuevo enlace.")
+                    }
                     val cancelled = try { com.example.data.AccountDeletionRepository.cancelAfterSignIn() }
                     catch (failure: Exception) {
                         if (failure is kotlinx.coroutines.CancellationException) throw failure
