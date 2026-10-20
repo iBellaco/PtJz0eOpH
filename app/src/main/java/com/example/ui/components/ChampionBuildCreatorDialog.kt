@@ -16,6 +16,9 @@ import com.example.ui.components.coachClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items as gridItems
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -255,6 +258,8 @@ fun ChampionBuildCreatorDialog(
     var showSpellPickerForCore by remember { mutableStateOf(false) }
     var showSpellPickerForSituational by remember { mutableStateOf(false) }
     var searchFilterQuery by remember { mutableStateOf("") }
+    var selectedItemCategory by remember { mutableStateOf("Todos") }
+    var selectedRuneCategory by remember { mutableStateOf("Todos") }
 
     androidx.activity.compose.BackHandler { onDismiss() }
 
@@ -1443,6 +1448,7 @@ fun ChampionBuildCreatorDialog(
             showItemPickerForSituationalBootsT2 = false
             showItemPickerForSituationalBootsT3 = false
             searchFilterQuery = ""
+            selectedItemCategory = "Todos"
         }) {
             Card(
                 modifier = Modifier.fillMaxWidth().height(500.dp),
@@ -1522,31 +1528,47 @@ fun ChampionBuildCreatorDialog(
                          }
                          pool.sortedWith(compareBy<com.example.model.WildRiftItem> { it.category }.thenBy { it.name })
                      }
-                     val groupedItems = remember(filteredItems) {
-                         filteredItems.groupBy { it.category }
+                     val itemCategories = remember(filteredItems) {
+                         listOf("Todos") + filteredItems.map { it.category }.distinct()
                      }
-                     LazyColumn(modifier = Modifier.fillMaxWidth().weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                         groupedItems.forEach { (categoryName, list) ->
-                             item {
-                                 Surface(
-                                     color = HextechGold.copy(alpha = 0.15f),
-                                     shape = RoundedCornerShape(4.dp),
-                                     modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp, horizontal = 4.dp)
-                                 ) {
-                                     Text(
-                                         text = com.example.util.tr(if (categoryName.equals("Defensa", true)) "Objetos defensivos" else categoryName),
-                                         color = HextechGold,
-                                         fontWeight = FontWeight.Bold,
-                                         fontSize = 11.sp,
-                                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                                     )
-                                 }
+                     val visibleItems = remember(filteredItems, selectedItemCategory) {
+                         if (selectedItemCategory == "Todos") filteredItems
+                         else filteredItems.filter { it.category == selectedItemCategory }
+                     }
+                     FlowRow(
+                         modifier = Modifier.fillMaxWidth(),
+                         horizontalArrangement = Arrangement.spacedBy(6.dp),
+                         verticalArrangement = Arrangement.spacedBy(6.dp)
+                     ) {
+                         itemCategories.forEach { category ->
+                             val count = if (category == "Todos") filteredItems.size else filteredItems.count { it.category == category }
+                             val label = if (category.equals("Defensa", true)) "Objetos Defensivos" else category
+                             Surface(
+                                 color = if (selectedItemCategory == category) HextechCyan else HextechSurface,
+                                 shape = RoundedCornerShape(10.dp),
+                                 border = BorderStroke(1.dp, if (selectedItemCategory == category) HextechCyan else HextechGold.copy(alpha = 0.35f)),
+                                 modifier = Modifier.coachClickable { selectedItemCategory = category }
+                             ) {
+                                 Text(
+                                     text = "$label ($count)",
+                                     color = if (selectedItemCategory == category) Color.Black else TextSecondary,
+                                     fontSize = 11.sp,
+                                     fontWeight = FontWeight.Bold,
+                                     modifier = Modifier.padding(horizontal = 10.dp, vertical = 8.dp)
+                                 )
                              }
-                             items(list) { item ->
-                                 Row(
-                                     modifier = Modifier
-                                         .fillMaxWidth()
-                                         .coachClickable {
+                         }
+                     }
+                     LazyVerticalGrid(
+                         columns = GridCells.Fixed(2),
+                         modifier = Modifier.fillMaxWidth().weight(1f),
+                         horizontalArrangement = Arrangement.spacedBy(8.dp),
+                         verticalArrangement = Arrangement.spacedBy(8.dp),
+                         contentPadding = PaddingValues(vertical = 4.dp)
+                     ) {
+                         gridItems(visibleItems, key = { it.id }) { item ->
+                             Card(
+                                 modifier = Modifier.fillMaxWidth().heightIn(min = 92.dp).coachClickable {
                                              val entry = EditableItemEntry(item.name, item.iconUrl)
                                              when {
                                                  showItemPickerForCore -> {
@@ -1575,23 +1597,25 @@ fun ChampionBuildCreatorDialog(
                                                  }
                                              }
                                              searchFilterQuery = ""
-                                         }
-                                         .padding(8.dp),
-                                     verticalAlignment = Alignment.CenterVertically,
-                                     horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                             selectedItemCategory = "Todos"
+                                         },
+                                 colors = CardDefaults.cardColors(containerColor = HextechSurface.copy(alpha = 0.85f)),
+                                 border = BorderStroke(1.dp, HextechGold.copy(alpha = 0.25f))
+                             ) {
+                                 Column(
+                                     modifier = Modifier.fillMaxWidth().padding(8.dp),
+                                     horizontalAlignment = Alignment.CenterHorizontally,
+                                     verticalArrangement = Arrangement.spacedBy(4.dp)
                                  ) {
                                      AppAssetImage(
                                          url = item.iconUrl,
                                          contentDescription = item.name,
                                          fallbackText = item.name.take(2),
-                                         modifier = Modifier.size(28.dp).clip(RoundedCornerShape(4.dp))
+                                         modifier = Modifier.size(42.dp).clip(RoundedCornerShape(6.dp))
                                      )
-                                     Column {
-                                         Text(com.example.util.tr(item.name), color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
-                                         Text(com.example.util.tr("Oro: ${item.goldCost}"), color = HextechGold, fontSize = 10.sp)
-                                     }
+                                     Text(com.example.util.tr(item.name), color = Color.White, fontSize = 11.sp, fontWeight = FontWeight.Bold, maxLines = 2, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
+                                     Text(com.example.util.tr("Oro: ${item.goldCost}"), color = HextechGold, fontSize = 10.sp)
                                  }
-                             }
                          }
                      }
                 }
@@ -1607,6 +1631,7 @@ fun ChampionBuildCreatorDialog(
             showRunePickerForSecondary = false
             showRunePickerForSituational = false
             searchFilterQuery = ""
+            selectedRuneCategory = "Todos"
         }) {
             Card(
                 modifier = Modifier.fillMaxWidth().height(500.dp),
@@ -1652,31 +1677,46 @@ fun ChampionBuildCreatorDialog(
                          }
                          pool.sortedWith(compareBy<com.example.model.RuneItem> { it.category }.thenBy { it.name })
                      }
-                     val groupedRunes = remember(filteredRunes) {
-                         filteredRunes.groupBy { it.category }
+                     val runeCategories = remember(filteredRunes) {
+                         listOf("Todos") + filteredRunes.map { it.category }.distinct()
                      }
-                     LazyColumn(modifier = Modifier.fillMaxWidth().weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                         groupedRunes.forEach { (categoryName, list) ->
-                             item {
-                                 Surface(
-                                     color = HextechCyan.copy(alpha = 0.15f),
-                                     shape = RoundedCornerShape(4.dp),
-                                     modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp, horizontal = 4.dp)
-                                 ) {
-                                     Text(
-                                         text = com.example.util.tr(categoryName),
-                                         color = HextechCyan,
-                                         fontWeight = FontWeight.Bold,
-                                         fontSize = 11.sp,
-                                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                                     )
-                                 }
+                     val visibleRunes = remember(filteredRunes, selectedRuneCategory) {
+                         if (selectedRuneCategory == "Todos") filteredRunes
+                         else filteredRunes.filter { it.category == selectedRuneCategory }
+                     }
+                     FlowRow(
+                         modifier = Modifier.fillMaxWidth(),
+                         horizontalArrangement = Arrangement.spacedBy(6.dp),
+                         verticalArrangement = Arrangement.spacedBy(6.dp)
+                     ) {
+                         runeCategories.forEach { category ->
+                             val count = if (category == "Todos") filteredRunes.size else filteredRunes.count { it.category == category }
+                             Surface(
+                                 color = if (selectedRuneCategory == category) HextechCyan else HextechSurface,
+                                 shape = RoundedCornerShape(10.dp),
+                                 border = BorderStroke(1.dp, if (selectedRuneCategory == category) HextechCyan else HextechGold.copy(alpha = 0.35f)),
+                                 modifier = Modifier.coachClickable { selectedRuneCategory = category }
+                             ) {
+                                 Text(
+                                     text = "${com.example.util.tr(category)} ($count)",
+                                     color = if (selectedRuneCategory == category) Color.Black else TextSecondary,
+                                     fontSize = 11.sp,
+                                     fontWeight = FontWeight.Bold,
+                                     modifier = Modifier.padding(horizontal = 10.dp, vertical = 8.dp)
+                                 )
                              }
-                             items(list) { rune ->
-                                 Row(
-                                     modifier = Modifier
-                                         .fillMaxWidth()
-                                         .coachClickable {
+                         }
+                     }
+                     LazyVerticalGrid(
+                         columns = GridCells.Fixed(2),
+                         modifier = Modifier.fillMaxWidth().weight(1f),
+                         horizontalArrangement = Arrangement.spacedBy(8.dp),
+                         verticalArrangement = Arrangement.spacedBy(8.dp),
+                         contentPadding = PaddingValues(vertical = 4.dp)
+                     ) {
+                         gridItems(visibleRunes, key = { it.name }) { rune ->
+                             Card(
+                                 modifier = Modifier.fillMaxWidth().heightIn(min = 92.dp).coachClickable {
                                              if (showRunePickerForKeystone) {
                                                  coreKeystone = EditableRuneEntry(rune.name, rune.iconUrl)
                                                  showRunePickerForKeystone = false
@@ -1690,23 +1730,25 @@ fun ChampionBuildCreatorDialog(
                                                  showRunePickerForSituational = false
                                              }
                                              searchFilterQuery = ""
-                                         }
-                                         .padding(8.dp),
-                                     verticalAlignment = Alignment.CenterVertically,
-                                     horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                             selectedRuneCategory = "Todos"
+                                         },
+                                 colors = CardDefaults.cardColors(containerColor = HextechSurface.copy(alpha = 0.85f)),
+                                 border = BorderStroke(1.dp, HextechCyan.copy(alpha = 0.25f))
+                             ) {
+                                 Column(
+                                     modifier = Modifier.fillMaxWidth().padding(8.dp),
+                                     horizontalAlignment = Alignment.CenterHorizontally,
+                                     verticalArrangement = Arrangement.spacedBy(4.dp)
                                  ) {
                                      AppAssetImage(
                                          url = rune.iconUrl,
                                          contentDescription = rune.name,
                                          fallbackText = rune.name.take(2),
-                                         modifier = Modifier.size(28.dp).clip(RoundedCornerShape(4.dp))
+                                         modifier = Modifier.size(42.dp).clip(RoundedCornerShape(6.dp))
                                      )
-                                     Column {
-                                         Text(com.example.util.tr(rune.name), color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
-                                         Text(com.example.util.tr("Categoría: ${rune.category}"), color = HextechGold, fontSize = 10.sp)
-                                     }
+                                     Text(com.example.util.tr(rune.name), color = Color.White, fontSize = 11.sp, fontWeight = FontWeight.Bold, maxLines = 2, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
+                                     Text(com.example.util.tr("Categoría: ${rune.category}"), color = HextechGold, fontSize = 10.sp)
                                  }
-                             }
                          }
                      }
                 }

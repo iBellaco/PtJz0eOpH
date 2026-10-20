@@ -1856,7 +1856,7 @@ fun ChampionDetailSheet(
                                 .padding(horizontal = 8.dp, vertical = 3.dp)
                         ) {
                             Text(
-                                text = tr(item.category),
+                                text = tr(item.displayCategory),
                                 color = com.example.ui.theme.HextechCyan,
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.Bold

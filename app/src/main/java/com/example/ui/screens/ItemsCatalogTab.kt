@@ -277,7 +277,7 @@ internal fun ItemsCatalogTab() {
                         border = BorderStroke(0.5.dp, HextechGold.copy(alpha = 0.5f))
                     ) {
                         Text(
-                            text = tr(catLabel),
+                            text = tr(if (catLabel.equals("Defensa", ignoreCase = true)) "Objetos Defensivos" else catLabel),
                             color = HextechGold,
                             fontSize = 10.sp,
                             fontWeight = FontWeight.Bold,
@@ -319,7 +319,7 @@ internal fun ItemsCatalogTab() {
                         onClick = { selectedCategory = if (key == "TODOS") null else key },
                         label = {
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text(tr(label), fontSize = 11.sp)
+                                Text(tr(if (label.equals("Defensa", ignoreCase = true)) "Objetos Defensivos" else label), fontSize = 11.sp)
                                 Spacer(modifier = Modifier.width(4.dp))
                                 Text(
                                     text = com.example.util.tr("($count)"),
@@ -369,7 +369,7 @@ internal fun ItemsCatalogTab() {
                                 modifier = Modifier.padding(bottom = 10.dp)
                             ) {
                                 Text(
-                                    text = tr(categoryName).uppercase(),
+                                    text = tr(if (categoryName.equals("Defensa", ignoreCase = true)) "Objetos Defensivos" else categoryName).uppercase(),
                                     color = catColor,
                                     fontWeight = FontWeight.Black,
                                     fontSize = 13.5.sp,
@@ -706,7 +706,7 @@ private fun ItemListCard(
                     Spacer(Modifier.height(4.dp))
                     ItemEvolutionLabel(item)
                 }
-                Text(tr(item.category), color = HextechCyan, fontSize = 10.5.sp)
+                Text(tr(item.displayCategory), color = HextechCyan, fontSize = 10.5.sp)
                 if (statsList.isNotEmpty()) {
                     Spacer(modifier = Modifier.height(4.dp))
                     Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {

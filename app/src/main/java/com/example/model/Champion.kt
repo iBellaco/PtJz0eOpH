@@ -199,6 +199,14 @@ data class WildRiftItem(
     val color: String = "",
     val evolvesFrom: String = ""
 ) {
+    /** Etiqueta estable para mostrar el catálogo sin cambiar las claves de filtrado internas. */
+    val displayCategory: String
+        get() = if (category.equals("Defensa", ignoreCase = true)) {
+            "Objetos Defensivos"
+        } else {
+            category
+        }
+
     val isEvolution: Boolean
         get() = evolvesFrom.isNotBlank() || goldCost == 0
     fun getLocalizedName(lang: String): String = when (lang) {
