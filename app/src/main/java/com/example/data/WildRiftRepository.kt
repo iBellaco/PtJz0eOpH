@@ -221,13 +221,6 @@ object WildRiftRepository {
                 "C", "D" -> 1
                 else -> 0
             }
-            val movementForPatch = previousTier?.takeIf { it.isNotBlank() }?.let {
-                when {
-                    tierRank(category) > tierRank(it) -> 1
-                    tierRank(category) < tierRank(it) -> -1
-                    else -> priorMovements[champion.id] ?: champion.tierMovement
-                }
-            } ?: (priorMovements[champion.id] ?: champion.tierMovement)
             val meta = stats[com.example.data.sync.RegionalTierParser.canonical(champion.id)]
                 ?: stats[com.example.data.sync.RegionalTierParser.canonical(champion.name)]
             val championRoleStats = roleStats[com.example.data.sync.RegionalTierParser.canonical(champion.id)]
@@ -259,7 +252,13 @@ object WildRiftRepository {
                 history24hAt = day?.at ?: 0L,
                 history12hAt = halfDay?.at ?: 0L,
                 tier = category,
-                tierMovement = movementForPatch,
+                tierMovement = previousTier?.takeIf { it.isNotBlank() }?.let {
+                    when {
+                        tierRank(category) > tierRank(it) -> 1
+                        tierRank(category) < tierRank(it) -> -1
+                        else -> priorMovements[champion.id] ?: champion.tierMovement
+                    }
+                } ?: (priorMovements[champion.id] ?: champion.tierMovement),
                 winrate = if (meta != null) meta.winRate ?: Double.NaN else champion.winrate,
                 pickRate = if (meta != null) meta.pickRate ?: Double.NaN else champion.pickRate,
                 banRate = if (meta != null) meta.banRate ?: Double.NaN else champion.banRate,
