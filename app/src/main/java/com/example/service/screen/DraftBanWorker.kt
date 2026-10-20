@@ -15,10 +15,6 @@ internal data class DraftBanFrame(val bitmap: Bitmap, val masks: List<Rect>,
 /** One background header job and at most one newest pending frame; never blocks title OCR. */
 internal class DraftBanWorker(scope: CoroutineScope, private val process: (DraftBanFrame, Job) -> Unit) {
     private val pending = Channel<DraftBanFrame>(Channel.CONFLATED, onUndeliveredElement = { it.bitmap.recycle() })
-    // Las prohibiciones cambian en una ventana muy corta. Mantener una espera
-    // de 1,5 s hacía que el detector llegara tarde aunque el OCR ya tuviera la
-    // evidencia; la cola conflada sigue garantizando que solo se procese el
-    // fotograma más reciente.
     private val lastOffered = AtomicLong(-1500L)
     private val job = scope.launch(Dispatchers.Default) {
         for(frame in pending) {
@@ -33,7 +29,7 @@ internal class DraftBanWorker(scope: CoroutineScope, private val process: (Draft
 
     fun offer(nowMs: Long, capture: () -> DraftBanFrame) {
         val previous = lastOffered.get()
-        if(nowMs-previous<300L || !job.isActive || !lastOffered.compareAndSet(previous,nowMs)) return
+        if(nowMs-previous<1500L || !job.isActive || !lastOffered.compareAndSet(previous,nowMs)) return
         val frame = capture()
         if(pending.trySend(frame).isFailure) frame.bitmap.recycle()
     }
