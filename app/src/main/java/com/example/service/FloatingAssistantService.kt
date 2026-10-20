@@ -90,7 +90,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.withContext
 
-enum class OverlayHubTab { DRAFT, TIER_LIST, CHAMPIONS, HISTORY }
+enum class OverlayHubTab { DRAFT, TIER_LIST, CHAMPIONS }
 
 private const val TAG = "FloatingAssistantService"
 

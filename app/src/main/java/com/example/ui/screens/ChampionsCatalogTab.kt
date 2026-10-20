@@ -454,7 +454,8 @@ fun ChampionsCatalogTab(
         if (filteredChampions.isEmpty()) {
             Box(
                 modifier = Modifier
-                    .fillMaxSize()
+                    .weight(1f)
+                    .fillMaxWidth()
                     .padding(vertical = 32.dp, horizontal = 16.dp),
                 contentAlignment = Alignment.Center
             ) {
@@ -490,7 +491,9 @@ fun ChampionsCatalogTab(
             }
         } else {
             LazyColumn(
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth(),
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
             items(filteredChampions) { champion ->

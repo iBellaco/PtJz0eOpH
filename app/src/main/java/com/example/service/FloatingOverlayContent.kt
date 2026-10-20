@@ -50,7 +50,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.icons.filled.EmojiEvents
-import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material3.Card
@@ -127,8 +126,6 @@ internal fun FloatingOverlayContent(
     var showRoleChangeDialog by state::showRoleChangeDialog
     var isSavedRecently by state::isSavedRecently
     val isPremium by com.example.util.SubscriptionManager.isPremium.collectAsStateWithLifecycle()
-    val activeProfileId by com.example.data.AccountProfileManager.activeProfileId.collectAsStateWithLifecycle()
-    val isLoggedInAndPremium = isPremium && activeProfileId != null
     val userRole by com.example.util.SubscriptionManager.userRole.collectAsStateWithLifecycle()
     val detectedBans by DraftVisionScanner.bannedChampionIdsFlow.collectAsStateWithLifecycle()
     val banSlots by DraftVisionScanner.banSlotsFlow.collectAsStateWithLifecycle()
@@ -205,6 +202,30 @@ internal fun FloatingOverlayContent(
     var showChampionPickerForSlot by state::showChampionPickerForSlot
     var isLoadingScreenMode by state::isLoadingScreenMode
     var isOverlayTabsMinimized by state::isOverlayTabsMinimized
+    var redirectedDraftKey by remember { mutableStateOf<String?>(null) }
+
+    fun selectHubTab(tab: OverlayHubTab) {
+        selectedChampionDetail = null
+        overlayHubTab = tab
+    }
+
+    LaunchedEffect(allies.toList(), enemies.toList(), activeRole) {
+        val completed = allies.all { it != null } && enemies.all { it != null } &&
+            (allies.filterNotNull() + enemies.filterNotNull()).map { it.id }.distinct().size == 10
+        if (!completed) {
+            redirectedDraftKey = null
+            return@LaunchedEffect
+        }
+
+        val draftKey = (allies.filterNotNull() + enemies.filterNotNull()).joinToString("|") { it.id } + "|" + activeRole.name
+        if (redirectedDraftKey == draftKey) return@LaunchedEffect
+        redirectedDraftKey = draftKey
+        val ownChampion = allies.getOrNull(defaultRoles.indexOf(activeRole))
+        if (ownChampion != null) {
+            overlayHubTab = OverlayHubTab.DRAFT
+            selectedChampionDetail = ownChampion
+        }
+    }
 
     val explicitEnemyOpponent = remember(activeRole, enemies.toList()) {
         val roleIndex = defaultRoles.indexOf(activeRole).coerceIn(0, 4)
@@ -977,7 +998,7 @@ internal fun FloatingOverlayContent(
                                         if (isDraftActive) HextechCyan else HextechCardBorder.copy(alpha = 0.5f),
                                         RoundedCornerShape(6.dp)
                                     )
-                                    .clickable { overlayHubTab = OverlayHubTab.DRAFT }
+                                    .clickable { selectHubTab(OverlayHubTab.DRAFT) }
                                     .padding(vertical = 5.dp),
                                 contentAlignment = Alignment.Center
                             ) {
@@ -1012,7 +1033,7 @@ internal fun FloatingOverlayContent(
                                         if (isTierActive) HextechGold else HextechCardBorder.copy(alpha = 0.5f),
                                         RoundedCornerShape(6.dp)
                                     )
-                                    .clickable { overlayHubTab = OverlayHubTab.TIER_LIST }
+                                    .clickable { selectHubTab(OverlayHubTab.TIER_LIST) }
                                     .padding(vertical = 5.dp),
                                 contentAlignment = Alignment.Center
                             ) {
@@ -1047,7 +1068,7 @@ internal fun FloatingOverlayContent(
                                         if (isChampsActive) HextechCyan else HextechCardBorder.copy(alpha = 0.5f),
                                         RoundedCornerShape(6.dp)
                                     )
-                                    .clickable { overlayHubTab = OverlayHubTab.CHAMPIONS }
+                                    .clickable { selectHubTab(OverlayHubTab.CHAMPIONS) }
                                     .padding(vertical = 5.dp),
                                 contentAlignment = Alignment.Center
                             ) {
@@ -1070,42 +1091,6 @@ internal fun FloatingOverlayContent(
                                 }
                             }
 
-                            // Pestaña 4: Historial
-                            if (isLoggedInAndPremium) {
-                                val isHistoryActive = overlayHubTab == OverlayHubTab.HISTORY
-                                Box(
-                                    modifier = Modifier
-                                        .weight(0.85f)
-                                        .clip(RoundedCornerShape(6.dp))
-                                        .background(if (isHistoryActive) Color(0xFF00FF7F).copy(alpha = 0.15f) else HextechSurface)
-                                        .border(
-                                            1.dp,
-                                            if (isHistoryActive) Color(0xFF00FF7F) else HextechCardBorder.copy(alpha = 0.5f),
-                                            RoundedCornerShape(6.dp)
-                                        )
-                                        .clickable { overlayHubTab = OverlayHubTab.HISTORY }
-                                        .padding(vertical = 5.dp),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Row(
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.spacedBy(2.dp)
-                                    ) {
-                                        Icon(
-                                            Icons.Default.History,
-                                            contentDescription = null,
-                                            tint = if (isHistoryActive) Color(0xFF00FF7F) else TextMuted,
-                                            modifier = Modifier.size(12.dp)
-                                        )
-                                        Text(
-                                            text = com.example.util.tr("Hist"),
-                                            color = if (isHistoryActive) Color(0xFF00FF7F) else TextMuted,
-                                            fontSize = 9.5.sp,
-                                            fontWeight = if (isHistoryActive) FontWeight.Bold else FontWeight.Medium
-                                        )
-                                    }
-                                }
-                            }
                         }
                         }
 
@@ -1126,7 +1111,6 @@ internal fun FloatingOverlayContent(
                                         OverlayHubTab.DRAFT -> "Draft Coach"
                                         OverlayHubTab.TIER_LIST -> "Tiers & Builds"
                                         OverlayHubTab.CHAMPIONS -> "Campeones"
-                                        OverlayHubTab.HISTORY -> "Historial & Perfiles"
                                     }}"),
                                     color = HextechGold,
                                     fontSize = 10.sp,
@@ -1261,23 +1245,6 @@ internal fun FloatingOverlayContent(
                                         com.example.ui.screens.ChampionsCatalogTab(
                                             isOverlay = true,
                                             onSelectChampion = { haptic.performHapticFeedback(HapticFeedbackType.LongPress); selectedChampionDetail = it }
-                                        )
-                                    }
-                                    OverlayHubTab.HISTORY -> {
-                                        com.example.ui.screens.DraftHistoryScreen(
-                                            isOverlay = true,
-                                            onNavigateBack = {
-                                                overlayHubTab = OverlayHubTab.DRAFT
-                                            },
-                                            onLoadDraft = { loadedAllies, loadedEnemies, role, isFirst ->
-                                                for (i in 0 until 5) {
-                                                    allies[i] = loadedAllies.getOrNull(i)?.champion
-                                                    enemies[i] = loadedEnemies.getOrNull(i)?.champion
-                                                }
-                                                activeRole = role
-                                                isFirstPick = isFirst
-                                                overlayHubTab = OverlayHubTab.DRAFT
-                                            }
                                         )
                                     }
                                 }
@@ -1459,7 +1426,7 @@ internal fun FloatingOverlayContent(
             onSaved = {
                 isSavedRecently = true
                 showSaveDraftDialog = false
-                overlayHubTab = OverlayHubTab.HISTORY
+                selectHubTab(OverlayHubTab.DRAFT)
             }
         )
     }
