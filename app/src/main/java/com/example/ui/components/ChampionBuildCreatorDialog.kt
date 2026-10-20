@@ -1616,6 +1616,7 @@ fun ChampionBuildCreatorDialog(
                                      Text(com.example.util.tr(item.name), color = Color.White, fontSize = 11.sp, fontWeight = FontWeight.Bold, maxLines = 2, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
                                      Text(com.example.util.tr("Oro: ${item.goldCost}"), color = HextechGold, fontSize = 10.sp)
                                  }
+                             }
                          }
                      }
                 }
@@ -1749,6 +1750,7 @@ fun ChampionBuildCreatorDialog(
                                      Text(com.example.util.tr(rune.name), color = Color.White, fontSize = 11.sp, fontWeight = FontWeight.Bold, maxLines = 2, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
                                      Text(com.example.util.tr("Categoría: ${rune.category}"), color = HextechGold, fontSize = 10.sp)
                                  }
+                             }
                          }
                      }
                 }
