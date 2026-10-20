@@ -19,7 +19,7 @@ internal class DraftBanWorker(scope: CoroutineScope, private val process: (Draft
     // de 1,5 s hacía que el detector llegara tarde aunque el OCR ya tuviera la
     // evidencia; la cola conflada sigue garantizando que solo se procese el
     // fotograma más reciente.
-    private val lastOffered = AtomicLong(-300L)
+    private val lastOffered = AtomicLong(-1500L)
     private val job = scope.launch(Dispatchers.Default) {
         for(frame in pending) {
             try { process(frame, coroutineContext[Job]!!) }
