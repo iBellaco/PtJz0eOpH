@@ -135,13 +135,14 @@ fun AuthFlowContainer(
     }
 
     val uiState by viewModel.uiState.collectAsState()
+    val emailVerificationRequiredMessage = tr("Registro creado. Confirma tu correo electrónico para poder entrar.")
 
     // Triggered when login/register succeeds to force a recomposition with the new user state and redirect
     val onAuthSuccess: () -> Unit = {
         val authenticated = auth?.currentUser
         if (authenticated != null && !authenticated.isEmailVerified) {
             auth.signOut()
-            Toast.makeText(context, tr("Registro creado. Confirma tu correo electrónico para poder entrar."), Toast.LENGTH_LONG).show()
+            Toast.makeText(context, emailVerificationRequiredMessage, Toast.LENGTH_LONG).show()
             viewModel.resetSuccessState()
             viewModel.navigateTo(AuthScreenType.LOGIN)
         } else {

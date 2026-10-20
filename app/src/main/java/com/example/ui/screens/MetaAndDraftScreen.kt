@@ -7,6 +7,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -421,7 +422,7 @@ fun MetaAndDraftScreen(
                         Row(
                             modifier = Modifier
                                 .testTag("nav_draft_history_button")
-                                .coachClickable { showDraftHistoryScreen = true }
+                                .clickable { showDraftHistoryScreen = true }
                                 .padding(horizontal = 8.dp, vertical = 4.dp),
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(4.dp)
