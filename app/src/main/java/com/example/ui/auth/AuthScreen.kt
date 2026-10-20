@@ -141,7 +141,7 @@ fun AuthFlowContainer(
         val authenticated = auth?.currentUser
         if (authenticated != null && !authenticated.isEmailVerified) {
             auth.signOut()
-            Toast.makeText(context, com.example.util.appTr("Registro creado. Confirma tu correo electrónico para poder entrar."), Toast.LENGTH_LONG).show()
+            Toast.makeText(context, tr("Registro creado. Confirma tu correo electrónico para poder entrar."), Toast.LENGTH_LONG).show()
             viewModel.resetSuccessState()
             viewModel.navigateTo(AuthScreenType.LOGIN)
         } else {

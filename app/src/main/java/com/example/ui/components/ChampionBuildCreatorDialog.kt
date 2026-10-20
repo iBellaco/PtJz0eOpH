@@ -1244,12 +1244,12 @@ fun ChampionBuildCreatorDialog(
                                  return@Button
                              }
                             if (com.example.data.local.CreatorBuildRules.overlap(coreItems.map { it.name }, situationalItems.map { it.name })) {
-                                Toast.makeText(context, com.example.util.appTr("Un objeto no puede estar a la vez en Core y Situacionales"), Toast.LENGTH_LONG).show()
+                                Toast.makeText(context, tr("Un objeto no puede estar a la vez en Core y Situacionales"), Toast.LENGTH_LONG).show()
                                 return@Button
                             }
                             if (selectedRole == com.example.model.LaneRole.SUPPORT &&
                                 com.example.data.local.CreatorBuildRules.supportStarterCount(coreItems.map { it.name }) != 1) {
-                                Toast.makeText(context, com.example.util.appTr("Soporte debe incluir exactamente Hoz espectral o Escudo reliquia en Core"), Toast.LENGTH_LONG).show()
+                                Toast.makeText(context, tr("Soporte debe incluir exactamente Hoz espectral o Escudo reliquia en Core"), Toast.LENGTH_LONG).show()
                                 return@Button
                             }
                             if (coreItems.any { it.description.trim().isBlank() }) {
