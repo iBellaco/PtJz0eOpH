@@ -25,9 +25,8 @@ object BestBuildWrScraper {
 
     // Only publishers used by the statistics pipeline belong in live monitoring.
     val GLOBAL_SCRAPING_SOURCES = listOf(
-        GlobalScrapingSource("wildriftfire", "WildRiftFire", "https://www.wildriftfire.com/tier-list", "wildriftfire.com/tier-list", "7.3b"),
-        GlobalScrapingSource("wildriftcore", "WildRiftCore", "https://wildriftcore.com/en/tierlist/", "wildriftcore.com/en/tierlist/", "7.3b"),
-        GlobalScrapingSource("wildriftguides", "WildRiftGuides", "https://www.wildriftguides.com/tier-list", "wildriftguides.com/tier-list", "7.3b")
+        GlobalScrapingSource("wildriftfire", "WildRiftFire", "https://www.wildriftfire.com/tier-list", "wildriftfire.com/tier-list", "7.3c"),
+        GlobalScrapingSource("wildriftcore", "WildRiftCore", "https://wildriftcore.com/en/tierlist/", "wildriftcore.com/en/tierlist/", "7.3c")
     )
 
     private val _freshness = MutableStateFlow(MetaFreshness())
@@ -203,7 +202,7 @@ object BestBuildWrScraper {
                 // Fallback publishers only fill champions absent from the primary report.
                 val freshStats = linkedMapOf<String, ChampionMetaStats>()
                 val statOrigins = mutableMapOf<String, String>()
-                listOf("wildriftfire", "wildriftcore", "wildriftguides").forEach { id ->
+                listOf("wildriftfire", "wildriftcore").forEach { id ->
                     validSources.firstOrNull { it.source.id == id }?.stats?.forEach { (champion, rates) ->
                         if (champion !in freshStats) {
                             freshStats[champion] = rates

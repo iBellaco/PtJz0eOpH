@@ -7,23 +7,14 @@ import org.junit.Assert.*
 import org.junit.Test
 
 class GlobalTierScrapingTest {
-    @Test fun `three requested live pages parse the current patch and real tier rows`() {
-        listOf("core" to "wildriftcore", "guides" to "wildriftguides", "fire" to "wildriftfire").forEach { (file, source) ->
+    @Test fun `active live pages parse their current fixture and real tier rows`() {
+        listOf("core" to "wildriftcore", "fire" to "wildriftfire").forEach { (file, source) ->
             val html = javaClass.getResource("/tier-sources-302/$file.html")!!.readText()
             assertEquals(source, "7.3b", com.example.data.sync.PublishedStatsParser.patch(html, source))
             val tiers = RegionalTierParser.parse(html, source)
             assertTrue("$source must contain a useful champion roster, found ${tiers.size}", tiers.size >= 100)
             assertTrue(tiers.keys.none { it.contains("tierlist") || it.contains("build") })
         }
-    }
-
-    @Test fun `guides keeps each category local and does not interpret navigation as champions`() {
-        val html = """<section id="mid-tier-list"><div><div><span title="Strong">S+</span></div>
-            <ul><li><a href="/champion/ahri/mid">Ahri</a></li></ul></div>
-            <div><div><span title="Weak">C</span></div><ul><li><a href="/champion/zed/mid">Zed</a></li></ul></div>
-            </section><footer><a href="/champion/lux/mid">Lux</a></footer>"""
-        assertEquals(mapOf("ahri" to "S+", "zed" to "C"), RegionalTierParser.parse(html, "wildriftguides"))
-        assertTrue(RegionalTierParser.parseStats(html,"wildriftguides").isEmpty())
     }
 
     @Test fun `BestBuildWR dictionary tiers do not depend on a tier field per champion`() {

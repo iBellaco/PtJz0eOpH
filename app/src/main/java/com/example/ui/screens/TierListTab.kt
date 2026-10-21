@@ -90,7 +90,6 @@ import com.example.ui.theme.TierSPlusColor
 enum class TierSortOption(val displayName: String, val shortLabel: String) {
     BY_TIER("Por Tier", "Tier "),
     WIN_RATE("Win Rate", "Win Rate "),
-    PICK_RATE("Pick Rate", "Pick Rate "),
     BAN_RATE("Ban Rate", "Ban Rate ")
 }
 
@@ -150,7 +149,6 @@ fun TierListTab(
         when (selectedSort) {
             TierSortOption.BY_TIER -> rawChampionsToDisplay
             TierSortOption.WIN_RATE -> rawChampionsToDisplay.sortedByDescending { tierDisplayedStats(it, selectedLane).win }
-            TierSortOption.PICK_RATE -> rawChampionsToDisplay.sortedByDescending { tierDisplayedStats(it, selectedLane).pick }
             TierSortOption.BAN_RATE -> rawChampionsToDisplay.sortedByDescending { tierDisplayedStats(it, selectedLane).ban }
         }
     }
@@ -533,12 +531,7 @@ fun TierListTab(
                                                     Text(com.example.util.tr("WR: ${com.example.util.championStatPercent(champ, displayed.win, "wr")}"), color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 13.sp)
                                                 }
                                                 Spacer(modifier = Modifier.height(2.dp))
-                                                com.example.ui.components.ChampionRateLine(champ, winRate = displayed.win, pickRate = displayed.pick, banRate = displayed.ban)
-                                            }
-                                            TierSortOption.PICK_RATE -> {
-                                                Text(com.example.util.tr("Pick: ${com.example.util.championStatPercent(champ, displayed.pick, "pick")}"), color = HextechCyan, fontWeight = FontWeight.Bold, fontSize = 13.sp)
-                                                Spacer(modifier = Modifier.height(2.dp))
-                                                com.example.ui.components.ChampionRateLine(champ, includeWin = true, includePick = false, winRate = displayed.win, pickRate = displayed.pick, banRate = displayed.ban)
+                                                com.example.ui.components.ChampionRateLine(champ, includePick = false, winRate = displayed.win, pickRate = displayed.pick, banRate = displayed.ban)
                                             }
                                             TierSortOption.BAN_RATE -> {
                                                 Text(com.example.util.tr("Ban: ${com.example.util.championStatPercent(champ, displayed.ban, "ban")}"), color = DangerRed, fontWeight = FontWeight.Bold, fontSize = 13.sp)
@@ -673,7 +666,7 @@ fun TierSectionCard(
                                         }
                                         if (!isOverlay) {
                                             Spacer(modifier = Modifier.height(2.dp))
-                                            com.example.ui.components.ChampionRateLine(champ, winRate = displayed.win, pickRate = displayed.pick, banRate = displayed.ban)
+                                            com.example.ui.components.ChampionRateLine(champ, includePick = false, winRate = displayed.win, pickRate = displayed.pick, banRate = displayed.ban)
                                         }
                                     }
                                     Icon(
