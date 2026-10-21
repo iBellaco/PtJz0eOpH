@@ -482,7 +482,7 @@ fun DraftAnalysisTab(
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        // Actions Row: Guardar Draft, Historial de Partidas & Vaciar Todo
+        // Actions Row: Guardar Draft, Historial de Partidas, Aleatorio & Vaciar Todo
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -639,6 +639,7 @@ fun DraftAnalysisTab(
                     }
                 }
             }
+
         }
 
         Spacer(modifier = Modifier.height(14.dp))

@@ -27,7 +27,6 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.History
 import android.widget.Toast
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -418,19 +417,6 @@ fun MetaAndDraftScreen(
                     }
                 },
                 actions = {
-                    if (mode == MetaScreenMode.DRAFTING && isPremium) {
-                        Row(
-                            modifier = Modifier
-                                .testTag("nav_draft_history_button")
-                                .clickable { showDraftHistoryScreen = true }
-                                .padding(horizontal = 8.dp, vertical = 4.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(4.dp)
-                        ) {
-                            Icon(Icons.Default.History, contentDescription = tr("Abrir historial de Drafts"), tint = HextechGold)
-                            Text(tr("Historial"), color = HextechGold, fontSize = 11.sp)
-                        }
-                    }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = androidx.compose.ui.graphics.Color.Transparent)
             )

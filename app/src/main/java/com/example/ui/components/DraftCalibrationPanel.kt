@@ -417,7 +417,8 @@ fun DraftCalibrationPanel(
                                 RoundedCornerShape(6.dp)
                             )
                             .coachClickable { selectedTarget = target }
-                            .heightIn(min = 48.dp)
+                            .heightIn(min = 56.dp)
+                            .widthIn(min = 104.dp)
                             .padding(horizontal = 8.dp, vertical = 4.dp)
                             .testTag("draft_calibration_target_${target.name.lowercase()}")
                     ) {
@@ -447,7 +448,7 @@ fun DraftCalibrationPanel(
                     // Arriba
                     Surface(
                         modifier = Modifier
-                            .size(48.dp)
+                            .size(56.dp)
                             .coachClickable { modify(deltaY = -stepFactor) }
                             .testTag("draft_calibration_up"),
                         shape = RoundedCornerShape(6.dp),
@@ -466,7 +467,7 @@ fun DraftCalibrationPanel(
                         // Izquierda
                         Surface(
                             modifier = Modifier
-                                .size(48.dp)
+                                .size(56.dp)
                                 .coachClickable { modify(deltaX = -stepFactor) }
                                 .testTag("draft_calibration_left"),
                             shape = RoundedCornerShape(6.dp),
@@ -481,7 +482,7 @@ fun DraftCalibrationPanel(
                         // Indicador Central
                         Box(
                             modifier = Modifier
-                                .size(34.dp)
+                                .size(42.dp)
                                 .clip(RoundedCornerShape(6.dp))
                                 .background(Color(0xFF0F1E2E)),
                             contentAlignment = Alignment.Center
@@ -497,7 +498,7 @@ fun DraftCalibrationPanel(
                         // Derecha
                         Surface(
                             modifier = Modifier
-                            .size(48.dp)
+                            .size(56.dp)
                             .coachClickable { modify(deltaX = stepFactor) }
                             .testTag("draft_calibration_right"),
                             shape = RoundedCornerShape(6.dp),
@@ -546,7 +547,7 @@ fun DraftCalibrationPanel(
                     ) {
                         Button(
                             onClick = { modify(deltaSize = stepFactor) },
-                            modifier = Modifier.weight(1f).heightIn(min = 48.dp).testTag("draft_calibration_size_increase"),
+                            modifier = Modifier.weight(1f).heightIn(min = 56.dp).testTag("draft_calibration_size_increase"),
                             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1B3854)),
                             shape = RoundedCornerShape(6.dp),
                             contentPadding = PaddingValues(0.dp)
@@ -560,7 +561,7 @@ fun DraftCalibrationPanel(
 
                         Button(
                             onClick = { modify(deltaSize = -stepFactor) },
-                            modifier = Modifier.weight(1f).heightIn(min = 48.dp).testTag("draft_calibration_size_decrease"),
+                            modifier = Modifier.weight(1f).heightIn(min = 56.dp).testTag("draft_calibration_size_decrease"),
                             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2E1C22)),
                             shape = RoundedCornerShape(6.dp),
                             contentPadding = PaddingValues(0.dp)
@@ -594,7 +595,7 @@ fun DraftCalibrationPanel(
                                     .background(if (isSel) HextechGold.copy(alpha = 0.25f) else HextechSurface)
                                     .border(0.6.dp, if (isSel) HextechGold else HextechCardBorder, RoundedCornerShape(4.dp))
                                     .coachClickable { stepFactor = value }
-                                    .heightIn(min = 48.dp)
+                                    .heightIn(min = 56.dp)
                                     .testTag("draft_calibration_step_${label.replace('.', '_').replace('%', 'p')}")
                                     .padding(vertical = 2.dp),
                                 contentAlignment = Alignment.Center
