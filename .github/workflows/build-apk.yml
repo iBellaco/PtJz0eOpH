@@ -128,9 +128,10 @@ jobs:
         # main branch remains strictly dependent on the configured production
         # signing identity and never uses a debug fallback.
         COACH_ALLOW_EPHEMERAL_TEST_SIGNING: ${{ github.ref != 'refs/heads/main' && 'true' || 'false' }}
-        KEYSTORE_PATH: ${{ github.ref != 'refs/heads/main' && 'github.keystore' || '' }}
-        STORE_PASSWORD: ${{ github.ref != 'refs/heads/main' && 'android' || secrets.COACH_STORE_PASSWORD }}
-        KEY_PASSWORD: ${{ github.ref != 'refs/heads/main' && 'android' || secrets.COACH_KEY_PASSWORD }}
+        COACH_SIGNING_KEY_ALIAS: androiddebugkey
+        KEYSTORE_PATH: github.keystore
+        STORE_PASSWORD: android
+        KEY_PASSWORD: android
       run: |
         rm -rf app/build/outputs/apk/ || true
 
