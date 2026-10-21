@@ -14,6 +14,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AdminPanelSettings
+import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material.icons.filled.People
 import androidx.compose.material.icons.filled.Sensors
@@ -76,13 +77,24 @@ fun AdminUserPresenceCard(modifier: Modifier = Modifier) {
     var users by remember { mutableStateOf<List<Map<String, Any>>>(emptyList()) }
     var now by remember { mutableStateOf(System.currentTimeMillis()) }
     var selectedRole by remember { mutableStateOf<String?>(null) }
+    var selectedUserForManage by remember { mutableStateOf<Map<String, Any>?>(null) }
 
     DisposableEffect(Unit) {
         val registration = FirebaseFirestore.getInstance().collection("users")
-            .addSnapshotListener { snapshot, _ ->
-                users = snapshot?.documents?.map { document ->
-                    document.data.orEmpty() + ("uid" to document.id)
-                }.orEmpty()
+            .addSnapshotListener { snapshot, error ->
+                // The snapshot is the source of truth. Never retain deleted
+                // documents after Firestore sends an empty/error snapshot.
+                users = if (error != null || snapshot == null) {
+                    emptyList()
+                } else {
+                    snapshot.documents.map { document ->
+                        document.data.orEmpty() + ("uid" to document.id)
+                    }
+                }
+                val selectedUid = selectedUserForManage?.get("uid")?.toString()
+                if (selectedUid != null && users.none { it["uid"]?.toString() == selectedUid }) {
+                    selectedUserForManage = null
+                }
             }
         onDispose { registration.remove() }
     }
@@ -135,7 +147,9 @@ fun AdminUserPresenceCard(modifier: Modifier = Modifier) {
         else -> selection in roles(user)
     }
     val selectedUsers = selectedRole?.let { selection ->
-        users.filter { online(it) && matchesSelection(it, selection) }
+        users.filter { user ->
+            if (selection == "__all__") online(user) else matchesSelection(user, selection)
+        }
             .sortedBy { ((it["name"] ?: it["username"] ?: it["displayName"] ?: "Usuario") as? String).orEmpty().lowercase() }
     }.orEmpty()
 
@@ -172,7 +186,7 @@ fun AdminUserPresenceCard(modifier: Modifier = Modifier) {
         }
     }
     selectedRole?.let { selection ->
-        val title = if (selection == "__all__") tr("Usuarios conectados") else tr("Conectados: ${selection.replaceFirstChar { it.uppercase() }}")
+        val title = if (selection == "__all__") tr("Usuarios conectados") else tr("Usuarios: ${selection.replaceFirstChar { it.uppercase() }}")
         AlertDialog(
             onDismissRequest = { selectedRole = null },
             title = { Text(title, color = HextechGold) },
@@ -181,15 +195,44 @@ fun AdminUserPresenceCard(modifier: Modifier = Modifier) {
                 else LazyColumn(modifier = Modifier.fillMaxWidth().fillMaxHeight(0.45f)) {
                     items(selectedUsers, key = { it["uid"]?.toString().orEmpty() }) { user ->
                         val displayName = (user["name"] ?: user["username"] ?: user["displayName"] ?: "Usuario").toString()
-                        Row(Modifier.fillMaxWidth().padding(vertical = 7.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Row(
+                            Modifier
+                                .fillMaxWidth()
+                                .coachClickable {
+                                    selectedRole = null
+                                    selectedUserForManage = user
+                                }
+                                .padding(vertical = 7.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
                             Icon(Icons.Default.Sensors, null, tint = HextechGreen, modifier = Modifier.size(15.dp))
                             Spacer(Modifier.width(8.dp))
-                            Text(displayName, color = TextPrimary, fontSize = 13.sp)
+                            Column(Modifier.weight(1f)) {
+                                Text(displayName, color = TextPrimary, fontSize = 13.sp)
+                                (user["email"] as? String)?.takeIf { it.isNotBlank() }?.let {
+                                    Text(it, color = TextMuted, fontSize = 10.sp)
+                                }
+                            }
+                            Icon(Icons.Default.ChevronRight, null, tint = HextechCyan, modifier = Modifier.size(18.dp))
                         }
                     }
                 }
             },
             confirmButton = { TextButton(onClick = { selectedRole = null }) { Text(tr("Cerrar"), color = HextechCyan) } }
+        )
+    }
+    selectedUserForManage?.let { user ->
+        UserDetailManagementDialog(
+            user = user,
+            onDismiss = { selectedUserForManage = null },
+            onUserUpdated = { updated ->
+                users = users.map { if (it["uid"] == updated["uid"]) updated else it }
+                selectedUserForManage = updated
+            },
+            onOpenAvatarGift = {},
+            onReloadAll = {
+                // The Firestore listener refreshes this card automatically.
+            }
         )
     }
 }

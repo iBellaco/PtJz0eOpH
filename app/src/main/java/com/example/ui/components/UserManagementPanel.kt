@@ -127,6 +127,9 @@ fun EnhancedUserManagementPanel(
         listenerReg = FirebaseFirestore.getInstance().collection("users")
             .addSnapshotListener { snapshot, e ->
                 if (e != null) {
+                    // Do not keep showing accounts that are no longer present
+                    // when the source has been deleted or becomes unavailable.
+                    users = emptyList()
                     errorMessage = "Error al cargar usuarios: ${e.message}"
                     isLoading = false
                     isRefreshing = false
@@ -141,12 +144,17 @@ fun EnhancedUserManagementPanel(
                     return@addSnapshotListener
                 }
                 if (snapshot != null) {
-                    val list = snapshot.documents.map { doc ->
+                    val list = snapshot.documents.mapNotNull { doc ->
+                        if (!doc.exists()) return@mapNotNull null
                         val data = doc.data?.toMutableMap() ?: mutableMapOf()
                         data["uid"] = doc.id
                         data
                     }
                     users = list
+                    val selectedUid = selectedUserForManage?.get("uid")?.toString()
+                    if (selectedUid != null && list.none { it["uid"]?.toString() == selectedUid }) {
+                        selectedUserForManage = null
+                    }
                     errorMessage = null
                     listenerRetryScheduled = false
                     isLoading = false

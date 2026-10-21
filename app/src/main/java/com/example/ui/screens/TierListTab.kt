@@ -167,11 +167,6 @@ fun TierListTab(
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
         item {
-            com.example.ui.components.MetaSyncSummary()
-            Spacer(modifier = Modifier.height(4.dp))
-        }
-
-        item {
             // Collapsible Header for Tier List Filters and Sorting
             Row(
                 modifier = Modifier
