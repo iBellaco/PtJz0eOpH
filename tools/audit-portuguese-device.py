@@ -29,7 +29,10 @@ def adb(*args, binary=False):
 
 def window():
     last_error = "UI not ready"
-    for attempt in range(10):
+    # Compose can take a little longer to publish its accessibility tree on
+    # cold emulator boots.  Do not treat a transient empty root as a product
+    # failure, especially before the first screen is drawn.
+    for attempt in range(30):
         try:
             # Never read a previous screen when Android cannot dump the new hierarchy.
             adb("shell", "rm", "-f", "/sdcard/coach-window.xml")
@@ -98,7 +101,8 @@ def scroll(direction="down"):
 
 def tap(label, scrolling=0, scroll_direction="down"):
     labels = (label,) if isinstance(label, str) else tuple(label)
-    for attempt in range(max(10, scrolling + 1)):
+    # Keep looking while the activity is settling after install/launch.
+    for attempt in range(max(20, scrolling + 1)):
         nodes = app_nodes(window())
         # A real remote announcement can arrive at any step, including onboarding.
         # Retain its Portuguese evidence before closing the blocking window.
