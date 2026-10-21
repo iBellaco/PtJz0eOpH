@@ -114,6 +114,13 @@ jobs:
         COACH_REQUIRE_PERSISTENT_SIGNING: ${{ github.ref == 'refs/heads/main' && 'true' || 'false' }}
         COACH_ALLOW_EPHEMERAL_TEST_SIGNING: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository && 'true' || 'false' }}
       run: python3 .github/scripts/restore-private-signing.py
+    - name: Verify restored signing file
+      run: |
+        test -s "$GITHUB_WORKSPACE/github.keystore" || {
+          echo "ERROR: no se restauró el keystore persistente en $GITHUB_WORKSPACE/github.keystore"
+          exit 1
+        }
+        ls -l "$GITHUB_WORKSPACE/github.keystore"
     - &id005
       name: Restore Android client configuration from Actions Secrets
       env:
@@ -129,7 +136,7 @@ jobs:
         # signing identity and never uses a debug fallback.
         COACH_ALLOW_EPHEMERAL_TEST_SIGNING: ${{ github.ref != 'refs/heads/main' && 'true' || 'false' }}
         COACH_SIGNING_KEY_ALIAS: androiddebugkey
-        KEYSTORE_PATH: github.keystore
+        KEYSTORE_PATH: ${{ github.workspace }}/github.keystore
         STORE_PASSWORD: android
         KEY_PASSWORD: android
       run: |
