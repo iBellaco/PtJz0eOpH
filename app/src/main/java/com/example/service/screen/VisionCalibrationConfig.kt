@@ -281,10 +281,84 @@ VisionCalibrationConfig(
         }
     }
 
+    /** Saves the geometry that was calibrated for one capture aspect ratio. */
+    fun saveProfileToPrefs(context: Context, profileKey: String) {
+        val prefs = context.getSharedPreferences("vision_calibration_prefs", Context.MODE_PRIVATE)
+        val prefix = "profile_${profileKey}_"
+        prefs.edit().apply {
+            putFloat(prefix + "allyAvatarCenterX", allyAvatarCenterX)
+            putFloat(prefix + "enemyAvatarCenterX", enemyAvatarCenterX)
+            putFloat(prefix + "avatarDiameterRatio", avatarDiameterRatio)
+            putFloat(prefix + "allyBanYRatio", allyBanYRatio)
+            putFloat(prefix + "enemyBanYRatio", enemyBanYRatio)
+            putFloat(prefix + "banDiameterRatio", banDiameterRatio)
+            putBoolean(prefix + "manualAllyBans", manualAllyBans)
+            putBoolean(prefix + "manualEnemyBans", manualEnemyBans)
+            allySlotYRatios.forEachIndexed { i, value -> putFloat(prefix + "ally_slot_y_$i", value) }
+            enemySlotYRatios.forEachIndexed { i, value -> putFloat(prefix + "enemy_slot_y_$i", value) }
+            allySlotXRatios.forEachIndexed { i, value -> putFloat(prefix + "ally_slot_x_$i", value) }
+            enemySlotXRatios.forEachIndexed { i, value -> putFloat(prefix + "enemy_slot_x_$i", value) }
+            allySlotDiameterRatios.forEachIndexed { i, value -> putFloat(prefix + "ally_slot_diam_$i", value) }
+            enemySlotDiameterRatios.forEachIndexed { i, value -> putFloat(prefix + "enemy_slot_diam_$i", value) }
+            allyBanXRatios.forEachIndexed { i, value -> putFloat(prefix + "ally_ban_x_$i", value) }
+            enemyBanXRatios.forEachIndexed { i, value -> putFloat(prefix + "enemy_ban_x_$i", value) }
+            putFloat(prefix + "topAvatarYRatio", topAvatarYRatio)
+            putFloat(prefix + "topAvatarDiameterRatio", topAvatarDiameterRatio)
+            putFloat(prefix + "topAlly5XRatio", topAlly5XRatio)
+            putFloat(prefix + "topEnemy5XRatio", topEnemy5XRatio)
+            topAllyXRatios.forEachIndexed { i, value -> putFloat(prefix + "top_ally_x_$i", value) }
+            topEnemyXRatios.forEachIndexed { i, value -> putFloat(prefix + "top_enemy_x_$i", value) }
+            apply()
+        }
+    }
+
     companion object {
         private const val CURRENT_CALIBRATION_VERSION = 9
         private fun deviceModelKey(): String =
             "${android.os.Build.MANUFACTURER}:${android.os.Build.MODEL}".lowercase(java.util.Locale.ROOT)
+
+        /** Resolution-independent profile: density changes do not create a new calibration. */
+        internal fun captureProfileKey(width: Int, height: Int): String {
+            require(width > 0 && height > 0)
+            val landscapeWidth = maxOf(width, height)
+            val landscapeHeight = minOf(width, height)
+            val aspect = kotlin.math.round(landscapeWidth.toDouble() / landscapeHeight * 100.0).toInt()
+            return "${landscapeWidth >= landscapeHeight}_${aspect}"
+        }
+
+        /** Returns the capture-specific geometry, or null when this profile has not been calibrated. */
+        internal fun loadProfileFromPrefs(context: Context, profileKey: String): VisionCalibrationConfig? {
+            val prefs = context.getSharedPreferences("vision_calibration_prefs", Context.MODE_PRIVATE)
+            val prefix = "profile_${profileKey}_"
+            if (!prefs.contains(prefix + "ally_slot_x_0")) return null
+            val base = loadFromPrefs(context)
+            fun f(name: String, fallback: Float) = prefs.getFloat(prefix + name, fallback)
+            fun b(name: String, fallback: Boolean) = prefs.getBoolean(prefix + name, fallback)
+            return base.copy(
+                allyAvatarCenterX = f("allyAvatarCenterX", base.allyAvatarCenterX),
+                enemyAvatarCenterX = f("enemyAvatarCenterX", base.enemyAvatarCenterX),
+                avatarDiameterRatio = f("avatarDiameterRatio", base.avatarDiameterRatio),
+                allySlotYRatios = (0..4).map { f("ally_slot_y_$it", base.allySlotYRatios[it]) },
+                enemySlotYRatios = (0..4).map { f("enemy_slot_y_$it", base.enemySlotYRatios[it]) },
+                allySlotXRatios = (0..4).map { f("ally_slot_x_$it", base.allySlotXRatios[it]) },
+                enemySlotXRatios = (0..4).map { f("enemy_slot_x_$it", base.enemySlotXRatios[it]) },
+                allySlotDiameterRatios = (0..4).map { f("ally_slot_diam_$it", base.allySlotDiameterRatios[it]) },
+                enemySlotDiameterRatios = (0..4).map { f("enemy_slot_diam_$it", base.enemySlotDiameterRatios[it]) },
+                allyBanXRatios = (0..4).map { f("ally_ban_x_$it", base.allyBanXRatios[it]) },
+                enemyBanXRatios = (0..4).map { f("enemy_ban_x_$it", base.enemyBanXRatios[it]) },
+                allyBanYRatio = f("allyBanYRatio", base.allyBanYRatio),
+                enemyBanYRatio = f("enemyBanYRatio", base.enemyBanYRatio),
+                banDiameterRatio = f("banDiameterRatio", base.banDiameterRatio),
+                manualAllyBans = b("manualAllyBans", base.manualAllyBans),
+                manualEnemyBans = b("manualEnemyBans", base.manualEnemyBans),
+                topAvatarYRatio = f("topAvatarYRatio", base.topAvatarYRatio),
+                topAvatarDiameterRatio = f("topAvatarDiameterRatio", base.topAvatarDiameterRatio),
+                topAlly5XRatio = f("topAlly5XRatio", base.topAlly5XRatio),
+                topEnemy5XRatio = f("topEnemy5XRatio", base.topEnemy5XRatio),
+                topAllyXRatios = (0..4).map { f("top_ally_x_$it", base.topAllyXRatios[it]) },
+                topEnemyXRatios = (0..4).map { f("top_enemy_x_$it", base.topEnemyXRatios[it]) }
+            )
+        }
 
         /** Measured normalized capture coordinates; saved individual adjustments take precedence. */
         internal fun defaultsForDevice(manufacturer: String, model: String): VisionCalibrationConfig {

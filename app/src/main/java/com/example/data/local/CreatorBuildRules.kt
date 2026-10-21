@@ -3,6 +3,10 @@ package com.example.data.local
 /** Reglas únicas para evitar builds inválidas también en cachés antiguas. */
 object CreatorBuildRules {
     private fun key(value: String) = value.trim().lowercase()
+
+    fun hasDuplicates(items: List<String>): Boolean =
+        items.map(::key).filter { it.isNotBlank() }.size != items.map(::key).filter { it.isNotBlank() }.distinct().size
+
     fun overlap(core: List<String>, situational: List<String>): Boolean =
         core.map(::key).toSet().intersect(situational.map(::key).toSet()).isNotEmpty()
     fun supportStarterCount(core: List<String>): Int = core.count {

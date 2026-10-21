@@ -49,18 +49,32 @@ android {
       enableV3Signing = true
     }
     create("release") {
-      val keystorePath = System.getenv("KEYSTORE_PATH") ?: "${rootDir}/my-upload-key.jks"
-      val releaseKeystore = file(keystorePath)
-      if (releaseKeystore.exists() && System.getenv("STORE_PASSWORD") != null) {
-        storeFile = releaseKeystore
-        storePassword = System.getenv("STORE_PASSWORD")
-        keyAlias = "upload"
-        keyPassword = System.getenv("KEY_PASSWORD")
+      // Pull-request APKs may use the deliberately ephemeral test identity
+      // prepared by the workflow. Production/main must provide the explicit
+      // production keystore and credentials below; it never falls back to it.
+      val ephemeralTestSigning = System.getenv("COACH_ALLOW_EPHEMERAL_TEST_SIGNING") == "true"
+      val keystorePath = if (ephemeralTestSigning || System.getenv("COACH_REQUIRE_PERSISTENT_SIGNING") == "true") {
+        "${rootDir}/github.keystore"
       } else {
-        storeFile = if (file("${rootDir}/github.keystore").exists()) file("${rootDir}/github.keystore") else file("${rootDir}/debug.keystore")
-        storePassword = "android"
-        keyAlias = "androiddebugkey"
-        keyPassword = "android"
+        System.getenv("KEYSTORE_PATH") ?: "${rootDir}/my-upload-key.jks"
+      }
+      val releaseKeystore = file(keystorePath)
+      val storePassword = if (ephemeralTestSigning) "android" else System.getenv("STORE_PASSWORD")
+      val keyPassword = if (ephemeralTestSigning) "android" else System.getenv("KEY_PASSWORD")
+      val releaseTaskRequested = gradle.startParameter.taskNames.any { task ->
+        task.contains("Release", ignoreCase = true)
+      }
+      if (releaseKeystore.exists() && !storePassword.isNullOrBlank() && !keyPassword.isNullOrBlank()) {
+        storeFile = releaseKeystore
+        this.storePassword = storePassword
+        keyAlias = System.getenv("COACH_SIGNING_KEY_ALIAS")
+          ?: if (ephemeralTestSigning) "androiddebugkey" else "upload"
+        this.keyPassword = keyPassword
+      } else if (releaseTaskRequested) {
+        error(
+          "No se puede compilar release: falta KEYSTORE_PATH/STORE_PASSWORD/KEY_PASSWORD " +
+            "o el keystore de producción no existe. Nunca se usará una clave de debug."
+        )
       }
       enableV2Signing = true
       enableV3Signing = true

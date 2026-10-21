@@ -11,8 +11,11 @@ internal object CaptureCoordinateSpace {
         val scale = minOf(frameWidth.toDouble() / sourceWidth, frameHeight.toDouble() / sourceHeight)
         val offsetX = (frameWidth - sourceWidth * scale) / 2.0
         val offsetY = (frameHeight - sourceHeight * scale) / 2.0
-        return Rect(floor(rect.left * scale + offsetX).toInt(), floor(rect.top * scale + offsetY).toInt(),
-            ceil(rect.right * scale + offsetX).toInt(), ceil(rect.bottom * scale + offsetY).toInt())
+        val left = floor(rect.left * scale + offsetX).toInt().coerceIn(0, frameWidth)
+        val top = floor(rect.top * scale + offsetY).toInt().coerceIn(0, frameHeight)
+        val right = ceil(rect.right * scale + offsetX).toInt().coerceIn(left, frameWidth)
+        val bottom = ceil(rect.bottom * scale + offsetY).toInt().coerceIn(top, frameHeight)
+        return Rect(left, top, right, bottom)
     }
 }
 

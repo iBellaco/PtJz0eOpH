@@ -246,15 +246,7 @@ private fun OverlayItemsTabContent(
             horizontalArrangement = Arrangement.spacedBy(4.dp),
             modifier = Modifier.fillMaxWidth()
         ) {
-            val desiredOrder = com.example.data.WildRiftItemsData.officialCategoryOrder + listOf(
-                "Objetos con Daños Físicos",
-                "Objetos de Daño Mágico",
-                "Objetos Defensivos",
-                "Objetos de Apoyo",
-                "Objetos de Hechizo Activos",
-                "Botas Nivel 2",
-                "Botas Nivel 3"
-            )
+            val desiredOrder = com.example.data.WildRiftItemsData.catalogCategoryOrder
             val itemsCats = WildRiftRepository.items.map { it.category }.filter { it.isNotBlank() }.distinct()
             val dynamicCats = itemsCats.sortedBy { cat ->
                 val idx = desiredOrder.indexOfFirst { cat.equals(it, ignoreCase = true) }

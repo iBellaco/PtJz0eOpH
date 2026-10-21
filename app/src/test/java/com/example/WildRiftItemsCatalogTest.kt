@@ -199,6 +199,26 @@ class WildRiftItemsCatalogTest {
     }
 
     @Test
+    fun `catalog uses only canonical item categories`() {
+        assertTrue(WildRiftItemsData.catalogIntegrityErrors().joinToString("\n"),
+            WildRiftItemsData.catalogIntegrityErrors().isEmpty())
+        assertEquals(
+            listOf("Objetos con Daños Físicos", "Objetos de Daño Mágico", "Objetos Defensivos", "Objetos de Apoyo", "Botas Nivel 2", "Botas Nivel 3", "Básico", "Nivel Medio"),
+            WildRiftItemsData.catalogCategoryOrder
+        )
+        assertFalse("Defensa no debe ser una etiqueta de objeto", WildRiftItemsData.validCatalogCategories.contains("Defensa"))
+        assertFalse("Tirador no debe ser una etiqueta de objeto", WildRiftItemsData.validCatalogCategories.contains("Tirador"))
+
+        val catalogIds = WildRiftItemsData.catalogCategoryOrder
+            .flatMap { WildRiftItemsData.getCatalogGroups(it) }
+            .flatMap { it.items }
+            .distinctBy { it.id }
+            .map { it.id }
+            .toSet()
+        assertEquals(WildRiftItemsData.list.map { it.id }.toSet(), catalogIds)
+    }
+
+    @Test
     fun `catalog contains zero duplicate items and zero legacy PC items`() {
         val allItems = WildRiftItemsData.list
         val ids = allItems.map { it.id }
