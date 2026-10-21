@@ -53,8 +53,10 @@ android {
       // prepared by the workflow. Production/main must provide the explicit
       // production keystore and credentials below; it never falls back to it.
       val ephemeralTestSigning = System.getenv("COACH_ALLOW_EPHEMERAL_TEST_SIGNING") == "true"
-      val keystorePath = if (ephemeralTestSigning || System.getenv("COACH_REQUIRE_PERSISTENT_SIGNING") == "true") {
-        "${rootDir}/github.keystore"
+      val persistentSigning = System.getenv("COACH_REQUIRE_PERSISTENT_SIGNING") == "true"
+      val configuredKeystorePath = System.getenv("KEYSTORE_PATH")
+      val keystorePath = if (ephemeralTestSigning || persistentSigning) {
+        configuredKeystorePath ?: "${rootDir}/github.keystore"
       } else {
         System.getenv("KEYSTORE_PATH") ?: "${rootDir}/my-upload-key.jks"
       }
