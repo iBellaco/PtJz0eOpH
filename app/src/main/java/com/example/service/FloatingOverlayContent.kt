@@ -205,14 +205,14 @@ internal fun FloatingOverlayContent(
     var redirectedDraftKey by remember { mutableStateOf<String?>(null) }
 
     fun selectHubTab(tab: OverlayHubTab) {
-        selectedChampionDetail = null
+        // Keep the opened champion build while switching between Hub tabs.
+        // It is dismissed explicitly with the sheet close/back action.
         overlayHubTab = tab
     }
 
     LaunchedEffect(allies.toList(), enemies.toList(), activeRole) {
-        val completed = allies.all { it != null } && enemies.all { it != null } &&
-            (allies.filterNotNull() + enemies.filterNotNull()).map { it.id }.distinct().size == 10
-        if (!completed) {
+        val ownChampion = DraftCompletionNavigation.ownChampionWhenComplete(allies, enemies, activeRole)
+        if (ownChampion == null) {
             redirectedDraftKey = null
             return@LaunchedEffect
         }
@@ -220,11 +220,8 @@ internal fun FloatingOverlayContent(
         val draftKey = (allies.filterNotNull() + enemies.filterNotNull()).joinToString("|") { it.id } + "|" + activeRole.name
         if (redirectedDraftKey == draftKey) return@LaunchedEffect
         redirectedDraftKey = draftKey
-        val ownChampion = allies.getOrNull(defaultRoles.indexOf(activeRole))
-        if (ownChampion != null) {
-            overlayHubTab = OverlayHubTab.DRAFT
-            selectedChampionDetail = ownChampion
-        }
+        overlayHubTab = OverlayHubTab.DRAFT
+        selectedChampionDetail = ownChampion
     }
 
     val explicitEnemyOpponent = remember(activeRole, enemies.toList()) {

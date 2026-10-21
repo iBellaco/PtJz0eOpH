@@ -6,6 +6,12 @@ service cloud.firestore {
         && get(/databases/$(database)/documents/account_deletions/$(request.auth.uid)).data.status in ['PROCESSING','DATA_PURGED','COMPLETED'];
     }
     function signedIn() { return request.auth != null && !deletionBlocksSession(); }
+    // Firebase exposes this claim only after the email verification flow has
+    // completed. Anonymous/custom service sessions are not user registrations.
+    function verifiedEmail() {
+      return request.auth != null && request.auth.token.get('email_verified', false) == true;
+    }
+    function verifiedSignedIn() { return signedIn() && verifiedEmail(); }
     function recentSignIn() {
       return request.auth != null && request.auth.token.get('auth_time', 0) * 1000 > request.time.toMillis() - 600000;
     }
@@ -15,12 +21,12 @@ service cloud.firestore {
       return acc.get('banned', false) == false && acc.get('role', '') != 'banned'
         && acc.get('secondaryRole', '') != 'banned';
     }
-    function isAdmin() { return signedIn() && request.auth.token.get('admin', false) == true && activeStaffAccount(); }
+    function isAdmin() { return verifiedSignedIn() && request.auth.token.get('admin', false) == true && activeStaffAccount(); }
     function isModerator() {
       let acc = account();
       let role = acc.get('role', '');
       let sec = acc.get('secondaryRole', '');
-      return signedIn() && activeStaffAccount() && (
+      return verifiedSignedIn() && activeStaffAccount() && (
         isAdmin() ||
         role in ['moderador', 'moderator', 'MODERADOR'] ||
         sec in ['moderador', 'moderator', 'MODERADOR']
@@ -30,7 +36,7 @@ service cloud.firestore {
       let acc = account();
       let role = acc.get('role', '');
       let sec = acc.get('secondaryRole', '');
-      return signedIn() && activeStaffAccount() && (
+      return verifiedSignedIn() && activeStaffAccount() && (
         isAdmin() ||
         role in ['streamer', 'STREAMER'] ||
         sec in ['streamer', 'STREAMER']
@@ -78,7 +84,7 @@ service cloud.firestore {
         let availability = get(/databases/$(database)/documents/system_config/account_deletion_service).data;
         return owner() && recentSignIn() && request.auth.token.get('email', '') != 'coach.guest.reader@gmail.com'
           && request.auth.token.get('firebase', {}).get('sign_in_provider', '') == 'password'
-          && availability.enabled == true && availability.graceDays == 60
+          && verifiedEmail() && availability.enabled == true && availability.graceDays == 60
           && availability.checkedAt > request.time - duration.value(36, 'h')
           && request.resource.data.keys().hasOnly(['userId','requestId','status','graceDays','requestedAt'])
           && request.resource.data.userId == userId && request.resource.data.status == 'PENDING'
@@ -185,15 +191,15 @@ service cloud.firestore {
         && (roleChange || verificationChange);
     }
     match /users/{userId} {
-      allow read: if signedIn() && (request.auth.uid == userId || isAdmin() || isModerator());
-      allow create: if signedIn() && request.auth.uid == userId && request.resource.data.role == 'free'
+      allow read: if (verifiedSignedIn() && request.auth.uid == userId) || isAdmin() || isModerator();
+      allow create: if verifiedSignedIn() && request.auth.uid == userId && request.resource.data.role == 'free'
         && !request.resource.data.keys().hasAny(['banned','premiumUntil','secondaryRole','isVerified','verified','admin','subscriptionHistory','subscriptionPlan','lastPremiumChangedAt','lastPremiumChangedBy','lastPremiumDays','lastPremiumExtend','lastPremiumOperationId','lastModifiedByAdmin','lastEconomyOperation','subscribedCreators','creatorSubscriberCount','last_role_update','lastRoleChangedBy','bannedTimestamp'])
         && request.resource.data.get('blueEssence', 0) == 0 && request.resource.data.get('orangeEssence', 0) == 0
         && request.resource.data.get('registeredDevices', []).size() <= 2;
       // Balances and purchases remain service-only. Roles and Premium gifts use bounded signed-admin validation.
       allow update: if signedIn()
         && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['blueEssence','orangeEssence','premiumUntil','subscriptionPlan','subscriptionHistory','lastPremiumChangedAt','lastPremiumChangedBy','lastPremiumDays','lastPremiumExtend','lastPremiumOperationId','lastEconomyOperation','subscribedCreators','creatorSubscriberCount','role','banned','bannedTimestamp','last_role_update','lastRoleChangedBy'])
-        && (isAdmin() || (request.auth.uid == userId
+        && (isAdmin() || (verifiedSignedIn() && request.auth.uid == userId
           && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role','secondaryRole','banned','isVerified','verified','admin','lastModifiedByAdmin','lastModeratorActionId'])
           && request.resource.data.get('registeredDevices', []).size() <= 2)) || administrativeRoleChange(userId) || administrativePremiumChange(userId) || moderatorAccountChange(userId);
       allow delete: if false;
@@ -267,7 +273,7 @@ service cloud.firestore {
       function validCommand() {
         let d = request.resource.data;
         let p = d.payload;
-        return signedIn() && request.auth.uid == userId
+        return verifiedSignedIn() && request.auth.uid == userId
           && request.auth.token.get('email', '') != 'coach.guest.reader@gmail.com'
           && request.auth.token.get('firebase', {}).get('sign_in_provider', '') != 'anonymous'
           && d.keys().hasOnly(['userId','operationId','payload','status','schema','createdAt','authTime'])
@@ -324,8 +330,8 @@ service cloud.firestore {
           && images[1] is string && images[1].size() > 0 && images[1].size() <= 275000
           && images[2] is string && images[2].size() > 0 && images[2].size() <= 275000;
       }
-      allow create: if isAdmin() || (signedIn() && request.resource.data.get('category', '') == 'MODERATOR_REQUEST' && isModerator()) ||
-        (signedIn() && request.resource.data.userId == request.auth.uid && (request.resource.data.get('userEmail', '').lower() == request.auth.token.get('email', '').lower() || request.resource.data.get('userEmail', '') == '')
+      allow create: if isAdmin() || (verifiedSignedIn() && request.resource.data.get('category', '') == 'MODERATOR_REQUEST' && isModerator()) ||
+        (verifiedSignedIn() && request.resource.data.userId == request.auth.uid && (request.resource.data.get('userEmail', '').lower() == request.auth.token.get('email', '').lower() || request.resource.data.get('userEmail', '') == '')
           && (request.resource.data.get('tag', '') != 'VERIFICAR' || validVerificationPhotos())
           && request.resource.data.staffVisible == !sponsor(request.resource.data)
           && request.resource.data.status == 'PENDING' && request.resource.data.get('adminReply', '') == ''
@@ -345,7 +351,7 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
     match /feedbacks/{feedbackId} {
-      allow create: if signedIn() && request.resource.data.userId == request.auth.uid;
+      allow create: if verifiedSignedIn() && request.resource.data.userId == request.auth.uid;
       allow read, update: if signedIn() && (isAdmin() || resource.data.userId == request.auth.uid);
       allow delete: if isAdmin();
     }

@@ -61,4 +61,17 @@ class DraftBanWorkerTest {
             assertEquals(true,scanner.recoverFirstPick(0,1))
         } finally { scanner.resetSlotMemory() }
     }
+
+    @Test fun completedDraftNavigationTargetsOwnLaneChampionOnly() {
+        val allies = listOf(
+            com.example.model.Champion(id = "top"),
+            com.example.model.Champion(id = "jungle"),
+            com.example.model.Champion(id = "mid"),
+            com.example.model.Champion(id = "adc"),
+            com.example.model.Champion(id = "support")
+        )
+        val enemies = List(5) { index -> com.example.model.Champion(id = "enemy$index") }
+        assertEquals("mid", DraftCompletionNavigation.ownChampionWhenComplete(allies, enemies, LaneRole.MID)?.id)
+        assertNull(DraftCompletionNavigation.ownChampionWhenComplete(allies, enemies.dropLast(1), LaneRole.MID))
+    }
 }

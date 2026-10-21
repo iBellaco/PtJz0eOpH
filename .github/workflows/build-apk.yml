@@ -35,7 +35,7 @@ jobs:
         COACH_SIGNING_CERT_SHA256: ${{ vars.COACH_SIGNING_CERT_SHA256 }}
         COACH_REQUIRE_PERSISTENT_SIGNING: 'true'
       run: python3 .github/scripts/restore-private-signing.py --check-access
-  source-integrity:
+  catalog-validation:
     needs: find-validated-apk
     if: needs.find-validated-apk.outputs.run_id == ''
     runs-on: ubuntu-latest
@@ -48,7 +48,7 @@ jobs:
         python3 tools/update-champion-builds.py --check
         bash tools/audit-portuguese.sh
   build-apk:
-    needs: [find-validated-apk, source-integrity, security-and-data-tests, core-and-rendered]
+    needs: [find-validated-apk, catalog-validation, security-auth-tests, scanner-tests, core-and-rendered]
     if: needs.find-validated-apk.outputs.run_id == ''
     runs-on: ubuntu-latest
     timeout-minutes: 30
@@ -213,7 +213,7 @@ jobs:
         echo "asset_name=$ASSET_NAME" >> "$GITHUB_OUTPUT"
         echo 'La revisión temprana no se publicó. Los artefactos firmados siguen disponibles para las pruebas del APK instalado.' >> "$GITHUB_STEP_SUMMARY"
   core-and-rendered:
-    needs: [find-validated-apk, security-and-data-tests]
+    needs: [find-validated-apk, security-auth-tests]
     if: needs.find-validated-apk.outputs.run_id == ''
     runs-on: ubuntu-latest
     timeout-minutes: 60
@@ -308,8 +308,8 @@ jobs:
         name: portuguese-focused-audit
         path: app/build/reports/portuguese-focused/
         retention-days: 14
-  security-and-data-tests:
-    needs: [find-validated-apk, source-integrity]
+  security-auth-tests:
+    needs: [find-validated-apk, catalog-validation]
     if: needs.find-validated-apk.outputs.run_id == ''
     runs-on: ubuntu-latest
     timeout-minutes: 30
@@ -335,21 +335,26 @@ jobs:
         npm test --prefix server/account-deletion
     - name: Test cloud permissions and transactional economy in isolated emulators
       run: npm test --prefix tests/firestore
-    - name: Check production matchup rules before APK compilation
-      env:
-        CI: 'true'
-      run: python3 test_matchup_rules.py
-    - name: Check production scraper with offline fixtures before APK compilation
-      env:
-        CI: 'true'
-      run: python3 test_scraper.py
     - name: Upload required data-test reports
       if: always()
       uses: actions/upload-artifact@v4
       with:
-        name: security-and-data-tests
+        name: security-auth-tests
         path: app/build/test-results/testDebugUnitTest/TEST-*.xml
         retention-days: 14
+  scanner-tests:
+    needs: [find-validated-apk, catalog-validation]
+    if: needs.find-validated-apk.outputs.run_id == ''
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+    - uses: actions/checkout@v4
+    - name: Test scanner and matchup rules with offline fixtures
+      env:
+        CI: 'true'
+      run: |
+        python3 test_matchup_rules.py
+        python3 test_scraper.py
   installed-audit:
     needs:
     - build-apk
@@ -436,7 +441,8 @@ jobs:
     if: always()
     needs:
     - find-validated-apk
-    - security-and-data-tests
+    - security-auth-tests
+    - scanner-tests
     - build-apk
     - core-and-rendered
     - installed-audit
@@ -445,7 +451,8 @@ jobs:
     steps:
     - name: Require all validations to pass
       env:
-        DATA_RESULT: ${{ needs.security-and-data-tests.result }}
+        DATA_RESULT: ${{ needs.security-auth-tests.result }}
+        SCANNER_RESULT: ${{ needs.scanner-tests.result }}
         BUILD_RESULT: ${{ needs.build-apk.result }}
         RENDERED_RESULT: ${{ needs.core-and-rendered.result }}
         DEVICE_RESULT: ${{ needs.installed-audit.result }}
@@ -455,7 +462,7 @@ jobs:
       run: |
         python3 - <<'PYRESULT'
         import os
-        results = {key: os.environ[key] for key in ('DATA_RESULT', 'BUILD_RESULT', 'RENDERED_RESULT', 'DEVICE_RESULT', 'SPANISH_RESULT')}
+        results = {key: os.environ[key] for key in ('DATA_RESULT', 'SCANNER_RESULT', 'BUILD_RESULT', 'RENDERED_RESULT', 'DEVICE_RESULT', 'SPANISH_RESULT')}
         print(results)
         expected = 'skipped' if os.environ.get('REUSE_RUN') and os.environ.get('REUSE_RESULT') == 'success' else 'success'
         if any(value != expected for value in results.values()):
@@ -569,6 +576,30 @@ jobs:
       with:
         script: |
           await require('./.github/scripts/cleanup-completed-runs.cjs')({ github, context, core });
+  workflow-report:
+    if: always()
+    needs:
+    - find-validated-apk
+    - catalog-validation
+    - security-auth-tests
+    - scanner-tests
+    - build-apk
+    - core-and-rendered
+    - installed-audit
+    - installed-spanish
+    - build-and-release
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+    steps:
+    - uses: actions/checkout@v4
+    - name: Publish exact workflow failure report
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_REPOSITORY: ${{ github.repository }}
+        GITHUB_RUN_ID: ${{ github.run_id }}
+      run: python3 .github/scripts/workflow-failure-report.py
 'on':
   push:
     branches:

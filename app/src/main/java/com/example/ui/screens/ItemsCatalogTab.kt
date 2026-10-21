@@ -90,7 +90,9 @@ internal fun ItemsCatalogTab() {
 
     val allItems = WildRiftRepository.items
 
-    val allCategories = WildRiftItemsData.officialCategoryOrder
+    // El catálogo se filtra por la categoría oficial del objeto, no por el rol
+    // recomendado. Los roles se mantienen para las recomendaciones de builds.
+    val allCategories = WildRiftItemsData.catalogCategoryOrder
 
     val filterOptions = remember(allCategories) {
         val options = mutableListOf("TODOS" to "Todos")
@@ -319,7 +321,7 @@ internal fun ItemsCatalogTab() {
                         onClick = { selectedCategory = if (key == "TODOS") null else key },
                         label = {
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text(tr(if (label.equals("Defensa", ignoreCase = true)) "Objetos Defensivos" else label), fontSize = 11.sp)
+                                Text(tr(label), fontSize = 11.sp)
                                 Spacer(modifier = Modifier.width(4.dp))
                                 Text(
                                     text = com.example.util.tr("($count)"),
@@ -369,7 +371,7 @@ internal fun ItemsCatalogTab() {
                                 modifier = Modifier.padding(bottom = 10.dp)
                             ) {
                                 Text(
-                                    text = tr(if (categoryName.equals("Defensa", ignoreCase = true)) "Objetos Defensivos" else categoryName).uppercase(),
+                                    text = tr(categoryName).uppercase(),
                                     color = catColor,
                                     fontWeight = FontWeight.Black,
                                     fontSize = 13.5.sp,

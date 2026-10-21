@@ -4,8 +4,8 @@ import crypto from 'node:crypto';
 import { initializeTestEnvironment, assertSucceeds, assertFails } from '@firebase/rules-unit-testing';
 import { doc, setDoc, getDoc, updateDoc, deleteDoc, getDocs, getCountFromServer, collection, collectionGroup, query, where, runTransaction, writeBatch, serverTimestamp, Timestamp, increment, onSnapshot } from 'firebase/firestore';
 const env = await initializeTestEnvironment({ projectId: 'demo-coach-tests', firestore: { host: '127.0.0.1', port: 8088, rules: readFileSync(new URL('../../firestore.rules', import.meta.url), 'utf8') } });
-const db = (uid, extra = {}) => env.authenticatedContext(uid, { email: `${uid}@test.invalid`, ...extra }).firestore();
-const user = db('user'), moderator = db('mod'), admin = db('admin', {admin:true}), other = db('other'), streamer = db('s1');
+const db = (uid, extra = {}) => env.authenticatedContext(uid, { email: `${uid}@test.invalid`, email_verified: true, ...extra }).firestore();
+const user = db('user'), moderator = db('mod'), admin = db('admin', {admin:true}), other = db('other'), streamer = db('s1'), unverified = db('unverified', {email_verified:false});
 const greeting = 'Hola. El sistema ha recibido tu mensaje. El equipo de Coach te responderá aquí. Ningún miembro del staff te pedirá información privada sobre tu cuenta de juego ni sobre tu vida personal.';
 const initial = id => [{ id: `${id}_initial`, senderRole: 'USER', senderUid: 'user', text: 'Ayuda', timestampMillis: 100 }, { id: `${id}_system`, senderRole: 'SYSTEM', senderUid: '', text: greeting, timestampMillis: 101 }];
 const ticket = (id, tag = 'SOPORTE') => ({ userId: 'user', userEmail: 'user@test.invalid', tag, type: tag, staffVisible: tag !== 'PATROCINADOR', userCanReply:false, status: 'PENDING', conversation: initial(id), userRead: true, isRead: true, hasNewAdminReply: false });
@@ -23,6 +23,12 @@ try {
     const store = context.firestore();
     for (const [uid, role] of [['user','free'],['other','free'],['mod','moderador'],['admin','admin'],['s1','streamer'],['s2','streamer']]) await setDoc(doc(store, 'users', uid), { role, email: `${uid}@test.invalid`, registeredDevices: [] });
     await setDoc(doc(store, 'system_config', 'streamer_live'), { entries: [] });
+  });
+  await test('unverified accounts cannot create a user profile', async()=>{
+    await assertFails(setDoc(doc(unverified,'users/unverified'),{
+      uid:'unverified', email:'unverified@test.invalid', name:'Unverified', role:'free',
+      blueEssence:0, orangeEssence:0, registeredDevices:[]
+    }));
   });
   const recovery=db('user',{auth_time:Math.floor(Date.now()/1000),firebase:{sign_in_provider:'password'}});
   const recoveryRef=doc(recovery,'account_deletions/user');

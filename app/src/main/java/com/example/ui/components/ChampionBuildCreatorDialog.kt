@@ -1250,7 +1250,11 @@ fun ChampionBuildCreatorDialog(
                                  Toast.makeText(context, com.example.util.appTr("Debes añadir exactamente 3 objetos core"), Toast.LENGTH_SHORT).show()
                                  return@Button
                              }
-                            if (com.example.data.local.CreatorBuildRules.overlap(coreItems.map { it.name }, situationalItems.map { it.name })) {
+                            val coreNames = coreItems.map { it.name }
+                            val situationalNames = situationalItems.map { it.name }
+                            if (com.example.data.local.CreatorBuildRules.hasDuplicates(coreNames) ||
+                                com.example.data.local.CreatorBuildRules.hasDuplicates(situationalNames) ||
+                                com.example.data.local.CreatorBuildRules.overlap(coreNames, situationalNames)) {
                                 Toast.makeText(context, duplicateItemsMessage, Toast.LENGTH_LONG).show()
                                 return@Button
                             }

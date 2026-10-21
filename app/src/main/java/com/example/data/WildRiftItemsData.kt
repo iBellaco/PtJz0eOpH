@@ -2477,6 +2477,11 @@ WildRiftItem(
         return list.firstOrNull { it.id.equals(cleanId, ignoreCase = true) }
     }
 
+    /**
+     * Categorías de recomendación por rol. No son etiquetas del catálogo de objetos.
+     * Se conserva para las builds y recomendaciones que necesitan consultar objetos
+     * adecuados para una posición.
+     */
     val officialCategoryOrder: List<String> = listOf(
         "Luchador",
         "Asesino",
@@ -2487,6 +2492,46 @@ WildRiftItem(
         "Botas Nivel 2",
         "Botas Nivel 3"
     )
+
+    /** Etiquetas que sí puede mostrar el catálogo oficial de objetos. */
+    val catalogCategoryOrder: List<String> = listOf(
+        "Objetos con Daños Físicos",
+        "Objetos de Daño Mágico",
+        "Objetos Defensivos",
+        "Objetos de Apoyo",
+        "Botas Nivel 2",
+        "Botas Nivel 3",
+        "Básico",
+        "Nivel Medio"
+    )
+
+    /** Categorías de componentes, visibles solo dentro del nivel de construcción. */
+    val componentCategoryOrder: List<String> = listOf("Básico", "Nivel Medio")
+
+    /** Todas las etiquetas permitidas en los datos locales del catálogo. */
+    val validCatalogCategories: Set<String> = (catalogCategoryOrder + componentCategoryOrder).toSet()
+
+    /**
+     * Devuelve todos los problemas de clasificación detectables sin modificar los datos.
+     * La comprobación se utiliza en tests y puede reutilizarse antes de publicar un catálogo.
+     */
+    fun catalogIntegrityErrors(): List<String> {
+        val errors = mutableListOf<String>()
+        list.forEach { item ->
+            if (item.category !in validCatalogCategories) {
+                errors += "${item.id}: categoría inválida '${item.category}'"
+            }
+            if (item.id.isBlank()) errors += "Objeto sin id"
+            if (item.name.isBlank()) errors += "${item.id}: objeto sin nombre"
+        }
+        val knownIds = list.map { it.id }.toSet()
+        categoryItemIds.forEach { (role, ids) ->
+            ids.filterNot { it in knownIds }.forEach { missing ->
+                errors += "$role: id de objeto inexistente '$missing'"
+            }
+        }
+        return errors
+    }
 
     val categoryItemIds: Map<String, List<String>> = mapOf(
         "Luchador" to listOf(

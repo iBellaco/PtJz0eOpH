@@ -355,8 +355,23 @@ object DraftVisionScanner {
     private var alignedBase: VisionCalibrationConfig? = null
     private var alignedSize = 0 to 0
     private var lastAlignmentAt = 0L
+    private var calibrationContext: android.content.Context? = null
+    private var activeCaptureProfile: String? = null
+    private var globalCalibrationConfig = VisionCalibrationConfig()
     @Synchronized
     internal fun configForFrame(bitmap: Bitmap): VisionCalibrationConfig {
+        val profile = VisionCalibrationConfig.captureProfileKey(bitmap.width, bitmap.height)
+        if (profile != activeCaptureProfile) {
+            val profileConfig = calibrationContext?.let { context ->
+                VisionCalibrationConfig.loadProfileFromPrefs(context, profile)
+            }
+            val selected = profileConfig ?: globalCalibrationConfig
+            calibrationConfig = selected
+            calibrationConfigFlow.value = selected
+            alignedConfigFlow.value = selected
+            activeCaptureProfile = profile
+            alignedBase = null
+        }
         val base = AdaptiveScreenLayoutEngine.computeAdaptiveConfig(bitmap.width, bitmap.height, calibrationConfig)
         val defaults = VisionCalibrationConfig.defaultsForDevice(android.os.Build.MANUFACTURER, android.os.Build.MODEL)
         val manual = calibrationConfig.allySlotXRatios != defaults.allySlotXRatios ||
@@ -381,7 +396,10 @@ object DraftVisionScanner {
 
     @Synchronized
     fun initCalibration(context: android.content.Context) {
+        calibrationContext = context.applicationContext
+        activeCaptureProfile = null
         calibrationConfig = VisionCalibrationConfig.loadFromPrefs(context)
+        globalCalibrationConfig = calibrationConfig
         calibrationConfigFlow.value = calibrationConfig
         alignedConfigFlow.value = calibrationConfig
         alignedBase = null
@@ -399,18 +417,22 @@ object DraftVisionScanner {
             banSlotsFlow.value = bannedPortraitScanner.slots
         }
         calibrationConfig = newConfig
+        globalCalibrationConfig = newConfig
         calibrationConfigFlow.value = newConfig
         alignedConfigFlow.value = newConfig
         alignedBase = null
         newConfig.saveToPrefs(context)
+        activeCaptureProfile?.let { newConfig.saveProfileToPrefs(context, it) }
     }
 
     @Synchronized
     fun resetCalibration(context: android.content.Context) {
         calibrationConfig = VisionCalibrationConfig.resetToDefaults(context)
+        globalCalibrationConfig = calibrationConfig
         calibrationConfigFlow.value = calibrationConfig
         alignedConfigFlow.value = calibrationConfig
         alignedBase = null
+        activeCaptureProfile = null
     }
 
     private var recognizerInstance: com.google.mlkit.vision.text.TextRecognizer? = null
