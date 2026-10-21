@@ -49,17 +49,25 @@ android {
       enableV3Signing = true
     }
     create("release") {
-      val keystorePath = System.getenv("KEYSTORE_PATH") ?: "${rootDir}/my-upload-key.jks"
+      // Pull-request APKs may use the deliberately ephemeral test identity
+      // prepared by the workflow. Production/main must provide the explicit
+      // production keystore and credentials below; it never falls back to it.
+      val ephemeralTestSigning = System.getenv("COACH_ALLOW_EPHEMERAL_TEST_SIGNING") == "true"
+      val keystorePath = if (ephemeralTestSigning) {
+        "${rootDir}/github.keystore"
+      } else {
+        System.getenv("KEYSTORE_PATH") ?: "${rootDir}/my-upload-key.jks"
+      }
       val releaseKeystore = file(keystorePath)
-      val storePassword = System.getenv("STORE_PASSWORD")
-      val keyPassword = System.getenv("KEY_PASSWORD")
+      val storePassword = if (ephemeralTestSigning) "android" else System.getenv("STORE_PASSWORD")
+      val keyPassword = if (ephemeralTestSigning) "android" else System.getenv("KEY_PASSWORD")
       val releaseTaskRequested = gradle.startParameter.taskNames.any { task ->
         task.contains("Release", ignoreCase = true)
       }
       if (releaseKeystore.exists() && !storePassword.isNullOrBlank() && !keyPassword.isNullOrBlank()) {
         storeFile = releaseKeystore
         this.storePassword = storePassword
-        keyAlias = "upload"
+        keyAlias = if (ephemeralTestSigning) "androiddebugkey" else "upload"
         this.keyPassword = keyPassword
       } else if (releaseTaskRequested) {
         error(
