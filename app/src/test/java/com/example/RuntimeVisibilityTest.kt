@@ -347,14 +347,27 @@ class RuntimeVisibilityTest(private val screen: String) {
             inspect("selection-preserved")
         }
         if (screen.startsWith("component-catalog-")) {
-            val section = mapOf("luchador" to "Luchador","asesino" to "Asesino","tirador" to "Tirador","magico" to "Mágico","defensa" to "Defensa","apoyo" to "Apoyo").getValue(screen.removePrefix("component-catalog-"))
+            val section = mapOf(
+                "luchador" to "Objetos con Daños Físicos",
+                "asesino" to "Objetos con Daños Físicos",
+                "tirador" to "Objetos con Daños Físicos",
+                "magico" to "Objetos de Daño Mágico",
+                "defensa" to "Objetos Defensivos",
+                "apoyo" to "Objetos de Apoyo"
+            ).getValue(screen.removePrefix("component-catalog-"))
+            val componentSection = mapOf(
+                "Objetos con Daños Físicos" to "Luchador",
+                "Objetos de Daño Mágico" to "Mágico",
+                "Objetos Defensivos" to "Defensa",
+                "Objetos de Apoyo" to "Apoyo"
+            ).getValue(section)
             compose.onNodeWithTag("catalog_section_$section").performClick()
             compose.onNodeWithContentDescription(appTr("Minimizar filtros")).performClick()
             compose.onNodeWithTag("catalog_level_3").performScrollTo().performClick()
             if (section == "Apoyo") compose.onNodeWithTag("catalog_group_${section}_Básico").assertDoesNotExist()
             else {
                 compose.onNodeWithTag("catalog_group_${section}_Básico").assertExists()
-                val first = com.example.data.WildRiftComponentItemsData.getItems(section,"Básico").first()
+                val first = com.example.data.WildRiftComponentItemsData.getItems(componentSection,"Básico").first()
                 compose.onNodeWithText(first.getLocalizedName("pt"),useUnmergedTree=true).assertExists()
             }
             compose.onNodeWithTag("catalog_group_${section}_Nivel Medio").assertDoesNotExist()
@@ -362,7 +375,7 @@ class RuntimeVisibilityTest(private val screen: String) {
             compose.onNodeWithTag("catalog_level_2").performScrollTo().performClick()
             compose.onNodeWithTag("catalog_group_${section}_Nivel Medio").assertExists()
             compose.onNodeWithTag("catalog_group_${section}_Básico").assertDoesNotExist()
-            val first = com.example.data.WildRiftComponentItemsData.getItems(section,"Nivel Medio").first()
+            val first = com.example.data.WildRiftComponentItemsData.getItems(componentSection,"Nivel Medio").first()
             compose.onNodeWithText(first.getLocalizedName("pt"),useUnmergedTree=true).assertExists()
             inspect("medium")
             compose.onNodeWithTag("catalog_level_0").performScrollTo().performClick()

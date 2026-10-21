@@ -2333,11 +2333,18 @@ WildRiftItem(
     fun getCatalogGroups(section: String): List<CatalogGroup> {
         val result = mutableListOf<CatalogGroup>()
         val original = getItemsForCategory(section)
-        val starters = if (section == "Apoyo") original.filter { it.id in setOf("spectral_sickle", "relic_shield") } else emptyList()
+        val componentSection = when (section) {
+            "Objetos con Daños Físicos" -> "Luchador"
+            "Objetos de Daño Mágico" -> "Mágico"
+            "Objetos Defensivos" -> "Defensa"
+            "Objetos de Apoyo" -> "Apoyo"
+            else -> section
+        }
+        val starters = if (componentSection == "Apoyo") original.filter { it.id in setOf("spectral_sickle", "relic_shield") } else emptyList()
         val completed = original.filter { it !in starters }
         if (completed.isNotEmpty()) result += CatalogGroup(section, "Completos", completed)
         listOf("Nivel Medio", "Básico").forEach { level ->
-            WildRiftComponentItemsData.getItems(section, level).takeIf { it.isNotEmpty() }
+            WildRiftComponentItemsData.getItems(componentSection, level).takeIf { it.isNotEmpty() }
                 ?.let { result += CatalogGroup(section, level, it) }
         }
         if (starters.isNotEmpty()) result += CatalogGroup(section, "Inicial", starters)
