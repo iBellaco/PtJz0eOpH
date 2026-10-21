@@ -364,7 +364,7 @@ class RuntimeVisibilityTest(private val screen: String) {
             compose.onNodeWithTag("catalog_section_$section").performClick()
             compose.onNodeWithContentDescription(appTr("Minimizar filtros")).performClick()
             compose.onNodeWithTag("catalog_level_3").performScrollTo().performClick()
-            if (section == "Apoyo") compose.onNodeWithTag("catalog_group_${section}_Básico").assertDoesNotExist()
+            if (componentSection == "Apoyo") compose.onNodeWithTag("catalog_group_${section}_Básico").assertDoesNotExist()
             else {
                 compose.onNodeWithTag("catalog_group_${section}_Básico").assertExists()
                 val first = com.example.data.WildRiftComponentItemsData.getItems(componentSection,"Básico").first()
