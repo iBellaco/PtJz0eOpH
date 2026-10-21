@@ -2,6 +2,8 @@ package com.example
 
 import android.app.Application
 import android.graphics.Bitmap
+import com.example.model.LaneRole
+import com.example.service.DraftCompletionNavigation
 import com.example.service.screen.*
 import kotlinx.coroutines.*
 import org.junit.Assert.*
