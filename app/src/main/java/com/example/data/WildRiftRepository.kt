@@ -23,7 +23,7 @@ import com.example.data.sync.ChampionMetaStats
 object WildRiftRepository {
 
     // Versión canónica oficial de Wild Rift
-    var CURRENT_PATCH_VERSION = "Parche 7.3b"
+    var CURRENT_PATCH_VERSION = "Parche 7.3c"
     var LAST_SYNC_STATUS = "Sincronización Automática Activa"
 
     // CDN base URL para avatares, habilidades, objetos y hechizos
@@ -57,8 +57,6 @@ object WildRiftRepository {
             url = "https://www.wildriftfire.com/tier-list", focusArea = "Categorías y builds"),
         MetaDataSource(id = "global_wildriftcore", name = "WildRiftCore", description = "Tier list Global",
             url = "https://wildriftcore.com/en/tierlist/", focusArea = "Categorías de campeones"),
-        MetaDataSource(id = "global_wildriftguides", name = "WildRiftGuides", description = "Tier list Global",
-            url = "https://www.wildriftguides.com/tier-list", focusArea = "Categorías de campeones")
     )
 
 

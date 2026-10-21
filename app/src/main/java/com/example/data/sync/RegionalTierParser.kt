@@ -95,18 +95,6 @@ object RegionalTierParser {
                 links(row, category, "a.tl-champ-tile[href]")
             }
         }
-        if (source == null || source == "wildriftguides") {
-            // Each role contains separate rows. Scope to its list so navigation
-            // and links for other categories cannot inherit the row's tier.
-            doc.select("section[id$=-tier-list] ul").forEach { list ->
-                val category = list.parent()?.selectFirst("span[title]")?.text()?.let(::tier)
-                    ?: return@forEach
-                list.select("a[href^=/champion/]").forEach { link ->
-                    val slug = link.attr("href").substringBefore('?').trim('/').split('/').getOrNull(1)
-                    if (!slug.isNullOrBlank()) add(slug, category)
-                }
-            }
-        }
         if (source == "wildriftcounter" || source == "thewildpick") {
             // Ambos sitios publican fichas de enfrentamiento; cuando incluyen una
             // etiqueta de tier se aprovecha únicamente esa etiqueta verificable.

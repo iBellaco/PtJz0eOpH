@@ -77,7 +77,7 @@ class GlobalTierSourceClientTest {
     @Test fun `outdated patch cannot enter the live consensus even with full champion coverage`() = runBlocking {
         MockWebServer().use { server ->
             server.enqueue(MockResponse().setBody("<span class='nav-patch-badge'>7.3a</span>" + html()))
-            val guarded = source(server).copy(expectedPatch = "7.3b")
+            val guarded = source(server).copy(expectedPatch = "7.3c")
             val result = GlobalTierSourceClient().fetch(guarded, known)
             assertFalse(result.status.isHealthy)
             assertEquals("7.3a", result.status.publishedPatch)
