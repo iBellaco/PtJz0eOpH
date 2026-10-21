@@ -348,7 +348,13 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-    - uses: actions/checkout@v4
+    - *id001
+    - *id002
+    - *id003
+    - *id004
+    - *id005
+    - name: Validate the committed Gradle wrapper
+      uses: gradle/actions/wrapper-validation@v4
     - name: Test scanner and matchup rules with offline fixtures
       env:
         CI: 'true'
