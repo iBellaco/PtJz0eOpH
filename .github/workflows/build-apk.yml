@@ -388,7 +388,7 @@ jobs:
     - name: Audit real reference slots and bans across capture profiles
       env:
         CI: 'true'
-      run: ./gradlew :app:testDebugUnitTest --tests com.example.DraftMultiDeviceAuditTest --tests com.example.DraftReferenceFrameTest --tests com.example.DraftRingAlignmentTest --tests com.example.CaptureCoordinateSpaceTest --max-workers=1 --stacktrace --no-daemon
+      run: ./gradlew :app:testDebugUnitTest --tests com.example.DraftMultiDeviceAuditTest --tests com.example.DraftReferenceFrameTest --tests com.example.DraftRingAlignmentTest --tests com.example.CaptureCoordinateSpaceTest --tests com.example.BannedPortraitScannerTest --max-workers=1 --stacktrace --no-daemon
     - name: Retain measured scanner coordinates and visual evidence
       if: always()
       uses: actions/upload-artifact@v5

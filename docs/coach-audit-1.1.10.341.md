@@ -32,6 +32,10 @@ avatares y no reproduce el escalado uniforme de la captura Android.
 - Cuatro perfiles de plegables comprueban áreas casi cuadradas. Se acepta el área
   observada del juego aunque su alto ocupe menos de media captura; se conservan
   los límites de búsqueda y el rechazo de fotogramas vacíos.
+- La siguiente pasada aprobó todos los escenarios con bandas y plegables; dos
+  escenarios 16:10 sin bandas detectaron un vecino texturizado que desplazaba el
+  quinto baneo. Se completan los vecinos visibles antes de elegir las cinco
+  posiciones exteriores. Se conserva el umbral de reconocimiento original.
 
 ## Modelos y escenarios
 
@@ -68,6 +72,7 @@ se presenta como una prueba realizada en un teléfono físico.
 - `app/src/main/java/com/example/service/screen/BannedPortraitScanner.kt`
 - `app/src/main/java/com/example/service/screen/DraftFrameGeometry.kt`
 - `app/src/test/java/com/example/DraftMultiDeviceAuditTest.kt`
+- `app/src/test/java/com/example/BannedPortraitScannerTest.kt`
 - `.github/workflows/build-apk.yml`
 - `app/build.gradle.kts`
 - Este reporte.

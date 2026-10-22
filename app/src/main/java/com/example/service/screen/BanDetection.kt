@@ -47,8 +47,11 @@ internal fun fillHeaderPositions(observations: List<BanObservation>, aspect: Flo
                 x += step
             }
         }
-        while (row.size < 5 && addAt(row.first().region.x - step, row.first().region.y)) { /* visible leading slots */ }
-        while (row.size < 5 && addAt(row.last().region.x + step, row.last().region.y)) { /* visible trailing slots */ }
+        // Five proposals can contain a textured neighbour and still miss a real
+        // end portrait. Complete visible neighbours before choosing the outer
+        // five-position window; never let the provisional count truncate it.
+        while (row.size < 7 && addAt(row.first().region.x - step, row.first().region.y)) { /* visible leading slots */ }
+        while (row.size < 7 && addAt(row.last().region.x + step, row.last().region.y)) { /* visible trailing slots */ }
     }
     // Template similarity alone can match a textured background outside the row.
     // Select the five circles with consistent spacing before latching identities.
