@@ -13,17 +13,22 @@ internal object PortraitMatcher {
             if (nx * nx + ny * ny <= 0.38f * 0.38f) add(nx to ny)
         }
     }
+    // Allied lane medallions cover the lower centre of the portrait, not just
+    // its rim. Apply the SAME mask to input and references; never learn the badge.
+    private val allySamples = samples.filterNot { (x, y) -> y > .10f && kotlin.math.abs(x) < .25f }
 
     // The circular sample grid is symmetric on both axes; cache its extents once.
     private val minimumSampleCoordinate = samples.minOf { it.first }
     private val maximumSampleCoordinate = samples.maxOf { it.first }
 
     fun descriptor(pixels: IntArray, width: Int, height: Int,
-                   scale: Float = 1f, dx: Float = 0f, dy: Float = 0f): FloatArray {
+                   scale: Float = 1f, dx: Float = 0f, dy: Float = 0f,
+                   excludeBottomBadge: Boolean = false): FloatArray {
         require(width > 0 && height > 0 && pixels.size == width * height)
-        val values = FloatArray(samples.size * 3)
+        val grid = if (excludeBottomBadge) allySamples else samples
+        val values = FloatArray(grid.size * 3)
         val means = FloatArray(3)
-        samples.forEachIndexed { i, (x, y) ->
+        grid.forEachIndexed { i, (x, y) ->
             // Match pixel centers at subpixel precision. Nearest-neighbor sampling aliases
             // small JPEG slot portraits against the larger local reference (notably Vi).
             val px = ((0.5f + x * scale + dx) * width - 0.5f).coerceIn(0f, (width - 1).toFloat())
@@ -42,7 +47,7 @@ internal object PortraitMatcher {
                 means[c] += value
             }
         }
-        for (c in 0..2) means[c] /= samples.size
+        for (c in 0..2) means[c] /= grid.size
         var norm = 0f
         for (i in values.indices) {
             values[i] -= means[i % 3]
@@ -53,18 +58,18 @@ internal object PortraitMatcher {
         return values
     }
 
-    fun references(pixels: IntArray, width: Int, height: Int): List<FloatArray> = buildList {
+    fun references(pixels: IntArray, width: Int, height: Int, excludeBottomBadge: Boolean = false): List<FloatArray> = buildList {
         for (scale in floatArrayOf(0.85f, 1f, 1.15f))
             for (dx in floatArrayOf(-0.04f, 0f, 0.04f))
                 for (dy in floatArrayOf(-0.04f, 0f, 0.04f))
-                    add(descriptor(pixels, width, height, scale, dx, dy))
+                    add(descriptor(pixels, width, height, scale, dx, dy, excludeBottomBadge))
         // Small slot crops can fall between the coarse scales/offsets, especially
         // after ring recentering or JPEG compression. Fill those gaps in the cached
         // references, rather than weakening confidence or the ambiguity margin.
         for (scale in floatArrayOf(0.925f, 1.075f))
             for (dx in floatArrayOf(-0.03f, 0f, 0.03f))
                 for (dy in floatArrayOf(-0.03f, 0f, 0.03f))
-                    add(descriptor(pixels, width, height, scale, dx, dy))
+                    add(descriptor(pixels, width, height, scale, dx, dy, excludeBottomBadge))
     }
 
     fun correlation(input: FloatArray, reference: FloatArray): Float {
@@ -107,7 +112,7 @@ internal object PortraitMatcher {
     }
 
     /** Fine reference alignment is used only for an unresolved header portrait. */
-    fun fineSimilarity(input: FloatArray, pixels: IntArray, width: Int, height: Int): Float {
+    fun fineSimilarity(input: FloatArray, pixels: IntArray, width: Int, height: Int, excludeBottomBadge: Boolean = false): Float {
         val variants = buildList {
             for (scale in floatArrayOf(.85f,1f,1.15f))
                 for (dx in floatArrayOf(-.04f,0f,.04f)) for (dy in floatArrayOf(-.04f,0f,.04f)) add(Triple(scale,dx,dy))
@@ -115,7 +120,7 @@ internal object PortraitMatcher {
                 for (dx in floatArrayOf(-.03f,0f,.03f)) for (dy in floatArrayOf(-.03f,0f,.03f)) add(Triple(scale,dx,dy))
         }
         fun score(candidate: Triple<Float,Float,Float>) = correlation(input,
-            descriptor(pixels,width,height,candidate.first,candidate.second,candidate.third))
+            descriptor(pixels,width,height,candidate.first,candidate.second,candidate.third,excludeBottomBadge))
         val starts = variants.map { it to score(it) }.sortedByDescending { it.second }.take(3)
         var best = starts.first().second
         for ((start, initialScore) in starts) {

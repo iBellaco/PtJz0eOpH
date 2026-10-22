@@ -23,14 +23,6 @@ class DraftReferenceFrameTest {
     @Test fun tenRealPortraitsRemainInTheirOwnSlotsAcrossCaptureSizesAndLetterboxing() {
         val context = RuntimeEnvironment.getApplication()
         WildRiftRepository.initChampions(context, forceReload = true)
-        val references = context.assets.list("champions")!!.filter { it.endsWith(".png") }.associate { name ->
-            val image = context.assets.open("champions/$name").use { BitmapFactory.decodeStream(it)!! }
-            try {
-                val pixels = IntArray(image.width * image.height)
-                image.getPixels(pixels, 0, image.width, 0, 0, image.width, image.height)
-                name.removeSuffix(".png").replace("_", "") to PortraitMatcher.references(pixels, image.width, image.height)
-            } finally { image.recycle() }
-        }
         val source = javaClass.getResourceAsStream("/portraits/draft-ten-selected.jpg").use { BitmapFactory.decodeStream(it)!! }
         try {
             // Reference capture, HD, FHD, Red Magic/Poco-size surfaces, tablet and ultrawide.
@@ -52,11 +44,8 @@ class DraftReferenceFrameTest {
                         val ally = index < 5; val slot = index % 5
                         val crop = AdaptiveScreenLayoutEngine.extractSlotAvatarBitmap(frame,w,h,ally,slot,aligned)!!
                         try {
-                            val pixels = IntArray(crop.width*crop.height)
-                            crop.getPixels(pixels,0,crop.width,0,0,crop.width,crop.height)
-                            val input = PortraitMatcher.descriptor(pixels,crop.width,crop.height)
-                            val ranked = references.map { it.key to PortraitMatcher.similarity(input,it.value) }.sortedByDescending { it.second }
-                            assertEquals("$w/$h slot $index: ${ranked.take(3)}",expected[index],ranked.first().first)
+                            val ranked = LiteRTVisionClassifier.rankSlotPortrait(crop,ally,context)
+                            assertEquals("$w/$h slot $index: ${ranked.take(3).map { it.first.id to it.second }}",expected[index],ranked.first().first.id)
                             assertTrue("$w/$h slot $index confidence ${ranked.take(2)}",
                                 PortraitMatcher.accepts(ranked[0].second, ranked[1].second, .80f))
                         } finally { crop.recycle() }
