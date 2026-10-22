@@ -73,12 +73,17 @@ fun CalibrationSendButton() {
     val scope = rememberCoroutineScope()
     var sending by remember { mutableStateOf(false) }
     var sent by remember { mutableStateOf(false) }
+    var limitReached by remember { mutableStateOf(false) }
+    val prefs = remember { context.getSharedPreferences("calibration_reports", android.content.Context.MODE_PRIVATE) }
+    val dayKey = remember { java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.ROOT).format(java.util.Date()) }
+    val sentToday = remember(dayKey) { prefs.getInt("sent_$dayKey", 0) }
+    LaunchedEffect(sentToday) { limitReached = sentToday >= 5 }
     val send = localizedString(R.string.calibration_send)
     val pending = localizedString(R.string.calibration_sending)
     val success = localizedString(R.string.calibration_sent)
     val failure = localizedString(R.string.calibration_send_failed)
     val login = localizedString(R.string.calibration_verified_required)
-    CoachButton(enabled = !sending, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp).testTag("calibration_send_support"), onClick = {
+    CoachButton(enabled = !sending && !limitReached, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp).testTag("calibration_send_support"), onClick = {
         val account = runCatching { com.google.firebase.auth.FirebaseAuth.getInstance().currentUser }.getOrNull()
         if (account == null || !account.isEmailVerified) {
             Toast.makeText(context, login, Toast.LENGTH_LONG).show()
@@ -99,6 +104,11 @@ fun CalibrationSendButton() {
                     val title = if (AppLanguage.current.value == "pt") "Coordenadas do scanner" else "Coordenadas del escáner"
                     val result = FeedbackRepository.submitFeedback("SOPORTE", title, payload, userName = account.displayName)
                     sent = result.isSuccess
+                    if (sent) {
+                        val count = prefs.getInt("sent_$dayKey", 0) + 1
+                        prefs.edit().putInt("sent_$dayKey", count).apply()
+                        limitReached = count >= 5
+                    }
                     Toast.makeText(context, if (sent) success else failure, Toast.LENGTH_LONG).show()
                 } catch (cancelled: kotlinx.coroutines.CancellationException) {
                     throw cancelled
@@ -107,6 +117,7 @@ fun CalibrationSendButton() {
                 } finally { sending = false }
             }
         }
-    }) { Text(if (sending) pending else send, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center, fontSize = 14.sp) }
+    }) { Text(if (limitReached) tr("Límite diario alcanzado") else if (sending) pending else send, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center, fontSize = 14.sp) }
     if (sent) Text(success, modifier = Modifier.testTag("calibration_send_confirmed"), fontSize = 13.sp)
+    if (limitReached) Text(tr("Puedes enviar hasta cinco informes de coordenadas al día."), fontSize = 12.sp)
 }

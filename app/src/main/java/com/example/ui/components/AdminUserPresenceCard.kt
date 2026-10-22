@@ -202,13 +202,17 @@ fun AdminUserPresenceCard(modifier: Modifier = Modifier) {
                                 .padding(vertical = 7.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Icon(Icons.Default.Sensors, null, tint = HextechGreen, modifier = Modifier.size(15.dp))
+                            val isOnline = online(user)
+                            Icon(Icons.Default.Sensors, contentDescription = tr(if (isOnline) "En línea" else "Desconectado"),
+                                tint = if (isOnline) HextechGreen else TextMuted, modifier = Modifier.size(15.dp))
                             Spacer(Modifier.width(8.dp))
                             Column(Modifier.weight(1f)) {
                                 Text(displayName, color = TextPrimary, fontSize = 13.sp)
                                 (user["email"] as? String)?.takeIf { it.isNotBlank() }?.let {
                                     Text(it, color = TextMuted, fontSize = 10.sp)
                                 }
+                                Text(tr(if (isOnline) "En línea" else "Desconectado"),
+                                    color = if (isOnline) HextechGreen else TextMuted, fontSize = 9.sp)
                             }
                             Icon(Icons.Default.ChevronRight, null, tint = HextechCyan, modifier = Modifier.size(18.dp))
                         }

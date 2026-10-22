@@ -1140,7 +1140,10 @@ fun DraftAnalysisTab(
                             text = tr(topPick.tacticalReason),
                             color = TextPrimary.copy(alpha = 0.95f),
                             fontSize = 12.sp,
-                            lineHeight = 16.sp
+                            lineHeight = 16.sp,
+                            maxLines = 4,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.fillMaxWidth()
                         )
 
                         if (topPick.synergyDetails.isNotBlank() || topPick.counterDetails.isNotBlank()) {
@@ -1274,7 +1277,8 @@ fun DraftAnalysisTab(
                                     }
                                     Text(tr(rec.advantageBadge), color = HextechCyan, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                                     Spacer(modifier = Modifier.height(2.dp))
-                                    Text(tr(rec.tacticalReason), color = TextMuted, fontSize = 11.sp, lineHeight = 14.sp)
+                                    Text(tr(rec.tacticalReason), color = TextMuted, fontSize = 11.sp, lineHeight = 14.sp,
+                                        maxLines = 3, overflow = TextOverflow.Ellipsis, modifier = Modifier.fillMaxWidth())
                                 }
                                 Spacer(modifier = Modifier.width(6.dp))
                                 IconButton(

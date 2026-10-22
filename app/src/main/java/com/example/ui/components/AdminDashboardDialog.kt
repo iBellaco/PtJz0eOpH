@@ -145,6 +145,7 @@ fun AdminDashboardDialog(
     var showSponsorModerationDialog by remember { mutableStateOf(false) }
     var showSponsorPanelDialog by remember { mutableStateOf(false) }
     var showModeratorRequestsDialog by remember { mutableStateOf(false) }
+    var showOverlayAccessDialog by remember { mutableStateOf(false) }
     val adminNotificationSummary = userPanelNotificationSummary()
     val pendingModeratorRequestsCount = adminNotificationSummary.count(com.example.data.NotificationPanel.ADMINISTRATION)
     val reviewScope = rememberCoroutineScope()
@@ -209,6 +210,7 @@ fun AdminDashboardDialog(
         AdminDatabaseConsumptionDialog(onDismiss = { showDatabaseConsumptionDialog = false }, onOpenCashRequests = { showCashRequests = true })
     }
     if (showModeratorActivityDialog) AdminModeratorActivityDialog(onDismiss = { showModeratorActivityDialog = false })
+    if (showOverlayAccessDialog) AdminOverlayAccessDialog(onDismiss = { showOverlayAccessDialog = false })
 
     if (showSponsorModerationDialog) {
         AdminSponsorModerationDialog(onDismiss = { showSponsorModerationDialog = false })
@@ -275,6 +277,7 @@ fun AdminDashboardDialog(
                     onOpenDatabaseConsumption = { showDatabaseConsumptionDialog = true },
                     onOpenModeratorActivity = { showModeratorActivityDialog = true },
                     onOpenSponsorPanel = { showSponsorPanelDialog = true },
+                    onOpenOverlayAccess = { showOverlayAccessDialog = true },
                     isFullAdmin = userRole == "admin" || com.example.util.AuthManager.isCurrentUserAdmin()
                 )
 
@@ -383,6 +386,7 @@ internal fun AdminDashboardHeader(
     onOpenDatabaseConsumption: () -> Unit = {},
     onOpenModeratorActivity: () -> Unit = {},
     onOpenSponsorPanel: () -> Unit = {},
+    onOpenOverlayAccess: () -> Unit = {},
     isFullAdmin: Boolean = true
 ) {
     Surface(
@@ -566,6 +570,16 @@ internal fun AdminDashboardHeader(
                     Icon(Icons.Default.History, contentDescription = null, tint = HextechCyan, modifier = Modifier.size(13.dp))
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(tr("Actividad"), fontSize = 10.5.sp, color = HextechCyan, fontWeight = FontWeight.Bold)
+                }
+                AnimatedAdminActionButton(
+                    onClick = onOpenOverlayAccess,
+                    modifier = Modifier.heightIn(min = 48.dp).testTag("open_overlay_access"),
+                    colors = ButtonDefaults.buttonColors(containerColor = HextechCyan.copy(alpha = 0.2f)),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Icon(Icons.Default.Visibility, contentDescription = null, tint = HextechCyan, modifier = Modifier.size(13.dp))
+                    Spacer(Modifier.width(4.dp))
+                    Text(tr("Visor"), fontSize = 10.5.sp, color = HextechCyan, fontWeight = FontWeight.Bold)
                 }
             }
         }
