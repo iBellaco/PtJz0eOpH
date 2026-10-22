@@ -7,4 +7,4 @@ if __name__ == '__main__':
         'com.example.CoachMatchupCoverageTest', 'com.example.BuildChoiceRulesTest',
         'com.example.ChampionBuildsCatalogValidationTest',
         'com.example.DraftBanWorkerTest', 'com.example.DraftAutoStopTest', 'com.example.DraftSlotLifecycleTest', 'com.example.DraftSlotVisibilityTest', 'com.example.DraftStableTitlesTest', 'com.example.BannedPortraitScannerTest',
-        'com.example.DeviceDraftProfileTest', 'com.example.CaptureCoordinateSpaceTest', 'com.example.DraftSessionLifecycleTest', 'com.example.PocoDebugCaptionLayoutTest', 'com.example.LiteRTViewerNavigationTest'])
+        'com.example.DeviceDraftProfileTest', 'com.example.DraftReferenceFrameTest', 'com.example.DraftRingAlignmentTest', 'com.example.PortraitMatcherTest', 'com.example.DraftCalibrationRenderedTest', 'com.example.ManagedUsersDirectoryTest', 'com.example.CaptureCoordinateSpaceTest', 'com.example.DraftSessionLifecycleTest', 'com.example.PocoDebugCaptionLayoutTest', 'com.example.LiteRTViewerNavigationTest'])

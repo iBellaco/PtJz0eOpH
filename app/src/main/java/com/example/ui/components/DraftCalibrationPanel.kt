@@ -67,7 +67,7 @@ fun DraftCalibrationPanel(
     onDragDelta: ((dx: Int, dy: Int, isDragging: Boolean, isEnded: Boolean) -> Unit)? = null
 ) {
     val context = LocalContext.current
-    val currentConfig by DraftVisionScanner.calibrationConfigFlow.collectAsStateWithLifecycle()
+    val currentConfig by DraftVisionScanner.alignedConfigFlow.collectAsStateWithLifecycle()
     var config by remember { mutableStateOf(currentConfig) }
     LaunchedEffect(currentConfig) {
         config = currentConfig

@@ -22,6 +22,23 @@ import org.robolectric.annotation.GraphicsMode
 class DraftCalibrationRenderedTest {
     @get:Rule val compose = createComposeRule()
 
+    @Test fun firstManualMovementStartsAtTheObservedColumnNotTheDevicePreset() {
+        val context=RuntimeEnvironment.getApplication()
+        val original=DraftVisionScanner.calibrationConfig
+        try {
+            DraftVisionScanner.updateCalibration(context,VisionCalibrationConfig())
+            val observed=VisionCalibrationConfig().copy(allyAvatarCenterX=.105f,
+                allySlotXRatios=List(5){.105f},enemyAvatarCenterX=.920f,enemySlotXRatios=List(5){.920f})
+            DraftVisionScanner.alignedConfigFlow.value=observed
+            compose.setContent { MyApplicationTheme { LiteRTEngineViewerDialog({},initializeDiagnostics=false) } }
+            compose.onNodeWithTag("calibration_target_ally_column_x").performScrollTo().performClick()
+            compose.onNodeWithTag("vision_calibration_right").performScrollTo().performClick()
+            compose.waitForIdle()
+            assertEquals(.110f,DraftVisionScanner.calibrationConfig.getAllySlotX(0),.00001f)
+            assertEquals(observed.enemySlotXRatios,DraftVisionScanner.calibrationConfig.enemySlotXRatios)
+        } finally { DraftVisionScanner.updateCalibration(context,original) }
+    }
+
     @Test fun bothBanRowsMoveInFourDirectionsResizeUniformlyAndPersist() {
         val context = RuntimeEnvironment.getApplication()
         val original = DraftVisionScanner.calibrationConfig

@@ -76,6 +76,8 @@ jobs:
       - name: Process eligible requests and refresh service availability
         run: npm run process
         working-directory: server/account-deletion
+      - name: Reconcile visible profiles with existing access identities
+        run: node server/account-deletion/reconcile-directory.mjs
   cleanup-history:
     if: always()
     needs: [verify, process]

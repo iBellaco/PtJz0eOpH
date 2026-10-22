@@ -134,7 +134,9 @@ fun ScannerDebugOverlay(
             drawContext.canvas.nativeCanvas.drawText(text, x, y, paint)
         }
 
-        val currentConfig = AdaptiveScreenLayoutEngine.computeAdaptiveConfig(w.toInt(), h.toInt(), rawConfig)
+        // Already resolved against the captured viewport. A second adaptation moves
+        // the header away from the actual regions used by recognition.
+        val currentConfig = rawConfig
         val avatarDiameter = h * currentConfig.avatarDiameterRatio
         val avatarRadius = avatarDiameter / 2f
 

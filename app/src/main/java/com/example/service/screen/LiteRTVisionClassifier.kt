@@ -111,6 +111,7 @@ object LiteRTVisionClassifier {
     val reportFlow: StateFlow<LiteRTInferenceReport> = _reportFlow.asStateFlow()
 
     private val championEmbeddingCache = ConcurrentHashMap<String, List<FloatArray>>()
+    private val allyEmbeddingCache = ConcurrentHashMap<String, List<FloatArray>>()
     private val portraitAssetPaths = ConcurrentHashMap<String,String>()
     private var indexedIds: Set<String> = emptySet()
     private var lastValidFrameAt = 0L
@@ -134,6 +135,7 @@ object LiteRTVisionClassifier {
                     val pixels = IntArray(bmp.width * bmp.height)
                     bmp.getPixels(pixels, 0, bmp.width, 0, 0, bmp.width, bmp.height)
                     championEmbeddingCache[champ.id] = PortraitMatcher.references(pixels, bmp.width, bmp.height)
+                    allyEmbeddingCache[champ.id] = PortraitMatcher.references(pixels, bmp.width, bmp.height, excludeBottomBadge = true)
                     portraitAssetPaths[champ.id] = asset
                 } finally { bmp.recycle() }
             } catch (e: Exception) {
@@ -145,6 +147,32 @@ object LiteRTVisionClassifier {
     }
 
     private var emptyBanReferenceCache: List<FloatArray>? = null
+    /** Shared by production inference and real-frame regression. Thresholds are unchanged. */
+    internal fun rankSlotPortrait(crop: Bitmap, isAlly: Boolean, context: Context?, excludedIds: Set<String> = emptySet()): List<Pair<Champion, Float>> {
+        ensureIndexed(context)
+        val pixels = IntArray(crop.width * crop.height)
+        crop.getPixels(pixels, 0, crop.width, 0, 0, crop.width, crop.height)
+        val input = PortraitMatcher.descriptor(pixels, crop.width, crop.height, excludeBottomBadge = isAlly)
+        val cache = if (isAlly) allyEmbeddingCache else championEmbeddingCache
+        val ranked = WildRiftRepository.champions.filter { it.id !in excludedIds }.mapNotNull { champion ->
+            cache[champion.id]?.let { champion to PortraitMatcher.similarity(input, it) }
+        }.sortedByDescending { it.second }
+        if (ranked.size < 2 || PortraitMatcher.accepts(ranked[0].second, ranked[1].second, getEffectiveThreshold(context))) return ranked
+        val ctx = context ?: WildRiftApp.instance ?: return ranked
+        // Refine only unresolved candidates. Do not lower confidence or separation.
+        return ranked.take(4).map { (champion, coarse) ->
+            val fine = runCatching {
+                val asset = portraitAssetPaths[champion.id] ?: return@runCatching coarse
+                val image = ctx.assets.open("champions/$asset").use { BitmapFactory.decodeStream(it) } ?: return@runCatching coarse
+                try {
+                    val reference = IntArray(image.width * image.height)
+                    image.getPixels(reference, 0, image.width, 0, 0, image.width, image.height)
+                    PortraitMatcher.fineSimilarity(input, reference, image.width, image.height, excludeBottomBadge = isAlly)
+                } finally { image.recycle() }
+            }.getOrDefault(coarse)
+            champion to maxOf(coarse, fine)
+        }.plus(ranked.drop(4)).sortedByDescending { it.second }
+    }
     private fun emptyBanReferences(context: Context?): List<FloatArray> {
         emptyBanReferenceCache?.let { return it }
         if (context == null) return emptyList()
@@ -158,6 +186,27 @@ object LiteRTVisionClassifier {
 
     /** Locates small header portraits at multiple scales, independently from the pick-column calibrator. */
     internal fun findHeaderBanObservations(bitmap: Bitmap, context: Context?, exclusions: List<android.graphics.Rect>, config: VisionCalibrationConfig = VisionCalibrationConfig()): List<BanObservation> {
+        val bounds = DraftFrameGeometry.contentBounds(bitmap)
+        if (bounds != android.graphics.Rect(0, 0, bitmap.width, bitmap.height)) {
+            val content = Bitmap.createBitmap(bitmap, bounds.left, bounds.top, bounds.width(), bounds.height())
+            try {
+                fun x(value: Float) = (value * bitmap.width - bounds.left) / bounds.width()
+                fun y(value: Float) = (value * bitmap.height - bounds.top) / bounds.height()
+                val localConfig = config.copy(
+                    allyBanXRatios = config.allyBanXRatios.map(::x), enemyBanXRatios = config.enemyBanXRatios.map(::x),
+                    allyBanYRatio = y(config.allyBanYRatio), enemyBanYRatio = y(config.enemyBanYRatio),
+                    banDiameterRatio = config.banDiameterRatio * bitmap.height / bounds.height())
+                val masks = exclusions.mapNotNull { rect ->
+                    android.graphics.Rect(rect).takeIf { it.intersect(bounds) }?.apply { offset(-bounds.left, -bounds.top) }
+                }
+                return findHeaderBanObservations(content, context, masks, localConfig).map { observation ->
+                    observation.copy(region = BanRegion(
+                        (bounds.left + observation.region.x * bounds.width()) / bitmap.width,
+                        (bounds.top + observation.region.y * bounds.height()) / bitmap.height,
+                        observation.region.radius * bounds.height() / bitmap.height))
+                }
+            } finally { content.recycle() }
+        }
         // Header matching uses one physical scale on HD/FHD/QHD captures. Coordinates stay normalized.
         if (bitmap.height > 720) {
             val scale = 720f / bitmap.height
@@ -401,15 +450,20 @@ object LiteRTVisionClassifier {
     /** Keep only evidence from a visible draft slot, never from the loading background. */
     internal fun hasSlotRing(bitmap: Bitmap, isAlly: Boolean): Boolean {
         var matches = 0
+        val radii = doubleArrayOf(.44, .47, .50, .53, .56)
         for (i in 0 until 64) {
             val angle = i * 2.0 * Math.PI / 64
-            val x = (bitmap.width * (0.5 + 0.47 * kotlin.math.cos(angle))).toInt().coerceIn(0, bitmap.width - 1)
-            val y = (bitmap.height * (0.5 + 0.47 * kotlin.math.sin(angle))).toInt().coerceIn(0, bitmap.height - 1)
-            val pixel = bitmap.getPixel(x, y)
-            val r = Color.red(pixel); val g = Color.green(pixel); val b = Color.blue(pixel)
-            val team = if (isAlly) b > 70 && b > r * 1.25f else r > 70 && r > g * 1.35f
-            val selection = r > 90 && g > 60 && b < g * 0.8f
-            if (team || selection) matches++
+            // Selected portraits have a thin gold rim just outside the usual
+            // team ring. Sampling one radius rejected Mel despite a clear match.
+            for (radius in radii) {
+                val x = (bitmap.width * (0.5 + radius * kotlin.math.cos(angle))).toInt().coerceIn(0, bitmap.width - 1)
+                val y = (bitmap.height * (0.5 + radius * kotlin.math.sin(angle))).toInt().coerceIn(0, bitmap.height - 1)
+                val pixel = bitmap.getPixel(x, y)
+                val r = Color.red(pixel); val g = Color.green(pixel); val b = Color.blue(pixel)
+                val team = if (isAlly) b > 70 && b > r * 1.25f else r > 70 && r > g * 1.35f
+                val selection = r > 90 && g > 60 && b < g * 0.8f
+                if (team || selection) { matches++; break }
+            }
         }
         return matches >= 10
     }
@@ -474,14 +528,7 @@ object LiteRTVisionClassifier {
                 decisionReason = "Icono de espera; todavía no hay retrato.")
             return@withContext null
         }
-        ensureIndexed(context)
-        val pixels = IntArray(cropBitmap.width * cropBitmap.height)
-        cropBitmap.getPixels(pixels, 0, cropBitmap.width, 0, 0, cropBitmap.width, cropBitmap.height)
-        val input = PortraitMatcher.descriptor(pixels, cropBitmap.width, cropBitmap.height)
-        val ranked = WildRiftRepository.champions.filter { it.id !in confirmedChampionIds }
-            .mapNotNull { champ -> championEmbeddingCache[champ.id]?.let {
-                champ to PortraitMatcher.similarity(input, it)
-            } }.sortedByDescending { it.second }
+        val ranked = rankSlotPortrait(cropBitmap, isAlly, context, confirmedChampionIds)
         val best = ranked.firstOrNull() ?: return@withContext null
         val second = ranked.getOrNull(1)?.second ?: 0f
         val accepted = PortraitMatcher.accepts(best.second, second, threshold)

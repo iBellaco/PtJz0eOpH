@@ -284,7 +284,7 @@ VisionCalibrationConfig(
     /** Saves the geometry that was calibrated for one capture aspect ratio. */
     fun saveProfileToPrefs(context: Context, profileKey: String) {
         val prefs = context.getSharedPreferences("vision_calibration_prefs", Context.MODE_PRIVATE)
-        val prefix = "profile_${profileKey}_"
+        val prefix = "profile_${deviceModelKey()}_${profileKey}_"
         prefs.edit().apply {
             putFloat(prefix + "allyAvatarCenterX", allyAvatarCenterX)
             putFloat(prefix + "enemyAvatarCenterX", enemyAvatarCenterX)
@@ -323,13 +323,17 @@ VisionCalibrationConfig(
             val landscapeWidth = maxOf(width, height)
             val landscapeHeight = minOf(width, height)
             val aspect = kotlin.math.round(landscapeWidth.toDouble() / landscapeHeight * 100.0).toInt()
-            return "${landscapeWidth >= landscapeHeight}_${aspect}"
+            return "${width >= height}_${aspect}"
         }
 
         /** Returns the capture-specific geometry, or null when this profile has not been calibrated. */
         internal fun loadProfileFromPrefs(context: Context, profileKey: String): VisionCalibrationConfig? {
             val prefs = context.getSharedPreferences("vision_calibration_prefs", Context.MODE_PRIVATE)
-            val prefix = "profile_${profileKey}_"
+            val scoped = "profile_${deviceModelKey()}_${profileKey}_"
+            val legacy = "profile_${profileKey}_"
+            val prefix = if (prefs.contains(scoped + "ally_slot_x_0")) scoped
+                else if (prefs.getString("calibration_device_model", null) == deviceModelKey()) legacy
+                else return null
             if (!prefs.contains(prefix + "ally_slot_x_0")) return null
             val base = loadFromPrefs(context)
             fun f(name: String, fallback: Float) = prefs.getFloat(prefix + name, fallback)
@@ -358,6 +362,15 @@ VisionCalibrationConfig(
                 topAllyXRatios = (0..4).map { f("top_ally_x_$it", base.topAllyXRatios[it]) },
                 topEnemyXRatios = (0..4).map { f("top_enemy_x_$it", base.topEnemyXRatios[it]) }
             )
+        }
+
+        internal fun hasCaptureProfiles(context: Context): Boolean {
+            val prefs = context.getSharedPreferences("vision_calibration_prefs", Context.MODE_PRIVATE)
+            return prefs.all.keys.any { key ->
+                key.startsWith("profile_${deviceModelKey()}_") ||
+                    (prefs.getString("calibration_device_model", null) == deviceModelKey() &&
+                        (key.startsWith("profile_true_") || key.startsWith("profile_false_")))
+            }
         }
 
         /** Measured normalized capture coordinates; saved individual adjustments take precedence. */
