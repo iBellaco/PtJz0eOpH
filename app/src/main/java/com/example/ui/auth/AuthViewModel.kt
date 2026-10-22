@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
+import com.google.firebase.auth.FirebaseAuthException
 
 enum class PasswordStrength(val label: String) {
     NONE(""),
@@ -141,7 +142,7 @@ class AuthViewModel : ViewModel() {
             } catch (e: Exception) {
                 // Do not leave an authenticated session when a deletion cannot be cancelled.
                 auth.signOut()
-                val errorMsg = e.localizedMessage ?: "Error de autenticación. Verifica tus credenciales."
+                val errorMsg = localizedAuthError(e)
                 _uiState.update { it.copy(isLoading = false, error = errorMsg) }
             }
         }
@@ -209,7 +210,8 @@ class AuthViewModel : ViewModel() {
                     rawMsg.contains("email address is already in use", ignoreCase = true) || rawMsg.contains("already in use", ignoreCase = true) -> "Este correo electrónico ya está registrado. Evita crear múltiples cuentas con el mismo correo."
                     rawMsg.contains("badly formatted", ignoreCase = true) || rawMsg.contains("invalid email", ignoreCase = true) -> "El formato del correo electrónico es inválido."
                     rawMsg.contains("network", ignoreCase = true) -> "Error de red. Verifica tu conexión a internet."
-                    else -> "Este correo ya se encuentra registrado o la cuenta no pudo crearse. Verifica tus datos."
+                    rawMsg.contains("too many requests", ignoreCase = true) || rawMsg.contains("blocked all requests", ignoreCase = true) -> "Demasiados intentos. Espera unos minutos y vuelve a intentarlo."
+                    else -> localizedAuthError(e, fallback = "La cuenta no pudo crearse. Verifica tus datos.")
                 }
                 _uiState.update { it.copy(isLoading = false, error = errorMsg) }
             }
@@ -233,9 +235,32 @@ class AuthViewModel : ViewModel() {
                 auth.sendPasswordResetEmail(_email.value).await()
                 _uiState.update { it.copy(isLoading = false, isSuccess = true) }
             } catch (e: Exception) {
-                val errorMsg = e.localizedMessage ?: "Error al enviar el enlace de recuperación."
+                val errorMsg = localizedAuthError(e, fallback = "No se pudo enviar el enlace de recuperación.")
                 _uiState.update { it.copy(isLoading = false, error = errorMsg) }
             }
+        }
+    }
+
+    /** Never expose Firebase/English provider text in the app UI. The returned keys are
+     * translated by the offline catalog according to the language selected in Coach. */
+    private fun localizedAuthError(error: Throwable, fallback: String = "Error de autenticación. Verifica tus credenciales."): String {
+        val code = (error as? FirebaseAuthException)?.errorCode.orEmpty().lowercase()
+        val raw = error.localizedMessage.orEmpty().lowercase()
+        if (raw.contains("debes confirmar tu correo") || raw.contains("no se pudo comprobar la solicitud")) {
+            return error.localizedMessage.orEmpty()
+        }
+        return when {
+            code.contains("too_many") || raw.contains("too many requests") || raw.contains("blocked all requests") ->
+                "Demasiados intentos. Espera unos minutos y vuelve a intentarlo."
+            code.contains("invalid_credential") || code.contains("wrong_password") || code.contains("user_not_found") ||
+                raw.contains("supplied auth credential") || raw.contains("invalid credential") ->
+                "El correo o la contraseña no son correctos."
+            code.contains("invalid_email") || raw.contains("badly formatted") ->
+                "El formato del correo electrónico no es válido."
+            code.contains("network") || raw.contains("network") ->
+                "Error de red. Verifica tu conexión a internet."
+            code.contains("user_disabled") -> "Esta cuenta está deshabilitada. Contacta con soporte."
+            else -> fallback
         }
     }
 
