@@ -6,16 +6,17 @@ import kotlin.math.*
 
 /** Fits visible portrait rings, rather than inferring game margins from the phone model. */
 internal object DraftRingAlignment {
-    /** Two rings can support a coherent translation, not a robust spacing regression. */
-    internal fun alignRows(ys: List<Float>, height: Int, radius: Int, observations: List<Pair<Int, Int>>): List<Float> {
+    /** Preserve an established grid; a clearly foreign horizontal preset still needs initial recovery. */
+    internal fun alignRows(ys: List<Float>, height: Int, radius: Int, observations: List<Pair<Int, Int>>,
+                           recoverForeignColumn: Boolean = false): List<Float> {
         if (observations.size < 2) return ys
         fun median(values: List<Float>): Float {
             val sorted = values.sorted()
             return (sorted[(sorted.size-1)/2] + sorted[sorted.size/2]) / 2f
         }
         val offsets = observations.map { (slot, y) -> y - ys[slot] * height }
-        if (observations.size < 3 && offsets.max() - offsets.min() > maxOf(3f, radius * .20f)) return ys
-        val slopes = if (observations.size < 3) emptyList() else observations.flatMapIndexed { index, a ->
+        if (!recoverForeignColumn && observations.size < 3 && offsets.max() - offsets.min() > maxOf(3f, radius * .20f)) return ys
+        val slopes = if (observations.size < 3 && !recoverForeignColumn) emptyList() else observations.flatMapIndexed { index, a ->
             observations.drop(index+1).mapNotNull { b ->
                 val nominal = (ys[b.first] - ys[a.first]) * height
                 if (abs(nominal) < 1f) null else ((b.second-a.second)/nominal).takeIf { it in .85f..1.15f }
@@ -116,7 +117,13 @@ internal object DraftRingAlignment {
             val consistent = fits.filter { abs(it.second.first - medianX) <= radius / 3 }
             // Robust row spacing from independent visible rings. One weak rim
             // on a face must not drag its row away from the rest of the column.
-            val alignedYs = alignRows(ys, h, radius, consistent.map { it.first to it.second.second })
+            // A preset from another layout can have both a different X and row spacing.
+            // Once X agrees with the observed rings, sparse evidence must not stretch Y.
+            val foreignColumn = consistent.count { (slot, center) ->
+                val nominalX = w * if (ally) base.getAllySlotX(slot) else base.getEnemySlotX(slot)
+                abs(center.first - nominalX) > radius * .5f
+            } >= 2
+            val alignedYs = alignRows(ys, h, radius, consistent.map { it.first to it.second.second }, foreignColumn)
             return List(5) { medianX.toFloat() / w } to alignedYs
         }
         val ally = fit(true); val enemy = fit(false)
