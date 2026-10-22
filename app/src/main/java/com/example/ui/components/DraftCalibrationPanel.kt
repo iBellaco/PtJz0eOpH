@@ -1,6 +1,7 @@
 package com.example.ui.components
 
 import com.example.ui.components.CoachButton as Button
+import com.example.ui.components.CoachOutlinedButton as OutlinedButton
 import com.example.ui.components.CoachIconButton as IconButton
 
 import android.content.ClipData
@@ -614,47 +615,15 @@ fun DraftCalibrationPanel(
 
             Spacer(modifier = Modifier.height(10.dp))
 
-            // BOTONES DE ACCIÓN: COPIAR COORDENADAS, RESTABLECER
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(6.dp)
-            ) {
-                // Botón Copiar Coordenadas
-                Button(
-                    onClick = {
-                        val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                        val clip = ClipData.newPlainText("WildRift_Vision_Calibration", config.toFormattedCoordinatesString())
-                        clipboard.setPrimaryClip(clip)
-                        Toast.makeText(context, com.example.util.appTr("Coordenadas copiadas al portapapeles"), Toast.LENGTH_LONG).show()
-                    },
-                    modifier = Modifier.weight(1.3f).height(34.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = HextechGold),
-                    shape = RoundedCornerShape(6.dp),
-                    contentPadding = PaddingValues(horizontal = 6.dp)
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.Default.ContentCopy, contentDescription = null, tint = HextechDarkBg, modifier = Modifier.size(13.dp))
-                        Spacer(modifier = Modifier.width(3.dp))
-                        Text(com.example.util.tr("Copiar Coordenadas"), color = HextechDarkBg, fontSize = 9.sp, fontWeight = FontWeight.Black)
-                    }
-                }
-
-                // Botón Restablecer
-                Button(
-                    onClick = {
-                        DraftVisionScanner.resetCalibration(context)
-                        config = DraftVisionScanner.calibrationConfig
-                        Toast.makeText(context, com.example.util.appTr("Valores restablecidos de fábrica"), Toast.LENGTH_SHORT).show()
-                    },
-                    modifier = Modifier.weight(0.9f).height(34.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = HextechSurface),
-                    border = BorderStroke(1.dp, HextechCardBorder),
-                    shape = RoundedCornerShape(6.dp),
-                    contentPadding = PaddingValues(horizontal = 4.dp)
-                ) {
-                    Text(com.example.util.tr("Restablecer"), color = TextMuted, fontSize = 8.sp, fontWeight = FontWeight.SemiBold)
-                }
-            }
+            CalibrationSendButton { DraftVisionScanner.alignedConfigFlow.value }
+            OutlinedButton(
+                onClick = {
+                    DraftVisionScanner.resetCalibration(context)
+                    config = DraftVisionScanner.alignedConfigFlow.value
+                },
+                modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)
+                    .testTag("calibration_panel_reset")
+            ) { Text(com.example.util.tr("Restablecer")) }
         }
     }
 }

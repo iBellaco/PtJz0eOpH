@@ -284,6 +284,7 @@ private fun isUserVerified(user: Map<String, Any>): Boolean {
 @Composable
 fun ModeratorUserListPanel() {
     val context = LocalContext.current
+    var directoryState by remember { mutableStateOf(com.example.data.ManagedUsersDirectory.State()) }
     var users by remember { mutableStateOf<List<Map<String, Any>>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
     var searchQuery by remember { mutableStateOf("") }
@@ -293,22 +294,12 @@ fun ModeratorUserListPanel() {
     fun loadUsers() {
         isLoading = true
         listenerRegistration?.remove()
-        listenerRegistration = FirebaseFirestore.getInstance().collection("users")
-            .addSnapshotListener { snapshot, error ->
-                if (error != null) {
-                    Toast.makeText(context, com.example.util.appTr("Error al cargar usuarios: ${error.message}"), Toast.LENGTH_LONG).show()
-                    isLoading = false
-                    return@addSnapshotListener
-                }
-                if (snapshot != null) {
-                    users = snapshot.documents.map { doc ->
-                        val data = doc.data?.toMutableMap() ?: mutableMapOf()
-                        data["uid"] = doc.id
-                        data
-                    }
-                    isLoading = false
-                }
-            }
+        listenerRegistration = com.example.data.ManagedUsersDirectory.observe { state ->
+            directoryState = state
+            users = state.users
+            if (state.status != com.example.data.ManagedUsersDirectory.Status.LIVE) selectedUserForProposal = null
+            isLoading = state.status == com.example.data.ManagedUsersDirectory.Status.SYNCING
+        }
     }
 
     LaunchedEffect(Unit) {
@@ -330,6 +321,9 @@ fun ModeratorUserListPanel() {
 
     Column(modifier = Modifier.fillMaxSize()) {
         // Search bar
+        DirectorySyncLabel(directoryState)
+        if (directoryState.status == com.example.data.ManagedUsersDirectory.Status.OFFLINE ||
+            directoryState.status == com.example.data.ManagedUsersDirectory.Status.ERROR) return@Column
         OutlinedTextField(
             value = searchQuery,
             onValueChange = { searchQuery = it },

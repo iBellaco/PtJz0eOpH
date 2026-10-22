@@ -167,12 +167,11 @@ fun LiteRTEngineViewerDialog(
         ) {
             Column(Modifier.fillMaxSize().padding(12.dp)) {
                 // Cabecera
-                Row(
+                Column(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
-                    Row(modifier = Modifier.weight(1f).padding(end = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Row(modifier = Modifier.fillMaxWidth().padding(end = 8.dp), verticalAlignment = Alignment.CenterVertically) {
                         Icon(
                             imageVector = Icons.Default.AutoAwesome,
                             contentDescription = com.example.util.trNullable("LiteRT Motor"),
@@ -195,6 +194,7 @@ fun LiteRTEngineViewerDialog(
                         }
                     }
 
+                    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     IconButton(
                         onClick = { cropNavigationScope.launch { cropControlsRequester.bringIntoView() } },
                         modifier = Modifier.size(48.dp).testTag("vision_crop_gallery")
@@ -208,6 +208,7 @@ fun LiteRTEngineViewerDialog(
                         Icon(Icons.Default.ArrowBack, contentDescription = null, tint = Color.White)
                         Spacer(Modifier.width(4.dp))
                         Text(tr("Volver al hub"), color = Color.White, fontSize = 12.sp)
+                    }
                     }
                 }
 
@@ -605,225 +606,13 @@ fun LiteRTEngineViewerDialog(
 
                         Spacer(modifier = Modifier.height(8.dp))
 
-                        // Controles de Posición (D-Pad: Arriba, Abajo, Izquierda, Derecha) y Tamaño
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            // D-Pad
-                            Column(
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                modifier = Modifier.padding(start = 4.dp)
-                            ) {
-                                // Arriba
-                                Surface(
-                                    modifier = Modifier
-                                        .size(48.dp)
-                                        .coachClickable { modifyDetectionCircle(deltaY = -calibrationStep) }
-                                        .testTag("vision_calibration_up"),
-                                    shape = RoundedCornerShape(6.dp),
-                                    color = Color(0xFF0F172A),
-                                    border = BorderStroke(1.dp, Color(0xFF38BDF8))
-                                ) {
-                                    Box(contentAlignment = Alignment.Center) {
-                                        Icon(Icons.Default.KeyboardArrowUp, contentDescription = com.example.util.trNullable("Arriba"), tint = Color(0xFF38BDF8), modifier = Modifier.size(20.dp))
-                                    }
-                                }
-
-                                Row(
-                                    horizontalArrangement = Arrangement.spacedBy(6.dp),
-                                    modifier = Modifier.padding(vertical = 3.dp)
-                                ) {
-                                    // Izquierda
-                                    Surface(
-                                        modifier = Modifier
-                                            .size(48.dp)
-                                            .coachClickable { modifyDetectionCircle(deltaX = -calibrationStep) }
-                                            .testTag("vision_calibration_left"),
-                                        shape = RoundedCornerShape(6.dp),
-                                        color = Color(0xFF0F172A),
-                                        border = BorderStroke(1.dp, Color(0xFF38BDF8))
-                                    ) {
-                                        Box(contentAlignment = Alignment.Center) {
-                                            Icon(Icons.Default.KeyboardArrowLeft, contentDescription = com.example.util.trNullable("Izquierda"), tint = Color(0xFF38BDF8), modifier = Modifier.size(20.dp))
-                                        }
-                                    }
-
-                                    // Indicador de paso
-                                    Box(
-                                        modifier = Modifier
-                                            .size(48.dp)
-                                            .clip(RoundedCornerShape(6.dp))
-                                            .background(Color(0xFF0C4A6E)),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        Text(
-                                            text = com.example.util.tr("±${(calibrationStep * 100).format(1)}%"),
-                                            color = Color.White,
-                                            fontSize = 7.5.sp,
-                                            fontWeight = FontWeight.Bold
-                                        )
-                                    }
-
-                                    // Derecha
-                                    Surface(
-                                        modifier = Modifier
-                                            .size(48.dp)
-                                            .coachClickable { modifyDetectionCircle(deltaX = calibrationStep) }
-                                            .testTag("vision_calibration_right"),
-                                        shape = RoundedCornerShape(6.dp),
-                                        color = Color(0xFF0F172A),
-                                        border = BorderStroke(1.dp, Color(0xFF38BDF8))
-                                    ) {
-                                        Box(contentAlignment = Alignment.Center) {
-                                            Icon(Icons.Default.KeyboardArrowRight, contentDescription = com.example.util.trNullable("Derecha"), tint = Color(0xFF38BDF8), modifier = Modifier.size(20.dp))
-                                        }
-                                    }
-                                }
-
-                                // Abajo
-                                Surface(
-                                    modifier = Modifier
-                                        .size(48.dp)
-                                        .coachClickable { modifyDetectionCircle(deltaY = calibrationStep) }
-                                        .testTag("vision_calibration_down"),
-                                    shape = RoundedCornerShape(6.dp),
-                                    color = Color(0xFF0F172A),
-                                    border = BorderStroke(1.dp, Color(0xFF38BDF8))
-                                ) {
-                                    Box(contentAlignment = Alignment.Center) {
-                                        Icon(Icons.Default.KeyboardArrowDown, contentDescription = com.example.util.trNullable("Abajo"), tint = Color(0xFF38BDF8), modifier = Modifier.size(20.dp))
-                                    }
-                                }
-                            }
-
-                            // Botones de Tamaño (Hacer más pequeño / Hacer más grande) y Selector de Paso
-                            Column(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .padding(start = 12.dp),
-                                verticalArrangement = Arrangement.spacedBy(6.dp)
-                            ) {
-                                Text(
-                                    text = tr("Ajuste de Tamaño (Radio/⌀):"),
-                                    color = Color(0xFFE2E8F0),
-                                    fontSize = 9.sp,
-                                    fontWeight = FontWeight.Bold
-                                )
-
-                                Row(
-                                    horizontalArrangement = Arrangement.spacedBy(6.dp),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Button(
-                                        onClick = { modifyDetectionCircle(deltaSize = calibrationStep) },
-                                        modifier = Modifier.weight(1f).heightIn(min = 48.dp).testTag("calibration_size_increase"),
-                                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0369A1)),
-                                        shape = RoundedCornerShape(6.dp),
-                                        contentPadding = PaddingValues(0.dp)
-                                    ) {
-                                        Row(verticalAlignment = Alignment.CenterVertically) {
-                                            Icon(Icons.Default.Add, contentDescription = null, tint = Color.White, modifier = Modifier.size(14.dp))
-                                            Spacer(modifier = Modifier.width(2.dp))
-                                            Text(tr("Agrandar"), color = Color.White, fontSize = 9.sp, fontWeight = FontWeight.Bold)
-                                        }
-                                    }
-
-                                    Button(
-                                        onClick = { modifyDetectionCircle(deltaSize = -calibrationStep) },
-                                        modifier = Modifier.weight(1f).heightIn(min = 48.dp).testTag("calibration_size_decrease"),
-                                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF881337)),
-                                        shape = RoundedCornerShape(6.dp),
-                                        contentPadding = PaddingValues(0.dp)
-                                    ) {
-                                        Row(verticalAlignment = Alignment.CenterVertically) {
-                                            Icon(Icons.Default.Remove, contentDescription = null, tint = Color.White, modifier = Modifier.size(14.dp))
-                                            Spacer(modifier = Modifier.width(2.dp))
-                                            Text(tr("Reducir"), color = Color.White, fontSize = 9.sp, fontWeight = FontWeight.Bold)
-                                        }
-                                    }
-                                }
-
-                                // Selector de Paso
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.spacedBy(3.dp),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Text(tr("Paso:"), color = Color(0xFF94A3B8), fontSize = 8.sp)
-                                    val steps = listOf(
-                                        Pair("0.1%", 0.001f),
-                                        Pair("0.5%", 0.005f),
-                                        Pair("1.0%", 0.010f),
-                                        Pair("2.0%", 0.020f)
-                                    )
-                                    steps.forEach { (label, value) ->
-                                        val isSel = calibrationStep == value
-                                        Box(
-                                            modifier = Modifier
-                                                .weight(1f)
-                                                .clip(RoundedCornerShape(4.dp))
-                                                .background(if (isSel) Color(0xFF0284C7).copy(alpha = 0.35f) else Color(0xFF0F172A))
-                                                .border(0.6.dp, if (isSel) Color(0xFF38BDF8) else Color(0xFF334155), RoundedCornerShape(4.dp))
-                                                .coachClickable { calibrationStep = value }
-                                                .heightIn(min = 48.dp)
-                                                .testTag("calibration_step_${label.replace('.', '_').replace('%', 'p')}")
-                                                .padding(vertical = 3.dp),
-                                            contentAlignment = Alignment.Center
-                                        ) {
-                                            Text(
-                                                text = com.example.util.tr(label),
-                                                color = if (isSel) Color(0xFF38BDF8) else Color(0xFF94A3B8),
-                                                fontSize = 7.5.sp,
-                                                fontWeight = if (isSel) FontWeight.Bold else FontWeight.Normal
-                                            )
-                                        }
-                                    }
-                                }
-                            }
-                        }
-
-                        Spacer(modifier = Modifier.height(10.dp))
-
-                        // BOTONES DE ACCIÓN: COPIAR COORDENADAS Y RESTABLECER
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(6.dp)
-                        ) {
-                            Button(
-                                onClick = {
-                                    val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                                    val clip = ClipData.newPlainText("WildRift_Vision_Calibration" , calibrationConfig.toFormattedCoordinatesString())
-                                    clipboard.setPrimaryClip(clip)
-                                    Toast.makeText(context, com.example.util.appTr("Coordenadas copiadas al portapapeles"), Toast.LENGTH_LONG).show()
-                                },
-                                modifier = Modifier.weight(1.3f).height(34.dp),
-                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0284C7)),
-                                shape = RoundedCornerShape(6.dp),
-                                contentPadding = PaddingValues(horizontal = 6.dp)
-                            ) {
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Icon(Icons.Default.ContentCopy, contentDescription = null, tint = Color.White, modifier = Modifier.size(13.dp))
-                                    Spacer(modifier = Modifier.width(4.dp))
-                                    Text(tr("Copiar Coordenadas"), color = Color.White, fontSize = 9.sp, fontWeight = FontWeight.Black)
-                                }
-                            }
-
-                            Button(
-                                onClick = {
-                                    DraftVisionScanner.resetCalibration(context)
-                                    Toast.makeText(context, com.example.util.appTr("Calibración restablecida"), Toast.LENGTH_SHORT).show()
-                                },
-                                modifier = Modifier.weight(0.9f).heightIn(min = 48.dp).testTag("vision_calibration_reset_device"),
-                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0F172A)),
-                                border = BorderStroke(1.dp, Color(0xFF334155)),
-                                shape = RoundedCornerShape(6.dp),
-                                contentPadding = PaddingValues(horizontal = 4.dp)
-                            ) {
-                                Text(tr("Restablecer"), color = Color(0xFF94A3B8), fontSize = 8.5.sp, fontWeight = FontWeight.SemiBold)
-                            }
-                        }
+                        CalibrationControls(
+                            step = calibrationStep,
+                            onStep = { calibrationStep = it },
+                            onMove = { x, y, size -> modifyDetectionCircle(x, y, size) },
+                            onReset = { DraftVisionScanner.resetCalibration(context) },
+                            report = { CalibrationSendButton { DraftVisionScanner.alignedConfigFlow.value } }
+                        )
                     }
                 }
 

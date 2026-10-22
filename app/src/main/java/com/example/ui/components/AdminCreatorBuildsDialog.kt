@@ -124,21 +124,10 @@ fun AdminCreatorBuildsDialog(
     // Lista de usuarios registrados en la nube para sincronizar avatares y marcos de creadores
     var registeredUsers by remember { mutableStateOf<List<Map<String, Any>>>(emptyList()) }
 
-    LaunchedEffect(Unit) {
-        CustomChampionBuildsManager.init(context)
-        try {
-            FirebaseFirestore.getInstance().collection("users").get()
-                .addOnSuccessListener { snapshot ->
-                    val list = mutableListOf<Map<String, Any>>()
-                    for (doc in snapshot.documents) {
-                        val data = doc.data ?: continue
-                        val mut = HashMap<String, Any>(data)
-                        mut["uid"] = doc.id
-                        list.add(mut)
-                    }
-                    registeredUsers = list
-                }
-        } catch (_: Exception) {}
+    LaunchedEffect(Unit) { CustomChampionBuildsManager.init(context) }
+    DisposableEffect(Unit) {
+        val registration = com.example.data.ManagedUsersDirectory.observe { state -> registeredUsers = state.users }
+        onDispose { registration.remove() }
     }
 
     val defaultLegends = emptyList<CreatorPodiumEntry>()
@@ -162,8 +151,10 @@ fun AdminCreatorBuildsDialog(
 
             // Buscar datos de avatar y marco del usuario
             val firstRecord = builds.firstOrNull()
-            val matchedUser = (if (!firstRecord?.creatorUserId.isNullOrBlank()) userMapByUid[firstRecord?.creatorUserId] else null)
-                ?: userMapByName[creatorName.lowercase(Locale.ROOT)]
+            val matchedUser = if (!firstRecord?.creatorUserId.isNullOrBlank()) userMapByUid[firstRecord?.creatorUserId]
+                else userMapByName[creatorName.lowercase(Locale.ROOT)]
+            // Public builds remain available, but a missing identity is not an active creator.
+            if (matchedUser == null) continue
 
             val avatarId = (matchedUser?.get("avatarId") as? String)
                 ?: firstRecord?.creatorAvatarId

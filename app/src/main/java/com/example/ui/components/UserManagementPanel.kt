@@ -78,6 +78,7 @@ fun EnhancedUserManagementPanel(
     val context = LocalContext.current
     var users by remember { mutableStateOf<List<Map<String, Any>>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
+    var directoryState by remember { mutableStateOf(com.example.data.ManagedUsersDirectory.State()) }
     var isRefreshing by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var searchQuery by remember { mutableStateOf("") }
@@ -116,44 +117,20 @@ fun EnhancedUserManagementPanel(
     }
 
     var listenerReg by remember { mutableStateOf<com.google.firebase.firestore.ListenerRegistration?>(null) }
-    var listenerRetryGeneration by remember { mutableIntStateOf(0) }
-    var listenerRetryScheduled by remember { mutableStateOf(false) }
-    val listenerRetryScope = rememberCoroutineScope()
 
     fun loadUsers() {
         isLoading = true
         errorMessage = null
         listenerReg?.remove()
-        listenerReg = com.example.data.ManagedUsersDirectory.listen { list, e ->
-                if (e != null) {
-                    // Do not keep showing accounts that are no longer present
-                    // when the source has been deleted or becomes unavailable.
-                    users = emptyList()
-                    errorMessage = "Error al cargar usuarios: ${e.message}"
-                    isLoading = false
-                    isRefreshing = false
-                    if (canReadManagedUsers && !listenerRetryScheduled) {
-                        listenerRetryScheduled = true
-                        listenerRetryScope.launch {
-                            delay(1_500L)
-                            listenerRetryScheduled = false
-                            listenerRetryGeneration++
-                        }
-                    }
-                    return@listen
-                }
-                run {
-                    users = list
-                    val selectedUid = selectedUserForManage?.get("uid")?.toString()
-                    if (selectedUid != null && list.none { it["uid"]?.toString() == selectedUid }) {
-                        selectedUserForManage = null
-                    }
-                    errorMessage = null
-                    listenerRetryScheduled = false
-                    isLoading = false
-                    isRefreshing = false
-                }
-            }
+        listenerReg = com.example.data.ManagedUsersDirectory.observe { state ->
+            directoryState = state
+            users = state.users
+            val selectedUid = selectedUserForManage?.get("uid")?.toString()
+            if (selectedUid != null && users.none { it["uid"]?.toString() == selectedUid }) selectedUserForManage = null
+            errorMessage = null
+            isLoading = state.status == com.example.data.ManagedUsersDirectory.Status.SYNCING
+            isRefreshing = false
+        }
     }
 
     DisposableEffect(Unit) {
@@ -163,7 +140,7 @@ fun EnhancedUserManagementPanel(
     }
 
     var currentTime by remember { mutableStateOf(System.currentTimeMillis()) }
-    LaunchedEffect(managementUserUid, userRoleForRequests, canReadManagedUsers, listenerRetryGeneration) {
+    LaunchedEffect(managementUserUid, userRoleForRequests, canReadManagedUsers) {
         if (canReadManagedUsers) {
             loadUsers()
         } else {
@@ -419,6 +396,9 @@ fun EnhancedUserManagementPanel(
         }
 
         // Lista de Usuarios
+        DirectorySyncLabel(directoryState)
+        if (directoryState.status == com.example.data.ManagedUsersDirectory.Status.OFFLINE ||
+            directoryState.status == com.example.data.ManagedUsersDirectory.Status.ERROR) return@Column
         if (isLoading) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
