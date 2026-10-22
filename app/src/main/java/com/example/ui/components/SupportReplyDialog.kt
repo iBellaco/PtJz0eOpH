@@ -29,6 +29,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -344,6 +345,18 @@ fun SupportReplyDialog(
                                 }
                             }
                             Spacer(modifier = Modifier.height(4.dp))
+                            val coordinates = com.example.data.CalibrationReport.extract(reportDescription)
+                                ?: conversationMessages.firstNotNullOfOrNull { com.example.data.CalibrationReport.extract(it.text) }
+                            if (coordinates != null) {
+                                OutlinedButton(
+                                    onClick = {
+                                        val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                                        clipboard.setPrimaryClip(ClipData.newPlainText("Coach coordinates", coordinates))
+                                    },
+                                    modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)
+                                        .then(Modifier.testTag("support_copy_calibration"))
+                                ) { Text(com.example.util.localizedString(com.example.R.string.calibration_copy)) }
+                            }
                             Text(
                                 text = com.example.util.tr(reportDescription),
                                 color = TextSecondary,

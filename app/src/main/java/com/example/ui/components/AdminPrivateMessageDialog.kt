@@ -268,9 +268,10 @@ fun AdminPrivateMessageDialog(
 
                                     MessageAudienceTarget.ALL_USERS,
                                     MessageAudienceTarget.PREMIUM_ONLY -> {
-                                        db.collection("users").get().addOnSuccessListener { snapshot ->
+                                        db.collection("users").get(com.google.firebase.firestore.Source.SERVER).addOnSuccessListener { snapshot ->
                                             val now = System.currentTimeMillis()
                                             val targetDocs = snapshot.documents.filter { doc ->
+                                                if (!com.example.data.ManagedUsersDirectory.isVisible(doc.data.orEmpty())) return@filter false
                                                 if (targetAudience == MessageAudienceTarget.PREMIUM_ONLY) {
                                                     com.example.model.PremiumAccessPolicy.isActiveAccount(doc.data.orEmpty(), now)
                                                 } else {

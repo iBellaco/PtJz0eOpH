@@ -1,5 +1,13 @@
 import {pathToFileURL} from 'node:url';
 
+export function directoryErrorCode(error) {
+  const code = String(error?.code || '');
+  if (['7','permission-denied','auth/insufficient-permission'].includes(code)) return 'PERMISSION_DENIED';
+  if (['16','unauthenticated','auth/invalid-credential'].includes(code)) return 'UNAUTHENTICATED';
+  if (['14','unavailable','auth/network-request-failed','ETIMEDOUT','ECONNRESET'].includes(code)) return 'UNAVAILABLE';
+  return code === 'IDENTITY_INDETERMINATE' ? code : 'UNKNOWN';
+}
+
 /** Authentication, not a leftover profile, determines whether an account exists.
  * Never deletes profiles, balances, history, or identities. Failed lookups fail closed.
  */
@@ -9,12 +17,17 @@ export async function reconcileDirectory(adapter) {
     report.checked++;
     try {
       const exists = await adapter.exists(profile.uid);
-      if (typeof exists !== 'boolean') throw new Error('Indeterminate identity');
+      if (typeof exists !== 'boolean') throw Object.assign(new Error('Indeterminate identity'), {code:'IDENTITY_INDETERMINATE'});
       if (profile.authAccountExists === exists) { report.unchanged++; continue; }
       if (await adapter.mark(profile.uid, exists)) {
         if (exists) report.restored++; else report.hidden++;
       }
-    } catch { report.errors++; }
+    } catch (error) {
+      report.errors++;
+      const code = directoryErrorCode(error);
+      report.errorCodes ||= {};
+      report.errorCodes[code] = (report.errorCodes[code] || 0) + 1;
+    }
   }
   return report;
 }

@@ -210,6 +210,21 @@ try {
   await test('ticket and inbox mirror are created atomically with one system greeting', async () => {
     const batch = writeBatch(user); batch.set(doc(user, 'support_reports', 'ticket'), ticket('ticket')); batch.set(doc(user, 'users/user/messages/ticket'), ticket('ticket')); await assertSucceeds(batch.commit());
   });
+  await test('calibration coordinates reach support and the private inbox without leaking to other accounts', async()=>{
+    const id='calibration-message';
+    const payload='[COACH_CALIBRATION_V1]\ndevice=Synthetic device\ncapture=1280x579\nallyAvatarCenterX=0.072\n[/COACH_CALIBRATION_V1]';
+    const value={...ticket(id),title:'Coordenadas del escáner',description:payload,content:payload,
+      conversation:initial(id).map((entry,index)=>index===0?{...entry,text:payload}:entry)};
+    const batch=writeBatch(user);
+    batch.set(doc(user,`support_reports/${id}`),value);
+    batch.set(doc(user,`users/user/messages/${id}`),value);
+    await assertSucceeds(batch.commit());
+    assert.equal((await getDoc(doc(admin,`support_reports/${id}`))).data().description,payload);
+    assert.equal((await getDoc(doc(user,`users/user/messages/${id}`))).data().description,payload);
+    await assertFails(getDoc(doc(other,`support_reports/${id}`)));
+    await assertFails(getDoc(doc(other,`users/user/messages/${id}`)));
+    await assertFails(setDoc(doc(unverified,'support_reports/unverified-coordinates'),value));
+  });
   await test('owner and moderator can read support but another user cannot', async () => {
     await assertSucceeds(getDoc(doc(user, 'support_reports', 'ticket'))); await assertSucceeds(getDoc(doc(moderator, 'support_reports', 'ticket'))); await assertFails(getDoc(doc(other, 'support_reports', 'ticket')));
     await assertSucceeds(getDocs(query(collection(moderator, 'support_reports'), where('staffVisible', '==', true)))); await assertFails(getDocs(collection(moderator, 'support_reports')));

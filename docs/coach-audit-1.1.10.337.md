@@ -48,8 +48,10 @@ regresiones de directorio/captura, fixture JPG, `test_matchup_rules.py` y versi�
 
 31 pruebas Node correctas y ensayo completo de emuladores correcto, incluida la
 reconciliación idempotente, restauración de identidad y conservación de saldo.
-Validación Android, firma, ofuscación, instalación ES/PT y publicación pendientes
-de la ejecución de Actions. Este entorno local no dispone del SDK Android.
+La validación Android, firma, ofuscación e instalación ES/PT finalizaron correctamente
+en la ejecución 39785686121. Publicación main correcta en 39794397849, merge
+69652bca3e374e5417c9261f740f40dee86aff39; release v1.1.10.337-b1053.
+Este entorno local no dispone del SDK Android; esos resultados proceden de Actions.
 
 ## Límites
 

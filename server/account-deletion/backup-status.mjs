@@ -9,6 +9,10 @@ export function classify(database, schedules, backups) {
   return {
     checkedAt: new Date().toISOString(),
     databaseReadable: available(database),
+    location: available(database) ? database.body.locationId || 'UNKNOWN' : 'UNKNOWN',
+    productionRestoreVerified: false,
+    billingChangesAuthorized: false,
+    activationStatus: 'PENDING_COST_REVIEW',
     pointInTimeRecovery: available(database) ? database.body.pointInTimeRecoveryEnablement || 'UNKNOWN' : 'UNKNOWN',
     scheduleStatus: available(schedules) ? (schedules.body.backupSchedules?.length ? 'CONFIGURED' : 'NONE') : 'UNKNOWN',
     backupStatus: available(backups) ? (completed.length ? 'AVAILABLE' : 'NONE') : 'UNKNOWN',

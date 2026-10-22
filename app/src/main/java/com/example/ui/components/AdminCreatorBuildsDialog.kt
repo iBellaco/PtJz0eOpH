@@ -107,6 +107,8 @@ fun AdminCreatorBuildsDialog(
     val adminClaim by com.example.util.AuthManager.isAdminClaim.collectAsStateWithLifecycle()
     val canCreate = com.example.model.RolePanelAccess.canCreateBuild(currentUserRole, secondaryRole, adminClaim)
     val isAdministrator = com.example.model.RolePanelAccess.isAdministrator(currentUserRole, adminClaim)
+    val canReadDirectory = isAdministrator || setOf(currentUserRole, secondaryRole)
+        .any { it.lowercase(Locale.ROOT) in setOf("moderador", "moderator") }
     val myUid = com.example.util.AuthManager.getAuth()?.currentUser?.uid.orEmpty()
     val myBuildsCount = remember(customBuilds, currentUserName) {
         customBuilds.count { it.creatorName.equals(currentUserName, ignoreCase = true) }
@@ -124,27 +126,17 @@ fun AdminCreatorBuildsDialog(
     // Lista de usuarios registrados en la nube para sincronizar avatares y marcos de creadores
     var registeredUsers by remember { mutableStateOf<List<Map<String, Any>>>(emptyList()) }
 
-    LaunchedEffect(Unit) {
-        CustomChampionBuildsManager.init(context)
-        try {
-            FirebaseFirestore.getInstance().collection("users").get()
-                .addOnSuccessListener { snapshot ->
-                    val list = mutableListOf<Map<String, Any>>()
-                    for (doc in snapshot.documents) {
-                        val data = doc.data ?: continue
-                        val mut = HashMap<String, Any>(data)
-                        mut["uid"] = doc.id
-                        list.add(mut)
-                    }
-                    registeredUsers = list
-                }
-        } catch (_: Exception) {}
+    LaunchedEffect(Unit) { CustomChampionBuildsManager.init(context) }
+    DisposableEffect(canReadDirectory) {
+        registeredUsers = emptyList()
+        val registration = if (canReadDirectory) com.example.data.ManagedUsersDirectory.observe { state -> registeredUsers = state.users } else null
+        onDispose { registration?.remove() }
     }
 
     val defaultLegends = emptyList<CreatorPodiumEntry>()
 
     // Cálculo dinámico de creadores y métricas para el Podio
-    val baseRankingList = remember(customBuilds, registeredUsers) {
+    val baseRankingList = remember(customBuilds, registeredUsers, canReadDirectory) {
         val userMapByName = registeredUsers.associateBy { (it["name"] as? String ?: "").trim().lowercase(Locale.ROOT) }
         val userMapByUid = registeredUsers.associateBy { (it["uid"] as? String ?: "") }
 
@@ -162,8 +154,10 @@ fun AdminCreatorBuildsDialog(
 
             // Buscar datos de avatar y marco del usuario
             val firstRecord = builds.firstOrNull()
-            val matchedUser = (if (!firstRecord?.creatorUserId.isNullOrBlank()) userMapByUid[firstRecord?.creatorUserId] else null)
-                ?: userMapByName[creatorName.lowercase(Locale.ROOT)]
+            val matchedUser = if (!firstRecord?.creatorUserId.isNullOrBlank()) userMapByUid[firstRecord?.creatorUserId]
+                else userMapByName[creatorName.lowercase(Locale.ROOT)]
+            // Preserve public build authorship without making private account data public.
+            if (!com.example.data.ManagedUsersDirectory.creatorCardVisible(canReadDirectory, matchedUser)) continue
 
             val avatarId = (matchedUser?.get("avatarId") as? String)
                 ?: firstRecord?.creatorAvatarId

@@ -77,13 +77,15 @@ fun AdminUserPresenceCard(modifier: Modifier = Modifier) {
     var users by remember { mutableStateOf<List<Map<String, Any>>>(emptyList()) }
     var now by remember { mutableStateOf(System.currentTimeMillis()) }
     var selectedRole by remember { mutableStateOf<String?>(null) }
+    var directoryState by remember { mutableStateOf(com.example.data.ManagedUsersDirectory.State()) }
     var selectedUserForManage by remember { mutableStateOf<Map<String, Any>?>(null) }
 
     DisposableEffect(Unit) {
-        val registration = com.example.data.ManagedUsersDirectory.listen { freshUsers, error ->
+        val registration = com.example.data.ManagedUsersDirectory.observe { state ->
+                directoryState = state
                 // The snapshot is the source of truth. Never retain deleted
                 // documents after Firestore sends an empty/error snapshot.
-                users = freshUsers
+                users = state.users
                 val selectedUid = selectedUserForManage?.get("uid")?.toString()
                 if (selectedUid != null && users.none { it["uid"]?.toString() == selectedUid }) {
                     selectedUserForManage = null
@@ -152,6 +154,8 @@ fun AdminUserPresenceCard(modifier: Modifier = Modifier) {
         colors = CardDefaults.cardColors(containerColor = HextechSurface)
     ) {
         Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            DirectorySyncLabel(directoryState)
+            if (directoryState.status != com.example.data.ManagedUsersDirectory.Status.LIVE) return@Column
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(Icons.Default.Groups, null, tint = HextechCyan, modifier = Modifier.size(20.dp))
                 Spacer(Modifier.width(8.dp))

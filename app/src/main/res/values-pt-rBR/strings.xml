@@ -1,4 +1,14 @@
 <resources>
+    <string name="calibration_send">Enviar coordenadas</string>
+    <string name="calibration_sending">Enviando ao suporte…</string>
+    <string name="calibration_sent">Coordenadas enviadas ao suporte.</string>
+    <string name="calibration_send_failed">Não foi possível confirmar o envio. Seus ajustes foram mantidos; tente novamente.</string>
+    <string name="calibration_verified_required">Entre com seu e-mail verificado para enviar as coordenadas.</string>
+    <string name="calibration_copy">Copiar coordenadas</string>
+    <string name="directory_syncing">Sincronizando lista de usuários…</string>
+    <string name="directory_offline">Sem conexão: não é possível confirmar a lista de usuários.</string>
+    <string name="directory_error">Não foi possível sincronizar a lista de usuários. Tente novamente.</string>
+    <string name="directory_synced">Lista sincronizada: %1$s</string>
     <string name="app_name">Coach</string>
     <string name="inicio">Início</string>
     <string name="seleccion">Seleção</string>

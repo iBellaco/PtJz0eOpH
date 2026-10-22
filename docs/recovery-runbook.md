@@ -18,6 +18,24 @@ proyecto de pruebas. No demuestra la restauración de una copia productiva.
 
 ## Antes de una migración o una recuperación real
 
+### Aprobación de costos pendiente
+
+El propietario autorizó consultar y presentar el costo antes de activar servicios,
+no activarlos todavía. No se configura retención de pago ni se restaura producción.
+El inventario incluye la región cuando la API la permite. Antes de pedir aprobación:
+
+- Medir tamaño actual, crecimiento y volumen de adjuntos sin exportar datos personales.
+- Cotizar en https://cloud.google.com/firestore/pricing según región y moneda:
+  almacenamiento retenido, frecuencia y retención de copias, costo de restauración
+  y almacenamiento temporal de la base aislada. Incluir identidades y archivos
+  por separado: una copia de documentos no protege ambos.
+- Presentar el total mensual estimado, el costo excepcional de un ensayo y límites
+  de retención. No confundir alertas de presupuesto con un límite duro de gasto.
+- Registrar aprobación explícita del costo y del destino aislado antes de activar.
+
+Sin tamaño, región y tarifa vigente comprobados no se publica una cifra inventada.
+`activationStatus=PENDING_COST_REVIEW` no equivale a protección ni ensayo completado.
+
 1. Consultar el inventario reciente. Si es UNKNOWN, verificar los permisos de
    lectura; si es NONE, definir retención y almacenamiento antes de migrar.
    Este cambio no activa servicios de pago ni crea almacenamiento.
