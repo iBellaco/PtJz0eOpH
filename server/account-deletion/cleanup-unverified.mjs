@@ -57,10 +57,14 @@ export async function cleanupUnverified({ apply = false, now = Date.now(), maxAg
         result.candidates++;
         if (!apply) continue;
         await adapter.enqueue(user.uid);
-        // Recheck identity and benefits immediately before removal.
+        // Finish the slower benefit/history reads before the final identity read.
+        if (protectedProfile(await adapter.profile(user.uid)) || await adapter.hasActivity(user.uid)) {
+          await adapter.complete(user.uid);
+          result.skipped++;
+          continue;
+        }
         const fresh = await adapter.getUser(user.uid);
-        if (!fresh || !unverifiedBefore(fresh, cutoff) || protectedProfile(await adapter.profile(user.uid)) ||
-            await adapter.hasActivity(user.uid)) {
+        if (!fresh || !unverifiedBefore(fresh, cutoff)) {
           await adapter.complete(user.uid);
           result.skipped++;
           continue;
