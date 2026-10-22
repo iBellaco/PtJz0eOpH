@@ -277,6 +277,7 @@ fun AdminDashboardDialog(
                     onOpenDatabaseConsumption = { showDatabaseConsumptionDialog = true },
                     onOpenModeratorActivity = { showModeratorActivityDialog = true },
                     onOpenSponsorPanel = { showSponsorPanelDialog = true },
+                    onOpenOverlayAccess = { showOverlayAccessDialog = true },
                     isFullAdmin = userRole == "admin" || com.example.util.AuthManager.isCurrentUserAdmin()
                 )
 
@@ -385,6 +386,7 @@ internal fun AdminDashboardHeader(
     onOpenDatabaseConsumption: () -> Unit = {},
     onOpenModeratorActivity: () -> Unit = {},
     onOpenSponsorPanel: () -> Unit = {},
+    onOpenOverlayAccess: () -> Unit = {},
     isFullAdmin: Boolean = true
 ) {
     Surface(
@@ -570,7 +572,7 @@ internal fun AdminDashboardHeader(
                     Text(tr("Actividad"), fontSize = 10.5.sp, color = HextechCyan, fontWeight = FontWeight.Bold)
                 }
                 AnimatedAdminActionButton(
-                    onClick = { showOverlayAccessDialog = true },
+                    onClick = onOpenOverlayAccess,
                     modifier = Modifier.heightIn(min = 48.dp).testTag("open_overlay_access"),
                     colors = ButtonDefaults.buttonColors(containerColor = HextechCyan.copy(alpha = 0.2f)),
                     shape = RoundedCornerShape(8.dp)
