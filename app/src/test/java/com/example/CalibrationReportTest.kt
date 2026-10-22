@@ -19,4 +19,14 @@ class CalibrationReportTest {
         assertNull(CalibrationReport.extract(CalibrationReport.MARKER))
         assertNull(CalibrationReport.extract(CalibrationReport.MARKER + "x".repeat(16000) + CalibrationReport.END))
     }
+    @Test fun machineCoordinatesIncludeBothBanRowsAndAllIndividualSlots() {
+        val config = VisionCalibrationConfig().copy(manualEnemyBans = true,
+            enemyBanXRatios = listOf(.80f,.84f,.88f,.92f,.96f))
+        val payload = CalibrationReport.build("model", "1.1", "1080x2400", "2400x1080", config.toKotlinCode())
+        assertTrue(payload.contains("manualEnemyBans = true"))
+        for (field in listOf("allySlotXRatios", "enemySlotXRatios", "allySlotYRatios", "enemySlotYRatios",
+            "allySlotDiameterRatios", "enemySlotDiameterRatios", "topAllyXRatios", "topEnemyXRatios",
+            "allyBanXRatios", "enemyBanXRatios")) assertTrue(field, payload.contains(field))
+        assertEquals(payload, CalibrationReport.extract(payload))
+    }
 }

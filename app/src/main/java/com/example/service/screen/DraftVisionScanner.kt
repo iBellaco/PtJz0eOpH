@@ -354,7 +354,9 @@ object DraftVisionScanner {
     val alignedConfigFlow = kotlinx.coroutines.flow.MutableStateFlow(VisionCalibrationConfig())
     private var alignedBase: VisionCalibrationConfig? = null
     @Volatile private var alignedSize = 0 to 0
-    val captureDimensions: Pair<Int, Int> get() = alignedSize
+    internal data class CalibrationReportSnapshot(val width: Int, val height: Int, val config: VisionCalibrationConfig)
+    @Synchronized
+    internal fun calibrationReportSnapshot() = CalibrationReportSnapshot(alignedSize.first, alignedSize.second, alignedConfigFlow.value)
     private var lastAlignmentAt = 0L
     private var calibrationContext: android.content.Context? = null
     private var activeCaptureProfile: String? = null

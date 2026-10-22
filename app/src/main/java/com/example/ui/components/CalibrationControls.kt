@@ -45,9 +45,9 @@ fun CalibrationControls(
             }
             CoachOutlinedButton(onClick = { onMove(0f, step, 0f) }, modifier = Modifier.size(56.dp).testTag("vision_calibration_down"), contentPadding = PaddingValues(0.dp)) { Icon(Icons.Default.KeyboardArrowDown, tr("Abajo")) }
         }
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            CoachButton(onClick = { onMove(0f, 0f, step) }, modifier = Modifier.heightIn(min = 48.dp).testTag("calibration_size_increase")) { Text(tr("Agrandar"), fontSize = 14.sp) }
-            CoachButton(onClick = { onMove(0f, 0f, -step) }, modifier = Modifier.heightIn(min = 48.dp).testTag("calibration_size_decrease")) { Text(tr("Reducir"), fontSize = 14.sp) }
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            CoachButton(onClick = { onMove(0f, 0f, step) }, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp).testTag("calibration_size_increase")) { Text(tr("Agrandar"), fontSize = 14.sp) }
+            CoachButton(onClick = { onMove(0f, 0f, -step) }, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp).testTag("calibration_size_decrease")) { Text(tr("Reducir"), fontSize = 14.sp) }
         }
         Text(tr("Paso:"), fontSize = 14.sp)
         FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -63,7 +63,7 @@ fun CalibrationControls(
 }
 
 @Composable
-fun CalibrationSendButton(config: () -> VisionCalibrationConfig) {
+fun CalibrationSendButton() {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     var sending by remember { mutableStateOf(false) }
@@ -83,13 +83,13 @@ fun CalibrationSendButton(config: () -> VisionCalibrationConfig) {
             scope.launch {
                 try {
                     val metrics = context.resources.displayMetrics
-                    val capture = DraftVisionScanner.captureDimensions
+                    val snapshot = DraftVisionScanner.calibrationReportSnapshot()
                     val payload = CalibrationReport.build(
                         "${Build.MANUFACTURER} ${Build.MODEL}; API ${Build.VERSION.SDK_INT}",
                         "${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})",
                         "${metrics.widthPixels}x${metrics.heightPixels}; density=${metrics.density}; font=${context.resources.configuration.fontScale}; orientation=${context.resources.configuration.orientation}",
-                        if (capture.first > 0) "${capture.first}x${capture.second}" else "not_observed",
-                        config().toFormattedCoordinatesString()
+                        if (snapshot.width > 0) "${snapshot.width}x${snapshot.height}" else "not_observed",
+                        snapshot.config.toKotlinCode()
                     )
                     val title = if (AppLanguage.current.value == "pt") "Coordenadas do scanner" else "Coordenadas del escáner"
                     val result = FeedbackRepository.submitFeedback("SOPORTE", title, payload, userName = account.displayName)

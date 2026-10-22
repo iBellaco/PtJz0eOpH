@@ -611,7 +611,7 @@ fun LiteRTEngineViewerDialog(
                             onStep = { calibrationStep = it },
                             onMove = { x, y, size -> modifyDetectionCircle(x, y, size) },
                             onReset = { DraftVisionScanner.resetCalibration(context) },
-                            report = { CalibrationSendButton { DraftVisionScanner.alignedConfigFlow.value } }
+                            report = { CalibrationSendButton() }
                         )
                     }
                 }

@@ -615,7 +615,7 @@ fun DraftCalibrationPanel(
 
             Spacer(modifier = Modifier.height(10.dp))
 
-            CalibrationSendButton { DraftVisionScanner.alignedConfigFlow.value }
+            CalibrationSendButton()
             OutlinedButton(
                 onClick = {
                     DraftVisionScanner.resetCalibration(context)

@@ -127,6 +127,8 @@ fun EnhancedUserManagementPanel(
             users = state.users
             val selectedUid = selectedUserForManage?.get("uid")?.toString()
             if (selectedUid != null && users.none { it["uid"]?.toString() == selectedUid }) selectedUserForManage = null
+            val giftUid = selectedUserForAvatarGift?.get("uid")?.toString()
+            if (giftUid != null && users.none { it["uid"]?.toString() == giftUid }) selectedUserForAvatarGift = null
             errorMessage = null
             isLoading = state.status == com.example.data.ManagedUsersDirectory.Status.SYNCING
             isRefreshing = false
@@ -146,6 +148,10 @@ fun EnhancedUserManagementPanel(
         } else {
             listenerReg?.remove()
             listenerReg = null
+            users = emptyList()
+            selectedUserForManage = null
+            selectedUserForAvatarGift = null
+            directoryState = com.example.data.ManagedUsersDirectory.State(com.example.data.ManagedUsersDirectory.Status.ERROR)
             isLoading = false
         }
         while (true) {

@@ -67,7 +67,7 @@ class CalibrationControlsLayoutTest {
                         androidx.compose.ui.semantics.SemanticsActions.GetTextLayoutResult
                     ) { it(layouts) }
                     assertEquals("Size label wraps at $lang $w/$scale", 1, layouts.single().lineCount)
-                    assertFalse(layouts.single().hasVisualOverflow)
+                    assertFalse("Clipped size label '$text' at $lang $w/$scale: size=${layouts.single().size}, width=${layouts.single().didOverflowWidth}, height=${layouts.single().didOverflowHeight}", layouts.single().hasVisualOverflow)
                 }
             }
         } finally { AppLanguage.select(context, "es") }

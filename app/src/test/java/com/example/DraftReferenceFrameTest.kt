@@ -12,7 +12,7 @@ import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
 
-/** Real supplied frame; no portrait is pasted, recolored or replaced by a test template. */
+/** Unmodified real-frame scales plus explicitly labeled synthetic layout variations. */
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [34], application = Application::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
@@ -119,6 +119,7 @@ class DraftReferenceFrameTest {
         val context = RuntimeEnvironment.getApplication()
         WildRiftRepository.initChampions(context, forceReload = true)
         val source = javaClass.getResourceAsStream("/portraits/draft-ten-selected.jpg").use { BitmapFactory.decodeStream(it)!! }
+        val failures = mutableListOf<String>()
         try {
             val original = DraftRingAlignment.align(source, VisionCalibrationConfig(), null)
             for (shift in listOf(1, 3)) {
@@ -136,13 +137,22 @@ class DraftReferenceFrameTest {
                         val crop = AdaptiveScreenLayoutEngine.extractSlotAvatarBitmap(frame,frame.width,frame.height,ally,slot,aligned)!!
                         try {
                             val ranked = LiteRTVisionClassifier.rankSlotPortrait(crop,ally,context)
-                            assertEquals(expected[(if (ally) 0 else 5)+(slot+shift)%5],ranked[0].first.id)
-                            assertTrue(PortraitMatcher.accepts(ranked[0].second,ranked[1].second,.80f))
+                            val want = expected[(if (ally) 0 else 5)+(slot+shift)%5]
+                            val rect = AdaptiveScreenLayoutEngine.calculateSlotCropRect(frame.width,frame.height,ally,slot,aligned)
+                            val oldRect = AdaptiveScreenLayoutEngine.calculateSlotCropRect(frame.width,frame.height,ally,slot,original)
+                            if (want != ranked[0].first.id || !PortraitMatcher.accepts(ranked[0].second,ranked[1].second,.80f)) {
+                                val baseline = AdaptiveScreenLayoutEngine.extractSlotAvatarBitmap(frame,frame.width,frame.height,ally,slot,original)!!
+                                try {
+                                    val before = LiteRTVisionClassifier.rankSlotPortrait(baseline,ally,context)
+                                    failures += "shift=$shift ally=$ally slot=$slot wanted=$want rect=$rect prior=$oldRect before=${before.take(2).map { it.first.id to it.second }} after=${ranked.take(2).map { it.first.id to it.second }}"
+                                } finally { baseline.recycle() }
+                            }
                         } finally { crop.recycle() }
                     }
                 } finally { frame.recycle() }
             }
         } finally { source.recycle() }
+        assertTrue(failures.joinToString("\n"), failures.isEmpty())
     }
 
     @Test fun viewportAndMaskMappingRemainConsistentAcrossDenseSizeMatrix() {

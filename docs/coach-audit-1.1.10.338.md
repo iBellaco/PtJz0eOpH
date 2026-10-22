@@ -8,6 +8,8 @@
   con confirmación tras respuesta del servicio y errores recuperables. No se
   adjuntan capturas automáticamente. El mensaje se puede copiar desde soporte.
 - Bloque de coordenadas versionado y acotado, sin identificadores de cuenta.
+  Configuración y dimensiones se leen en una instantánea sincronizada; el bloque
+  copiable conserva todas las listas individuales de posiciones y tamaños.
 - Directorio compartido con estados sincronizando, vigente, sin conexión y error;
   hora de recepción del último snapshot, no una falsa hora de verificación de identidad.
 - Exclusión de cuentas confirmadas inexistentes en moderación, creadores activos
@@ -18,6 +20,8 @@
 - Diagnóstico seguro por clase de error y enlace al paso fallido. Evidencia final
   con commit, ejecución y estado de cada job en el artefacto delivery-evidence;
   los jobs omitidos no se presentan como pruebas nuevas ejecutadas.
+  Los fallos de regresión muestran el mensaje de la aserción, con correos y enlaces
+  censurados, para no depender de un artefacto inaccesible al diagnosticar.
 - Auditoría anterior corregida con la publicación real, sin dejarla como pendiente.
 
 ## Archivos
