@@ -24,6 +24,10 @@
   no resueltos reciben alineación fina, sin aprender retratos de la captura de prueba.
 - La búsqueda de baneos también utiliza el área visible, reproyectando máscaras
   y resultados al frame completo; no busca dentro de una franja negra superior.
+- Se exige contraste interior/exterior al alinear bordes: un fondo azul no es un
+  aro. La alineación trabaja a resolución acotada y la extracción no aplica un
+  segundo desplazamiento oculto. Los fotogramas dispersos sin un límite de
+  contenido observable no se interpretan como áreas de juego recortadas.
 
 ## Archivos
 

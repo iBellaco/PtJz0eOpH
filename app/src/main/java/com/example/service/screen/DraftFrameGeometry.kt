@@ -19,6 +19,10 @@ internal object DraftFrameGeometry {
         while (bottom > h * 2 / 3 && blackRow(bottom - 1)) bottom--
         while (left < w / 3 && blackColumn(left, top, bottom)) left++
         while (right > w * 2 / 3 && blackColumn(right - 1, top, bottom)) right--
+        // Reaching a search limit means no actual content boundary was found.
+        // A sparse header fixture/loading frame must not become a guessed viewport.
+        if (top >= h / 3 || bottom <= h * 2 / 3 || left >= w / 3 || right <= w * 2 / 3)
+            return Rect(0, 0, w, h)
         val bounds = Rect(left, top, right, bottom)
         // Loading/blank frames are not evidence of a viewport.
         return if (bounds.width().toFloat() / bounds.height() in 1.5f..3.1f &&

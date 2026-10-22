@@ -49,6 +49,16 @@ class DraftReferenceFrameTest {
                             assertEquals("$w/$h slot $index: ${ranked.take(3).map { it.first.id to it.second }}",expected[index],ranked.first().first.id)
                             assertTrue("$w/$h slot $index confidence ${ranked.take(2).map { it.first.id to it.second }}",
                                 PortraitMatcher.accepts(ranked[0].second, ranked[1].second, .80f))
+                            if (w == 1280 && h == 579) kotlinx.coroutines.runBlocking {
+                                LiteRTVisionClassifier.reset()
+                                LiteRTVisionClassifier.setThreshold(.80f, context)
+                                var confirmed: String? = null
+                                repeat(2) {
+                                    confirmed = LiteRTVisionClassifier.executeTenthPickInference(crop, ally,
+                                        emptySet(), 9, slot, context)?.first?.id
+                                }
+                                assertEquals("Stable inference slot $index", expected[index], confirmed)
+                            }
                         } finally { crop.recycle() }
                     }
                     }
