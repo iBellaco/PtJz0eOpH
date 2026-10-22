@@ -32,6 +32,8 @@
   demostró que el radio único podía bloquear una identidad de alta confianza.
   Se exige confirmación estable en las once superficies y ambos perfiles, no
   solo que el primer candidato del clasificador sea correcto.
+- El espaciado vertical se estima de forma robusta entre aros coherentes. Un
+  contorno débil no puede desplazar aisladamente una fila fuera de esa geometría.
 
 ## Archivos
 

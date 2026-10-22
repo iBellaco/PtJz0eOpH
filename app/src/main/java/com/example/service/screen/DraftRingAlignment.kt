@@ -90,11 +90,22 @@ internal object DraftRingAlignment {
             // Keep each detected slot's Y instead of reusing another phone's row spacing.
             // This matters when the captured frame includes a different top inset or letterbox.
             val consistent = fits.filter { abs(it.second.first - medianX) <= radius / 3 }
-            val shifts = consistent.map { it.second.second - ys[it.first] * h }.sorted()
-            val shift = (shifts[(shifts.size - 1) / 2] + shifts[shifts.size / 2]) / 2f
-            val alignedYs = ys.map { ((it * h + shift) / h).coerceIn(0f, 1f) }.toMutableList()
+            fun median(values: List<Float>): Float {
+                val sorted=values.sorted()
+                return (sorted[(sorted.size-1)/2]+sorted[sorted.size/2])/2f
+            }
+            // Robust row spacing from independent visible rings. One weak rim
+            // on a face must not drag its row away from the rest of the column.
+            val slopes=consistent.flatMapIndexed { index,a -> consistent.drop(index+1).mapNotNull { b ->
+                val nominal=(ys[b.first]-ys[a.first])*h
+                if(abs(nominal)<1f) null else ((b.second.second-a.second.second)/nominal).takeIf { it in .85f..1.15f }
+            } }
+            val scale=if(slopes.isEmpty()) 1f else median(slopes)
+            val shift=median(consistent.map { it.second.second-ys[it.first]*h*scale })
+            val alignedYs = ys.map { ((it * h * scale + shift) / h).coerceIn(0f, 1f) }.toMutableList()
             fits.forEach { (slot, center) ->
-                if (abs(center.first - medianX) <= radius / 3) {
+                if (abs(center.first - medianX) <= radius / 3 &&
+                    abs(center.second-alignedYs[slot]*h) <= maxOf(3f,radius*.12f)) {
                     alignedYs[slot] = (center.second.toFloat() / h).coerceIn(0f, 1f)
                 }
             }

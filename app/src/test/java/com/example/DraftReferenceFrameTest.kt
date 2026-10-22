@@ -47,7 +47,7 @@ class DraftReferenceFrameTest {
                         val crop = AdaptiveScreenLayoutEngine.extractSlotAvatarBitmap(frame,w,h,ally,slot,aligned)!!
                         try {
                             val ranked = LiteRTVisionClassifier.rankSlotPortrait(crop,ally,context)
-                            val label = "$w/$h prior ${prior.allyAvatarCenterX} slot $index"
+                            val label = "$w/$h prior ${prior.allyAvatarCenterX} slot $index at ${if(ally) aligned.getAllySlotX(slot) else aligned.getEnemySlotX(slot)},${(if(ally) aligned.allySlotYRatios else aligned.enemySlotYRatios)[slot]}"
                             if (ranked.first().first.id != expected[index]) failures += "$label identity: ${ranked.take(3).map { it.first.id to it.second }}"
                             if (!PortraitMatcher.accepts(ranked[0].second, ranked[1].second, .80f))
                                 failures += "$label confidence ${ranked.take(2).map { it.first.id to it.second }}"
