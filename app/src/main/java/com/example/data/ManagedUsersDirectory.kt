@@ -23,7 +23,11 @@ internal object ManagedUsersDirectory {
             is Number -> value.toLong()
             is com.google.firebase.Timestamp -> value.toDate().time
             is java.util.Date -> value.time
-            is String -> value.toLongOrNull() ?: runCatching { java.time.Instant.parse(value).toEpochMilli() }.getOrDefault(0L)
+            is String -> value.toLongOrNull() ?: listOf(
+                "yyyy-MM-dd'T'HH:mm:ss.SSSX", "yyyy-MM-dd'T'HH:mm:ssX", "yyyy-MM-dd HH:mm:ss"
+            ).firstNotNullOfOrNull { pattern -> runCatching {
+                java.text.SimpleDateFormat(pattern, java.util.Locale.US).parse(value)?.time
+            }.getOrNull() } ?: 0L
             else -> 0L
         }
     }

@@ -139,7 +139,7 @@ internal fun FloatingOverlayContent(
 
     val sharedPrefs = remember { context.getSharedPreferences("app_prefs", android.content.Context.MODE_PRIVATE) }
     var hubViewerButtonsVisible by remember { mutableStateOf(true) }
-    val accountId = remember { com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid }
+    val accountId = remember { runCatching { com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid }.getOrNull() }
     LaunchedEffect(accountId) {
         hubViewerButtonsVisible = runCatching {
             com.example.data.OverlayAccessPolicy.load().hubButtonsVisibleFor(accountId)
