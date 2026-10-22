@@ -315,11 +315,11 @@ object SituationalItemAdvisor {
         "Flechas de los Yun Tal" to SituationalItemInfo(
             name = "Flechas de los Yun Tal",
             iconUrl = "file:///android_asset/offline_images/yun_tal_wildarrows.webp",
-            categoryName = "Daño Físico & Crítico con Ráfaga (Parche 7.3b)",
+            categoryName = "Daño Físico & Crítico con Ráfaga (Parche 7.3c)",
             purpose = "Ofrece un pico de velocidad de ataque para tiradores de autoataques continuos.",
             bestAgainst = listOf("Tiradores de autoataques continuos (Jinx, Tristana, Draven, Caitlyn, Ashe, Kai'Sa)"),
             keyEffect = "Ráfaga: al atacar a un campeón enemigo, otorga +35% velocidad de ataque durante 6 s; los ataques reducen su enfriamiento.",
-            recommendationTip = "Primer objeto de crítico más accesible en 7.3b para acelerar el pico de poder en juego temprano y medio."
+            recommendationTip = "Primer objeto de crítico más accesible en 7.3c para acelerar el pico de poder en juego temprano y medio."
         ),
         "Velo del amanecer" to SituationalItemInfo(
             name = "Velo del amanecer",

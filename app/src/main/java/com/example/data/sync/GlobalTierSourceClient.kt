@@ -103,8 +103,14 @@ class GlobalTierSourceClient(
             } catch (http: SourceHttpException) { error = "Estadísticas: HTTP ${http.code}"
             } catch (_: Exception) { error = "No se pudieron consultar las estadísticas" }
         }
+        // Small fixture sources are intentionally allowed in unit tests; live
+        // catalogs know the full roster and must cover at least 70% of it.
+        val minimumCoverage = if (known.size < 100) known.size else (known.size * 0.70).toInt()
+        val coverage = (parsed.keys + stats.keys).map(RegionalTierParser::canonical).toSet().size
+        val completeEnough = coverage >= minimumCoverage
+        if (error == null && !completeEnough) error = "Cobertura insuficiente: $coverage/$known"
         return SourceResult(source, parsed, ScraperSourceStatus(name = source.name, url = source.url,
-            isHealthy = parsed.isNotEmpty() || stats.isNotEmpty(), lastChecked = System.currentTimeMillis(),
+            isHealthy = error == null && completeEnough, lastChecked = System.currentTimeMillis(),
             responseTimeMs = System.currentTimeMillis() - started, errorMessage = error,
             tierCount = parsed.size, statsCount = stats.size, publishedPatch = patch,
             rosterCount = (parsed.keys + stats.keys).size, historyCount = history.count { it.value.isNotEmpty() }), stats, history, roleStats)

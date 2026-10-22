@@ -111,7 +111,7 @@ WildRiftItem(
             passive = "Impulso: 3 s tras abandonar el combate contra campeones, obtiene 30 de velocidad de movimiento (20 para campeones a distancia).",
             passiveEn = "Momentum: 3s after exiting combat with champions, gain 30 Movement Speed (20 for ranged champions).",
             coachTip = "Primer objeto para asesinos AD que necesitan acelerar rotaciones, flancos y emboscadas.",
-            coachTipEn = "Patch 7.3b: costs 2900 gold. Still a strong first item for AD assassins and now reaches roam and gank windows earlier.",
+            coachTipEn = "Patch 7.3c: costs 2900 gold. Still a strong first item for AD assassins and now reaches roam and gank windows earlier.",
             iconUrl = "file:///android_asset/offline_images/f1b8c4afd751ba63ea7b8f0ff5f2c981.webp"
         ),
 WildRiftItem(
@@ -1019,8 +1019,8 @@ WildRiftItem(
             statsEn = "+700 Max Health • +100% Health Regen • +20 Ability Haste",
             passive = "Bendición: Potencia un 30% todas las curaciones y escudos que recibas.\nCorazón de Warmog: Si tienes al menos 1250 de vida adicional, restaura un 3,5% de la vida máxima por segundo, en caso de no haber recibido daño en los últimos 5 s.",
             passiveEn = "Warmog's Heart: If you have at least 1250 bonus Health, restore 3.5% Health per second if you haven't taken damage within the last 5 seconds.\nBlessed: Increases all healing and shielding effects on you by 30%.",
-            coachTip = "Parche 7.3b: exige 1250 de vida adicional para activar Corazón de Warmog. Úsalo en tanques que ya acumulen mucha vida; retrásalo en campeones que no alcancen ese umbral pronto.",
-            coachTipEn = "Patch 7.3b: Warmog's Heart now requires 1250 bonus Health. Use it on tanks already stacking Health; delay it on champions that cannot reach the threshold early.",
+            coachTip = "Parche 7.3c: exige 1250 de vida adicional para activar Corazón de Warmog. Úsalo en tanques que ya acumulen mucha vida; retrásalo en campeones que no alcancen ese umbral pronto.",
+            coachTipEn = "Patch 7.3c: Warmog's Heart now requires 1250 bonus Health. Use it on tanks already stacking Health; delay it on champions that cannot reach the threshold early.",
             iconUrl = "file:///android_asset/offline_images/f141ec3263251399bc6226e325c1d998.webp"
         ),
 WildRiftItem(
