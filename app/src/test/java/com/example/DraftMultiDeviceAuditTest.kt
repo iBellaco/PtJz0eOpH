@@ -55,9 +55,13 @@ class DraftMultiDeviceAuditTest {
     @Test fun referenceDevicesAndS26CaptureScenarios() = audit(profiles.take(6), "device-profiles")
     @Test fun phoneResolutionMatrix() = audit(profiles.drop(6).take(20), "phone-resolutions")
     @Test fun tabletResolutionMatrix() = audit(profiles.takeLast(4), "tablet-resolutions")
+    @Test fun nearlySquareFoldableCapturesKeepAllTwentyPositions() = audit(
+        listOf(1920 to 1792, 2208 to 1840, 2440 to 2268, 1800 to 1800).map { (w, h) ->
+            Profile("foldable-$w-$h", "generic", "foldable-resolution-simulation", w, h)
+        }, "foldable-resolutions")
     @Test fun fullScreenSidePanelsRetainCircularPortraitsWithoutLetterboxing() = audit(
         listOf(640 to 360, 1280 to 720, 2400 to 1080, 2712 to 1220, 3120 to 1440,
-            1024 to 768, 1600 to 1000, 2560 to 1600).map { (w, h) ->
+            1024 to 768, 1600 to 1000, 2560 to 1600, 2440 to 2268, 1800 to 1800).map { (w, h) ->
             Profile("edge-anchored-$w-$h", "generic", "synthetic-side-panels", w, h, true)
         }, "edge-anchored-resolutions")
 
