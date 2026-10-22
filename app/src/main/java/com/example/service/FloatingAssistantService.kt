@@ -267,17 +267,10 @@ class FloatingAssistantService : Service(), LifecycleOwner, ViewModelStoreOwner,
                 ScreenCaptureManager.pendingMediaProjectionData = null
             }
 
-            serviceScope.launch {
-                val uid = runCatching { com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid }.getOrNull()
-                val allowed = com.example.data.OverlayAccessPolicy.load().allows(uid)
-                if (allowed) {
-                    createFloatingOverlay()
-                    registerComponentCallbacks(this@FloatingAssistantService)
-                } else {
-                    AppLogger.w(TAG, "Visor bloqueado por la configuración administrativa")
-                    stopSelf()
-                }
-            }
+            // La política administrativa oculta botones opcionales del Hub;
+            // nunca debe bloquear el overlay ni el escáner completo.
+            createFloatingOverlay()
+            registerComponentCallbacks(this@FloatingAssistantService)
         } catch (e: Exception) {
             AppLogger.e("FloatingService", "Error starting floating service", e)
         }

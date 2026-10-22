@@ -191,7 +191,7 @@ fun EnhancedUserManagementPanel(
 
     // Filtrado de usuarios
     val filteredUsers = remember(users, searchQuery, selectedFilter, now) {
-        users.filter { user ->
+        com.example.data.ManagedUsersDirectory.newestFirst(users.filter { user ->
             val name = (user["name"] as? String ?: "").lowercase()
             val email = (user["email"] as? String ?: "").lowercase()
             val uid = (user["uid"] as? String ?: "").lowercase()
@@ -217,7 +217,7 @@ fun EnhancedUserManagementPanel(
             }
 
             matchesQuery && matchesTab
-        }
+        })
     }
 
     Column(modifier = Modifier.fillMaxSize()) {

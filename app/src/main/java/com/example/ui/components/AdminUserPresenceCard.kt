@@ -145,7 +145,7 @@ fun AdminUserPresenceCard(modifier: Modifier = Modifier) {
         users.filter { user ->
             if (selection == "__all__") online(user) else matchesSelection(user, selection)
         }
-            .sortedBy { ((it["name"] ?: it["username"] ?: it["displayName"] ?: "Usuario") as? String).orEmpty().lowercase() }
+            .let(com.example.data.ManagedUsersDirectory::newestFirst)
     }.orEmpty()
 
     Card(

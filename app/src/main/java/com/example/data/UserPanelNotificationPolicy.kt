@@ -7,6 +7,7 @@ object UserPanelNotificationPolicy {
         if (SupportConversationPolicy.isClosed(status) || status in setOf("DELETED", "ELIMINADO", "ACCEPTED", "ACEPTADO", "REJECTED", "RECHAZADO")) return false
         if (data["hasNewUserReply"] == true) return true
         if (data["staffRead"] is Boolean) return data["staffRead"] == false
+        if (data["is_completed"] == false || data["isCompleted"] == false) return true
         return status in setOf("PENDING", "PENDIENTE", "UNREAD")
     }
 }
