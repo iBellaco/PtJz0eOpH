@@ -148,6 +148,7 @@ fun AdminDashboardDialog(
     var showOverlayAccessDialog by remember { mutableStateOf(false) }
     val adminNotificationSummary = userPanelNotificationSummary()
     val pendingModeratorRequestsCount = adminNotificationSummary.count(com.example.data.NotificationPanel.ADMINISTRATION)
+    val pendingSupportReportsCount = adminNotificationSummary.count(com.example.data.NotificationPanel.SUPPORT)
     val reviewScope = rememberCoroutineScope()
     var isMonitoringMinimized by remember { mutableStateOf(false) }
 
@@ -269,6 +270,7 @@ fun AdminDashboardDialog(
                     onClose = onDismiss,
                     onOpenUsers = { showUsers = true },
                     onOpenFeedbackAndSupport = { showReportsPanel = true },
+                    pendingSupportReportsCount = pendingSupportReportsCount,
                     onOpenModeratorRequests = { showModeratorRequestsDialog = true },
                     pendingModeratorRequestsCount = pendingModeratorRequestsCount,
                     onOpenBroadcast = { showBroadcastDialog = true },
@@ -378,6 +380,7 @@ internal fun AdminDashboardHeader(
     onClose: () -> Unit,
     onOpenUsers: () -> Unit,
     onOpenFeedbackAndSupport: () -> Unit,
+    pendingSupportReportsCount: Int = 0,
     onOpenModeratorRequests: () -> Unit = {},
     pendingModeratorRequestsCount: Int = 0,
     onOpenBroadcast: () -> Unit,
@@ -464,10 +467,15 @@ internal fun AdminDashboardHeader(
                     Icon(Icons.Default.ManageAccounts, null, tint = HextechGold, modifier = Modifier.size(16.dp))
                     Text(tr("Usuarios"), color = HextechGold, fontSize = 12.sp)
                 }
+                Box {
                 AnimatedAdminActionButton(onClick = onOpenFeedbackAndSupport,
                     modifier = Modifier.heightIn(min = 48.dp).testTag("open_admin_support"),
                     colors = ButtonDefaults.buttonColors(containerColor = HextechCyan.copy(alpha = 0.2f))) {
                     Text(tr("Soporte"), color = HextechCyan, fontSize = 12.sp)
+                }
+                if (pendingSupportReportsCount > 0) {
+                    Badge(containerColor = DangerRed, contentColor = Color.White, modifier = Modifier.align(Alignment.TopEnd)) { Text(pendingSupportReportsCount.toString()) }
+                }
                 }
                 if (isFullAdmin) AnimatedAdminActionButton(onClick = onOpenSponsorPanel,
                     modifier = Modifier.heightIn(min = 48.dp).testTag("open_admin_sponsor_panel"),

@@ -138,6 +138,13 @@ internal fun FloatingOverlayContent(
     var activeRole by state::activeRole
 
     val sharedPrefs = remember { context.getSharedPreferences("app_prefs", android.content.Context.MODE_PRIVATE) }
+    var hubViewerButtonsVisible by remember { mutableStateOf(true) }
+    val accountId = remember { runCatching { com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid }.getOrNull() }
+    LaunchedEffect(accountId) {
+        hubViewerButtonsVisible = runCatching {
+            com.example.data.OverlayAccessPolicy.load().hubButtonsVisibleFor(accountId)
+        }.getOrDefault(true)
+    }
 
     LaunchedEffect(Unit) {
         val savedRoleStr = sharedPrefs.getString("saved_active_role", null)
@@ -905,7 +912,7 @@ internal fun FloatingOverlayContent(
                                 val isLiveVisionActive by com.example.service.screen.DraftVisionScanner.showCalibrationBoxes.collectAsStateWithLifecycle()
 
                                 // 1. Botón de Visión en Vivo (Solo icono de ojo, sin texto)
-                                Surface(
+                                if (hubViewerButtonsVisible) Surface(
                                     modifier = Modifier
                                         .size(48.dp)
                                         .clickable {
@@ -927,7 +934,7 @@ internal fun FloatingOverlayContent(
                                 }
 
                                 // 2. Botón de Depurado LiteRT (Solo icono)
-                                Surface(
+                                if (hubViewerButtonsVisible) Surface(
                                     modifier = Modifier
                                         .size(48.dp)
                                         .clickable {

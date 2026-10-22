@@ -464,6 +464,8 @@ class RuntimeBehaviorTest {
         assertTrue(UserPanelNotificationPolicy.staffNeedsAttention(pending + mapOf("status" to "READ", "staffRead" to false), false))
         assertFalse(UserPanelNotificationPolicy.staffNeedsAttention(pending + ("status" to "SOLVED"), true))
         assertFalse(UserPanelNotificationPolicy.staffNeedsAttention(pending + mapOf("status" to "READ", "staffRead" to true), false))
+        assertTrue(UserPanelNotificationPolicy.staffNeedsAttention(mapOf("type" to "SUGGESTION", "is_completed" to false), true))
+        assertFalse(UserPanelNotificationPolicy.staffNeedsAttention(mapOf("type" to "SUGGESTION", "is_completed" to false, "status" to "SOLVED"), true))
     }
 
     @Test fun `creator panel readers cannot publish builds without a creator staff or streamer role`() {

@@ -17,6 +17,26 @@ internal object ManagedUsersDirectory {
 
     fun isVisible(data: Map<String, Any>): Boolean = data["authAccountExists"] != false
 
+    internal fun createdAtMillis(data: Map<String, Any>): Long {
+        val value = data["createdAt"] ?: data["created_at"] ?: data["registrationDate"] ?: data["timestamp"]
+        return when (value) {
+            is Number -> value.toLong()
+            is com.google.firebase.Timestamp -> value.toDate().time
+            is java.util.Date -> value.time
+            is String -> value.toLongOrNull() ?: listOf(
+                "yyyy-MM-dd'T'HH:mm:ss.SSSX", "yyyy-MM-dd'T'HH:mm:ssX", "yyyy-MM-dd HH:mm:ss"
+            ).firstNotNullOfOrNull { pattern -> runCatching {
+                java.text.SimpleDateFormat(pattern, java.util.Locale.US).parse(value)?.time
+            }.getOrNull() } ?: 0L
+            else -> 0L
+        }
+    }
+
+    internal fun newestFirst(users: List<Map<String, Any>>): List<Map<String, Any>> = users.sortedWith(
+        compareByDescending<Map<String, Any>> { createdAtMillis(it) }
+            .thenBy { (it["email"] ?: it["uid"] ?: "").toString().lowercase() }
+    )
+
     /** Public build history is not a private account directory. Never widen directory access. */
     fun creatorCardVisible(canReadDirectory: Boolean, matchedProfile: Map<String, Any>?): Boolean =
         !canReadDirectory || (matchedProfile != null && isVisible(matchedProfile))
@@ -25,7 +45,7 @@ internal object ManagedUsersDirectory {
                    error: FirebaseFirestoreException? = null): State = when {
         error != null -> State(Status.ERROR, lastSyncAt = previous.lastSyncAt, error = error)
         fromCache -> State(Status.OFFLINE, lastSyncAt = previous.lastSyncAt)
-        else -> State(Status.LIVE, users.filter(::isVisible), now)
+        else -> State(Status.LIVE, newestFirst(users.filter(::isVisible)), now)
     }
 
     fun observe(onResult: (State) -> Unit): ListenerRegistration {

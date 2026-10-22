@@ -32,4 +32,13 @@ class ManagedUsersDirectoryTest {
         assertTrue(ManagedUsersDirectory.isVisible(mapOf("role" to "free")))
         assertTrue(ManagedUsersDirectory.isVisible(mapOf("emailVerified" to false)))
     }
+
+    @Test fun managementDirectoryOrdersNewestAccountsFirst() {
+        val ordered = ManagedUsersDirectory.newestFirst(listOf(
+            mapOf("uid" to "old", "createdAt" to 100L),
+            mapOf("uid" to "new", "createdAt" to 300L),
+            mapOf("uid" to "middle", "createdAt" to 200L)
+        ))
+        assertEquals(listOf("new", "middle", "old"), ordered.map { it["uid"] })
+    }
 }
