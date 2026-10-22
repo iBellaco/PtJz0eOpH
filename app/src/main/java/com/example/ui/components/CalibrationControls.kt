@@ -79,7 +79,7 @@ fun CalibrationSendButton() {
     val failure = localizedString(R.string.calibration_send_failed)
     val login = localizedString(R.string.calibration_verified_required)
     CoachButton(enabled = !sending, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp).testTag("calibration_send_support"), onClick = {
-        val account = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser
+        val account = runCatching { com.google.firebase.auth.FirebaseAuth.getInstance().currentUser }.getOrNull()
         if (account == null || !account.isEmailVerified) {
             Toast.makeText(context, login, Toast.LENGTH_LONG).show()
         } else if (!sending) {

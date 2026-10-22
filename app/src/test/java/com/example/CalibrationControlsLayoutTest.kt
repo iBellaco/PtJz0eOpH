@@ -29,6 +29,25 @@ import org.robolectric.annotation.GraphicsMode
 class CalibrationControlsLayoutTest {
     @get:Rule val compose = createComposeRule()
 
+    @Test fun anUninitializedDirectoryIsRecoverableAndNeverAnAuthoritativeEmptyList() {
+        val states = mutableListOf<com.example.data.ManagedUsersDirectory.State>()
+        val listener = com.example.data.ManagedUsersDirectory.observe { states += it }
+        try {
+            assertEquals(com.example.data.ManagedUsersDirectory.Status.SYNCING, states.first().status)
+            assertEquals(com.example.data.ManagedUsersDirectory.Status.ERROR, states.last().status)
+            assertTrue(states.none { it.status == com.example.data.ManagedUsersDirectory.Status.LIVE })
+        } finally { listener.remove() }
+    }
+
+    @Test fun sendingWithoutAnInitializedVerifiedSessionDoesNotCrashOrClaimDelivery() {
+        val context = RuntimeEnvironment.getApplication()
+        AppLanguage.select(context, "es")
+        compose.setContent { MyApplicationTheme { com.example.ui.components.CalibrationSendButton() } }
+        compose.onNodeWithTag("calibration_send_support").performClick()
+        compose.onNodeWithTag("calibration_send_confirmed").assertDoesNotExist()
+        assertEquals(context.getString(R.string.calibration_verified_required), org.robolectric.shadows.ShadowToast.getTextOfLatestToast())
+    }
+
     @Test fun controlsStayTouchableAndDoNotOverlapAcrossWidthsFontsAndLanguages() {
         val context = RuntimeEnvironment.getApplication()
         var width by mutableStateOf(320)

@@ -31,7 +31,7 @@ internal object ManagedUsersDirectory {
     fun observe(onResult: (State) -> Unit): ListenerRegistration {
         var state = State()
         onResult(state)
-        val registration = FirebaseFirestore.getInstance().collection("users")
+        val registration = try { FirebaseFirestore.getInstance().collection("users")
             .addSnapshotListener(MetadataChanges.INCLUDE) { snapshot, error ->
                 val users = snapshot?.documents.orEmpty().mapNotNull { doc ->
                     doc.data?.takeIf(::isVisible)?.plus("uid" to doc.id)
@@ -40,6 +40,12 @@ internal object ManagedUsersDirectory {
                     System.currentTimeMillis(), error)
                 onResult(state)
             }
+        } catch (_: IllegalStateException) {
+            // Local/offline Hub screens must also work before the remote service is initialized.
+            onResult(State(Status.ERROR, error = FirebaseFirestoreException(
+                "Directory not initialized", FirebaseFirestoreException.Code.FAILED_PRECONDITION)))
+            ListenerRegistration { }
+        }
         return registration
     }
 

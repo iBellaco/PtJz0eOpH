@@ -17,6 +17,9 @@
   sigue la programación horaria existente; no se promete eliminación instantánea.
   Las autorías históricas de builds públicas no requieren ni exponen el directorio
   privado; el filtro de cuentas activas de creadores se aplica en las vistas de gestión.
+  La falta de inicialización de la conexión devuelve un error recuperable, sin
+  cerrar el Hub local ni fingir una lista vacía vigente. El envío sin sesión
+  verificada tampoco se presenta como entregado ni intenta crear un mensaje.
 - Más tamaños de reconocimiento y baneos, matriz geométrica y cambios del centro.
   Se mantienen los perfiles medidos y los umbrales de confianza.
   La permutación de retratos detectó una regresión: dos aros incoherentes podían
