@@ -16,6 +16,11 @@
   a una relación de aspecto nueva durante la sesión.
 - La captura real de diez selecciones se utiliza como regresión, redimensionada
   proporcionalmente en once superficies. No se sustituyen retratos por plantillas.
+- El reconocimiento aliado excluye el distintivo de rol del descriptor y de sus
+  referencias, conservando los umbrales de confianza y separación. Los candidatos
+  no resueltos reciben alineación fina, sin aprender retratos de la captura de prueba.
+- La búsqueda de baneos también utiliza el área visible, reproyectando máscaras
+  y resultados al frame completo; no busca dentro de una franja negra superior.
 
 ## Archivos
 

@@ -37,7 +37,8 @@ class DraftReferenceFrameTest {
                     Canvas(frame).apply { drawColor(Color.BLACK); drawBitmap(source, null, viewport, Paint(Paint.FILTER_BITMAP_FLAG)) }
                     val detected = DraftFrameGeometry.contentBounds(frame)
                     assertEquals("Viewport $w/$h", viewport, detected)
-                    val config = DraftFrameGeometry.forViewport(VisionCalibrationConfig(), detected, w, h)
+                    for (prior in listOf(VisionCalibrationConfig(), VisionCalibrationConfig.defaultsForDevice("Xiaomi", "2412DPC0AG"))) {
+                    val config = DraftFrameGeometry.forViewport(prior, detected, w, h)
                     // Alignment is exercised on the actual frame, not on synthetic rings.
                     val aligned = DraftRingAlignment.align(frame, config, null)
                     for (index in expected.indices) {
@@ -46,13 +47,35 @@ class DraftReferenceFrameTest {
                         try {
                             val ranked = LiteRTVisionClassifier.rankSlotPortrait(crop,ally,context)
                             assertEquals("$w/$h slot $index: ${ranked.take(3).map { it.first.id to it.second }}",expected[index],ranked.first().first.id)
-                            assertTrue("$w/$h slot $index confidence ${ranked.take(2)}",
+                            assertTrue("$w/$h slot $index confidence ${ranked.take(2).map { it.first.id to it.second }}",
                                 PortraitMatcher.accepts(ranked[0].second, ranked[1].second, .80f))
                         } finally { crop.recycle() }
+                    }
                     }
                 } finally { frame.recycle() }
             }
         } finally { source.recycle() }
+    }
+
+    @Test fun realBansAreRecognizedInsideLetterboxedSurfaces() {
+        val context = RuntimeEnvironment.getApplication()
+        WildRiftRepository.initChampions(context, forceReload = true)
+        val source = javaClass.getResourceAsStream("/portraits/draft-ten-selected.jpg").use { BitmapFactory.decodeStream(it)!! }
+        val expectedBans = listOf("mordekaiser", "kayn", "jhin", "gwen", "hwei",
+            "mordekaiser", "syndra", "cho_gath", "hwei", "soraka")
+        try { for ((w,h) in listOf(1280 to 579,1280 to 720,1024 to 768,2400 to 1080)) {
+            val frame=Bitmap.createBitmap(w,h,Bitmap.Config.ARGB_8888)
+            try {
+                val scale=minOf(w.toFloat()/source.width,h.toFloat()/source.height)
+                val rw=(source.width*scale).toInt();val rh=(source.height*scale).toInt()
+                val area=Rect((w-rw)/2,(h-rh)/2,(w-rw)/2+rw,(h-rh)/2+rh)
+                Canvas(frame).apply { drawColor(Color.BLACK);drawBitmap(source,null,area,Paint(Paint.FILTER_BITMAP_FLAG)) }
+                val observations=LiteRTVisionClassifier.findHeaderBanObservations(frame,context,emptyList())
+                    .sortedWith(compareBy({it.side.ordinal},{it.region.x}))
+                assertEquals("Bans $w/$h",expectedBans,observations.map { it.championId })
+                assertTrue(observations.all { it.region.y*h in area.top.toFloat()..area.top+area.height()*.12f })
+            } finally { frame.recycle() }
+        } } finally { source.recycle() }
     }
 
     @Test fun manualHeaderGeometryIsNotReplacedAndOrientationProfilesAreDistinct() {

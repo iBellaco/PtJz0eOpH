@@ -186,6 +186,27 @@ object LiteRTVisionClassifier {
 
     /** Locates small header portraits at multiple scales, independently from the pick-column calibrator. */
     internal fun findHeaderBanObservations(bitmap: Bitmap, context: Context?, exclusions: List<android.graphics.Rect>, config: VisionCalibrationConfig = VisionCalibrationConfig()): List<BanObservation> {
+        val bounds = DraftFrameGeometry.contentBounds(bitmap)
+        if (bounds != android.graphics.Rect(0, 0, bitmap.width, bitmap.height)) {
+            val content = Bitmap.createBitmap(bitmap, bounds.left, bounds.top, bounds.width(), bounds.height())
+            try {
+                fun x(value: Float) = (value * bitmap.width - bounds.left) / bounds.width()
+                fun y(value: Float) = (value * bitmap.height - bounds.top) / bounds.height()
+                val localConfig = config.copy(
+                    allyBanXRatios = config.allyBanXRatios.map(::x), enemyBanXRatios = config.enemyBanXRatios.map(::x),
+                    allyBanYRatio = y(config.allyBanYRatio), enemyBanYRatio = y(config.enemyBanYRatio),
+                    banDiameterRatio = config.banDiameterRatio * bitmap.height / bounds.height())
+                val masks = exclusions.mapNotNull { rect ->
+                    android.graphics.Rect(rect).takeIf { it.intersect(bounds) }?.apply { offset(-bounds.left, -bounds.top) }
+                }
+                return findHeaderBanObservations(content, context, masks, localConfig).map { observation ->
+                    observation.copy(region = BanRegion(
+                        (bounds.left + observation.region.x * bounds.width()) / bitmap.width,
+                        (bounds.top + observation.region.y * bounds.height()) / bitmap.height,
+                        observation.region.radius * bounds.height() / bitmap.height))
+                }
+            } finally { content.recycle() }
+        }
         // Header matching uses one physical scale on HD/FHD/QHD captures. Coordinates stay normalized.
         if (bitmap.height > 720) {
             val scale = 720f / bitmap.height
