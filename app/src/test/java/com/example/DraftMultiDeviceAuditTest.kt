@@ -140,7 +140,7 @@ class DraftMultiDeviceAuditTest {
                         .sortedWith(compareBy({ it.side.ordinal }, { it.region.x }))
                     if (observations.map { it.championId } != bans) failures += "${profile.id}: bans ${observations.map { it.championId }}"
                     val tracker = BannedPortraitScanner()
-                    repeat(2) { tracker.update(observations, w.toFloat()/h) }
+                    repeat(2) { tracker.updateFrame(observations, frame) }
                     if (tracker.slots.map { it.championId } != bans || tracker.slots.any { it.state != BanState.CONFIRMED })
                         failures += "${profile.id}: ban tracker/viewer did not confirm all ten positions"
                     tracker.slots.forEachIndexed { index, slot ->

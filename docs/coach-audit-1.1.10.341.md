@@ -21,6 +21,10 @@ avatares y no reproduce el escalado uniforme de la captura Android.
 - La matriz utiliza el límite real de captura de 1920 × 1080 y los perfiles por
   fabricante/modelo; registra dimensiones nativas simuladas y dimensiones de captura.
 - Evidencia JSON y PNG por perfil conservada en el flujo del escáner.
+- La nueva prueba detectó asignaciones incorrectas de baneos en tablets 4:3 con
+  bandas: el seguimiento calculaba la separación con el alto total de pantalla,
+  aunque el detector ya había quitado las bandas. Ahora el seguimiento usa el
+  alto del contenido real. El reconocimiento de identidades no cambia.
 - Ocho escenarios adicionales reconstruyen los paneles laterales anclados a los
   bordes, con avatares circulares a escala del alto, sin bandas. En pantalla 4:3
   el baneo interior queda fuera del 27% fijo usado anteriormente; se adapta el
@@ -57,6 +61,7 @@ se presenta como una prueba realizada en un teléfono físico.
 - `app/src/main/java/com/example/ui/components/ScannerDebugOverlay.kt`
 - `app/src/main/java/com/example/service/screen/BanDetection.kt`
 - `app/src/main/java/com/example/service/screen/LiteRTVisionClassifier.kt`
+- `app/src/main/java/com/example/service/screen/BannedPortraitScanner.kt`
 - `app/src/test/java/com/example/DraftMultiDeviceAuditTest.kt`
 - `.github/workflows/build-apk.yml`
 - `app/build.gradle.kts`
