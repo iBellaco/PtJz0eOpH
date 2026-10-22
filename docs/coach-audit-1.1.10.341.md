@@ -36,6 +36,9 @@ avatares y no reproduce el escalado uniforme de la captura Android.
   escenarios 16:10 sin bandas detectaron un vecino texturizado que desplazaba el
   quinto baneo. Se completan los vecinos visibles antes de elegir las cinco
   posiciones exteriores. Se conserva el umbral de reconocimiento original.
+- La búsqueda de vecinos adicionales se limita a las franjas ampliadas. Las
+  filas panorámicas de Poco y Red Magic conservan su límite anterior para que
+  indicadores fuera de los cinco baneos no desplacen un baneo real.
 
 ## Modelos y escenarios
 

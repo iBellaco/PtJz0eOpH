@@ -47,11 +47,13 @@ internal fun fillHeaderPositions(observations: List<BanObservation>, aspect: Flo
                 x += step
             }
         }
-        // Five proposals can contain a textured neighbour and still miss a real
-        // end portrait. Complete visible neighbours before choosing the outer
-        // five-position window; never let the provisional count truncate it.
-        while (row.size < 7 && addAt(row.first().region.x - step, row.first().region.y)) { /* visible leading slots */ }
-        while (row.size < 7 && addAt(row.last().region.x + step, row.last().region.y)) { /* visible trailing slots */ }
+        // The expanded tablet band may include a textured inner neighbour while
+        // missing an outer portrait. Complete it before choosing five positions.
+        // Keep the established panoramic-band behaviour: extending its full row
+        // can mistake a status indicator after the fifth ban for another slot.
+        val positionLimit = if (banHeaderSideWidthRatio(aspect) > .27f) 7 else 5
+        while (row.size < positionLimit && addAt(row.first().region.x - step, row.first().region.y)) { /* visible leading slots */ }
+        while (row.size < positionLimit && addAt(row.last().region.x + step, row.last().region.y)) { /* visible trailing slots */ }
     }
     // Template similarity alone can match a textured background outside the row.
     // Select the five circles with consistent spacing before latching identities.
