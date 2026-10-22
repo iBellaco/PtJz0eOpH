@@ -435,195 +435,20 @@ fun DraftCalibrationPanel(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // CONTROLES DE MOVIMIENTO DIRECCIONAL Y TAMAÑO (D-PAD)
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                // Pad de Movimiento (Arriba, Abajo, Izquierda, Derecha)
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier.padding(start = 6.dp)
-                ) {
-                    // Arriba
-                    Surface(
-                        modifier = Modifier
-                            .size(56.dp)
-                            .coachClickable { modify(deltaY = -stepFactor) }
-                            .testTag("draft_calibration_up"),
-                        shape = RoundedCornerShape(6.dp),
-                        color = HextechSurface,
-                        border = BorderStroke(1.dp, HextechGold.copy(alpha = 0.6f))
-                    ) {
-                        Box(contentAlignment = Alignment.Center) {
-                            Icon(Icons.Default.KeyboardArrowUp, contentDescription = com.example.util.trNullable("Arriba"), tint = HextechGold, modifier = Modifier.size(20.dp))
-                        }
-                    }
-
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(6.dp),
-                        modifier = Modifier.padding(vertical = 3.dp)
-                    ) {
-                        // Izquierda
-                        Surface(
-                            modifier = Modifier
-                                .size(56.dp)
-                                .coachClickable { modify(deltaX = -stepFactor) }
-                                .testTag("draft_calibration_left"),
-                            shape = RoundedCornerShape(6.dp),
-                            color = HextechSurface,
-                            border = BorderStroke(1.dp, HextechGold.copy(alpha = 0.6f))
-                        ) {
-                            Box(contentAlignment = Alignment.Center) {
-                                Icon(Icons.Default.KeyboardArrowLeft, contentDescription = com.example.util.trNullable("Izquierda"), tint = HextechGold, modifier = Modifier.size(20.dp))
-                            }
-                        }
-
-                        // Indicador Central
-                        Box(
-                            modifier = Modifier
-                                .size(42.dp)
-                                .clip(RoundedCornerShape(6.dp))
-                                .background(Color(0xFF0F1E2E)),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = com.example.util.tr("±${(stepFactor * 100).format(1)}%"),
-                                color = HextechCyan,
-                                fontSize = 7.5.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-
-                        // Derecha
-                        Surface(
-                            modifier = Modifier
-                            .size(56.dp)
-                            .coachClickable { modify(deltaX = stepFactor) }
-                            .testTag("draft_calibration_right"),
-                            shape = RoundedCornerShape(6.dp),
-                            color = HextechSurface,
-                            border = BorderStroke(1.dp, HextechGold.copy(alpha = 0.6f))
-                        ) {
-                            Box(contentAlignment = Alignment.Center) {
-                                Icon(Icons.Default.KeyboardArrowRight, contentDescription = com.example.util.trNullable("Derecha"), tint = HextechGold, modifier = Modifier.size(20.dp))
-                            }
-                        }
-                    }
-
-                    // Abajo
-                    Surface(
-                        modifier = Modifier
-                            .size(48.dp)
-                            .coachClickable { modify(deltaY = stepFactor) }
-                            .testTag("draft_calibration_down"),
-                        shape = RoundedCornerShape(6.dp),
-                        color = HextechSurface,
-                        border = BorderStroke(1.dp, HextechGold.copy(alpha = 0.6f))
-                    ) {
-                        Box(contentAlignment = Alignment.Center) {
-                            Icon(Icons.Default.KeyboardArrowDown, contentDescription = com.example.util.trNullable("Abajo"), tint = HextechGold, modifier = Modifier.size(20.dp))
-                        }
-                    }
-                }
-
-                // Controles de Tamaño (Agrandar / Reducir) y Selector de Paso
-                Column(
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(start = 12.dp),
-                    verticalArrangement = Arrangement.spacedBy(5.dp)
-                ) {
-                    Text(
-                        text = com.example.util.tr("Tamaño de Cuadro:"),
-                        color = TextPrimary,
-                        fontSize = 8.5.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(6.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Button(
-                            onClick = { modify(deltaSize = stepFactor) },
-                            modifier = Modifier.weight(1f).heightIn(min = 56.dp).testTag("draft_calibration_size_increase"),
-                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1B3854)),
-                            shape = RoundedCornerShape(6.dp),
-                            contentPadding = PaddingValues(0.dp)
-                        ) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(Icons.Default.Add, contentDescription = null, tint = HextechCyan, modifier = Modifier.size(13.dp))
-                                Spacer(modifier = Modifier.width(2.dp))
-                                Text(com.example.util.tr("Agrandar"), color = HextechCyan, fontSize = 8.sp, fontWeight = FontWeight.Bold)
-                            }
-                        }
-
-                        Button(
-                            onClick = { modify(deltaSize = -stepFactor) },
-                            modifier = Modifier.weight(1f).heightIn(min = 56.dp).testTag("draft_calibration_size_decrease"),
-                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2E1C22)),
-                            shape = RoundedCornerShape(6.dp),
-                            contentPadding = PaddingValues(0.dp)
-                        ) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(Icons.Default.Remove, contentDescription = null, tint = DangerRed, modifier = Modifier.size(13.dp))
-                                Spacer(modifier = Modifier.width(2.dp))
-                                Text(com.example.util.tr("Reducir"), color = DangerRed, fontSize = 8.sp, fontWeight = FontWeight.Bold)
-                            }
-                        }
-                    }
-
-                    // Selector de Paso
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(3.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(com.example.util.tr("Paso:"), color = TextMuted, fontSize = 7.5.sp)
-                        val steps = listOf(
-                            Pair("0.1%", 0.001f),
-                            Pair("0.5%", 0.005f),
-                            Pair("1.0%", 0.010f)
-                        )
-                        steps.forEach { (label, value) ->
-                            val isSel = stepFactor == value
-                            Box(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .clip(RoundedCornerShape(4.dp))
-                                    .background(if (isSel) HextechGold.copy(alpha = 0.25f) else HextechSurface)
-                                    .border(0.6.dp, if (isSel) HextechGold else HextechCardBorder, RoundedCornerShape(4.dp))
-                                    .coachClickable { stepFactor = value }
-                                    .heightIn(min = 56.dp)
-                                    .testTag("draft_calibration_step_${label.replace('.', '_').replace('%', 'p')}")
-                                    .padding(vertical = 2.dp),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(
-                                    text = com.example.util.tr(label),
-                                    color = if (isSel) HextechGold else TextMuted,
-                                    fontSize = 7.sp,
-                                    fontWeight = if (isSel) FontWeight.Bold else FontWeight.Normal
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(10.dp))
-
-            CalibrationSendButton()
-            OutlinedButton(
-                onClick = {
+            CalibrationControls(
+                step = stepFactor,
+                onStep = { stepFactor = it },
+                onMove = { x, y, size -> modify(x, y, size) },
+                onReset = {
                     DraftVisionScanner.resetCalibration(context)
                     config = DraftVisionScanner.alignedConfigFlow.value
                 },
-                modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)
-                    .testTag("calibration_panel_reset")
-            ) { Text(com.example.util.tr("Restablecer")) }
+                report = { CalibrationSendButton() },
+                directionTagPrefix = "draft_calibration",
+                sizeTagPrefix = "draft_calibration_size",
+                stepTagPrefix = "draft_calibration_step",
+                resetTag = "calibration_panel_reset"
+            )
         }
     }
 }

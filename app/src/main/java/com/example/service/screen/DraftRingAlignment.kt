@@ -6,6 +6,30 @@ import kotlin.math.*
 
 /** Fits visible portrait rings, rather than inferring game margins from the phone model. */
 internal object DraftRingAlignment {
+    /** Two rings can support a coherent translation, not a robust spacing regression. */
+    internal fun alignRows(ys: List<Float>, height: Int, radius: Int, observations: List<Pair<Int, Int>>): List<Float> {
+        if (observations.size < 2) return ys
+        fun median(values: List<Float>): Float {
+            val sorted = values.sorted()
+            return (sorted[(sorted.size-1)/2] + sorted[sorted.size/2]) / 2f
+        }
+        val offsets = observations.map { (slot, y) -> y - ys[slot] * height }
+        if (observations.size < 3 && offsets.max() - offsets.min() > maxOf(3f, radius * .20f)) return ys
+        val slopes = if (observations.size < 3) emptyList() else observations.flatMapIndexed { index, a ->
+            observations.drop(index+1).mapNotNull { b ->
+                val nominal = (ys[b.first] - ys[a.first]) * height
+                if (abs(nominal) < 1f) null else ((b.second-a.second)/nominal).takeIf { it in .85f..1.15f }
+            }
+        }
+        val scale = if (slopes.isEmpty()) 1f else median(slopes)
+        val shift = median(observations.map { (slot,y) -> y - ys[slot]*height*scale })
+        val result = ys.map { ((it*height*scale+shift)/height).coerceIn(0f,1f) }.toMutableList()
+        observations.forEach { (slot,y) ->
+            if (abs(y-result[slot]*height) <= maxOf(3f,radius*.12f)) result[slot] = y.toFloat()/height
+        }
+        return result
+    }
+
     fun align(bitmap: Bitmap, base: VisionCalibrationConfig, excluded: Rect?, ignoreDebugRings: Boolean = false): VisionCalibrationConfig {
         if (bitmap.width > 1280 || bitmap.height > 720) {
             val scale = minOf(1280f / bitmap.width, 720f / bitmap.height)
@@ -90,25 +114,9 @@ internal object DraftRingAlignment {
             // Keep each detected slot's Y instead of reusing another phone's row spacing.
             // This matters when the captured frame includes a different top inset or letterbox.
             val consistent = fits.filter { abs(it.second.first - medianX) <= radius / 3 }
-            fun median(values: List<Float>): Float {
-                val sorted=values.sorted()
-                return (sorted[(sorted.size-1)/2]+sorted[sorted.size/2])/2f
-            }
             // Robust row spacing from independent visible rings. One weak rim
             // on a face must not drag its row away from the rest of the column.
-            val slopes=consistent.flatMapIndexed { index,a -> consistent.drop(index+1).mapNotNull { b ->
-                val nominal=(ys[b.first]-ys[a.first])*h
-                if(abs(nominal)<1f) null else ((b.second.second-a.second.second)/nominal).takeIf { it in .85f..1.15f }
-            } }
-            val scale=if(slopes.isEmpty()) 1f else median(slopes)
-            val shift=median(consistent.map { it.second.second-ys[it.first]*h*scale })
-            val alignedYs = ys.map { ((it * h * scale + shift) / h).coerceIn(0f, 1f) }.toMutableList()
-            fits.forEach { (slot, center) ->
-                if (abs(center.first - medianX) <= radius / 3 &&
-                    abs(center.second-alignedYs[slot]*h) <= maxOf(3f,radius*.12f)) {
-                    alignedYs[slot] = (center.second.toFloat() / h).coerceIn(0f, 1f)
-                }
-            }
+            val alignedYs = alignRows(ys, h, radius, consistent.map { it.first to it.second.second })
             return List(5) { medianX.toFloat() / w } to alignedYs
         }
         val ally = fit(true); val enemy = fit(false)

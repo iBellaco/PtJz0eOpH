@@ -19,6 +19,11 @@
   privado; el filtro de cuentas activas de creadores se aplica en las vistas de gestión.
 - Más tamaños de reconocimiento y baneos, matriz geométrica y cambios del centro.
   Se mantienen los perfiles medidos y los umbrales de confianza.
+  La permutación de retratos detectó una regresión: dos aros incoherentes podían
+  estirar la rejilla y desplazar recortes hasta 22px. Ahora hacen falta al menos
+  tres aros para estimar espaciado; dos solo admiten una traslación coherente.
+  Ambos calibradores comparten los mismos controles y la etiqueta de tamaño
+  ocupa el ancho disponible, evitando recorte por redondeo de medida del texto.
 - Diagnóstico seguro por clase de error y enlace al paso fallido. Evidencia final
   con commit, ejecución y estado de cada job en el artefacto delivery-evidence;
   los jobs omitidos no se presentan como pruebas nuevas ejecutadas.

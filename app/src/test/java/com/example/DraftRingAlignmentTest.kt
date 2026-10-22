@@ -16,6 +16,16 @@ import org.robolectric.annotation.GraphicsMode
 @Config(sdk=[34], application=Application::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class DraftRingAlignmentTest {
+    @Test fun twoIncoherentRingsCannotRescaleOrTranslateTheWholeColumn() {
+        val ys = VisionCalibrationConfig().enemySlotYRatios
+        assertEquals(ys, DraftRingAlignment.alignRows(ys,579,32,listOf(0 to 87,3 to 343)))
+        assertEquals(ys, DraftRingAlignment.alignRows(ys,579,32,listOf(0 to 109,3 to 366)))
+    }
+    @Test fun twoCoherentRingsCanTranslateButNotStretchTheGrid() {
+        val ys = VisionCalibrationConfig().enemySlotYRatios
+        val result = DraftRingAlignment.alignRows(ys,579,32,listOf(0 to 119,3 to 352))
+        ys.indices.forEach { assertEquals(ys[it]+10f/579,result[it],.002f) }
+    }
     @Test fun s26VisibleRivalRingsReplaceAnotherPhonesCoordinates() {
         val bitmap=javaClass.getResourceAsStream("/s26/draft.jpg").use { BitmapFactory.decodeStream(it) }
         try {

@@ -14,6 +14,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.text.style.TextAlign
 import com.example.BuildConfig
 import com.example.R
 import com.example.data.CalibrationReport
@@ -33,32 +34,36 @@ fun CalibrationControls(
     onStep: (Float) -> Unit,
     onMove: (Float, Float, Float) -> Unit,
     onReset: () -> Unit,
-    report: @Composable () -> Unit
+    report: @Composable () -> Unit,
+    directionTagPrefix: String = "vision_calibration",
+    sizeTagPrefix: String = "calibration_size",
+    stepTagPrefix: String = "calibration_step",
+    resetTag: String = "vision_calibration_reset_device"
 ) {
     Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
-            CoachOutlinedButton(onClick = { onMove(0f, -step, 0f) }, modifier = Modifier.size(56.dp).testTag("vision_calibration_up"), contentPadding = PaddingValues(0.dp)) { Icon(Icons.Default.KeyboardArrowUp, tr("Arriba")) }
+            CoachOutlinedButton(onClick = { onMove(0f, -step, 0f) }, modifier = Modifier.size(56.dp).testTag("${directionTagPrefix}_up"), contentPadding = PaddingValues(0.dp)) { Icon(Icons.Default.KeyboardArrowUp, tr("Arriba")) }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-                CoachOutlinedButton(onClick = { onMove(-step, 0f, 0f) }, modifier = Modifier.size(56.dp).testTag("vision_calibration_left"), contentPadding = PaddingValues(0.dp)) { Icon(Icons.Default.KeyboardArrowLeft, tr("Izquierda")) }
+                CoachOutlinedButton(onClick = { onMove(-step, 0f, 0f) }, modifier = Modifier.size(56.dp).testTag("${directionTagPrefix}_left"), contentPadding = PaddingValues(0.dp)) { Icon(Icons.Default.KeyboardArrowLeft, tr("Izquierda")) }
                 Text("±${java.lang.String.format(java.util.Locale.US, "%.1f", step * 100)}%", modifier = Modifier.widthIn(min = 56.dp), fontSize = 13.sp)
-                CoachOutlinedButton(onClick = { onMove(step, 0f, 0f) }, modifier = Modifier.size(56.dp).testTag("vision_calibration_right"), contentPadding = PaddingValues(0.dp)) { Icon(Icons.Default.KeyboardArrowRight, tr("Derecha")) }
+                CoachOutlinedButton(onClick = { onMove(step, 0f, 0f) }, modifier = Modifier.size(56.dp).testTag("${directionTagPrefix}_right"), contentPadding = PaddingValues(0.dp)) { Icon(Icons.Default.KeyboardArrowRight, tr("Derecha")) }
             }
-            CoachOutlinedButton(onClick = { onMove(0f, step, 0f) }, modifier = Modifier.size(56.dp).testTag("vision_calibration_down"), contentPadding = PaddingValues(0.dp)) { Icon(Icons.Default.KeyboardArrowDown, tr("Abajo")) }
+            CoachOutlinedButton(onClick = { onMove(0f, step, 0f) }, modifier = Modifier.size(56.dp).testTag("${directionTagPrefix}_down"), contentPadding = PaddingValues(0.dp)) { Icon(Icons.Default.KeyboardArrowDown, tr("Abajo")) }
         }
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            CoachButton(onClick = { onMove(0f, 0f, step) }, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp).testTag("calibration_size_increase")) { Text(tr("Agrandar"), fontSize = 14.sp) }
-            CoachButton(onClick = { onMove(0f, 0f, -step) }, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp).testTag("calibration_size_decrease")) { Text(tr("Reducir"), fontSize = 14.sp) }
+            CoachButton(onClick = { onMove(0f, 0f, step) }, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp).testTag("${sizeTagPrefix}_increase")) { Text(tr("Agrandar"), modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center, fontSize = 14.sp) }
+            CoachButton(onClick = { onMove(0f, 0f, -step) }, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp).testTag("${sizeTagPrefix}_decrease")) { Text(tr("Reducir"), modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center, fontSize = 14.sp) }
         }
         Text(tr("Paso:"), fontSize = 14.sp)
         FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             listOf("0.1%" to .001f, "0.5%" to .005f, "1.0%" to .01f, "2.0%" to .02f).forEach { (label, value) ->
-                CoachOutlinedButton(onClick = { onStep(value) }, modifier = Modifier.heightIn(min = 48.dp).testTag("calibration_step_${label.replace('.', '_').replace('%', 'p')}")) {
+                CoachOutlinedButton(onClick = { onStep(value) }, modifier = Modifier.heightIn(min = 48.dp).testTag("${stepTagPrefix}_${label.replace('.', '_').replace('%', 'p')}")) {
                     Text(if (step == value) "• $label" else label, fontSize = 14.sp)
                 }
             }
         }
         report()
-        CoachOutlinedButton(onClick = onReset, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp).testTag("vision_calibration_reset_device")) { Text(tr("Restablecer"), fontSize = 14.sp) }
+        CoachOutlinedButton(onClick = onReset, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp).testTag(resetTag)) { Text(tr("Restablecer"), modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center, fontSize = 14.sp) }
     }
 }
 
@@ -102,6 +107,6 @@ fun CalibrationSendButton() {
                 } finally { sending = false }
             }
         }
-    }) { Text(if (sending) pending else send, fontSize = 14.sp) }
+    }) { Text(if (sending) pending else send, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center, fontSize = 14.sp) }
     if (sent) Text(success, modifier = Modifier.testTag("calibration_send_confirmed"), fontSize = 13.sp)
 }
