@@ -13,7 +13,7 @@ jobs:
       run_id: ${{ steps.validated.outputs.run_id }}
       source_sha: ${{ steps.validated.outputs.source_sha }}
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
     - name: Validate production version is newer than the last release
       if: github.ref == 'refs/heads/main'
       run: |
@@ -40,9 +40,10 @@ jobs:
     if: needs.find-validated-apk.outputs.run_id == ''
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
     - name: Check generated catalogs and Portuguese text before Android validation
       run: |
+        python3 .github/scripts/validate-patch-content.py
         python3 tools/generate-component-items.py --check
         python3 tools/import-component-icons.py --check
         python3 tools/update-champion-builds.py --check
@@ -55,7 +56,7 @@ jobs:
     steps:
     - &id001
       name: Checkout repository
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
       with:
         fetch-depth: 1
     - name: Validate signing publication policy
@@ -181,7 +182,7 @@ jobs:
         python3 .github/scripts/verify-release-obfuscation.py --build
         python3 .github/scripts/verify-apk-signing.py
     - name: Upload obfuscated release APK artifact
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       with:
         name: app-release.apk
         path: |
@@ -191,7 +192,7 @@ jobs:
         if-no-files-found: error
         retention-days: 14
     - name: Upload APKs for the parallel device audit
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       with:
         name: installed-audit-apks
         path: app/build/outputs/apk/
@@ -248,7 +249,7 @@ jobs:
         }
     - name: Upload Android lint report
       if: always()
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       with:
         name: android-lint-audit
         path: app/build/reports/lint-results-debug.html
@@ -259,7 +260,7 @@ jobs:
       run: ./gradlew :app:testDebugUnitTest --fail-fast --max-workers=1 --stacktrace --no-daemon
     - name: Upload core regression results
       if: always()
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       with:
         name: core-regression-audit
         path: app/build/test-results/testDebugUnitTest/TEST-*.xml
@@ -273,7 +274,7 @@ jobs:
         -Proborazzi.test.record=true --stacktrace --no-daemon
     - name: Upload Portuguese screenshots and rendered texts
       if: always()
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       with:
         name: portuguese-rendered-audit
         path: |
@@ -282,7 +283,7 @@ jobs:
         retention-days: 14
     - name: Upload build coaching screenshots
       if: always()
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       with:
         name: build-coaching-audit
         path: app/build/reports/portuguese-rendered/build-coaching-*.png
@@ -318,7 +319,7 @@ jobs:
         PYFOCUS
     - name: Upload focused Portuguese evidence
       if: always()
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       with:
         name: portuguese-focused-audit
         path: app/build/reports/portuguese-focused/
@@ -336,7 +337,7 @@ jobs:
     - *id005
     - name: Validate the committed Gradle wrapper
       uses: gradle/actions/wrapper-validation@v4
-    - uses: actions/setup-node@v4
+    - uses: actions/setup-node@v5
       with:
         node-version: '22'
     - name: Install isolated service test dependencies
@@ -352,7 +353,7 @@ jobs:
       run: npm test --prefix tests/firestore
     - name: Upload required data-test reports
       if: always()
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       with:
         name: security-auth-tests
         path: app/build/test-results/testDebugUnitTest/TEST-*.xml
@@ -413,7 +414,7 @@ jobs:
           COACH_AUDIT_LANGUAGE=pt python3 tools/audit-portuguese-device.py
     - name: Upload installed APK Portuguese evidence
       if: always()
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       with:
         name: portuguese-device-audit
         path: app/build/reports/portuguese-device/
@@ -453,7 +454,7 @@ jobs:
           python3 tools/verify-overlay-history-device.py
     - name: Upload installed Spanish and overlay evidence
       if: always()
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       with:
         name: spanish-device-audit
         path: app/build/reports/spanish-device/
@@ -591,9 +592,9 @@ jobs:
       group: coach-actions-history
       cancel-in-progress: false
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
     - name: Keep at most 30 completed runs and 30 releases
-      uses: actions/github-script@v7
+      uses: actions/github-script@v8
       with:
         script: |
           await require('./.github/scripts/cleanup-completed-runs.cjs')({ github, context, core });
@@ -614,7 +615,7 @@ jobs:
       actions: read
       contents: read
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
     - name: Publish exact workflow failure report
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
