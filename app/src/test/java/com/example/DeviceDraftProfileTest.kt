@@ -14,6 +14,25 @@ import org.robolectric.shadows.ShadowBuild
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [34], application = Application::class)
 class DeviceDraftProfileTest {
+    @Test fun captureProfilesAreScopedToDeviceAndAspectWithoutLosingManualAdjustments() {
+        val context=RuntimeEnvironment.getApplication()
+        val prefs=context.getSharedPreferences("vision_calibration_prefs",0)
+        prefs.edit().clear().commit()
+        try {
+            ShadowBuild.setManufacturer("nubia");ShadowBuild.setModel("NX789J")
+            val key=VisionCalibrationConfig.captureProfileKey(2688,1216)
+            val manual=VisionCalibrationConfig().adjustDraftSlot(true,2,deltaX=.01f)
+            manual.saveProfileToPrefs(context,key)
+            assertEquals(manual,VisionCalibrationConfig.loadProfileFromPrefs(context,key))
+            assertTrue(VisionCalibrationConfig.hasCaptureProfiles(context))
+            assertNull(VisionCalibrationConfig.loadProfileFromPrefs(context,VisionCalibrationConfig.captureProfileKey(1920,1080)))
+            ShadowBuild.setManufacturer("Xiaomi");ShadowBuild.setModel("2412DPC0AG")
+            assertNull(VisionCalibrationConfig.loadProfileFromPrefs(context,key))
+            assertFalse(VisionCalibrationConfig.hasCaptureProfiles(context))
+            ShadowBuild.setManufacturer("nubia");ShadowBuild.setModel("NX789J")
+            assertEquals(manual,VisionCalibrationConfig.loadProfileFromPrefs(context,key))
+        } finally {prefs.edit().clear().commit();ShadowBuild.reset()}
+    }
     @Test fun pocoMeasuredCoordinatesAreLoadedAndManualControlsSurviveReload() {
         val context = RuntimeEnvironment.getApplication()
         val prefs = context.getSharedPreferences("vision_calibration_prefs", 0)

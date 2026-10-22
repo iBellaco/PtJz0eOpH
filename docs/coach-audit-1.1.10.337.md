@@ -14,6 +14,9 @@
   de juego visible. El visor usa la misma geometría resuelta, sin recalcular la
   cabecera. Los perfiles distinguen orientación y no transfieren ajustes manuales
   a una relación de aspecto nueva durante la sesión.
+- Los perfiles guardados también se separan por modelo. Los perfiles antiguos
+  solo se recuperan en el modelo que los creó; al reiniciar, una proporción nueva
+  no hereda el último ajuste global de otra proporción.
 - La captura real de diez selecciones se utiliza como regresión, redimensionada
   proporcionalmente en once superficies. No se sustituyen retratos por plantillas.
 - El reconocimiento aliado excluye el distintivo de rol del descriptor y de sus
