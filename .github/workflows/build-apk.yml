@@ -410,7 +410,14 @@ jobs:
           python3 -m unittest discover -s tools -p test_portuguese_device_audit.py
           python3 tools/verify-native-ocr-device.py
           python3 tools/verify-device-reinstall.py
-          python3 tools/check-draft-selection-device.py
+          # The first UI hierarchy dump can be empty while Compose finishes
+          # attaching after a cold emulator boot. Retry the complete draft
+          # audit once so a transient emulator race cannot fail main.
+          python3 tools/check-draft-selection-device.py || {
+            echo 'Draft audit returned an empty UI tree; retrying once.'
+            sleep 5
+            python3 tools/check-draft-selection-device.py
+          }
           COACH_AUDIT_LANGUAGE=pt python3 tools/audit-portuguese-device.py
     - name: Upload installed APK Portuguese evidence
       if: always()
