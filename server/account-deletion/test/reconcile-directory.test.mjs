@@ -27,3 +27,14 @@ test('a disappearing profile is never recreated by reconciliation',async()=>{
     exists:async()=>false,mark:async()=>false});
   assert.equal(result.hidden,0);assert.equal(result.errors,0);
 });
+test('directory failures report only safe categories, never raw identities or tokens',async()=>{
+  let writes=0;
+  const result=await reconcileDirectory({
+    async *profiles(){yield [{uid:'private-identity'}];},
+    exists:async()=>{throw Object.assign(new Error('private@example.invalid bearer-secret'),{code:7});},
+    mark:async()=>{writes++;}
+  });
+  assert.equal(writes,0);
+  assert.deepEqual(result.errorCodes,{PERMISSION_DENIED:1});
+  for(const secret of ['private-identity','private@example.invalid','bearer-secret']) assert.ok(!JSON.stringify(result).includes(secret));
+});

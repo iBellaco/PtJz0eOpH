@@ -3,6 +3,7 @@ from pathlib import Path
 import subprocess
 import xml.etree.ElementTree as ET
 import re
+import os
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -26,6 +27,10 @@ def verify(suites):
                     message = re.sub(r'[\w.+-]+@[\w.-]+', '[redacted-email]', message)
                     message = re.sub(r'https?://\S+', '[redacted-url]', message)
                     print(f"REGRESSION_FAILURE {suite}.{case.get('name')}: {message}", flush=True)
+                    if os.environ.get('GITHUB_ACTIONS') == 'true':
+                        safe_title = re.sub(r'[^A-Za-z0-9_. -]', '_', f'{suite}.{case.get("name")}')[:180]
+                        safe_message = message.replace('%', '%25').replace('\r', '%0D').replace('\n', '%0A')
+                        print(f'::error title={safe_title}::{safe_message}', flush=True)
         result.check_returncode()
     total = 0
     for suite in suites:

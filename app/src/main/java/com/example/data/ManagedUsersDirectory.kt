@@ -17,6 +17,10 @@ internal object ManagedUsersDirectory {
 
     fun isVisible(data: Map<String, Any>): Boolean = data["authAccountExists"] != false
 
+    /** Public build history is not a private account directory. Never widen directory access. */
+    fun creatorCardVisible(canReadDirectory: Boolean, matchedProfile: Map<String, Any>?): Boolean =
+        !canReadDirectory || (matchedProfile != null && isVisible(matchedProfile))
+
     fun transition(previous: State, fromCache: Boolean, users: List<Map<String, Any>>, now: Long,
                    error: FirebaseFirestoreException? = null): State = when {
         error != null -> State(Status.ERROR, lastSyncAt = previous.lastSyncAt, error = error)

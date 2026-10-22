@@ -18,10 +18,12 @@ def diagnose(log: str) -> str:
         (r'PERMISSION_DENIED|403|insufficient.*permission', 'Permisos: revisar el acceso de la conexión usada por este job, sin ampliar privilegios indiscriminadamente.'),
         (r'401|UNAUTHENTICATED|invalid_grant', 'Autenticación: revisar vigencia y configuración de la conexión de servicio.'),
         (r'OutOfMemoryError|Java heap space|No space left', 'Recursos insuficientes: revisar memoria y espacio del ejecutor.'),
-        (r'timed? out|TimeoutException|ETIMEDOUT|ECONNRESET|UnknownHost', 'Conectividad o tiempo agotado: comprobar disponibilidad y límites de reintento.'),
+        (r'timed? out|TimeoutException|ETIMEDOUT|ECONNRESET|UnknownHost|UNAVAILABLE', 'Conectividad o tiempo agotado: comprobar disponibilidad y límites de reintento.'),
     ]
-    return next((message for pattern, message in patterns if re.search(pattern, log, re.I)),
+    guidance = next((message for pattern, message in patterns if re.search(pattern, log, re.I)),
                 'No hay una causa segura identificable: abrir el enlace del job y consultar su paso fallido. No repetir una publicación sin revisar el error.')
+    cases = list(dict.fromkeys(re.findall(r'REGRESSION_FAILURE\s+(com[.]example[.][A-Za-z0-9_]+[.][A-Za-z0-9_]+)', log)))[:3]
+    return guidance + (' Casos: ' + ', '.join(cases) + '.' if cases else '')
 
 
 def job_diagnosis(repository: str, job: dict) -> str:

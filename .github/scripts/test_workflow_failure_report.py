@@ -20,6 +20,12 @@ class FailureReportTest(unittest.TestCase):
     def test_unknown_error_is_not_fabricated(self):
         self.assertIn('No hay una causa', report.diagnose('unknown failure'))
 
+    def test_safe_case_identifiers_are_actionable_without_echoing_failure_data(self):
+        value = report.diagnose('REGRESSION_FAILURE com.example.DraftReferenceFrameTest.changedPortraitOrder: AssertionError user@example.org private-token')
+        self.assertIn('com.example.DraftReferenceFrameTest.changedPortraitOrder', value)
+        self.assertNotIn('example.org', value)
+        self.assertNotIn('private-token', value)
+
     def test_timeout_and_cancellation_do_not_require_log_access(self):
         self.assertIn('cancelada', report.job_diagnosis('unused', {'conclusion': 'cancelled'}))
         self.assertIn('tiempo', report.job_diagnosis('unused', {'conclusion': 'timed_out'}))

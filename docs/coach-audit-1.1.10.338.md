@@ -15,13 +15,16 @@
 - Exclusión de cuentas confirmadas inexistentes en moderación, creadores activos
   y destinatarios masivos, sin borrar builds ni historial. El chequeo de identidad
   sigue la programación horaria existente; no se promete eliminación instantánea.
+  Las autorías históricas de builds públicas no requieren ni exponen el directorio
+  privado; el filtro de cuentas activas de creadores se aplica en las vistas de gestión.
 - Más tamaños de reconocimiento y baneos, matriz geométrica y cambios del centro.
   Se mantienen los perfiles medidos y los umbrales de confianza.
 - Diagnóstico seguro por clase de error y enlace al paso fallido. Evidencia final
   con commit, ejecución y estado de cada job en el artefacto delivery-evidence;
   los jobs omitidos no se presentan como pruebas nuevas ejecutadas.
   Los fallos de regresión muestran el mensaje de la aserción, con correos y enlaces
-  censurados, para no depender de un artefacto inaccesible al diagnosticar.
+  censurados, también en anotaciones visibles. El servicio de cuentas agrega
+  categorías seguras de error sin identidades, mensajes privados ni tokens.
 - Auditoría anterior corregida con la publicación real, sin dejarla como pendiente.
 
 ## Archivos

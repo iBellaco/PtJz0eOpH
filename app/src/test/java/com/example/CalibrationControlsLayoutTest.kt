@@ -51,11 +51,9 @@ class CalibrationControlsLayoutTest {
                 val tags = listOf("vision_calibration_up", "vision_calibration_left", "vision_calibration_right", "vision_calibration_down",
                     "calibration_size_increase", "calibration_size_decrease", "calibration_step_0_1p", "calibration_step_0_5p", "calibration_step_1_0p", "calibration_step_2_0p", "vision_calibration_reset_device")
                 for (tag in tags) {
-                    val node = compose.onNodeWithTag(tag).performScrollTo().assertIsDisplayed()
+                    val node = compose.onNodeWithTag(tag).assertIsDisplayed()
                     node.assertWidthIsAtLeast(48.dp).assertHeightIsAtLeast(48.dp)
-                    node.performClick()
                 }
-                compose.onNodeWithTag("vision_calibration_up").performScrollTo()
                 val bounds = tags.map { compose.onNodeWithTag(it).fetchSemanticsNode().boundsInRoot }
                 for (i in bounds.indices) for (j in i+1 until bounds.size) {
                     assertFalse("Overlapping controls at $lang $w/$scale: ${tags[i]}, ${tags[j]}",
@@ -70,6 +68,9 @@ class CalibrationControlsLayoutTest {
                     assertFalse("Clipped size label '$text' at $lang $w/$scale: size=${layouts.single().size}, width=${layouts.single().didOverflowWidth}, height=${layouts.single().didOverflowHeight}", layouts.single().hasVisualOverflow)
                 }
             }
+            // Behavioral slot movement/resize coverage lives in DraftCalibrationRenderedTest.
+            compose.onNodeWithTag("calibration_step_0_1p").performClick()
+            compose.runOnIdle { assertEquals(.001f, step, 0f) }
         } finally { AppLanguage.select(context, "es") }
     }
 }

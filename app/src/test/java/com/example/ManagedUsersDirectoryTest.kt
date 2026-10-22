@@ -5,6 +5,12 @@ import org.junit.Assert.*
 import org.junit.Test
 
 class ManagedUsersDirectoryTest {
+    @Test fun publicBuildHistoryDoesNotRequireAccessToPrivateAccounts() {
+        assertTrue(ManagedUsersDirectory.creatorCardVisible(false, null))
+        assertFalse(ManagedUsersDirectory.creatorCardVisible(true, null))
+        assertFalse(ManagedUsersDirectory.creatorCardVisible(true, mapOf("authAccountExists" to false)))
+        assertTrue(ManagedUsersDirectory.creatorCardVisible(true, mapOf("authAccountExists" to true)))
+    }
     @Test fun offlineIsNotAnEmptyLiveDirectoryAndReconnectDropsDeletedAccounts() {
         val initial = ManagedUsersDirectory.State()
         assertEquals(ManagedUsersDirectory.Status.SYNCING, initial.status)
