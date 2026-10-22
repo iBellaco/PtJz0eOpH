@@ -136,14 +136,7 @@ object AdaptiveScreenLayoutEngine {
         return Rect(left, top, min(width, left + diam), min(height, top + diam))
     }
 
-    /**
-     * Extrae un recorte perfectamente centrado y completo del círculo del avatar del slot.
-     * Incorpora auto-calibración de bordes por detección de aro circular:
-     * - En el rival: aro carmesí/rojo
-     * - En el aliado: aro azul/cian
-     * Si detecta el contorno del aro, calcula la media de los extremos izquierdo y derecho para
-     * mantener simetría geométrica perfecta sin sesgos hacia arcos no tapados.
-     */
+    /** Extract exactly the region published to the viewer; alignment happens once upstream. */
     fun extractSlotAvatarBitmap(
         sourceBitmap: android.graphics.Bitmap,
         width: Int,
@@ -152,103 +145,9 @@ object AdaptiveScreenLayoutEngine {
         slotIndex: Int,
         config: VisionCalibrationConfig
     ): android.graphics.Bitmap? {
-        val sIdx = slotIndex.coerceIn(0, 4)
-        val cxNominal = if (isAlly) (width * config.getAllySlotX(sIdx)).toInt() else (width * config.getEnemySlotX(sIdx)).toInt()
-        val yRatios = if (isAlly) config.allySlotYRatios else config.enemySlotYRatios
-        val cyNominal = (height * yRatios.getOrElse(sIdx) { 0.2f + sIdx * 0.13f }).toInt()
-
-        val targetDiam = (height * config.getSlotDiameter(isAlly, sIdx)).toInt().coerceAtLeast(32)
-        val radius = targetDiam / 2
-
-        // Ventana de búsqueda adaptativa alrededor de la posición nominal para soporte multidispositivo
-        val margin = (targetDiam * 0.20f).toInt()
-        val searchLeft = (cxNominal - radius - margin).coerceIn(0, width - 1)
-        val searchRight = (cxNominal + radius + margin).coerceIn(0, width)
-        val searchTop = (cyNominal - radius - margin).coerceIn(0, height - 1)
-        val searchBottom = (cyNominal + radius + margin).coerceIn(0, height)
-
-        if (searchRight <= searchLeft + 16 || searchBottom <= searchTop + 16) {
-            val baseRect = calculateSlotCropRect(width, height, isAlly, slotIndex, config)
-            return try {
-                android.graphics.Bitmap.createBitmap(sourceBitmap, baseRect.left, baseRect.top, baseRect.width(), baseRect.height())
-            } catch (_: Throwable) { null }
-        }
-
-        var minRingX = Int.MAX_VALUE
-        var maxRingX = Int.MIN_VALUE
-        var minRingY = Int.MAX_VALUE
-        var maxRingY = Int.MIN_VALUE
-        var ringPixelCount = 0
-
-        val step = 2
-        val rMinExpectedSq = (radius * 0.72f) * (radius * 0.72f)
-        val rMaxExpectedSq = (radius * 1.25f) * (radius * 1.25f)
-
-        for (y in searchTop until searchBottom step step) {
-            val dy = y - cyNominal
-            for (x in searchLeft until searchRight step step) {
-                val dx = x - cxNominal
-                val distFromNominalSq = (dx * dx + dy * dy).toFloat()
-
-                // Filtrar píxeles que pertenezcan estrictamente al anillo periférico (evita falsos positivos internos)
-                if (distFromNominalSq < rMinExpectedSq || distFromNominalSq > rMaxExpectedSq) continue
-
-                val px = sourceBitmap.getPixel(x, y)
-                val r = (px shr 16) and 0xFF
-                val g = (px shr 8) and 0xFF
-                val b = px and 0xFF
-
-                // En Wild Rift:
-                // Aliado: borde azul eléctrico / cian (b alto con r bajo)
-                // Rival: borde rojo escarlata / carmesí (r alto con g y b bajos)
-                // Píxeles blancos/brillantes de campeones como Volibear (r,g,b altos) quedan descartados
-                val isRing = if (isAlly) {
-                    b > 115 && b > (r * 1.45f) && (g > 65 || b > 145) && (r + g + b) < 580
-                } else {
-                    r > 115 && r > (g * 1.40f) && r > (b * 1.40f) && (r + g + b) < 580
-                }
-
-                if (isRing) {
-                    if (x < minRingX) minRingX = x
-                    if (x > maxRingX) maxRingX = x
-                    if (y < minRingY) minRingY = y
-                    if (y > maxRingY) maxRingY = y
-                    ringPixelCount++
-                }
-            }
-        }
-
-        val expectedMinDiam = (targetDiam * 0.75f).toInt()
-        val expectedMaxDiam = (targetDiam * 1.25f).toInt()
-
-        // Restricción de desviación máxima respecto al centro nominal (máximo 18% para multidispositivo)
-        val maxDevX = (targetDiam * 0.18f).toInt()
-        val maxDevY = (targetDiam * 0.18f).toInt()
-
-        val actualCx = if (ringPixelCount >= 18 && (maxRingX - minRingX) in expectedMinDiam..expectedMaxDiam && kotlin.math.abs(((minRingX + maxRingX) / 2) - cxNominal) <= maxDevX) {
-            ((minRingX + maxRingX) / 2).coerceIn(radius, width - radius)
-        } else {
-            cxNominal.coerceIn(radius, width - radius)
-        }
-
-        val actualCy = if (ringPixelCount >= 18 && (maxRingY - minRingY) in expectedMinDiam..expectedMaxDiam && kotlin.math.abs(((minRingY + maxRingY) / 2) - cyNominal) <= maxDevY) {
-            ((minRingY + maxRingY) / 2).coerceIn(radius, height - radius)
-        } else {
-            cyNominal.coerceIn(radius, height - radius)
-        }
-
-        val cropLeft = (actualCx - radius).coerceIn(0, (width - targetDiam).coerceAtLeast(0))
-        val cropTop = (actualCy - radius).coerceIn(0, (height - targetDiam).coerceAtLeast(0))
-        val finalW = min(targetDiam, width - cropLeft)
-        val finalH = min(targetDiam, height - cropTop)
-
+        val rect = calculateSlotCropRect(width, height, isAlly, slotIndex, config)
         return try {
-            android.graphics.Bitmap.createBitmap(sourceBitmap, cropLeft, cropTop, finalW, finalH)
-        } catch (_: Throwable) {
-            val fallbackRect = calculateSlotCropRect(width, height, isAlly, slotIndex, config)
-            try {
-                android.graphics.Bitmap.createBitmap(sourceBitmap, fallbackRect.left, fallbackRect.top, fallbackRect.width(), fallbackRect.height())
-            } catch (_: Throwable) { null }
-        }
+            android.graphics.Bitmap.createBitmap(sourceBitmap, rect.left, rect.top, rect.width(), rect.height())
+        } catch (_: IllegalArgumentException) { null }
     }
 }
