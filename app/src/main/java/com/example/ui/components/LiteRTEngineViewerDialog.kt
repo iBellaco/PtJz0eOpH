@@ -110,7 +110,7 @@ fun LiteRTEngineViewerDialog(
     val automaticScanActive by TenthPickDiagnosticManager.automaticScanActiveFlow.collectAsStateWithLifecycle()
     val savedFrames by TenthPickDiagnosticManager.savedFramesFlow.collectAsStateWithLifecycle()
     val cacheStats by TenthPickDiagnosticManager.cacheStatsFlow.collectAsStateWithLifecycle()
-    val calibrationConfig by DraftVisionScanner.calibrationConfigFlow.collectAsStateWithLifecycle()
+    val calibrationConfig by DraftVisionScanner.alignedConfigFlow.collectAsStateWithLifecycle()
     val observedBans by DraftVisionScanner.banSlotsFlow.collectAsStateWithLifecycle()
     val isLiveVisionActive by DraftVisionScanner.showCalibrationBoxes.collectAsStateWithLifecycle()
 

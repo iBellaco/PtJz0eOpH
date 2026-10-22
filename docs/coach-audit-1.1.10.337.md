@@ -34,6 +34,8 @@
   solo que el primer candidato del clasificador sea correcto.
 - El espaciado vertical se estima de forma robusta entre aros coherentes. Un
   contorno débil no puede desplazar aisladamente una fila fuera de esa geometría.
+- Ambos controles de calibración parten de la geometría observada y publicada
+  al visor; el primer toque no recupera las coordenadas del preset anterior.
 
 ## Archivos
 
