@@ -28,6 +28,10 @@
   aro. La alineación trabaja a resolución acotada y la extracción no aplica un
   segundo desplazamiento oculto. Los fotogramas dispersos sin un límite de
   contenido observable no se interpretan como áreas de juego recortadas.
+- El aro de selección dorado se comprueba a varios radios: la captura de Mel
+  demostró que el radio único podía bloquear una identidad de alta confianza.
+  Se exige confirmación estable en las once superficies y ambos perfiles, no
+  solo que el primer candidato del clasificador sea correcto.
 
 ## Archivos
 

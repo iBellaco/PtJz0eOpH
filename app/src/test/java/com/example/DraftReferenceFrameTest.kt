@@ -23,6 +23,7 @@ class DraftReferenceFrameTest {
     @Test fun tenRealPortraitsRemainInTheirOwnSlotsAcrossCaptureSizesAndLetterboxing() {
         val context = RuntimeEnvironment.getApplication()
         WildRiftRepository.initChampions(context, forceReload = true)
+        val failures = mutableListOf<String>()
         val source = javaClass.getResourceAsStream("/portraits/draft-ten-selected.jpg").use { BitmapFactory.decodeStream(it)!! }
         try {
             // Reference capture, HD, FHD, Red Magic/Poco-size surfaces, tablet and ultrawide.
@@ -46,10 +47,11 @@ class DraftReferenceFrameTest {
                         val crop = AdaptiveScreenLayoutEngine.extractSlotAvatarBitmap(frame,w,h,ally,slot,aligned)!!
                         try {
                             val ranked = LiteRTVisionClassifier.rankSlotPortrait(crop,ally,context)
-                            assertEquals("$w/$h slot $index: ${ranked.take(3).map { it.first.id to it.second }}",expected[index],ranked.first().first.id)
-                            assertTrue("$w/$h slot $index confidence ${ranked.take(2).map { it.first.id to it.second }}",
-                                PortraitMatcher.accepts(ranked[0].second, ranked[1].second, .80f))
-                            if (w == 1280 && h == 579) kotlinx.coroutines.runBlocking {
+                            val label = "$w/$h prior ${prior.allyAvatarCenterX} slot $index"
+                            if (ranked.first().first.id != expected[index]) failures += "$label identity: ${ranked.take(3).map { it.first.id to it.second }}"
+                            if (!PortraitMatcher.accepts(ranked[0].second, ranked[1].second, .80f))
+                                failures += "$label confidence ${ranked.take(2).map { it.first.id to it.second }}"
+                            kotlinx.coroutines.runBlocking {
                                 LiteRTVisionClassifier.reset()
                                 LiteRTVisionClassifier.setThreshold(.80f, context)
                                 var confirmed: String? = null
@@ -57,7 +59,7 @@ class DraftReferenceFrameTest {
                                     confirmed = LiteRTVisionClassifier.executeTenthPickInference(crop, ally,
                                         emptySet(), 9, slot, context)?.first?.id
                                 }
-                                assertEquals("Stable inference slot $index", expected[index], confirmed)
+                                if (confirmed != expected[index]) failures += "$label stable: $confirmed, ring=${LiteRTVisionClassifier.hasSlotRing(crop,ally)}, ${LiteRTVisionClassifier.reportFlow.value.decisionReason}"
                             }
                         } finally { crop.recycle() }
                     }
@@ -65,6 +67,7 @@ class DraftReferenceFrameTest {
                 } finally { frame.recycle() }
             }
         } finally { source.recycle() }
+        assertTrue(failures.joinToString("\n"), failures.isEmpty())
     }
 
     @Test fun realBansAreRecognizedInsideLetterboxedSurfaces() {
