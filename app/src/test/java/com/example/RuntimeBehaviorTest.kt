@@ -19,7 +19,7 @@ class RuntimeBehaviorTest {
     private val now = 1_790_000_000_000L
 
     @Test fun `previous installation cache cannot change the shipped patch`() {
-        val context = RuntimeEnvironment.getApplication<Application>()
+        val context = RuntimeEnvironment.getApplication()
         val prefs = context.getSharedPreferences("wildrift_local_cache", Context.MODE_PRIVATE)
         prefs.edit().putString("cached_patch_version", "Parche 1.0").commit()
         com.example.data.local.WildRiftLocalCache.loadFromLocalCache(context)
