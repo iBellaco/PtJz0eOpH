@@ -21,7 +21,8 @@ const fields = {
 };
 async function request(path, options) {
   if (!paths.includes(path)) throw new Error('Fixture scope required');
-  const response = await fetch(base + path, options);
+  const response = await fetch(base + path, {...options,
+    headers:{...options?.headers, Authorization:'Bearer owner'}});
   if (!response.ok) throw new Error(`Recovery fixture HTTP ${response.status}`);
   return response.json();
 }

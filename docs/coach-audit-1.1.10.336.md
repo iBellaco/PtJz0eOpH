@@ -32,7 +32,11 @@ parche/reintento/escáner, servicio y pruebas de limpieza/inventario/recuperaci�
 
 ## Verificación y límites
 
-Se ejecutan pruebas Python y Node; Actions debe completar reglas, servicios,
+Validación local completada: 41 pruebas Python de scripts, 8 de auditoría UI,
+2 de evidencia física y 28 pruebas Node del servicio. Los emuladores completaron
+62 escenarios de permisos, 26 de operaciones y los ensayos de limpieza protegida
+y restauración en disco. Catálogo/generadores y auditoría portuguesa correctos.
+Actions debe completar reglas, servicios,
 scanner, suite Android, lint, firma persistente, ofuscación y APK instalado en
 español y portugués antes de publicar. El resultado de Actions y el inventario
 productivo se registrarán al finalizar la entrega.
@@ -41,3 +45,8 @@ Las pruebas sintéticas no sustituyen dispositivos físicos ni una restauración
 una copia productiva. No se crean servicios de pago ni se restaura sobre datos
 reales. La limpieza cruza dos APIs y no puede hacerlas atómicas; las lecturas
 finales y la cola privada cubren la comprobación y recuperación entre operaciones.
+
+El inventario autorizado del 22/10/2026 a las 11:00 UTC devolvió HTTP 200 en las
+tres consultas: recuperación temporal desactivada, ninguna programación y cero
+copias listas. Esto confirma que falta configurar el respaldo productivo; requiere
+elegir retención y almacenamiento/costo antes de activarlo.
