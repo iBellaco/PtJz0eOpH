@@ -365,7 +365,7 @@ object DraftVisionScanner {
             val profileConfig = calibrationContext?.let { context ->
                 VisionCalibrationConfig.loadProfileFromPrefs(context, profile)
             }
-            val hasProfiles = calibrationContext?.let(VisionCalibrationConfig::hasCaptureProfiles) ?: false
+            val hasProfiles = calibrationContext?.let { VisionCalibrationConfig.hasCaptureProfiles(it) } ?: false
             val selected = profileConfig ?: if (activeCaptureProfile == null && !hasProfiles) globalCalibrationConfig
                 else VisionCalibrationConfig.defaultsForDevice(android.os.Build.MANUFACTURER, android.os.Build.MODEL)
             calibrationConfig = selected
