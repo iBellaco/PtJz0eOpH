@@ -26,7 +26,10 @@ internal object DraftFrameGeometry {
         val bounds = Rect(left, top, right, bottom)
         // Loading/blank frames are not evidence of a viewport.
         return if (bounds.width().toFloat() / bounds.height() in 1.5f..3.1f &&
-            bounds.width() > w / 2 && bounds.height() > h / 2) bounds else Rect(0, 0, w, h)
+            // A landscape game fitted into a nearly square foldable occupies less
+            // than half the height. The outer-bar search limits already reject
+            // blank/loading frames; do not discard an observed boundary here.
+            bounds.width() > w / 3 && bounds.height() > h / 3) bounds else Rect(0, 0, w, h)
     }
 
     /** One geometry is published to both recognition and the viewer. Manual profiles are frame-relative. */

@@ -34,7 +34,7 @@ internal class BannedPortraitScanner {
         }
         return synchronized(this) {
             if(revision != capturedRevision || !isCurrent()) return@synchronized confirmedIds()
-            update(observations, bitmap.width.toFloat() / bitmap.height)
+            updateFrame(observations, bitmap)
             if (config.manualAllyBans || config.manualEnemyBans) slots = slots.map {
                 it.copy(region = it.region?.copy(radius = config.banDiameterRatio / 2f))
             }
@@ -55,8 +55,14 @@ internal class BannedPortraitScanner {
     private fun confirmedIds(): Set<String> = slots.filter { it.state == BanState.CONFIRMED }
         .mapNotNull { it.championId }.toSet()
 
+    /** Recognition publishes frame-relative circles; their spacing follows the visible game, not outer bars. */
+    @Synchronized internal fun updateFrame(observations: List<BanObservation>, bitmap: Bitmap) {
+        val content = DraftFrameGeometry.contentBounds(bitmap)
+        update(observations, bitmap.width.toFloat() / bitmap.height, content.height().toFloat() / bitmap.height)
+    }
+
     /** Public to module tests so disappearance, replacement and team assignment are deterministic. */
-    @Synchronized internal fun update(observations: List<BanObservation>, aspect: Float) {
+    @Synchronized internal fun update(observations: List<BanObservation>, aspect: Float, contentHeightRatio: Float = 1f) {
         if (lastAspect != 0f && abs(aspect - lastAspect) > .02f) {
             previous = emptyMap()
             slots = slots.map { if(it.state==BanState.CONFIRMED) it else it.copy(region=null) }
@@ -70,7 +76,7 @@ internal class BannedPortraitScanner {
             val existing = current.filter { it.side == side }
             val regions = if (existing.all { it.region != null }) existing.map { it.region!! } else {
                 // Learn horizontal spacing from visible neighbors, retaining missing positions.
-                val nominal = .080f / aspect
+                val nominal = .080f * contentHeightRatio / aspect
                 val gaps = seen.zipWithNext { a, b -> b.region.x - a.region.x }
                     .map { gap -> gap / (gap / nominal).roundToInt().coerceIn(1, 4) }
                     .filter { it in nominal * .65f..nominal * 1.4f }.sorted()

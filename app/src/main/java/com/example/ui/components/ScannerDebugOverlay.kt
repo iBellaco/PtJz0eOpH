@@ -137,16 +137,15 @@ fun ScannerDebugOverlay(
         // Already resolved against the captured viewport. A second adaptation moves
         // the header away from the actual regions used by recognition.
         val currentConfig = rawConfig
-        val avatarDiameter = h * currentConfig.avatarDiameterRatio
-        val avatarRadius = avatarDiameter / 2f
 
         // The rectangles are the exact header bands searched by the classifier.
         // Thin circle strokes stay outside its portrait descriptor samples.
         if (detectingBans) {
+            val sideWidth = com.example.service.screen.banHeaderSideWidthRatio(w / h)
             for (side in com.example.service.screen.BanSide.entries) {
-                val x = if (side == com.example.service.screen.BanSide.ALLY) 0f else w * .73f
+                val x = if (side == com.example.service.screen.BanSide.ALLY) 0f else w * (1f - sideWidth)
                 val color = if (side == com.example.service.screen.BanSide.ALLY) Color(0xCC00E5FF) else Color(0xCCFF1744)
-                drawRect(color.copy(alpha = .35f), Offset(x, 0f), Size(w * .27f, h * .12f), style = Stroke(1f))
+                drawRect(color.copy(alpha = .35f), Offset(x, 0f), Size(w * sideWidth, h * .12f), style = Stroke(1f))
                 for (slot in banSlots.filter { it.side == side }) {
                     val region = slot.region ?: continue
                     val center = Offset(region.x * w, region.y * h)
@@ -171,10 +170,10 @@ fun ScannerDebugOverlay(
             // -------------------------------------------------------------
             // 1. Columna Aliada (Izquierda: Círculo de Avatar + Región OCR de Nombre)
             // -------------------------------------------------------------
-            val allyY = h * currentConfig.allySlotYRatios.getOrElse(sIdx) { 0.188f + sIdx * 0.136f }
-            val allyX = w * currentConfig.getAllySlotX(sIdx)
-            val allyAvatarDiam = h * currentConfig.getSlotDiameter(true, sIdx)
-            val allyAvatarRad = allyAvatarDiam / 2f
+            val allyCrop = AdaptiveScreenLayoutEngine.calculateSlotCropRect(w.toInt(), h.toInt(), true, sIdx, currentConfig)
+            val allyY = allyCrop.exactCenterY()
+            val allyX = allyCrop.exactCenterX()
+            val allyAvatarRad = allyCrop.width() / 2f
 
             // Círculo del avatar del slot aliado
             drawCircle(
@@ -225,10 +224,10 @@ fun ScannerDebugOverlay(
             // -------------------------------------------------------------
             // 2. Columna Rival (Derecha: Círculo de Avatar + Región OCR)
             // -------------------------------------------------------------
-            val enemyY = h * currentConfig.enemySlotYRatios.getOrElse(sIdx) { 0.188f + sIdx * 0.136f }
-            val enemyX = w * currentConfig.getEnemySlotX(sIdx)
-            val enemyAvatarDiam = h * currentConfig.getSlotDiameter(false, sIdx)
-            val enemyAvatarRad = enemyAvatarDiam / 2f
+            val enemyCrop = AdaptiveScreenLayoutEngine.calculateSlotCropRect(w.toInt(), h.toInt(), false, sIdx, currentConfig)
+            val enemyY = enemyCrop.exactCenterY()
+            val enemyX = enemyCrop.exactCenterX()
+            val enemyAvatarRad = enemyCrop.width() / 2f
 
             // Círculo del avatar del slot rival
             drawCircle(
@@ -282,16 +281,10 @@ fun ScannerDebugOverlay(
         // 3. Círculo de Visión del 10º Pick (Dinámico según 1ª Selección: Aliado 5 o Rival 5)
         // -------------------------------------------------------------
         val tenthIsAlly = !isFirstPickAlly
-        val tenthTargetY = if (tenthIsAlly) {
-            h * currentConfig.allySlotYRatios.getOrElse(4) { 0.732f }
-        } else {
-            h * currentConfig.enemySlotYRatios.getOrElse(4) { 0.732f }
-        }
-        val tenthTargetX = if (tenthIsAlly) {
-            w * currentConfig.getAllySlotX(4)
-        } else {
-            w * currentConfig.getEnemySlotX(4)
-        }
+        val tenthCrop = AdaptiveScreenLayoutEngine.calculateSlotCropRect(w.toInt(), h.toInt(), tenthIsAlly, 4, currentConfig)
+        val tenthTargetY = tenthCrop.exactCenterY()
+        val tenthTargetX = tenthCrop.exactCenterX()
+        val avatarRadius = tenthCrop.width() / 2f
         val tenthLabel = if (tenthIsAlly) "10º PICK (Aliado 5)" else "10º PICK (Rival 5)"
 
         drawCircle(

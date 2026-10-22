@@ -23,6 +23,20 @@ class BannedPortraitScannerTest {
     private val context get() = RuntimeEnvironment.getApplication()
     @Before fun prepare() { WildRiftRepository.initChampions(context, forceReload = true) }
 
+    @Test fun aTexturedNeighbourCannotDisplaceTheFifthVisibleRivalBan() {
+        val observations = listOf("lee_sin", "mordekaiser", "syndra", "cho_gath", "hwei").mapIndexed { index, id ->
+            com.example.service.screen.BanObservation(com.example.service.screen.BanSide.ENEMY,
+                com.example.service.screen.BanRegion(.714f + index * .05f, .052f, .03f), id)
+        }
+        val positions = com.example.service.screen.fillHeaderPositions(observations, 1.6f) { region ->
+            kotlin.math.abs(region.x - .964f) < .005f
+        }
+        assertEquals(5, positions.size)
+        assertEquals("mordekaiser", positions.first().championId)
+        assertEquals(.964f, positions.last().region.x, .005f)
+        assertFalse(positions.any { it.championId == "lee_sin" })
+    }
+
     @Test fun tester8067UsesTheFiveActualBansAndNeverBackgroundCaitlyn() {
         val path = listOf(java.io.File("src/androidTest/assets/draft/poco-8067-header.json"),
             java.io.File("app/src/androidTest/assets/draft/poco-8067-header.json")).first { it.isFile }

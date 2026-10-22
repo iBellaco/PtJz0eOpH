@@ -224,6 +224,7 @@ object LiteRTVisionClassifier {
         if (catalog.isEmpty()) return emptyList()
         val height = bitmap.height
         val width = bitmap.width
+        val sideWidth = banHeaderSideWidthRatio(width.toFloat() / height)
         val headerHeight = (height * .12f).toInt()
         val header = IntArray(width * headerHeight)
         bitmap.getPixels(header, 0, width, 0, 0, width, headerHeight)
@@ -243,7 +244,7 @@ object LiteRTVisionClassifier {
                 val y = (height * yRatio).toInt()
                 if (y - radius < 0 || y + radius > headerHeight) continue
                 for (x in radius until width - radius step (radius / 4).coerceAtLeast(3)) {
-                    if (x > width * .27f && x < width * .73f) continue
+                    if (x > width * sideWidth && x < width * (1f - sideWidth)) continue
                     val cropRect = android.graphics.Rect(x - radius, y - radius, x + radius, y + radius)
                     if (exclusions.any { android.graphics.Rect.intersects(it, PortraitMatcher.sampledRect(cropRect)) }) continue
                     for (row in 0 until diameter) {
