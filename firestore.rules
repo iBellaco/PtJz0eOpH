@@ -192,16 +192,17 @@ service cloud.firestore {
     }
     match /users/{userId} {
       allow read: if (verifiedSignedIn() && request.auth.uid == userId) || isAdmin() || isModerator();
-      allow create: if verifiedSignedIn() && request.auth.uid == userId && request.resource.data.role == 'free'
+      allow create: if !request.resource.data.keys().hasAny(['authAccountExists','authAccountCheckedAt'])
+        && verifiedSignedIn() && request.auth.uid == userId && request.resource.data.role == 'free'
         && !request.resource.data.keys().hasAny(['banned','premiumUntil','secondaryRole','isVerified','verified','admin','subscriptionHistory','subscriptionPlan','lastPremiumChangedAt','lastPremiumChangedBy','lastPremiumDays','lastPremiumExtend','lastPremiumOperationId','lastModifiedByAdmin','lastEconomyOperation','subscribedCreators','creatorSubscriberCount','last_role_update','lastRoleChangedBy','bannedTimestamp'])
         && request.resource.data.get('blueEssence', 0) == 0 && request.resource.data.get('orangeEssence', 0) == 0
         && request.resource.data.get('registeredDevices', []).size() <= 2;
       // Balances and purchases remain service-only. Roles and Premium gifts use bounded signed-admin validation.
-      allow update: if signedIn()
+      allow update: if !request.resource.data.diff(resource.data).affectedKeys().hasAny(['authAccountExists','authAccountCheckedAt']) && (signedIn()
         && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['blueEssence','orangeEssence','premiumUntil','subscriptionPlan','subscriptionHistory','lastPremiumChangedAt','lastPremiumChangedBy','lastPremiumDays','lastPremiumExtend','lastPremiumOperationId','lastEconomyOperation','subscribedCreators','creatorSubscriberCount','role','banned','bannedTimestamp','last_role_update','lastRoleChangedBy'])
         && (isAdmin() || (verifiedSignedIn() && request.auth.uid == userId
           && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role','secondaryRole','banned','isVerified','verified','admin','lastModifiedByAdmin','lastModeratorActionId'])
-          && request.resource.data.get('registeredDevices', []).size() <= 2)) || administrativeRoleChange(userId) || administrativePremiumChange(userId) || moderatorAccountChange(userId);
+          && request.resource.data.get('registeredDevices', []).size() <= 2)) || administrativeRoleChange(userId) || administrativePremiumChange(userId) || moderatorAccountChange(userId));
       allow delete: if false;
       match /messages/{messageId} {
         function source() { return getAfter(/databases/$(database)/documents/support_reports/$(messageId)).data; }

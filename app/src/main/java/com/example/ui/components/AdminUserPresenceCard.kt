@@ -80,17 +80,10 @@ fun AdminUserPresenceCard(modifier: Modifier = Modifier) {
     var selectedUserForManage by remember { mutableStateOf<Map<String, Any>?>(null) }
 
     DisposableEffect(Unit) {
-        val registration = FirebaseFirestore.getInstance().collection("users")
-            .addSnapshotListener { snapshot, error ->
+        val registration = com.example.data.ManagedUsersDirectory.listen { freshUsers, error ->
                 // The snapshot is the source of truth. Never retain deleted
                 // documents after Firestore sends an empty/error snapshot.
-                users = if (error != null || snapshot == null) {
-                    emptyList()
-                } else {
-                    snapshot.documents.map { document ->
-                        document.data.orEmpty() + ("uid" to document.id)
-                    }
-                }
+                users = freshUsers
                 val selectedUid = selectedUserForManage?.get("uid")?.toString()
                 if (selectedUid != null && users.none { it["uid"]?.toString() == selectedUid }) {
                     selectedUserForManage = null

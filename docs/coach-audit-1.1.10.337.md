@@ -1,0 +1,39 @@
+# Coach 1.1.10.337 — Build 1053
+
+## Alcance
+
+- El directorio de gestión y actividad comparte una única política de visibilidad:
+  excluye perfiles cuya identidad de acceso el servicio confirma como inexistente.
+  No elimina perfiles, beneficios, saldos ni historial. No trata un error de permisos
+  como una cuenta eliminada. Las reglas impiden falsificar esos campos desde clientes.
+- La reconciliación se ejecuta al publicar main y en la tarea horaria existente.
+  La eliminación manual no es un evento instantáneo entre servicios: puede tardar
+  hasta la próxima ejecución correcta. El listener aplica el cambio en línea y no
+  presenta como vigente una lista exclusivamente recuperada de caché.
+- El escáner reconoce bandas negras exteriores y transforma los recortes al área
+  de juego visible. El visor usa la misma geometría resuelta, sin recalcular la
+  cabecera. Los perfiles distinguen orientación y no transfieren ajustes manuales
+  a una relación de aspecto nueva durante la sesión.
+- La captura real de diez selecciones se utiliza como regresión, redimensionada
+  proporcionalmente en once superficies. No se sustituyen retratos por plantillas.
+
+## Archivos
+
+Servicio `reconcile-directory.mjs`, pruebas unitarias e integración, workflow de
+cuentas, reglas y pruebas de permisos; `ManagedUsersDirectory.kt`, gestión y
+actividad; `DraftFrameGeometry.kt`, motor adaptativo, calibración, escáner y visor;
+regresiones de directorio/captura, fixture JPG, `test_matchup_rules.py` y versión.
+
+## Verificaciones
+
+31 pruebas Node correctas y ensayo completo de emuladores correcto, incluida la
+reconciliación idempotente, restauración de identidad y conservación de saldo.
+Validación Android, firma, ofuscación, instalación ES/PT y publicación pendientes
+de la ejecución de Actions. Este entorno local no dispone del SDK Android.
+
+## Límites
+
+Las variantes de la imagen prueban escalado y bandas, no todos los diseños que
+el juego puede renderizar ni hardware físico. No constituyen una garantía para
+cualquier dispositivo. Se conservan los perfiles medidos de Red Magic y Poco
+y el ajuste manual. No se publican las capturas con direcciones de correo.

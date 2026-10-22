@@ -79,9 +79,6 @@ object AdaptiveScreenLayoutEngine {
     fun computeAdaptiveConfig(width: Int, height: Int, baseConfig: VisionCalibrationConfig = VisionCalibrationConfig()): VisionCalibrationConfig {
         if (width <= 0 || height <= 0) return baseConfig
 
-        val geometry = analyzeScreen(width, height)
-        val ratio = geometry.aspectRatio
-
         // Las coordenadas X ya están normalizadas respecto al frame capturado. No deben
         // escalarse ni limitarse a los valores predeterminados: eso anulaba la calibración
         // manual (por ejemplo, 15.7% terminaba escaneándose en 11%) y variaba entre formatos.
@@ -101,21 +98,8 @@ object AdaptiveScreenLayoutEngine {
         val enemyOcrMaxX = (adaptiveEnemyCenterX + 0.024f).coerceIn(0.205f, 0.995f)
         val enemyOcrMinX = enemyOcrMaxX - ocrBoxWidth
 
-        // Ajuste de las posiciones horizontales de la barra superior (los 10 avatares de la cabecera)
-        // En tablets los avatares superiores están ligeramente más comprimidos hacia el centro; en ultrawide hacia los bordes.
-        val topAllySpacing = 0.035f * (BASE_ASPECT_RATIO / ratio)
-        val topEnemySpacing = 0.035f * (BASE_ASPECT_RATIO / ratio)
-
-        val topAllyStart = (0.025f + geometry.safeHorizontalInsetRatio * 0.5f).coerceIn(0.015f, 0.08f)
-        val topEnemyEnd = (0.975f - geometry.safeHorizontalInsetRatio * 0.5f).coerceIn(0.92f, 0.985f)
-
-        val adaptiveTopAllyXRatios = List(5) { i ->
-            topAllyStart + i * topAllySpacing
-        }
-
-        val adaptiveTopEnemyXRatios = List(5) { i ->
-            (topEnemyEnd - (4 - i) * topEnemySpacing).coerceIn(0.70f, 0.99f)
-        }
+        // Header calibration is frame-relative too. Never overwrite measured
+        // positions using a guessed device inset; live header detection owns alignment.
 
         return baseConfig.copy(
             allyAvatarCenterX = adaptiveAllyCenterX,
@@ -126,11 +110,7 @@ object AdaptiveScreenLayoutEngine {
             allyOcrMinX = allyOcrMinX,
             allyOcrMaxX = allyOcrMaxX,
             enemyOcrMinX = enemyOcrMinX,
-            enemyOcrMaxX = enemyOcrMaxX,
-            topAllyXRatios = adaptiveTopAllyXRatios,
-            topEnemyXRatios = adaptiveTopEnemyXRatios,
-            topAlly5XRatio = adaptiveTopAllyXRatios.lastOrNull() ?: 0.168f,
-            topEnemy5XRatio = adaptiveTopEnemyXRatios.lastOrNull() ?: 0.974f
+            enemyOcrMaxX = enemyOcrMaxX
         )
     }
 

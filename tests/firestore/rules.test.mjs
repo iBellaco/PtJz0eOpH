@@ -36,6 +36,14 @@ try {
       await assertFails(setDoc(doc(client,'unverified_cleanup_jobs/private-job'),{status:'PENDING'}));
     }
   });
+  await test('identity reconciliation markers cannot be forged by clients or staff',async()=>{
+    for(const client of [user,moderator,admin]) {
+      await assertFails(updateDoc(doc(client,'users/user'),{authAccountExists:false}));
+      await assertFails(updateDoc(doc(client,'users/user'),{authAccountCheckedAt:serverTimestamp()}));
+    }
+    const fresh=db('fresh-identity');
+    await assertFails(setDoc(doc(fresh,'users/fresh-identity'),{role:'free',authAccountExists:true}));
+  });
   const recovery=db('user',{auth_time:Math.floor(Date.now()/1000),firebase:{sign_in_provider:'password'}});
   const recoveryRef=doc(recovery,'account_deletions/user');
   const requestData=()=>({userId:'user',requestId:'12345678-1234-1234-1234-123456789012',status:'PENDING',graceDays:60,requestedAt:serverTimestamp()});

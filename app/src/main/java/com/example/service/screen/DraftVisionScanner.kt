@@ -365,20 +365,27 @@ object DraftVisionScanner {
             val profileConfig = calibrationContext?.let { context ->
                 VisionCalibrationConfig.loadProfileFromPrefs(context, profile)
             }
-            val selected = profileConfig ?: globalCalibrationConfig
+            val selected = profileConfig ?: if (activeCaptureProfile == null) globalCalibrationConfig
+                else VisionCalibrationConfig.defaultsForDevice(android.os.Build.MANUFACTURER, android.os.Build.MODEL)
             calibrationConfig = selected
             calibrationConfigFlow.value = selected
             alignedConfigFlow.value = selected
             activeCaptureProfile = profile
             alignedBase = null
         }
-        val base = AdaptiveScreenLayoutEngine.computeAdaptiveConfig(bitmap.width, bitmap.height, calibrationConfig)
         val defaults = VisionCalibrationConfig.defaultsForDevice(android.os.Build.MANUFACTURER, android.os.Build.MODEL)
         val manual = calibrationConfig.allySlotXRatios != defaults.allySlotXRatios ||
             calibrationConfig.enemySlotXRatios != defaults.enemySlotXRatios ||
             calibrationConfig.allySlotYRatios != defaults.allySlotYRatios ||
-            calibrationConfig.enemySlotYRatios != defaults.enemySlotYRatios
+            calibrationConfig.enemySlotYRatios != defaults.enemySlotYRatios ||
+            calibrationConfig.allySlotDiameterRatios != defaults.allySlotDiameterRatios ||
+            calibrationConfig.enemySlotDiameterRatios != defaults.enemySlotDiameterRatios
         val now = android.os.SystemClock.elapsedRealtime()
+        // Detect bars at the same cadence as ring alignment, not on every OCR pass.
+        val refresh = alignedSize != (bitmap.width to bitmap.height) || lastAlignmentAt == 0L || now-lastAlignmentAt >= 2000
+        if (refresh) activeViewport = DraftFrameGeometry.contentBounds(bitmap)
+        val normalized = AdaptiveScreenLayoutEngine.computeAdaptiveConfig(bitmap.width, bitmap.height, calibrationConfig)
+        val base = if (manual) normalized else DraftFrameGeometry.forViewport(normalized, activeViewport, bitmap.width, bitmap.height)
         if (alignedBase != base || alignedSize != (bitmap.width to bitmap.height)) {
             alignedConfigFlow.value = base
             alignedBase = base; alignedSize = bitmap.width to bitmap.height
@@ -391,6 +398,7 @@ object DraftVisionScanner {
         }
         return alignedConfigFlow.value
     }
+    private var activeViewport = android.graphics.Rect()
     @Volatile var calibrationConfig = VisionCalibrationConfig()
     val calibrationConfigFlow = kotlinx.coroutines.flow.MutableStateFlow(VisionCalibrationConfig())
 

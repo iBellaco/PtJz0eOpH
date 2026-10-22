@@ -323,7 +323,7 @@ VisionCalibrationConfig(
             val landscapeWidth = maxOf(width, height)
             val landscapeHeight = minOf(width, height)
             val aspect = kotlin.math.round(landscapeWidth.toDouble() / landscapeHeight * 100.0).toInt()
-            return "${landscapeWidth >= landscapeHeight}_${aspect}"
+            return "${width >= height}_${aspect}"
         }
 
         /** Returns the capture-specific geometry, or null when this profile has not been calibrated. */
