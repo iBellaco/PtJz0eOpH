@@ -30,6 +30,12 @@ try {
       blueEssence:0, orangeEssence:0, registeredDevices:[]
     }));
   });
+  await test('cleanup recovery queue is private even to app staff', async()=>{
+    for(const client of [user,unverified,moderator,admin]) {
+      await assertFails(getDoc(doc(client,'unverified_cleanup_jobs/private-job')));
+      await assertFails(setDoc(doc(client,'unverified_cleanup_jobs/private-job'),{status:'PENDING'}));
+    }
+  });
   const recovery=db('user',{auth_time:Math.floor(Date.now()/1000),firebase:{sign_in_provider:'password'}});
   const recoveryRef=doc(recovery,'account_deletions/user');
   const requestData=()=>({userId:'user',requestId:'12345678-1234-1234-1234-123456789012',status:'PENDING',graceDays:60,requestedAt:serverTimestamp()});

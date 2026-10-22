@@ -17,9 +17,11 @@ DELIVERY_ONLY_FILES = {
     '.github/scripts/verify-apk-signing.py',
     '.github/scripts/test_apk_signing.py',
     'docs/coach-audit-1.1.10.257.md',
+    'docs/coach-audit-1.1.10.336.md',
 }
 
-REQUIRED_JOBS = {'security-and-data-tests', 'build-apk', 'core-and-rendered', 'installed-audit', 'installed-spanish', 'build-and-release'}
+REQUIRED_JOBS = {'catalog-validation', 'security-auth-tests', 'scanner-tests',
+                 'build-apk', 'core-and-rendered', 'installed-audit', 'installed-spanish', 'build-and-release'}
 
 
 def api(path):

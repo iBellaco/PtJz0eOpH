@@ -23,3 +23,34 @@ Los resultados deben guardarse con el formato
 `docs/device-audits/<modelo>-<version>-<fecha>.md`. Los emuladores del workflow
 siguen siendo la barrera automática; esta auditoría requiere el dispositivo
 físico y no se puede simular desde GitHub Actions.
+
+## Registro reproducible
+
+Ejecutar desde un equipo con ADB y el teléfono conectado:
+
+```sh
+python3 tools/scanner-device-report.py collect --serial SERIAL_ADB --version 1.1.10.336 --profile redmagic10 --output docs/device-audits/redmagic10-1.1.10.336.json
+python3 tools/scanner-device-report.py evaluate docs/device-audits/redmagic10-1.1.10.336.json
+```
+
+`collect` solo consulta modelo, Android, tamaño y densidad; no guarda el número
+de serie ni lee cuentas. El informe comienza PENDING. Para Poco/1.5K y 1080p
+repetir con perfiles y rutas diferentes. Ninguno de los tres perfiles físicos
+tiene todavía mediciones adjuntas a este repositorio.
+
+Para cada observación registrar `kind` (`bans` o `pick`), `expected` y `detected`
+(listas de IDs, mismo orden de slots), `latencyMs` medida desde el cambio visible
+hasta su detección, `evidence` (ruta relativa a captura o log local) y `sha256`
+del archivo. Comparar con la grabación y el resultado del visor; no inferir la
+latencia de la velocidad del vídeo. Adjuntar al menos tres capturas de baneos
+y diez selecciones. No reutilizar una captura para representar cambios distintos.
+En cada `pick` indicar `slot` (del 1 al 10) y un único campeón. En cada `bans`
+indicar los diez slots. Si varias observaciones usan la misma grabación o log,
+añadir `atMs` con el instante exacto y diferente en cada una. El evaluador rechaza
+evidencia repetida, slots duplicados y diez picks que no sean campeones distintos.
+
+Confirmar además `checks.orientation`, `checks.profilePersistence` y
+`checks.finalBuildRedirect` después de ejecutar el procedimiento. El evaluador
+rechaza emuladores, evidencia ausente o alterada, errores de selección y una
+demora p95 superior a 500 ms. El resultado PASS es una comprobación del informe;
+la validez de las mediciones se revisa contra la evidencia adjunta.

@@ -103,17 +103,17 @@ class GlobalTierSourceClient(
             } catch (http: SourceHttpException) { error = "Estadísticas: HTTP ${http.code}"
             } catch (_: Exception) { error = "No se pudieron consultar las estadísticas" }
         }
-        // Small fixture sources are intentionally allowed in unit tests; live
-        // catalogs know the full roster and must cover at least 70% of it.
-        val minimumCoverage = if (known.size < 100) known.size else (known.size * 0.70).toInt()
+        // Small catalogs require every known champion; full rosters require at
+        // least 70%, rounded up so 99/142 cannot incorrectly pass.
+        val minimumCoverage = if (known.size < 100) known.size else kotlin.math.ceil(known.size * 0.70).toInt()
         val coverage = (parsed.keys + stats.keys).map(RegionalTierParser::canonical).toSet().size
         val completeEnough = coverage >= minimumCoverage
-        if (error == null && !completeEnough) error = "Cobertura insuficiente: $coverage/$known"
+        if (error == null && !completeEnough) error = "Cobertura insuficiente: $coverage/${known.size} (mínimo $minimumCoverage)"
         return SourceResult(source, parsed, ScraperSourceStatus(name = source.name, url = source.url,
             isHealthy = error == null && completeEnough, lastChecked = System.currentTimeMillis(),
             responseTimeMs = System.currentTimeMillis() - started, errorMessage = error,
             tierCount = parsed.size, statsCount = stats.size, publishedPatch = patch,
-            rosterCount = (parsed.keys + stats.keys).size, historyCount = history.count { it.value.isNotEmpty() }), stats, history, roleStats)
+            rosterCount = coverage, historyCount = history.count { it.value.isNotEmpty() }), stats, history, roleStats)
     }
 
     private class SourceHttpException(val code: Int) : java.io.IOException()

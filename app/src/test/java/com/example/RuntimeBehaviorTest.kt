@@ -18,6 +18,15 @@ import org.robolectric.annotation.Config
 class RuntimeBehaviorTest {
     private val now = 1_790_000_000_000L
 
+    @Test fun `previous installation cache cannot change the shipped patch`() {
+        val context = RuntimeEnvironment.getApplication()
+        val prefs = context.getSharedPreferences("wildrift_local_cache", Context.MODE_PRIVATE)
+        prefs.edit().putString("cached_patch_version", "Parche 1.0").commit()
+        com.example.data.local.WildRiftLocalCache.loadFromLocalCache(context)
+        assertEquals(GamePatch.LABEL, WildRiftRepository.CURRENT_PATCH_VERSION)
+        prefs.edit().clear().commit()
+    }
+
     @Config(sdk = [24])
     @Test fun `premium deadline parses ISO dates without newer Android date APIs`() {
         assertEquals(1_704_067_200_000L, PremiumAccessPolicy.deadline("2024-01-01T00:00:00Z"))

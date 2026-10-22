@@ -33,6 +33,15 @@ jobs:
         working-directory: server/account-deletion
       - name: Verify dedicated legal site access
         run: node server/account-deletion/ensure-legal-site.mjs
+      - name: Inspect recovery configuration without modifying live data
+        run: node server/account-deletion/backup-status.mjs
+      - name: Retain recovery inventory
+        if: always()
+        uses: actions/upload-artifact@v5
+        with:
+          name: recovery-inventory
+          path: app/build/reports/recovery/backup-status.json
+          retention-days: 14
   process:
     if: github.ref == 'refs/heads/main'
     needs: verify

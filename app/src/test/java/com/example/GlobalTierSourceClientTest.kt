@@ -91,4 +91,32 @@ class GlobalTierSourceClientTest {
         assertEquals(mapOf("ahri" to "S","garen" to "B"), GlobalTierConsensus.mergeSnapshot(
             mapOf("ahri" to "A","garen" to "B","unknown" to "invalid"), mapOf("ahri" to "S")))
     }
+
+    @Test fun `full roster accepts at least seventy percent rounded up`() = runBlocking {
+        val roster = (1..142).map { "champ$it" }.toSet()
+        for (count in listOf(99, 100, 142)) {
+            MockWebServer().use { server ->
+                val html = "<section id='all-tier-list'><div class='tl-tier-row' data-tier='S'>" +
+                    roster.take(count).joinToString("") { "<a class='tl-champ-tile' href='/es/champions/$it/'>$it</a>" } +
+                    "</div></section>"
+                server.enqueue(MockResponse().setBody(html))
+                val result = GlobalTierSourceClient().fetch(source(server), roster)
+                assertEquals(count >= 100, result.status.isHealthy)
+                assertEquals(count, result.status.rosterCount)
+                if (count == 99) assertEquals("Cobertura insuficiente: 99/142 (mínimo 100)", result.status.errorMessage)
+            }
+        }
+    }
+
+    @Test fun `unknown and duplicate champions cannot inflate coverage`() = runBlocking {
+        val roster = (1..142).map { "champ$it" }.toSet()
+        MockWebServer().use { server ->
+            val entries = roster.take(99) + List(80) { "champ1" } + List(80) { "unknown$it" }
+            server.enqueue(MockResponse().setBody("<section id='all-tier-list'><div class='tl-tier-row' data-tier='S'>" +
+                entries.joinToString("") { "<a class='tl-champ-tile' href='/es/champions/$it/'>$it</a>" } + "</div></section>"))
+            val result = GlobalTierSourceClient().fetch(source(server), roster)
+            assertFalse(result.status.isHealthy)
+            assertEquals(99, result.status.rosterCount)
+        }
+    }
 }

@@ -59,7 +59,7 @@ object WildRiftLocalCache {
                 editor.putString(KEY_OBJECTIVES, json.encodeToString(it))
             }
             patchVersion?.let {
-                editor.putString(KEY_PATCH_VERSION, it)
+                editor.putString(KEY_PATCH_VERSION, com.example.data.GamePatch.LABEL)
             }
             editor.putLong(KEY_LAST_SYNC_TIME, System.currentTimeMillis())
             editor.apply()
@@ -74,11 +74,7 @@ object WildRiftLocalCache {
             val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
             var hasLoadedAny = false
 
-            val patch = prefs.getString(KEY_PATCH_VERSION, null)
-            if (!patch.isNullOrBlank()) {
-                WildRiftRepository.CURRENT_PATCH_VERSION = patch
-                hasLoadedAny = true
-            }
+            // A previous installation's cache cannot override the shipped game patch.
 
             // Always use the official, validated canonical item catalog
             WildRiftRepository.items = com.example.data.WildRiftItemsData.list
