@@ -385,6 +385,20 @@ jobs:
       run: |
         python3 test_matchup_rules.py
         python3 test_scraper.py
+    - name: Audit real reference slots and bans across capture profiles
+      env:
+        CI: 'true'
+      run: ./gradlew :app:testDebugUnitTest --tests com.example.DraftMultiDeviceAuditTest --tests com.example.DraftReferenceFrameTest --tests com.example.DraftRingAlignmentTest --tests com.example.CaptureCoordinateSpaceTest --fail-fast --max-workers=1 --stacktrace --no-daemon
+    - name: Retain measured scanner coordinates and visual evidence
+      if: always()
+      uses: actions/upload-artifact@v5
+      with:
+        name: scanner-multidevice-audit
+        path: |
+          app/build/reports/scanner-multidevice/
+          app/build/test-results/testDebugUnitTest/TEST-*.xml
+        if-no-files-found: error
+        retention-days: 14
   installed-audit:
     needs:
     - build-apk
