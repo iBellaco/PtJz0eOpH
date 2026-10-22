@@ -450,18 +450,19 @@ object LiteRTVisionClassifier {
     /** Keep only evidence from a visible draft slot, never from the loading background. */
     internal fun hasSlotRing(bitmap: Bitmap, isAlly: Boolean): Boolean {
         var matches = 0
+        val radii = doubleArrayOf(.44, .47, .50, .53, .56)
         for (i in 0 until 64) {
             val angle = i * 2.0 * Math.PI / 64
             // Selected portraits have a thin gold rim just outside the usual
             // team ring. Sampling one radius rejected Mel despite a clear match.
-            for (radius in doubleArrayOf(.44, .47, .50, .53, .56)) {
-            val x = (bitmap.width * (0.5 + radius * kotlin.math.cos(angle))).toInt().coerceIn(0, bitmap.width - 1)
-            val y = (bitmap.height * (0.5 + radius * kotlin.math.sin(angle))).toInt().coerceIn(0, bitmap.height - 1)
-            val pixel = bitmap.getPixel(x, y)
-            val r = Color.red(pixel); val g = Color.green(pixel); val b = Color.blue(pixel)
-            val team = if (isAlly) b > 70 && b > r * 1.25f else r > 70 && r > g * 1.35f
-            val selection = r > 90 && g > 60 && b < g * 0.8f
-            if (team || selection) { matches++; break }
+            for (radius in radii) {
+                val x = (bitmap.width * (0.5 + radius * kotlin.math.cos(angle))).toInt().coerceIn(0, bitmap.width - 1)
+                val y = (bitmap.height * (0.5 + radius * kotlin.math.sin(angle))).toInt().coerceIn(0, bitmap.height - 1)
+                val pixel = bitmap.getPixel(x, y)
+                val r = Color.red(pixel); val g = Color.green(pixel); val b = Color.blue(pixel)
+                val team = if (isAlly) b > 70 && b > r * 1.25f else r > 70 && r > g * 1.35f
+                val selection = r > 90 && g > 60 && b < g * 0.8f
+                if (team || selection) { matches++; break }
             }
         }
         return matches >= 10
