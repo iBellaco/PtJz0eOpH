@@ -12,6 +12,13 @@
 - Auditoría instalada: reintento limitado a errores transitorios del árbol UI;
   los errores funcionales y crashes fallan sin reintento. Ambas evidencias quedan
   retenidas en los artefactos de Actions.
+- Publicación: la reutilización exige los jobs actuales de catálogo, scanner y
+  autenticación además de compilación, renderizado y auditorías instaladas. Se
+  corrige el nombre obsoleto que impedía reconocer ejecuciones válidas. La
+  evidencia de esta versión y los dos scripts de entrega no cambian el APK;
+  cualquier cambio en fuentes o configuración de compilación exige validarlo
+  nuevamente. Los tests obtienen los nombres del workflow real para detectar
+  futuros renombrados en lugar de copiar los nombres del validador.
 - Parche: `GamePatch.VERSION` centraliza la versión activa de la app y fuentes;
   una caché antigua no puede sustituirla. Se validan declaraciones actuales y
   traducciones referenciadas, conservando las referencias históricas de fuentes.
@@ -28,11 +35,12 @@
 `GlobalTierSourceClientTest.kt`, `RuntimeBehaviorTest.kt`, scripts y pruebas de
 parche/reintento/escáner, servicio y pruebas de limpieza/inventario/recuperación,
 `tests/firestore/{run-tests,rules.test}.mjs`, workflows de APK y cuentas,
-`test_scraper.py`, `physical-device-smoke-checklist.md`, `recovery-runbook.md`.
+`test_scraper.py`, `physical-device-smoke-checklist.md`, `recovery-runbook.md`,
+`.github/scripts/{find-validated-apk.py,test_validated_apk.py}`.
 
 ## Verificación y límites
 
-Validación local completada: 41 pruebas Python de scripts, 8 de auditoría UI,
+Validación local completada: 43 pruebas Python de scripts, 8 de auditoría UI,
 2 de evidencia física y 28 pruebas Node del servicio. Los emuladores completaron
 62 escenarios de permisos, 26 de operaciones y los ensayos de limpieza protegida
 y restauración en disco. Catálogo/generadores y auditoría portuguesa correctos.
@@ -50,3 +58,10 @@ El inventario autorizado del 22/10/2026 a las 11:00 UTC devolvió HTTP 200 en la
 tres consultas: recuperación temporal desactivada, ninguna programación y cero
 copias listas. Esto confirma que falta configurar el respaldo productivo; requiere
 elegir retención y almacenamiento/costo antes de activarlo.
+
+La ejecución Android `39768786856` validó catálogo, scanner, autenticación,
+lint, suite completa, renderizado, APK ofuscado y auditorías instaladas ES/PT.
+La primera auditoría portuguesa no activó la selección de idioma y registró un
+fallo gráfico del emulador. No se relajó la aserción ni se activó un reintento
+automático de errores funcionales: se repitieron los jobs fallidos con un
+emulador nuevo y el mismo APK, que superó toda la revisión.

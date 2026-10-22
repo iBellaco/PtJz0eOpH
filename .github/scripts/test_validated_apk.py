@@ -1,6 +1,7 @@
 import importlib.util
 from pathlib import Path
 import unittest
+import re
 
 spec = importlib.util.spec_from_file_location('validated_apk', Path(__file__).with_name('find-validated-apk.py'))
 validated = importlib.util.module_from_spec(spec)
@@ -12,7 +13,10 @@ class ValidatedApkTest(unittest.TestCase):
     fixture_run = {'id': 42, 'status': 'completed', 'conclusion': 'success', 'event': 'pull_request',
            'head_branch': 'coach-validacion', 'head_repository': {'full_name': repository}, 'head_sha': 'a' * 40}
 
-    def invoke(self, changed_tree=False, failed_job=None, expired=False, run=None, files=None):
+    workflow = (Path(__file__).parents[1] / 'workflows/build-apk.yml').read_text()
+    workflow_jobs = set(re.findall(r'^  ([a-z][a-z-]+):$', workflow, re.MULTILINE))
+
+    def invoke(self, changed_tree=False, failed_job=None, expired=False, run=None, files=None, missing_job=None):
         def request(path):
             if '/git/commits/' in path:
                 return {'tree': {'sha': 'different' if changed_tree and path.endswith('a' * 40) else 'same'}}
@@ -27,7 +31,8 @@ class ValidatedApkTest(unittest.TestCase):
             if '/workflows/' in path:
                 return {'workflow_runs': [run or self.fixture_run]}
             if '/jobs?' in path:
-                return {'jobs': [{'name': name, 'conclusion': 'failure' if failed_job == name else 'success'} for name in validated.REQUIRED_JOBS]}
+                return {'jobs': [{'name': name, 'conclusion': 'failure' if failed_job == name else 'success'}
+                                 for name in self.workflow_jobs if name != missing_job]}
             if '/artifacts?' in path:
                 return {'artifacts': [{'name': 'app-release.apk', 'expired': expired}]}
             self.fail(path)
@@ -56,6 +61,14 @@ class ValidatedApkTest(unittest.TestCase):
 
     def test_failed_installed_audit_prevents_reuse(self):
         self.assertEqual(('', ''), self.invoke(failed_job='installed-audit'))
+
+    def test_required_jobs_exist_in_the_actual_workflow(self):
+        self.assertTrue(validated.REQUIRED_JOBS.issubset(self.workflow_jobs))
+
+    def test_current_catalog_scanner_and_authentication_are_mandatory(self):
+        for name in ['catalog-validation', 'scanner-tests', 'security-auth-tests']:
+            self.assertEqual(('', ''), self.invoke(failed_job=name))
+            self.assertEqual(('', ''), self.invoke(missing_job=name))
 
     def test_failed_spanish_overlay_audit_prevents_reuse(self):
         self.assertEqual(('', ''), self.invoke(failed_job='installed-spanish'))
