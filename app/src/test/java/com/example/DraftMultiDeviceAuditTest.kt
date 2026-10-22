@@ -27,7 +27,8 @@ import kotlin.math.hypot
 @Config(sdk = [34], application = Application::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class DraftMultiDeviceAuditTest {
-    private data class Profile(val id: String, val manufacturer: String, val model: String, val width: Int, val height: Int)
+    private data class Profile(val id: String, val manufacturer: String, val model: String, val width: Int, val height: Int,
+        val edgeAnchored: Boolean = false)
     private val profiles = listOf(
         Profile("red-magic-reference", "nubia", "NX789J", 2688, 1216),
         Profile("poco-x7-pro", "Xiaomi", "2412DPC0AG", 2712, 1220),
@@ -54,6 +55,11 @@ class DraftMultiDeviceAuditTest {
     @Test fun referenceDevicesAndS26CaptureScenarios() = audit(profiles.take(6), "device-profiles")
     @Test fun phoneResolutionMatrix() = audit(profiles.drop(6).take(20), "phone-resolutions")
     @Test fun tabletResolutionMatrix() = audit(profiles.takeLast(4), "tablet-resolutions")
+    @Test fun fullScreenSidePanelsRetainCircularPortraitsWithoutLetterboxing() = audit(
+        listOf(640 to 360, 1280 to 720, 2400 to 1080, 2712 to 1220, 3120 to 1440,
+            1024 to 768, 1600 to 1000, 2560 to 1600).map { (w, h) ->
+            Profile("edge-anchored-$w-$h", "generic", "synthetic-side-panels", w, h, true)
+        }, "edge-anchored-resolutions")
 
     private fun audit(cases: List<Profile>, group: String) {
         val context = RuntimeEnvironment.getApplication()
@@ -74,18 +80,35 @@ class DraftMultiDeviceAuditTest {
                 DraftVisionScanner.initCalibration(context)
                 val (w, h) = CaptureFrameDecoder.captureSize(profile.width, profile.height)
                 val frame = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
-                val scale = minOf(w.toFloat() / source.width, h.toFloat() / source.height)
+                val scale = if (profile.edgeAnchored) h.toFloat() / source.height
+                    else minOf(w.toFloat() / source.width, h.toFloat() / source.height)
                 val rw = (source.width * scale).toInt()
                 val rh = (source.height * scale).toInt()
-                val viewport = Rect((w-rw)/2, (h-rh)/2, (w-rw)/2+rw, (h-rh)/2+rh)
+                val viewport = if (profile.edgeAnchored) Rect(0, 0, w, h)
+                    else Rect((w-rw)/2, (h-rh)/2, (w-rw)/2+rw, (h-rh)/2+rh)
+                fun targetX(x: Float): Float = if (profile.edgeAnchored) {
+                    if (x < source.width / 2f) x * scale else w - (source.width - x) * scale
+                } else viewport.left + x * viewport.width() / source.width
+                fun targetY(y: Float): Float = viewport.top + y * viewport.height() / source.height
                 val entry = JSONObject().put("profile", profile.id).put("model", profile.model)
                     .put("evidenceType", "resized-reference-not-physical-device")
+                    .put("layout", if (profile.edgeAnchored) "synthetic-edge-anchored-side-panels" else "uniform-fit-reference")
                     .put("display", JSONArray(listOf(profile.width, profile.height)))
                     .put("capture", JSONArray(listOf(w, h)))
                 val checks = JSONArray()
                 val before = failures.size
                 try {
-                    Canvas(frame).apply { drawColor(Color.BLACK); drawBitmap(source, null, viewport, Paint(Paint.FILTER_BITMAP_FLAG)) }
+                    Canvas(frame).apply {
+                        val paint = Paint(Paint.FILTER_BITMAP_FLAG)
+                        if (profile.edgeAnchored) {
+                            drawColor(Color.rgb(10, 15, 30))
+                            drawBitmap(source, Rect(0, 0, 280, source.height), Rect(0, 0, (280*scale).toInt(), h), paint)
+                            drawBitmap(source, Rect(1040, 0, source.width, source.height), Rect(w-(240*scale).toInt(), 0, w, h), paint)
+                        } else {
+                            drawColor(Color.BLACK)
+                            drawBitmap(source, null, viewport, paint)
+                        }
+                    }
                     val detected = DraftFrameGeometry.contentBounds(frame)
                     if (viewport != detected) failures += "${profile.id}: viewport $detected expected $viewport"
                     val config = DraftVisionScanner.configForFrame(frame)
@@ -97,8 +120,8 @@ class DraftMultiDeviceAuditTest {
                         val ally = index < 5
                         val slot = index % 5
                         val rect = AdaptiveScreenLayoutEngine.calculateSlotCropRect(w, h, ally, slot, config)
-                        val expectedX = viewport.left + pickCenters[index].first * viewport.width() / source.width
-                        val expectedY = viewport.top + pickCenters[index].second * viewport.height() / source.height
+                        val expectedX = targetX(pickCenters[index].first)
+                        val expectedY = targetY(pickCenters[index].second)
                         val referenceError = hypot(rect.exactCenterX()-expectedX, rect.exactCenterY()-expectedY) * source.height / viewport.height()
                         val crop = AdaptiveScreenLayoutEngine.extractSlotAvatarBitmap(frame, w, h, ally, slot, config)!!
                         try {
@@ -123,8 +146,8 @@ class DraftMultiDeviceAuditTest {
                     tracker.slots.forEachIndexed { index, slot ->
                         val region = slot.region
                         if (region != null) {
-                            val expectedX = viewport.left + banCenters[index] * viewport.width() / source.width
-                            val expectedY = viewport.top + 30f * viewport.height() / source.height
+                            val expectedX = targetX(banCenters[index])
+                            val expectedY = targetY(30f)
                             val error = hypot(region.x*w-expectedX, region.y*h-expectedY) * source.height / viewport.height()
                             if (error > 6f) failures += "${profile.id}: ban $index center error $error reference pixels"
                             checks.put(JSONObject().put("ban", index).put("expected", bans[index]).put("recognized", slot.championId)

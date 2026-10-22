@@ -16,11 +16,15 @@ avatares y no reproduce el escalado uniforme de la captura Android.
 - El visor dibuja los círculos desde el mismo rectángulo de píxeles que extrae el
   escáner, incluido el mínimo de 32 píxeles, redondeo y límite de bordes. Antes
   dibujaba directamente desde porcentajes y podía diferir del recorte efectivo.
-- Nueva matriz de 30 perfiles con coordenadas medidas independientemente en la
+- Nueva matriz de 38 escenarios con coordenadas medidas independientemente en la
   imagen, identificación de los veinte retratos y confirmación de los diez baneos.
 - La matriz utiliza el límite real de captura de 1920 × 1080 y los perfiles por
   fabricante/modelo; registra dimensiones nativas simuladas y dimensiones de captura.
 - Evidencia JSON y PNG por perfil conservada en el flujo del escáner.
+- Ocho escenarios adicionales reconstruyen los paneles laterales anclados a los
+  bordes, con avatares circulares a escala del alto, sin bandas. En pantalla 4:3
+  el baneo interior queda fuera del 27% fijo usado anteriormente; se adapta el
+  ancho de búsqueda al alto y la proporción en pantallas menores que 1.75:1.
 
 ## Modelos y escenarios
 
@@ -51,6 +55,8 @@ se presenta como una prueba realizada en un teléfono físico.
 ## Archivos
 
 - `app/src/main/java/com/example/ui/components/ScannerDebugOverlay.kt`
+- `app/src/main/java/com/example/service/screen/BanDetection.kt`
+- `app/src/main/java/com/example/service/screen/LiteRTVisionClassifier.kt`
 - `app/src/test/java/com/example/DraftMultiDeviceAuditTest.kt`
 - `.github/workflows/build-apk.yml`
 - `app/build.gradle.kts`

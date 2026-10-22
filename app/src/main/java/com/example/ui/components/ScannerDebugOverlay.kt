@@ -141,10 +141,11 @@ fun ScannerDebugOverlay(
         // The rectangles are the exact header bands searched by the classifier.
         // Thin circle strokes stay outside its portrait descriptor samples.
         if (detectingBans) {
+            val sideWidth = com.example.service.screen.banHeaderSideWidthRatio(w / h)
             for (side in com.example.service.screen.BanSide.entries) {
-                val x = if (side == com.example.service.screen.BanSide.ALLY) 0f else w * .73f
+                val x = if (side == com.example.service.screen.BanSide.ALLY) 0f else w * (1f - sideWidth)
                 val color = if (side == com.example.service.screen.BanSide.ALLY) Color(0xCC00E5FF) else Color(0xCCFF1744)
-                drawRect(color.copy(alpha = .35f), Offset(x, 0f), Size(w * .27f, h * .12f), style = Stroke(1f))
+                drawRect(color.copy(alpha = .35f), Offset(x, 0f), Size(w * sideWidth, h * .12f), style = Stroke(1f))
                 for (slot in banSlots.filter { it.side == side }) {
                     val region = slot.region ?: continue
                     val center = Offset(region.x * w, region.y * h)

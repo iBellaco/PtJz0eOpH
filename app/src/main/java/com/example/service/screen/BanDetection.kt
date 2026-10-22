@@ -13,6 +13,10 @@ internal fun emptyBanSlots(): List<BanSlot> = BanSide.entries.flatMap { side ->
     List(5) { BanSlot(side, it) }
 }
 
+/** Side HUDs scale with height; a fixed 27% band cuts off the inner ban on full-screen tablets. */
+internal fun banHeaderSideWidthRatio(aspect: Float): Float =
+    if (aspect >= 1.75f) .27f else (.48f / aspect.coerceAtLeast(1f)).coerceIn(.27f, .45f)
+
 /** Fill visible but unreadable portraits before assigning slot numbers. Never invents a champion. */
 internal fun fillHeaderPositions(observations: List<BanObservation>, aspect: Float,
     hasPortrait: (BanRegion) -> Boolean): List<BanObservation> = BanSide.entries.flatMap { side ->
@@ -27,8 +31,9 @@ internal fun fillHeaderPositions(observations: List<BanObservation>, aspect: Flo
         val radius = row.map { it.region.radius }.average().toFloat()
         fun addAt(x: Float, y: Float): Boolean {
             val region = BanRegion(x, y, radius)
-            val min = if (side == BanSide.ALLY) 0f else .73f
-            val max = if (side == BanSide.ALLY) .27f else 1f
+            val sideWidth = banHeaderSideWidthRatio(aspect)
+            val min = if (side == BanSide.ALLY) 0f else 1f - sideWidth
+            val max = if (side == BanSide.ALLY) sideWidth else 1f
             if (x - radius / aspect < min || x + radius / aspect > max ||
                 row.any { kotlin.math.abs(it.region.x - x) < step * .45f } || !hasPortrait(region)) return false
             row.add(BanObservation(side, region))
