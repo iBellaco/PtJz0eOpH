@@ -81,7 +81,7 @@ internal object DraftRingAlignment {
                         if (score > best) { best=score; center=cx to cy }
                     }
                 }
-                if (best >= 20 && center != null) fits += slot to center
+                if (best >= (if (ally) 20 else 16) && center != null) fits += slot to center
             }
             if (fits.size < 2) return null
             val medianX = fits.map { it.second.first }.sorted()[fits.size / 2]
@@ -91,7 +91,7 @@ internal object DraftRingAlignment {
             // This matters when the captured frame includes a different top inset or letterbox.
             val consistent = fits.filter { abs(it.second.first - medianX) <= radius / 3 }
             val shifts = consistent.map { it.second.second - ys[it.first] * h }.sorted()
-            val shift = shifts[shifts.size / 2]
+            val shift = (shifts[(shifts.size - 1) / 2] + shifts[shifts.size / 2]) / 2f
             val alignedYs = ys.map { ((it * h + shift) / h).coerceIn(0f, 1f) }.toMutableList()
             fits.forEach { (slot, center) ->
                 if (abs(center.first - medianX) <= radius / 3) {
