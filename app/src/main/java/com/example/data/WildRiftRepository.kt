@@ -431,7 +431,7 @@ object WildRiftRepository {
             if (unfavorable.isNotEmpty()) add(t(lang,"Risco contra: ${names(unfavorable)}.","Riesgo contra: ${names(unfavorable)}."))
         }.joinToString(" ").ifBlank { t(lang,"Nenhuma vantagem direta confirmada.","No hay una ventaja directa confirmada.") }
         val synergyText = if (synergies.isNotEmpty()) t(lang,"Combina com: ${names(synergies)}.","Combina con: ${names(synergies)}.")
-            else t(lang,"Ajuste sua função aos aliados selecionados.","Ajusta tu función a los aliados seleccionados.")
+            else ""
         return DraftRecommendation(champion=champ,estimatedWinrate=(champ.winrate.takeIf { it.isFinite() } ?: 50.0).coerceIn(0.0,100.0),
             advantageBadge=badge,tacticalReason=DraftRecommendationText.clean(reasons.joinToString(" ")),runes=champ.recommendedRunes,
             synergyDetails=DraftRecommendationText.clean(synergyText),counterDetails=DraftRecommendationText.clean(counterText),
@@ -568,7 +568,7 @@ object WildRiftRepository {
             }
 
             // Detect Iconic Wombocombos with active allies
-            val allyIds = allies.map { it.id }
+            val allyIds = activeAllies.map { it.id }
             val comboSynergies = mutableListOf<String>()
             if (champ.id == "yasuo" && (allyIds.any { it in listOf("malphite", "diana", "nautilus", "alistar", "wukong", "aatrox", "rakan", "vi") })) {
                 val knockupEnabler = allies.firstOrNull { it.id in listOf("malphite", "diana", "nautilus", "alistar", "wukong", "aatrox", "rakan", "vi") }?.name ?: "Iniciador"
@@ -610,7 +610,12 @@ object WildRiftRepository {
                 val possibleWeaknesses = MatchupKnowledge.related(champ,champions,MatchupRelation.UNFAVORABLE).take(3)
                 val reason = t(lang,"Seleção inicial de ${champ.getLocalizedName(lang)}: compare a versatilidade, os rivais possíveis e a utilidade para a equipe. $roleContextAdvice",
                     "Primera selección de ${champ.getLocalizedName(lang)}: compara la versatilidad, los rivales posibles y la utilidad para el equipo. $roleContextAdvice")
-                synergyText = if (comboSynergies.isNotEmpty()) comboSynergies.joinToString(" • ") else roleContextAdvice
+                val knownSynergies = MatchupKnowledge.synergies(champ, activeAllies)
+                synergyText = if (comboSynergies.isNotEmpty()) comboSynergies.distinct().joinToString(" • ")
+                    else if (knownSynergies.isNotEmpty()) t(lang,
+                        "Combina com: ${knownSynergies.joinToString { it.getLocalizedName(lang) }}.",
+                        "Combina con: ${knownSynergies.joinToString { it.getLocalizedName(lang) }}.")
+                    else ""
                 counterText = if (possibleWeaknesses.isNotEmpty()) t(lang,
                     "Possíveis confrontos difíceis: ${possibleWeaknesses.joinToString { it.getLocalizedName(lang) }}.",
                     "Posibles enfrentamientos difíciles: ${possibleWeaknesses.joinToString { it.getLocalizedName(lang) }}.")
@@ -647,24 +652,11 @@ object WildRiftRepository {
                 }
 
                 val reasonParts = mutableListOf<String>()
-                if (comboSynergies.isNotEmpty()) {
-                    reasonParts.add(comboSynergies.joinToString(" • "))
-                }
-                if (directCounters.isNotEmpty()) {
-                    reasonParts.add(t(lang, "Vantagem tática direta contra ${directCounters.joinToString(", ")}.", "Ventaja táctica directa contra ${directCounters.joinToString(", ")}."))
-                }
-                if (directWeaknesses.isNotEmpty()) reasonParts.add(t(lang,"Cuidado com ${directWeaknesses.joinToString()}; adapte seu posicionamento.","Cuidado con ${directWeaknesses.joinToString()}; adapta tu posicionamiento."))
-                if (directSynergies.isNotEmpty()) {
-                    reasonParts.add(t(lang, "Sinergia comprovada com ${directSynergies.joinToString(", ")}.", "Sinergia comprobada con ${directSynergies.joinToString(", ")}."))
-                }
                 if (isAllyFullAd && champ.damageType == DamageType.MAGIC) {
                     reasonParts.add(t(lang, "Fornece o dano mágico crucial para que o rival não acumule armadura.", "Aporta el daño mágico crucial para que el rival no apile armadura."))
                 }
                 if (activeAllies.isNotEmpty() && frontlineAllies == 0 && champ.isFrontline) {
                     reasonParts.add(t(lang, "Garante a iniciação e resistência que sua equipe precisa.", "Garantiza la iniciación y resistencia que tu equipo necesita."))
-                }
-                if (activeAllies.isNotEmpty() && activeAllies.none { it.isFrontline } && champ.isFrontline) {
-                    reasonParts.add(t(lang, "Completa a linha de frente para a equipe entrar e sair da luta.", "Completa la primera línea para que el equipo pueda entrar y salir de la pelea."))
                 }
                 if (activeEnemies.count { it.isFrontline } >= 2 && champ.id in setOf("darius", "fiora", "gwen", "kaisa", "lillia", "master_yi", "vayne", "varus")) {
                     reasonParts.add(t(lang, "Tem ferramentas para punir uma composição inimiga resistente.", "Tiene herramientas para castigar una composición rival resistente."))
@@ -683,7 +675,7 @@ object WildRiftRepository {
                 } else if (directSynergies.isNotEmpty()) {
                     t(lang, "Combina com: ${directSynergies.joinToString(", ")}", "Combina con: ${directSynergies.joinToString(", ")}")
                 } else {
-                    t(lang, "Composição de equipe padrão", "Alineación estándar de equipo")
+                    ""
                 }
 
                 counterText = if (directCounters.isNotEmpty() && directWeaknesses.isNotEmpty()) {

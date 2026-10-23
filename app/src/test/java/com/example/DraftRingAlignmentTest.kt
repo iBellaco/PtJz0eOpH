@@ -1,6 +1,7 @@
 package com.example
 
 import android.app.Application
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Rect
 import com.example.service.screen.DraftRingAlignment
@@ -42,6 +43,28 @@ class DraftRingAlignmentTest {
             // Occluded allies cannot be located from the HUD's cyan borders.
             assertEquals(VisionCalibrationConfig().allySlotXRatios,aligned.allySlotXRatios)
         } finally { bitmap.recycle() }
+    }
+    @Test fun s26ScreenshotKeepsRivalColumnWhenCaptureResolutionChanges() {
+        val original = javaClass.getResourceAsStream("/s26/draft.jpg").use { BitmapFactory.decodeStream(it)!! }
+        val measurements = org.json.JSONArray()
+        try {
+            for ((width, height) in listOf(1280 to 591, 1920 to 887, 2560 to 1182)) {
+                val frame = Bitmap.createScaledBitmap(original, width, height, true)
+                try {
+                    val mask = Rect(60 * width / 1280, 0, 590 * width / 1280, height)
+                    val aligned = DraftRingAlignment.align(frame, VisionCalibrationConfig(), mask, ignoreDebugRings = true)
+                    assertEquals("S26 screenshot $width/$height", 1168f / 1280f, aligned.enemyAvatarCenterX, .012f)
+                    assertEquals(VisionCalibrationConfig().allySlotXRatios, aligned.allySlotXRatios)
+                    measurements.put(org.json.JSONObject().put("captureWidth", width).put("captureHeight", height)
+                        .put("enemyCenterX", aligned.enemyAvatarCenterX).put("status", "PASS"))
+                } finally { if (frame !== original) frame.recycle() }
+            }
+            val output = java.io.File("build/reports/scanner-multidevice/s26-screenshot-alignment.json")
+            output.parentFile.mkdirs()
+            output.writeText(org.json.JSONObject().put("evidenceType", "resized-s26-screenshot-not-physical-device")
+                .put("scope", "visible-rival-column-only-allies-occluded")
+                .put("measurements", measurements).put("physicalDeviceTested", false).toString(2))
+        } finally { original.recycle() }
     }
     @Test fun bothColumnsFollowVisibleRingsAcrossDifferentResolutions() {
         for ((w,h) in listOf(1280 to 720,1920 to 864)) {

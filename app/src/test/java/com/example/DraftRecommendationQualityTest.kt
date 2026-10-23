@@ -79,4 +79,29 @@ class DraftRecommendationQualityTest {
         assertTrue(shouldShowDraftRecommendations(LaneRole.MID, isFirstPick = true, hasDraftSelection = false))
         assertFalse(shouldShowDraftRecommendations(null, isFirstPick = true, hasDraftSelection = false))
     }
+
+    @Test fun `blind advice without allies never duplicates tactics as synergy in either language`() {
+        for (lang in listOf("es", "pt")) {
+            val result = WildRiftRepository.analyzeDraft(myRole = LaneRole.MID,
+                allies = emptyList(), enemies = emptyList(), isFirstPick = true, lang = lang)
+            assertTrue(result.recommendations.isNotEmpty())
+            result.recommendations.forEach { recommendation ->
+                assertEquals("${recommendation.champion.id}/$lang", "", recommendation.synergyDetails)
+                assertTrue(recommendation.tacticalReason.isNotBlank())
+            }
+        }
+    }
+
+    @Test fun `real ally combo appears once in its own section`() {
+        val malphite = WildRiftRepository.champions.first { it.id == "malphite" }
+        for (firstPick in listOf(true, false)) for (lang in listOf("es", "pt")) {
+            val result = WildRiftRepository.analyzeDraft(myRole = LaneRole.MID,
+                allies = listOf(malphite), enemies = if (firstPick) emptyList()
+                    else listOf(WildRiftRepository.champions.first { it.id == "garen" }),
+                isFirstPick = firstPick, lang = lang)
+            val orianna = result.recommendations.first { it.champion.id == "orianna" }
+            assertTrue(orianna.synergyDetails.isNotBlank())
+            assertFalse(orianna.tacticalReason.contains(orianna.synergyDetails))
+        }
+    }
 }
