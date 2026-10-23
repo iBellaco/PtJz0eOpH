@@ -20,6 +20,33 @@ class DraftReferenceFrameTest {
     private val expected = listOf("senna", "ornn", "mel", "volibear", "vi",
         "alistar", "caitlyn", "nocturne", "vex", "teemo")
 
+    @Test fun calibrationRestartInvalidatesViewportEvenAtTheSameCaptureSize() {
+        val context = RuntimeEnvironment.getApplication()
+        val preferences = context.getSharedPreferences("vision_calibration_prefs", 0)
+        preferences.edit().clear().commit()
+        val source = javaClass.getResourceAsStream("/portraits/draft-ten-selected.jpg").use { BitmapFactory.decodeStream(it)!! }
+        val plain = Bitmap.createBitmap(1024, 768, Bitmap.Config.ARGB_8888)
+        val letterboxed = Bitmap.createBitmap(1024, 768, Bitmap.Config.ARGB_8888)
+        try {
+            org.robolectric.shadows.ShadowSystemClock.advanceBy(java.time.Duration.ofMillis(100))
+            Canvas(plain).drawColor(Color.rgb(30, 35, 45))
+            DraftVisionScanner.initCalibration(context)
+            DraftVisionScanner.configForFrame(plain)
+            Canvas(letterboxed).apply {
+                drawColor(Color.BLACK)
+                drawBitmap(source, null, Rect(0, 152, 1024, 615), Paint(Paint.FILTER_BITMAP_FLAG))
+            }
+            DraftVisionScanner.initCalibration(context)
+            val aligned = DraftVisionScanner.configForFrame(letterboxed)
+            val crop = AdaptiveScreenLayoutEngine.calculateSlotCropRect(1024, 768, true, 0, aligned)
+            assertEquals(152 + 110f * 463 / 579, crop.exactCenterY(), 5f)
+        } finally {
+            source.recycle(); plain.recycle(); letterboxed.recycle()
+            preferences.edit().clear().commit()
+            DraftVisionScanner.initCalibration(context)
+        }
+    }
+
     @Test fun tenRealPortraitsRemainInTheirOwnSlotsAcrossCaptureSizesAndLetterboxing() {
         val context = RuntimeEnvironment.getApplication()
         WildRiftRepository.initChampions(context, forceReload = true)

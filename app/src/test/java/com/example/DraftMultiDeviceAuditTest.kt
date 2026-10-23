@@ -61,7 +61,8 @@ class DraftMultiDeviceAuditTest {
         Profile("regression-poco", "Xiaomi", "2412DPC0AG", 2712, 1220),
         Profile("regression-square", "generic", "square-resolution-simulation", 1800, 1800),
         Profile("regression-small-edge", "generic", "synthetic-side-panels", 640, 360, true),
-        Profile("regression-tablet-edge", "generic", "synthetic-side-panels", 1024, 768, true)
+        Profile("regression-tablet-edge", "generic", "synthetic-side-panels", 1024, 768, true),
+        Profile("regression-tablet-letterbox", "generic", "letterboxed-same-size-transition", 1024, 768)
     ), "center-regressions")
     @Test fun documentedAndroidDisplayProfiles() = audit(listOf(
         Profile("pixel-8", "Google", "Pixel 8", 2400, 1080, specification = PIXEL_SPECS),

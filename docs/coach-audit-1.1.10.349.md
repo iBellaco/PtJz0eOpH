@@ -17,7 +17,10 @@ con solo dos observaciones exige 70 % de cobertura circular o un desplazamiento
 inequívoco de más de 1.25 radios respecto al perfil previo. Las filas conservan
 el ajuste robusto de la cuadrícula en lugar de volver a un borde individual ruidoso.
 Una regresión enfocada de los tres formatos y de Red Magic/Poco se ejecuta antes
-de la matriz completa.
+de la matriz completa. Incluye la transición entre paneles anclados y bandas
+exteriores a 1024 × 768 sin cambiar el tamaño de la captura.
+La reinicialización de la calibración también invalida el viewport almacenado:
+no puede reutilizar el área visible de la distribución anterior durante dos segundos.
 
 ## Pruebas
 
@@ -50,6 +53,7 @@ esas transformaciones no se cuentan como reconocimientos de imágenes.
 - `DraftMultiDeviceAuditTest.kt`: perfiles, variaciones y confirmación productiva.
 - `DraftReferenceFrameTest.kt`: evidencia de las transformaciones geométricas.
 - `DraftRingAlignment.kt`: precisión del ajuste de los bordes circulares.
+- `DraftVisionScanner.kt`: invalidación del área visible al reiniciar la calibración.
 - `tools/scanner-audit-summary.py`: comprobación estricta e informes Markdown/CSV/JSON.
 - `tools/test_scanner_audit_summary.py`: pruebas positivas y negativas del informe.
 - Workflow de validación y versión de la aplicación.
