@@ -223,7 +223,6 @@ fun HextechOrbButton(
                             AppTheme.NOXUS -> listOf(Color(0xFF3B0707), Color(0xFF150202), Color(0xFF050000))
                             AppTheme.JONIA -> listOf(Color(0xFF2E1A47), Color(0xFF140B24), Color(0xFF06020D))
                             AppTheme.FRELJORD -> listOf(Color(0xFF0C2233), Color(0xFF05101A), Color(0xFF02060A))
-                            AppTheme.ZAUN -> listOf(Color(0xFF0A2616), Color(0xFF041209), Color(0xFF010603))
                             AppTheme.DEMACIA -> listOf(Color(0xFF102852), Color(0xFF071226), Color(0xFF02060F))
                             AppTheme.AGUAS_ESTANCADAS -> listOf(Color(0xFF381B08), Color(0xFF1A0B03), Color(0xFF070301))
                             AppTheme.ISLAS_DE_LA_SOMBRA -> listOf(Color(0xFF0C3326), Color(0xFF051711), Color(0xFF010805))

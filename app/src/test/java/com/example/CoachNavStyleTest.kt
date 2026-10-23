@@ -32,4 +32,8 @@ class CoachNavStyleTest {
             assertEquals(style, CoachNavStyle.fromId(style.id))
         }
     }
+
+    @Test fun removedTheme13FallsBackToDefault() {
+        assertEquals(com.example.ui.theme.AppTheme.PILTOVER, com.example.ui.theme.AppTheme.fromId("ZAUN"))
+    }
 }

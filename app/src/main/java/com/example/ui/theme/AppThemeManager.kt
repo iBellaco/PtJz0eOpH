@@ -321,30 +321,6 @@ enum class AppTheme(
         textSecondary = Color(0xFFA594C9),
         textMuted = Color(0xFF6E5D91),
         isDark = true
-    ),
-
-    // 13. Zaun - Ciudad Subterránea Quimtech: Verde Quimtech Ácido Neón y Púrpura Shimmer Químico
-    ZAUN(
-        id = "ZAUN",
-        titleKey = "Zaun",
-        regionTag = "Subciudad Quimtech",
-        descKey = "Ingenio desenfrenado en las profundidades, verde ácido químico, humo Zaun y resplandor Shimmer.",
-        background = Color(0xFF020B06),
-        surface = Color(0xFF061A0F),
-        surfaceVariant = Color(0xFF0B2B19),
-        cardBorder = Color(0xFF144D2B),
-        primary = Color(0xFF39FF14),
-        primaryLight = Color(0xFF86EFAC),
-        primaryDark = Color(0xFF166534),
-        primaryGlow = Color(0xFF4ADE80),
-        secondary = Color(0xFFEAB308),
-        secondaryLight = Color(0xFFFEF08A),
-        secondaryDark = Color(0xFFA16207),
-        secondaryGlow = Color(0xFFFACC15),
-        textPrimary = Color(0xFFE8FDF0),
-        textSecondary = Color(0xFF7EBF96),
-        textMuted = Color(0xFF4D8A65),
-        isDark = true
     );
 
     companion object {

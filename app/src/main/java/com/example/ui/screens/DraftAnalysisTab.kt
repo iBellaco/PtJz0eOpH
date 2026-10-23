@@ -1142,8 +1142,6 @@ fun DraftAnalysisTab(
                             color = TextPrimary.copy(alpha = 0.95f),
                             fontSize = 11.sp,
                             lineHeight = 15.sp,
-                            maxLines = 4,
-                            overflow = TextOverflow.Ellipsis,
                             modifier = Modifier.fillMaxWidth()
                         )
 
@@ -1172,8 +1170,6 @@ fun DraftAnalysisTab(
                                             fontSize = 10.5.sp,
                                             lineHeight = 14.sp,
                                             fontWeight = FontWeight.Medium,
-                                            maxLines = 4,
-                                            overflow = TextOverflow.Ellipsis,
                                             modifier = Modifier.fillMaxWidth()
                                         )
                                     }
@@ -1192,8 +1188,6 @@ fun DraftAnalysisTab(
                                             fontSize = 10.5.sp,
                                             lineHeight = 14.sp,
                                             fontWeight = FontWeight.Medium,
-                                            maxLines = 4,
-                                            overflow = TextOverflow.Ellipsis,
                                             modifier = Modifier.fillMaxWidth()
                                         )
                                     }
@@ -1285,7 +1279,7 @@ fun DraftAnalysisTab(
                                     Text(tr(rec.advantageBadge), color = HextechCyan, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                                     Spacer(modifier = Modifier.height(2.dp))
                                     Text(tr(rec.tacticalReason), color = TextMuted, fontSize = 11.sp, lineHeight = 14.sp,
-                                        maxLines = 3, overflow = TextOverflow.Ellipsis, modifier = Modifier.fillMaxWidth())
+                                        modifier = Modifier.fillMaxWidth())
                                 }
                                 Spacer(modifier = Modifier.width(6.dp))
                                 IconButton(
@@ -1312,8 +1306,6 @@ fun DraftAnalysisTab(
                                             text = com.example.util.tr("🤝 " + rec.synergyDetails),
                                             color = HextechCyan,
                                             fontSize = 10.sp,
-                                            maxLines = 1,
-                                            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
                                             modifier = Modifier.weight(1f)
                                         )
                                     }
@@ -1322,8 +1314,6 @@ fun DraftAnalysisTab(
                                             text = com.example.util.tr("🛡️ " + rec.counterDetails),
                                             color = HextechGoldLight,
                                             fontSize = 10.sp,
-                                            maxLines = 1,
-                                            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
                                             modifier = Modifier.weight(1f)
                                         )
                                     }
