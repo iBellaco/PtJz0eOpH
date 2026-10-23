@@ -40,6 +40,9 @@ La matriz geométrica mide la calibración automática con cada perfil; el APK
 instalado recibe esa calibración medida, no suplanta el fabricante del emulador.
 Cuatro particiones conservan todos los fallos antes de generar una auditoría
 única; una resolución o etapa ausente impide aprobarla y publicar la entrega.
+La compilación usa otro ejecutor y puede avanzar mientras continúan las pruebas
+completas. La publicación mantiene como requisitos tanto esas regresiones como
+todas las pruebas del APK instalado; no se relaja ninguna comprobación.
 
 Las etapas y etiquetas de líneas son sintéticas; los nombres seleccionados son
 píxeles reales de la captura. No son partidas grabadas en cada modelo físico.

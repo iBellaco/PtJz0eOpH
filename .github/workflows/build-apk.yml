@@ -55,7 +55,9 @@ jobs:
         python3 tools/update-champion-builds.py --check
         bash tools/audit-portuguese.sh
   build-apk:
-    needs: [find-validated-apk, catalog-validation, security-auth-tests, scanner-tests, core-and-rendered]
+    # Build on a separate runner while the full regression suite continues.
+    # Publication below still requires the suite and every installed APK audit.
+    needs: [find-validated-apk, catalog-validation, security-auth-tests, scanner-tests]
     if: needs.find-validated-apk.outputs.run_id == ''
     runs-on: ubuntu-latest
     timeout-minutes: 30
