@@ -1087,6 +1087,7 @@ fun DraftAnalysisTab(
                         ) {
                             Text(
                                 text = com.example.util.tr(if (analysis.isFirstPickMode) tr(" #1 RECOMENDACIÓN BLIND PICK") else tr(" #1 MEJOR ELECCIÓN TÁCTICA")),
+                                modifier = Modifier.weight(1f).padding(end = 8.dp),
                                 color = HextechGold,
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Black
@@ -1115,6 +1116,7 @@ fun DraftAnalysisTab(
                                 ) {
                                     Text(
                                         text = com.example.util.tr(topPick.champion.name),
+                                        modifier = Modifier.weight(1f).padding(end = 8.dp),
                                         color = TextPrimary,
                                         fontSize = 16.sp,
                                         fontWeight = FontWeight.Bold
@@ -1140,9 +1142,9 @@ fun DraftAnalysisTab(
                         Text(
                             text = tr(DraftRecommendationText.clean(topPick.tacticalReason)),
                             color = TextPrimary.copy(alpha = 0.95f),
-                            fontSize = 11.sp,
-                            lineHeight = 15.sp,
-                            modifier = Modifier.fillMaxWidth()
+                            fontSize = 12.sp,
+                            lineHeight = 17.sp,
+                            modifier = Modifier.fillMaxWidth().testTag("draft_top_tactical_text")
                         )
 
                         if (topPick.synergyDetails.isNotBlank() || topPick.counterDetails.isNotBlank()) {
@@ -1156,42 +1158,10 @@ fun DraftAnalysisTab(
                                     .padding(horizontal = 8.dp, vertical = 6.dp),
                                 verticalArrangement = Arrangement.spacedBy(4.dp)
                             ) {
-                                if (topPick.synergyDetails.isNotBlank()) {
-                                    Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                                        Text(
-                                            text = com.example.util.tr("🤝 " + tr("Sinergia / Combo:")),
-                                            color = HextechCyan,
-                                            fontSize = 10.sp,
-                                            fontWeight = FontWeight.Bold
-                                        )
-                                        Text(
-                                            text = tr(DraftRecommendationText.clean(topPick.synergyDetails)),
-                                            color = TextPrimary,
-                                            fontSize = 10.5.sp,
-                                            lineHeight = 14.sp,
-                                            fontWeight = FontWeight.Medium,
-                                            modifier = Modifier.fillMaxWidth()
-                                        )
-                                    }
-                                }
-                                if (topPick.counterDetails.isNotBlank()) {
-                                    Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                                        Text(
-                                            text = com.example.util.tr("🛡️ " + tr("Ventaja / Counter:")),
-                                            color = HextechGold,
-                                            fontSize = 10.sp,
-                                            fontWeight = FontWeight.Bold
-                                        )
-                                        Text(
-                                            text = tr(DraftRecommendationText.clean(topPick.counterDetails)),
-                                            color = TextPrimary,
-                                            fontSize = 10.5.sp,
-                                            lineHeight = 14.sp,
-                                            fontWeight = FontWeight.Medium,
-                                            modifier = Modifier.fillMaxWidth()
-                                        )
-                                    }
-                                }
+                                com.example.ui.components.DraftAdviceSection("Sinergia / Combo:", topPick.synergyDetails,
+                                    HextechCyan, "draft_top_synergy")
+                                com.example.ui.components.DraftAdviceSection("Ventaja / Counter:", topPick.counterDetails,
+                                    HextechGold, "draft_top_counter")
                             }
                         }
 
@@ -1273,18 +1243,17 @@ fun DraftAnalysisTab(
                                         horizontalArrangement = Arrangement.SpaceBetween,
                                         verticalAlignment = Alignment.CenterVertically
                                     ) {
-                                        Text(com.example.util.tr(rec.champion.name), color = TextPrimary, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                                        Text(com.example.util.tr(rec.champion.name), color = TextPrimary, fontWeight = FontWeight.Bold,
+                                            fontSize = 14.sp, modifier = Modifier.weight(1f).padding(end = 8.dp))
                                         Text(com.example.util.tr(tr("Encaje:") + " ${rec.draftFitScore}/100"), color = HextechGold, fontSize = 11.5.sp, fontWeight = FontWeight.Bold)
                                     }
                                     Text(tr(rec.advantageBadge), color = HextechCyan, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                                     Spacer(modifier = Modifier.height(2.dp))
-                                    Text(tr(rec.tacticalReason), color = TextMuted, fontSize = 11.sp, lineHeight = 14.sp,
-                                        modifier = Modifier.fillMaxWidth())
                                 }
                                 Spacer(modifier = Modifier.width(6.dp))
                                 IconButton(
                                     onClick = { onPickRecommendation(rec.champion) },
-                                    modifier = Modifier.size(32.dp)
+                                    modifier = Modifier.size(48.dp).testTag("draft_pick_${rec.champion.id}")
                                 ) {
                                     Icon(
                                         Icons.Default.Check,
@@ -1295,29 +1264,14 @@ fun DraftAnalysisTab(
                                 }
                             }
 
-                            if (rec.synergyDetails.isNotBlank() || rec.counterDetails.isNotBlank()) {
-                                Spacer(modifier = Modifier.height(4.dp))
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                                ) {
-                                    if (rec.synergyDetails.isNotBlank()) {
-                                        Text(
-                                            text = com.example.util.tr("🤝 " + rec.synergyDetails),
-                                            color = HextechCyan,
-                                            fontSize = 10.sp,
-                                            modifier = Modifier.weight(1f)
-                                        )
-                                    }
-                                    if (rec.counterDetails.isNotBlank()) {
-                                        Text(
-                                            text = com.example.util.tr("🛡️ " + rec.counterDetails),
-                                            color = HextechGoldLight,
-                                            fontSize = 10.sp,
-                                            modifier = Modifier.weight(1f)
-                                        )
-                                    }
-                                }
+                            Spacer(Modifier.height(8.dp))
+                            Text(tr(DraftRecommendationText.clean(rec.tacticalReason)), color = TextSecondary,
+                                fontSize = 12.sp, lineHeight = 17.sp, modifier = Modifier.fillMaxWidth())
+                            Column(Modifier.fillMaxWidth().padding(top = 8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                com.example.ui.components.DraftAdviceSection("Sinergia / Combo:", rec.synergyDetails,
+                                    HextechCyan, "draft_synergy_${rec.champion.id}")
+                                com.example.ui.components.DraftAdviceSection("Ventaja / Counter:", rec.counterDetails,
+                                    HextechGoldLight, "draft_counter_${rec.champion.id}")
                             }
                         }
                     }

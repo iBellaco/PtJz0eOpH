@@ -18,6 +18,7 @@ export function classify(database, schedules, backups) {
     backupStatus: available(backups) ? (completed.length ? 'AVAILABLE' : 'NONE') : 'UNKNOWN',
     readyBackups: completed.length,
     lastReadyBackupAt: completed.map(entry => entry.snapshotTime || '').sort().at(-1) || null,
+    latestReadyBackupBytes: completed.slice().sort((a, b) => (b.snapshotTime || '').localeCompare(a.snapshotTime || ''))[0]?.sizeBytes || null,
     http: {database: database.status, schedules: schedules.status, backups: backups.status},
     scope: 'Document data only; identity, uploaded media and restoration are not verified by this inventory.',
   };
@@ -29,8 +30,21 @@ export async function inventory(project, request) {
     `${base}/databases/(default)`, `${base}/databases/(default)/backupSchedules`, `${base}/locations/-/backups`,
   ].map(async url => {
     try {
-      const response = await request(url);
-      return {status: response.status, body: response.ok ? await response.json() : {}};
+      const field = url.endsWith('/backups') ? 'backups' : url.endsWith('/backupSchedules') ? 'backupSchedules' : null;
+      let next = url;
+      const entries = [], tokens = new Set();
+      do {
+        const response = await request(next);
+        if (!response.ok) return {status: response.status, body: {}};
+        const body = await response.json();
+        if (!field) return {status: response.status, body};
+        entries.push(...(body[field] || []));
+        const token = body.nextPageToken;
+        if (!token) return {status: 200, body: {[field]: entries}};
+        if (tokens.has(token) || tokens.size >= 100) throw new Error('Incomplete recovery inventory');
+        tokens.add(token);
+        next = `${url}?pageToken=${encodeURIComponent(token)}`;
+      } while (next);
     } catch { return {status: 0, body: {}}; }
   }));
   return classify(...results);

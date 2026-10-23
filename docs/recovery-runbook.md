@@ -6,6 +6,9 @@ está en el resumen de Actions y en `recovery-inventory/backup-status.json`.
 UNKNOWN significa que faltan permisos o una consulta falló; no equivale a tener
 copias. NONE solo se informa si la consulta fue autorizada y respondió vacía.
 El inventario cubre documentos; no demuestra respaldo de identidades ni archivos.
+Recorre las páginas de copias y programación; un fallo posterior no se presenta
+como una lista completa. Si la API entrega el tamaño de la copia lista más reciente,
+lo conserva como `latestReadyBackupBytes` para preparar la cotización.
 
 ## Ensayo automatizado
 
@@ -15,6 +18,13 @@ SHA-256, elimina únicamente esa fixture, restaura y compara datos y tipos.
 Comprueba timestamps, enteros grandes, bytes, mapas, arrays, referencias y
 coordenadas. Rechaza cualquier destino que no sea el emulador loopback y el
 proyecto de pruebas. No demuestra la restauración de una copia productiva.
+
+El segundo ensayo (`recovery-media.integration.mjs`) copia a disco atributos de una
+cuenta ficticia, su correo verificado, permisos personalizados, enlaces y adjuntos.
+Elimina únicamente esa fixture, restaura y compara los bytes por SHA-256. Exige
+que los tres emuladores estén en loopback. El informe distingue expresamente los
+atributos de cuenta de las contraseñas: no exporta ni demuestra restauración de
+hashes de contraseña. Actions conserva `emulator-media-drill.json` con este alcance.
 
 ## Antes de una migración o una recuperación real
 
@@ -35,6 +45,19 @@ El inventario incluye la región cuando la API la permite. Antes de pedir aproba
 
 Sin tamaño, región y tarifa vigente comprobados no se publica una cifra inventada.
 `activationStatus=PENDING_COST_REVIEW` no equivale a protección ni ensayo completado.
+
+### Referencia de cálculo consultada el 23 de octubre de 2026
+
+La página pública de precios muestra para Iowa (`us-central1`), tarifa estándar
+en USD, almacenamiento de copias a 0.000041096 por GiB/hora y restauración a 0.20
+por GiB. Son referencias de esa región, no una cotización de la cuenta de Coach.
+Con 730 horas, una copia de 1 GiB retenida un mes equivale a aproximadamente 0.03 USD.
+Siete copias diarias de 1 GiB mantenidas de manera estable rondarían 0.21 USD/mes;
+un ensayo de restauración de 1 GiB añadiría 0.20 USD por la operación, más la base
+temporal, posibles lecturas/transferencias, adjuntos, impuestos y cualquier otra
+partida aplicable. El costo real depende de región, tamaño y retención confirmados.
+Fuente: https://cloud.google.com/firestore/pricing (tabla por ubicación y apartado de copias).
+No se autorizó ni activó facturación con este cálculo de referencia.
 
 1. Consultar el inventario reciente. Si es UNKNOWN, verificar los permisos de
    lectura; si es NONE, definir retención y almacenamiento antes de migrar.

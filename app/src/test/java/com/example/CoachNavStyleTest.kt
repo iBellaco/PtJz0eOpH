@@ -25,7 +25,6 @@ class CoachNavStyleTest {
         listOf(
             CoachNavStyle.GLASS_PILL,
             CoachNavStyle.TABS_V2,
-            CoachNavStyle.PREMIUM_MENU,
             CoachNavStyle.PURPLE_MESSAGES,
             CoachNavStyle.MENISCUS
         ).forEach { style ->
@@ -33,7 +32,8 @@ class CoachNavStyleTest {
         }
     }
 
-    @Test fun removedTheme13FallsBackToDefault() {
-        assertEquals(com.example.ui.theme.AppTheme.PILTOVER, com.example.ui.theme.AppTheme.fromId("ZAUN"))
+    @Test fun retiredNavigationStyleFallsBackWithoutRemovingRegionalThemes() {
+        assertEquals(CoachNavStyle.ORIGINAL, CoachNavStyle.fromId("premium_menu"))
+        assertEquals(com.example.ui.theme.AppTheme.ZAUN, com.example.ui.theme.AppTheme.fromId("ZAUN"))
     }
 }

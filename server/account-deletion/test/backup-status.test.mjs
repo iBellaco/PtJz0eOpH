@@ -21,3 +21,17 @@ test('inventory only issues read requests and reports transport failures', async
   const report=await inventory('test',async url=>{calls.push(url);throw new Error('offline');});
   assert.equal(calls.length,3); assert.equal(report.backupStatus,'UNKNOWN');
 });
+test('inventory follows pages and never treats a partial result as verified', async () => {
+  const ok = body => ({status:200,ok:true,json:async()=>body});
+  const read = async url => {
+    if (url.includes('pageToken=')) return ok({backups:[{state:'READY',database:'projects/test/databases/(default)',snapshotTime:'2026-10-23T00:00:00Z',sizeBytes:'2048'}]});
+    if (url.endsWith('/backups')) return ok({backups:[],nextPageToken:'second page'});
+    return ok({locationId:'test-region'});
+  };
+  const result = await inventory('test',read);
+  assert.equal(result.backupStatus,'AVAILABLE');
+  assert.equal(result.latestReadyBackupBytes,'2048');
+  const incomplete = await inventory('test',async url => url.includes('pageToken=') ? {status:403,ok:false} : read(url));
+  assert.equal(incomplete.backupStatus,'UNKNOWN');
+  assert.equal(incomplete.productionRestoreVerified,false);
+});

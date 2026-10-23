@@ -364,7 +364,9 @@ jobs:
       uses: actions/upload-artifact@v5
       with:
         name: security-auth-tests
-        path: app/build/test-results/testDebugUnitTest/TEST-*.xml
+        path: |
+          app/build/test-results/testDebugUnitTest/TEST-*.xml
+          app/build/reports/recovery/
         retention-days: 14
   scanner-tests:
     needs: [find-validated-apk, catalog-validation]
@@ -389,6 +391,8 @@ jobs:
       env:
         CI: 'true'
       run: ./gradlew :app:testDebugUnitTest --tests com.example.DraftMultiDeviceAuditTest --tests com.example.DraftReferenceFrameTest --tests com.example.DraftRingAlignmentTest --tests com.example.CaptureCoordinateSpaceTest --tests com.example.BannedPortraitScannerTest --max-workers=1 --stacktrace --no-daemon
+    - name: Distinguish simulated scanner results from physical device verification
+      run: python3 tools/scanner-audit-summary.py app/build/reports/scanner-multidevice
     - name: Retain measured scanner coordinates and visual evidence
       if: always()
       uses: actions/upload-artifact@v5
