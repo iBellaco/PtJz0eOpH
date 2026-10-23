@@ -156,6 +156,14 @@ class DraftMultiDeviceAuditTest {
                     val detected = DraftFrameGeometry.contentBounds(frame)
                     if (viewport != detected) failures += "${profile.id}: viewport $detected expected $viewport"
                     val config = DraftVisionScanner.configForFrame(frame)
+                    entry.put("calibration", JSONObject()
+                        .put("nameBandScale", config.nameBandScale)
+                        .put("allySlotXRatios", JSONArray(config.allySlotXRatios))
+                        .put("enemySlotXRatios", JSONArray(config.enemySlotXRatios))
+                        .put("allySlotYRatios", JSONArray(config.allySlotYRatios))
+                        .put("enemySlotYRatios", JSONArray(config.enemySlotYRatios))
+                        .put("allySlotDiameterRatios", JSONArray(config.allySlotDiameterRatios))
+                        .put("enemySlotDiameterRatios", JSONArray(config.enemySlotDiameterRatios)))
                     if (config != DraftVisionScanner.alignedConfigFlow.value) failures += "${profile.id}: viewer configuration differs from scanner"
                     val measured = DraftVisionScanner.calibrationReportSnapshot()
                     if (measured.width != w || measured.height != h || measured.config != config)

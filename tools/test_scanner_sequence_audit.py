@@ -17,7 +17,7 @@ reporter = module('scanner-sequence-summary')
 class SequenceAuditTest(unittest.TestCase):
     def fixture(self):
         profiles = [dict(profile=name, model=name, display=[2400, 1080], capture=[1920, 864],
-                         layout='uniform-fit-reference', specification=None, variant='original')
+                         layout='uniform-fit-reference', calibration={'nameBandScale': 1}, specification=None, variant='original')
                     for name in ['red-magic-reference', 'poco-x7-pro', 'redmi', 'xiaomi']]
         return dict(status='PASS', sourceSha256=planner.SOURCE_SHA256, profiles=profiles, resolutionProfiles=4)
 

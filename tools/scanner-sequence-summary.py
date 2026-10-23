@@ -31,7 +31,7 @@ def summarize(portraits, reports):
                 continue
             seen.add(key)
             before = len(failures)
-            if any(case.get(field) != planned[field] for field in ('capture', 'profiles', 'layout', 'prior', 'firstPick', 'language', 'shard')):
+            if any(case.get(field) != planned[field] for field in ('capture', 'profiles', 'layout', 'prior', 'calibration', 'firstPick', 'language', 'shard')):
                 failures.append('Geometría/secuencia distinta a la planificada: ' + key)
             steps = case.get('steps', [])
             if case.get('status') != 'PASS' or case.get('failures') or [step.get('step') for step in steps] != list(range(10)):
@@ -67,6 +67,8 @@ def write_report(directory, summary):
              'Se redimensionan los píxeles de la captura del propietario y se simula la aparición sucesiva de los títulos. '
              'Los nombres de campeones seleccionados no se vuelven a dibujar ni se inyectan como resultados OCR. '
              'Los títulos de líneas previos son sintéticos en español/portugués; los rivales sin seleccionar no tienen título. '
+             'La calibración automática se mide con el perfil de cada modelo en la matriz de geometría; '
+             'el APK instalado recibe ese resultado medido, sin fingir que el emulador es ese teléfono. '
              'Los retratos permanecen visibles antes de seleccionar, para impedir confirmaciones visuales prematuras.', '',
              'Cada secuencia prueba 0–9 nombres en orden, dos lecturas por nombre nuevo y décima imagen con nombre oculto. '
              'Ambos órdenes se distribuyen en la matriz; Red Magic y Poco ejercitan ambos. '

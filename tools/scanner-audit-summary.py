@@ -54,7 +54,7 @@ def summarize(directory):
             if any(not 0 <= error <= 6 for error in errors):
                 failures.append('Centro fuera de tolerancia: ' + name)
             row = {key: profile.get(key) for key in ['profile', 'case', 'variant', 'manufacturer',
-                   'model', 'specification', 'display', 'capture', 'viewport', 'layout', 'evidenceType', 'status']}
+                   'model', 'specification', 'display', 'capture', 'viewport', 'layout', 'calibration', 'evidenceType', 'status']}
             row.update(checks=len(checks), pickChecks=len(picks), banChecks=len(bans),
                        maxCenterErrorReferencePixels=max(errors, default=None),
                        minimumPortraitScore=min((check.get('score', 0) for check in picks), default=None))

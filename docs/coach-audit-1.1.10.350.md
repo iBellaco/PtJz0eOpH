@@ -36,6 +36,8 @@ inventar detalle ni sustituir la lectura: cada tamaño debe pasar el OCR real.
 La prueba se ejecuta en el APK release instalado, Android 34 x86_64 emulado,
 con OCR real y sin aceptar sustituciones del reconocimiento. Se guarda por etapa
 lo esperado y lo leído, geometría, modelo asociado, idioma y décimo resultado.
+La matriz geométrica mide la calibración automática con cada perfil; el APK
+instalado recibe esa calibración medida, no suplanta el fabricante del emulador.
 Cuatro particiones conservan todos los fallos antes de generar una auditoría
 única; una resolución o etapa ausente impide aprobarla y publicar la entrega.
 

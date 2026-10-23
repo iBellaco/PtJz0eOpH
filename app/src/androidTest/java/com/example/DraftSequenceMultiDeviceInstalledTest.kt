@@ -57,12 +57,21 @@ class DraftSequenceMultiDeviceInstalledTest {
                     val positions = if (order) listOf(0, 5, 6, 1, 2, 7, 8, 3, 4, 9)
                         else listOf(5, 0, 1, 6, 7, 2, 3, 8, 9, 4)
                     scanner.resetSlotMemory()
-                    var config = VisionCalibrationConfig()
-                    if (case.getString("prior") == "poco") config = config.copy(
-                        allyAvatarCenterX = .12f, enemyAvatarCenterX = .911f,
-                        allySlotXRatios = List(5) { .12f }, enemySlotXRatios = List(5) { .911f },
-                        allySlotYRatios = listOf(.184f, .320f, .454f, .592f, .728f),
-                        enemySlotYRatios = listOf(.179f, .315f, .449f, .587f, .723f))
+                    context.getSharedPreferences("vision_calibration_prefs", 0).edit().clear().commit()
+                    scanner.initCalibration(context)
+                    // Model-specific auto-alignment was measured independently by the production
+                    // geometry matrix. An emulator's Build.MODEL cannot impersonate a physical POCO.
+                    val measured = case.getJSONObject("calibration")
+                    fun floats(key: String): List<Float> = measured.getJSONArray(key).let { values ->
+                        List(values.length()) { values.getDouble(it).toFloat() }
+                    }
+                    val allyXs = floats("allySlotXRatios")
+                    val enemyXs = floats("enemySlotXRatios")
+                    val config = VisionCalibrationConfig(nameBandScale = measured.getDouble("nameBandScale").toFloat(),
+                        allyAvatarCenterX = allyXs[0], enemyAvatarCenterX = enemyXs[0],
+                        allySlotXRatios = allyXs, enemySlotXRatios = enemyXs,
+                        allySlotYRatios = floats("allySlotYRatios"), enemySlotYRatios = floats("enemySlotYRatios"),
+                        allySlotDiameterRatios = floats("allySlotDiameterRatios"), enemySlotDiameterRatios = floats("enemySlotDiameterRatios"))
                     scanner.updateCalibration(context, config)
                     for (step in 0..9) {
                         val visible = positions.take(step).toSet()

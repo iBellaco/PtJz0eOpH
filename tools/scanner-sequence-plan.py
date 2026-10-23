@@ -17,9 +17,12 @@ def make_plan(summary):
         # Equal resolutions with different model labels do not become different physical tests.
         # Keep both known priors and every distinct distribution/capture geometry.
         prior = 'poco' if row['profile'] == 'poco-x7-pro' else 'default'
-        key = (*row['capture'], row['layout'], prior)
+        calibration = row.get('calibration')
+        if not calibration:
+            raise ValueError('Falta la calibración medida de ' + row['profile'])
+        key = (*row['capture'], row['layout'], prior, json.dumps(calibration, sort_keys=True))
         case = grouped.setdefault(key, dict(capture=row['capture'], layout=row['layout'],
-                                           prior=prior, profiles=[]))
+                                           prior=prior, calibration=calibration, profiles=[]))
         case['profiles'].append({key: row[key] for key in ('profile', 'model', 'display', 'specification')})
     cases = []
     for index, case in enumerate(grouped.values()):
