@@ -67,8 +67,13 @@ def summarize(directory):
     if (not s26 or len(s26.get('measurements', [])) != 3
             or any(item.get('status') != 'PASS' for item in s26.get('measurements', []))):
         failures.append('Falta alineación de la captura S26 en tres resoluciones')
+    geometry_file = directory / 'geometry-transformations.json'
+    geometry = json.loads(geometry_file.read_text()) if geometry_file.is_file() else None
+    if not geometry or geometry.get('status') != 'PASS' or geometry.get('cases') != 5133:
+        failures.append('Falta evidencia de las 5133 transformaciones geométricas')
     return {'status': 'FAIL' if failures else 'PASS', 'profiles': profiles,
             'simulatedCases': len(profiles), 'resolutionProfiles': len({row['profile'] for row in profiles}),
+            'uniqueDisplaySizes': len({tuple(row['display']) for row in profiles}), 'geometryOnly': geometry,
             'identityChecks': sum(row['checks'] for row in profiles), 'sourceSha256': SOURCE_SHA256,
             's26Screenshot': s26,
             'physicalDevicesTested': [], 'physicalCertification': 'PENDING', 'failures': failures}
@@ -86,13 +91,16 @@ def write_reports(directory, summary):
         return ' × '.join(str(value) for value in values or [])
     lines = ['# Auditoría del escáner de Coach', '',
              f"Resultado: {summary['status']}. {summary['resolutionProfiles']} perfiles, "
-             f"{summary['simulatedCases']} casos y {summary['identityChecks']} comprobaciones de identidad.", '',
+             f"{summary['uniqueDisplaySizes']} medidas únicas, {summary['simulatedCases']} casos "
+             f"y {summary['identityChecks']} comprobaciones de identidad.", '',
              'Cada perfil verifica original, centro modificado y retratos/baneos reordenados. '
              'Se ejercitan dos frames de confirmación por slot y dos escaneos por baneo. '
              'No mide latencia real ni certifica teléfonos físicos, densidades, versiones de Android o todas las skins.', '',
              'Red Magic y Poco tienen confirmación previa del propietario, no una prueba física nueva. '
              'Los S26 son escenarios de resolución: no se afirma que esas sean sus pantallas oficiales. '
              'Los perfiles genéricos no se atribuyen a un modelo inventado.', '',
+             'Adicionalmente se verifican 5133 transformaciones geométricas: anchos 640–3840 '
+             'en pasos de 37 y altos 360–2160 en pasos de 31. No son 5133 imágenes reconocidas.', '',
              '| Perfil / modelo | Pantalla horizontal | Captura procesada | Variantes | Máximo error (px de referencia) | Resultado |',
              '| --- | --- | --- | --- | --- | --- |']
     for name in dict.fromkeys(row['profile'] for row in summary['profiles']):

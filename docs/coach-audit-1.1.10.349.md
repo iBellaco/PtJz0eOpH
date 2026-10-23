@@ -34,6 +34,7 @@ esas transformaciones no se cuentan como reconocimientos de imágenes.
 ## Archivos
 
 - `DraftMultiDeviceAuditTest.kt`: perfiles, variaciones y confirmación productiva.
+- `DraftReferenceFrameTest.kt`: evidencia de las transformaciones geométricas.
 - `tools/scanner-audit-summary.py`: comprobación estricta e informes Markdown/CSV/JSON.
 - `tools/test_scanner_audit_summary.py`: pruebas positivas y negativas del informe.
 - Workflow de validación y versión de la aplicación.

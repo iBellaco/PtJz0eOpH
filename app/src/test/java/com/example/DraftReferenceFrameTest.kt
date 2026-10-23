@@ -158,6 +158,7 @@ class DraftReferenceFrameTest {
     @Test fun viewportAndMaskMappingRemainConsistentAcrossDenseSizeMatrix() {
         // Geometry only: not a claim of recognition or physical device testing at these sizes.
         val base = VisionCalibrationConfig()
+        var checked = 0
         for (width in 640..3840 step 37) for (height in 360..2160 step 31) {
             val scale = minOf(width / 1280.0, height / 579.0)
             val w = (1280 * scale).toInt(); val h = (579 * scale).toInt()
@@ -170,7 +171,14 @@ class DraftReferenceFrameTest {
             val mask = CaptureCoordinateSpace.map(Rect(0,0,1280,579),1280,579,width,height)
             assertTrue(mask.left >= 0 && mask.top >= 0 && mask.right <= width && mask.bottom <= height)
             assertTrue(kotlin.math.abs(mask.left-bounds.left) <= 1 && kotlin.math.abs(mask.top-bounds.top) <= 1)
+            checked++
         }
+        val report = java.io.File("build/reports/scanner-multidevice/geometry-transformations.json")
+        report.parentFile.mkdirs()
+        report.writeText(org.json.JSONObject().put("status", "PASS").put("cases", checked)
+            .put("evidenceType", "geometry-only-not-image-recognition")
+            .put("widthRange", org.json.JSONArray(listOf(640, 3840, 37)))
+            .put("heightRange", org.json.JSONArray(listOf(360, 2160, 31))).toString(2))
     }
 
     @Test fun manualHeaderGeometryIsNotReplacedAndOrientationProfilesAreDistinct() {

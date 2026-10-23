@@ -26,6 +26,7 @@ class ScannerAuditSummaryTest(unittest.TestCase):
                 sourceSha256=module.SOURCE_SHA256, profiles=profiles, failures=[])))
         (directory / 's26-screenshot-alignment.json').write_text(json.dumps(dict(
             measurements=[dict(status='PASS') for _ in range(3)])))
+        (directory / 'geometry-transformations.json').write_text(json.dumps(dict(status='PASS', cases=5133)))
 
     def test_complete_report_is_explicitly_simulated_and_exports_all_rows(self):
         with tempfile.TemporaryDirectory() as temporary:
@@ -36,13 +37,14 @@ class ScannerAuditSummaryTest(unittest.TestCase):
             self.assertEqual(54, summary['resolutionProfiles'])
             self.assertEqual(162, summary['simulatedCases'])
             self.assertEqual(3240, summary['identityChecks'])
+            self.assertEqual(1, summary['uniqueDisplaySizes'])
             self.assertEqual([], summary['physicalDevicesTested'])
             module.write_reports(directory, summary)
             self.assertEqual(163, len((directory / 'audit-measurements.csv').read_text().splitlines()))
             self.assertIn('no significa error geométrico cero', (directory / 'audit-report.md').read_text())
 
     def test_missing_variants_wrong_identity_and_duplicate_positions_cannot_pass(self):
-        for mutation in ['variant', 'identity', 'duplicates', 'confirmation', 'center', 'source', 's26']:
+        for mutation in ['variant', 'identity', 'duplicates', 'confirmation', 'center', 'source', 's26', 'geometry']:
             with self.subTest(mutation=mutation), tempfile.TemporaryDirectory() as temporary:
                 directory = Path(temporary)
                 self.fixtures(directory)
@@ -61,9 +63,11 @@ class ScannerAuditSummaryTest(unittest.TestCase):
                     first['checks'][0]['centerErrorReferencePixels'] = 7
                 elif mutation == 'source':
                     data['sourceSha256'] = 'wrong'
-                else:
+                elif mutation == 's26':
                     (directory / 's26-screenshot-alignment.json').write_text(json.dumps(dict(
                         measurements=[dict(status='FAIL') for _ in range(3)])))
+                else:
+                    (directory / 'geometry-transformations.json').unlink()
                 path.write_text(json.dumps(data))
                 summary = module.summarize(directory)
                 self.assertEqual('FAIL', summary['status'])
