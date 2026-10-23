@@ -140,7 +140,7 @@ jobs:
       uses: actions/download-artifact@v4
       with:
         name: scanner-multidevice-audit
-        path: app/build/reports/scanner-multidevice/
+        path: app/build/
     - name: Prepare the complete native OCR sequence plan
       run: python3 tools/scanner-sequence-plan.py app/build/reports/scanner-multidevice/audit-summary.json app/build/generated/scanner-sequence-assets/scanner-sequence-plan.json
     - name: Build obfuscated release APK
@@ -521,7 +521,7 @@ jobs:
       uses: actions/download-artifact@v4
       with:
         name: scanner-multidevice-audit
-        path: app/build/reports/scanner-multidevice/
+        path: app/build/
     - name: Reconstruct the exact native OCR plan
       run: python3 tools/scanner-sequence-plan.py app/build/reports/scanner-multidevice/audit-summary.json app/build/generated/scanner-sequence-assets/scanner-sequence-plan.json
     - name: Enable Android virtual device acceleration
@@ -565,7 +565,7 @@ jobs:
       uses: actions/download-artifact@v4
       with:
         name: scanner-multidevice-audit
-        path: app/build/reports/scanner-multidevice/
+        path: app/build/
     - name: Require every planned resolution and every OCR step
       env:
         COACH_NATIVE_SEQUENCE_RESULT: ${{ needs.native-name-sequence.result }}
