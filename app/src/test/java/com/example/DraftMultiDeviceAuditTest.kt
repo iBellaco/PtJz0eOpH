@@ -28,7 +28,8 @@ import kotlin.math.hypot
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class DraftMultiDeviceAuditTest {
     private data class Profile(val id: String, val manufacturer: String, val model: String, val width: Int, val height: Int,
-        val edgeAnchored: Boolean = false)
+        val edgeAnchored: Boolean = false, val specification: String? = null)
+    private val variants = listOf("original", "changed-background", "changed-portraits-and-bans")
     private val profiles = listOf(
         Profile("red-magic-reference", "nubia", "NX789J", 2688, 1216),
         Profile("poco-x7-pro", "Xiaomi", "2412DPC0AG", 2712, 1220),
@@ -55,6 +56,20 @@ class DraftMultiDeviceAuditTest {
     @Test fun referenceDevicesAndS26CaptureScenarios() = audit(profiles.take(6), "device-profiles")
     @Test fun phoneResolutionMatrix() = audit(profiles.drop(6).take(20), "phone-resolutions")
     @Test fun tabletResolutionMatrix() = audit(profiles.takeLast(4), "tablet-resolutions")
+    @Test fun documentedAndroidDisplayProfiles() = audit(listOf(
+        Profile("pixel-8", "Google", "Pixel 8", 2400, 1080, specification = PIXEL_SPECS),
+        Profile("pixel-8-pro", "Google", "Pixel 8 Pro", 2992, 1344, specification = PIXEL_SPECS),
+        Profile("pixel-9", "Google", "Pixel 9", 2424, 1080, specification = PIXEL_SPECS),
+        Profile("pixel-9-pro", "Google", "Pixel 9 Pro", 2856, 1280, specification = PIXEL_SPECS),
+        Profile("pixel-9-pro-xl", "Google", "Pixel 9 Pro XL", 2992, 1344, specification = PIXEL_SPECS),
+        Profile("oneplus-12", "OnePlus", "OnePlus 12", 3168, 1440,
+            specification = "https://www.oneplus.com/global/12/specs"),
+        Profile("galaxy-s24", "samsung", "Galaxy S24", 2340, 1080, specification = S24_SPECS),
+        Profile("galaxy-s24-plus", "samsung", "Galaxy S24+", 3120, 1440, specification = S24_SPECS),
+        Profile("galaxy-s24-ultra", "samsung", "Galaxy S24 Ultra", 3120, 1440, specification = S24_SPECS),
+        Profile("galaxy-z-fold5-inner", "samsung", "Galaxy Z Fold5 (inner)", 2176, 1812,
+            specification = "https://news.samsung.com/global/samsung-galaxy-z-flip5-and-galaxy-z-fold5-delivering-flexibility-and-versatility-without-compromise")
+    ), "documented-android-displays")
     @Test fun nearlySquareFoldableCapturesKeepAllTwentyPositions() = audit(
         listOf(1920 to 1792, 2208 to 1840, 2440 to 2268, 1800 to 1800).map { (w, h) ->
             Profile("foldable-$w-$h", "generic", "foldable-resolution-simulation", w, h)
@@ -77,7 +92,9 @@ class DraftMultiDeviceAuditTest {
         try {
             DraftVisionScanner.overlayRect = null
             DraftVisionScanner.showCalibrationBoxes.value = false
-            for (profile in cases) {
+            for (profile in cases) for (variant in variants.indices) {
+                val caseId = "${profile.id}-${variants[variant]}"
+                val variantSource = referenceVariant(source, variant)
                 prefs.edit().clear().commit()
                 ShadowBuild.setManufacturer(profile.manufacturer)
                 ShadowBuild.setModel(profile.model)
@@ -94,11 +111,15 @@ class DraftMultiDeviceAuditTest {
                     if (x < source.width / 2f) x * scale else w - (source.width - x) * scale
                 } else viewport.left + x * viewport.width() / source.width
                 fun targetY(y: Float): Float = viewport.top + y * viewport.height() / source.height
-                val entry = JSONObject().put("profile", profile.id).put("model", profile.model)
+                val entry = JSONObject().put("profile", profile.id).put("case", caseId)
+                    .put("variant", variants[variant]).put("model", profile.model)
+                    .put("manufacturer", profile.manufacturer)
+                    .put("specification", profile.specification ?: JSONObject.NULL)
                     .put("evidenceType", "resized-reference-not-physical-device")
                     .put("layout", if (profile.edgeAnchored) "synthetic-edge-anchored-side-panels" else "uniform-fit-reference")
                     .put("display", JSONArray(listOf(profile.width, profile.height)))
                     .put("capture", JSONArray(listOf(w, h)))
+                    .put("viewport", JSONArray(listOf(viewport.left, viewport.top, viewport.right, viewport.bottom)))
                 val checks = JSONArray()
                 val before = failures.size
                 try {
@@ -106,11 +127,11 @@ class DraftMultiDeviceAuditTest {
                         val paint = Paint(Paint.FILTER_BITMAP_FLAG)
                         if (profile.edgeAnchored) {
                             drawColor(Color.rgb(10, 15, 30))
-                            drawBitmap(source, Rect(0, 0, 280, source.height), Rect(0, 0, (280*scale).toInt(), h), paint)
-                            drawBitmap(source, Rect(1040, 0, source.width, source.height), Rect(w-(240*scale).toInt(), 0, w, h), paint)
+                            drawBitmap(variantSource, Rect(0, 0, 280, source.height), Rect(0, 0, (280*scale).toInt(), h), paint)
+                            drawBitmap(variantSource, Rect(1040, 0, source.width, source.height), Rect(w-(240*scale).toInt(), 0, w, h), paint)
                         } else {
                             drawColor(Color.BLACK)
-                            drawBitmap(source, null, viewport, paint)
+                            drawBitmap(variantSource, null, viewport, paint)
                         }
                     }
                     val detected = DraftFrameGeometry.contentBounds(frame)
@@ -132,21 +153,30 @@ class DraftMultiDeviceAuditTest {
                             val ranked = LiteRTVisionClassifier.rankSlotPortrait(crop, ally, context)
                             val identity = ranked.firstOrNull()?.first?.id
                             val accepted = ranked.size >= 2 && PortraitMatcher.accepts(ranked[0].second, ranked[1].second, .80f)
-                            if (identity != picks[index] || !accepted) failures += "${profile.id}: slot $index expected ${picks[index]} got ${ranked.take(2).map { it.first.id to it.second }}"
+                            val expected = picks[permutedIndex(index, variant)]
+                            var confirmed: String? = null
+                            kotlinx.coroutines.runBlocking {
+                                LiteRTVisionClassifier.reset()
+                                LiteRTVisionClassifier.setThreshold(.80f, context)
+                                repeat(2) { confirmed = LiteRTVisionClassifier.executeTenthPickInference(
+                                    crop, ally, emptySet(), 9, slot, context)?.first?.id }
+                            }
+                            if (identity != expected || !accepted || confirmed != expected)
+                                failures += "$caseId: slot $index expected $expected got ${ranked.take(2).map { it.first.id to it.second }}, confirmed=$confirmed"
                             if (referenceError > 6f) failures += "${profile.id}: slot $index center error $referenceError reference pixels"
                             if (crop.width != rect.width() || crop.height != rect.height()) failures += "${profile.id}: crop and viewer size mismatch $index"
-                            checks.put(JSONObject().put("slot", index).put("expected", picks[index]).put("recognized", identity)
+                            checks.put(JSONObject().put("slot", index).put("expected", expected).put("recognized", identity)
+                                .put("confirmed", confirmed).put("stableFramesExercised", 2)
+                                .put("score", ranked.first().second).put("runnerUpScore", ranked[1].second)
                                 .put("accepted", accepted).put("centerErrorReferencePixels", referenceError)
                                 .put("crop", JSONArray(listOf(rect.left, rect.top, rect.right, rect.bottom))))
                         } finally { crop.recycle() }
                     }
-                    val observations = LiteRTVisionClassifier.findHeaderBanObservations(frame, context, emptyList(), config)
-                        .sortedWith(compareBy({ it.side.ordinal }, { it.region.x }))
-                    if (observations.map { it.championId } != bans) failures += "${profile.id}: bans ${observations.map { it.championId }}"
                     val tracker = BannedPortraitScanner()
-                    repeat(2) { tracker.updateFrame(observations, frame) }
-                    if (tracker.slots.map { it.championId } != bans || tracker.slots.any { it.state != BanState.CONFIRMED })
-                        failures += "${profile.id}: ban tracker/viewer did not confirm all ten positions"
+                    repeat(2) { tracker.scan(frame, context, it * 1500L, config = config) }
+                    val expectedBans = bans.indices.map { bans[permutedIndex(it, variant)] }
+                    if (tracker.slots.map { it.championId } != expectedBans || tracker.slots.any { it.state != BanState.CONFIRMED })
+                        failures += "$caseId: bans expected $expectedBans got ${tracker.slots.map { it.championId }}"
                     tracker.slots.forEachIndexed { index, slot ->
                         val region = slot.region
                         if (region != null) {
@@ -154,13 +184,15 @@ class DraftMultiDeviceAuditTest {
                             val expectedY = targetY(30f)
                             val error = hypot(region.x*w-expectedX, region.y*h-expectedY) * source.height / viewport.height()
                             if (error > 6f) failures += "${profile.id}: ban $index center error $error reference pixels"
-                            checks.put(JSONObject().put("ban", index).put("expected", bans[index]).put("recognized", slot.championId)
+                            checks.put(JSONObject().put("ban", index).put("expected", expectedBans[index]).put("recognized", slot.championId)
+                                .put("state", slot.state.name).put("scanFramesExercised", 2)
                                 .put("centerErrorReferencePixels", error))
                         }
                     }
-                    saveEvidence(frame, config, tracker.slots, profile.id)
+                    saveEvidence(frame, config, tracker.slots, caseId)
                 } finally {
                     frame.recycle()
+                    if (variantSource !== source) variantSource.recycle()
                     entry.put("checks", checks).put("status", if (failures.size == before) "PASS" else "FAIL")
                     results.put(entry)
                     File(output, "$group.json").writeText(JSONObject().put("source", "draft-ten-selected.jpg")
@@ -177,6 +209,37 @@ class DraftMultiDeviceAuditTest {
             DraftVisionScanner.initCalibration(context)
         }
         assertTrue(failures.joinToString("\n"), failures.isEmpty())
+    }
+
+    private fun permutedIndex(index: Int, variant: Int): Int = if (variant != 2) index
+        else index / 5 * 5 + (index % 5 + if (index < 5) 1 else 2) % 5
+
+    /** Synthetic content variation, not a claim of testing every champion skin. Positions never move. */
+    private fun referenceVariant(source: Bitmap, variant: Int): Bitmap {
+        if (variant == 0) return source
+        return source.copy(Bitmap.Config.ARGB_8888, true).also { changed ->
+            val canvas = Canvas(changed)
+            canvas.drawRect(290f, 75f, 1030f, 470f, Paint().apply {
+                color = if (variant == 1) Color.MAGENTA else Color.CYAN
+            })
+            if (variant == 2) {
+                val paint = Paint(Paint.FILTER_BITMAP_FLAG)
+                for (index in picks.indices) {
+                    fun pickRect(i: Int): Rect {
+                        val (x, y) = pickCenters[i]
+                        return Rect(x.toInt()-34, y.toInt()-34, x.toInt()+34, y.toInt()+34)
+                    }
+                    canvas.drawBitmap(source, pickRect(permutedIndex(index, variant)), pickRect(index), paint)
+                    fun banRect(i: Int) = Rect(banCenters[i].toInt()-22, 8, banCenters[i].toInt()+22, 52)
+                    canvas.drawBitmap(source, banRect(permutedIndex(index, variant)), banRect(index), paint)
+                }
+            }
+        }
+    }
+
+    companion object {
+        private const val PIXEL_SPECS = "https://support.google.com/pixelphone/answer/7158570?hl=es"
+        private const val S24_SPECS = "https://news.samsung.com/global/enter-the-new-era-of-mobile-ai-with-samsung-galaxy-s24-series"
     }
 
     private fun saveEvidence(frame: Bitmap, config: VisionCalibrationConfig, bans: List<BanSlot>, id: String) {

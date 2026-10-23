@@ -47,6 +47,7 @@ jobs:
         python3 -m unittest discover -s .github/scripts -p test_patch_content.py
         python3 -m unittest discover -s tools -p test_draft_audit_retry.py
         python3 -m unittest discover -s tools -p test_scanner_device_report.py
+        python3 -m unittest discover -s tools -p test_scanner_audit_summary.py
         python3 -m unittest discover -s tools -p test_junit_failure_report.py
         python3 tools/generate-component-items.py --check
         python3 tools/import-component-icons.py --check
