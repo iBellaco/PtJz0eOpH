@@ -1,6 +1,7 @@
 package com.example
 
 import android.app.Application
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Rect
 import com.example.service.screen.DraftRingAlignment
