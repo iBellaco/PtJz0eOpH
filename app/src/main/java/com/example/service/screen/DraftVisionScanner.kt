@@ -660,7 +660,7 @@ object DraftVisionScanner {
                                 it.champion==null && it.lane==null && !it.ambiguous
                             }
                     } else selected
-                    val reading = AllyDraftNameReader.readTitleRows(titleLines.map {
+                    val reading = AllyDraftNameReader.readTitleRows(titleLines.sortedBy { it.boundingBox!!.left }.map {
                         it.text to (it.boundingBox!!.centerY()-tile.region.top)
                     },(tile.region.height()*.30f).toInt(),allChamps,tile.titleMaxY)
                     val readings = if(tile.ally) targetedAllyReadings else targetedEnemyReadings

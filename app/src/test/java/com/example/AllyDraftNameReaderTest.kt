@@ -35,6 +35,14 @@ class AllyDraftNameReaderTest {
         Champion(id = it, name = if (it == "lee_sin") "Lee Sin" else it)
     }
 
+    @Test fun completeTitleFragmentsJoinOnlyInsideTheSameTopRow() {
+        assertEquals("vi",AllyDraftNameReader.readTitleRows(listOf("V" to 0,"I" to 1),10,catalog).champion?.id)
+        assertEquals("lee_sin",AllyDraftNameReader.readTitleRows(listOf("LEE" to 0,"SIN" to 1),10,catalog).champion?.id)
+        assertNull(AllyDraftNameReader.readTitleRows(listOf("V" to 0,"I" to 25),10,catalog).champion)
+        assertNull(AllyDraftNameReader.readTitleRows(listOf("V" to 0,"XCS" to 0,"I" to 0),10,catalog).champion)
+        assertTrue(AllyDraftNameReader.readTitleRows(listOf("JINX" to 0,"YUUMI" to 1),10,catalog).ambiguous)
+    }
+
     @Test fun laneTitlesBecomeNamesInTheSameBandInBothLanguages() {
         val labels = listOf("JUNGLA" to LaneRole.JUNGLE, "CALLE DEL DRAGÓN" to LaneRole.ADC,
             "CALLE CENTRAL" to LaneRole.MID, "CALLE DEL BARÓN" to LaneRole.TOP, "APOYO" to LaneRole.SUPPORT,

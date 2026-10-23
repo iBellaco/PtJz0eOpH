@@ -102,4 +102,6 @@ ahora incluye el dorado mezclado, con una regresión de los píxeles reales a
 contraste local binario para separar los trazos del fondo cambiante; no dibuja
 letras ni utiliza retratos para los primeros nueve. Se guarda también el atlas
 y la respuesta de esta relectura cuando falla una prueba nativa.
+Se unen fragmentos completos del mismo renglón, ordenados de izquierda a derecha
+(por ejemplo V + I), sin incluir el apodo inferior ni resolver títulos ambiguos.
 Pendiente: verificar esta nueva corrección en el APK instalado y toda la matriz.

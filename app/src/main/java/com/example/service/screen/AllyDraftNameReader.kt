@@ -25,6 +25,10 @@ object AllyDraftNameReader {
         val title = titleLines.filter { it.second <= top + rowDistance }.map { it.first }
         val reading = read(title, catalog)
         if (reading.ambiguous || reading.lane != null || reading.champion != null) return reading
+        // Native OCR can split the complete title into neighbouring fragments
+        // (V + I, LEE + SIN). Join only this same top row, never the player's row.
+        val joined=read(listOf(title.joinToString(" ")),catalog)
+        if(joined.ambiguous || joined.lane!=null || joined.champion!=null) return joined
         // A long lane title may wrap. A player's second-line name cannot become
         // the selected champion when the first line was unreadable.
         if (title.any { Regex("\\b(calle|carril|linea|rota|lane)\\b").containsMatchIn(DraftValidationLayer.normalize(it)) }) {
