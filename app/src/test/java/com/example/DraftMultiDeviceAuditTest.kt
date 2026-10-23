@@ -223,6 +223,9 @@ class DraftMultiDeviceAuditTest {
                 color = if (variant == 1) Color.MAGENTA else Color.CYAN
             })
             if (variant == 2) {
+                // Replace the entire scene, not just the middle champion. Restore only
+                // the twenty measured portrait regions, independently of names or artwork.
+                canvas.drawColor(Color.rgb(30, 35, 45))
                 val paint = Paint(Paint.FILTER_BITMAP_FLAG)
                 for (index in picks.indices) {
                     fun pickRect(i: Int): Rect {

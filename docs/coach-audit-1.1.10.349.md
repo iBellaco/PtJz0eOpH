@@ -14,6 +14,8 @@ No cambia las coordenadas productivas confirmadas de Red Magic ni Poco.
   laterales anclados y 10 asociados a modelos Android con fuentes documentadas.
 - Cada perfil ejecuta original, centro cambiado y retratos/baneos reordenados:
   162 casos y 3240 comprobaciones de identidad si todos se completan.
+  La tercera variante reemplaza toda la escena y conserva únicamente los veinte
+  recuadros de retratos, por lo que no depende del fondo, nombres ni arte central.
 - Cada retrato debe superar el clasificador productivo y confirmarse mediante
   dos frames; cada baneo pasa por dos llamadas al escáner productivo. Se verifica
   que la configuración publicada al visor coincide con la del recorte.
