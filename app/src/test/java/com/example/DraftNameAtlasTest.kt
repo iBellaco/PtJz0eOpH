@@ -144,12 +144,36 @@ class DraftNameAtlasTest {
             val atlas = DraftNameAtlas.create(source, config, emptyList())
             try {
                 assertEquals(20, atlas.tiles.size)
+                assertTrue("Avoid a wide atlas that shrinks short words inside native OCR",
+                    maxOf(atlas.bitmap.width,atlas.bitmap.height)<3000)
                 for (tile in atlas.tiles) {
                     assertEquals(AdaptiveScreenLayoutEngine.calculateSlotNameRect(640, 290, tile.ally, tile.slot, config), tile.source)
                     assertTrue("Small titles need more than a fixed 2x copy", tile.region.height() >= tile.source.height()*4)
                 }
             } finally { atlas.bitmap.recycle() }
         } finally { source.recycle() }
+    }
+    @Test fun retryAtlasStaysCompactForEveryNumberOfUnresolvedTitles() {
+        val source=Bitmap.createBitmap(1280,579,Bitmap.Config.ARGB_8888)
+        val atlas=DraftNameAtlas.create(source,VisionCalibrationConfig(),emptyList())
+        try {
+            val originals=atlas.tiles.filter { it.original }
+            for(count in 1..10) {
+                val selected=originals.take(count)
+                val retry=DraftNameAtlas.retryUnresolved(atlas,selected)
+                try {
+                    assertEquals(count*3,retry.tiles.size)
+                    val width=selected.maxOf { it.region.width() }+64
+                    val height=selected.maxOf { it.region.height() }+64
+                    val minimum=(1..minOf(4,count*3)).minOf { cols ->
+                        maxOf(cols*width,((count*3+cols-1)/cols)*height)
+                    }
+                    assertEquals(minimum,maxOf(retry.bitmap.width,retry.bitmap.height))
+                    assertTrue(retry.tiles.all { it.region.left>=0 && it.region.top>=0 &&
+                        it.region.right<=retry.bitmap.width && it.region.bottom<=retry.bitmap.height })
+                } finally { retry.bitmap.recycle() }
+            }
+        } finally { atlas.bitmap.recycle();source.recycle() }
     }
     @Test fun goldTitleSurvivesBadgeSuppressionOnBothMeasuredPhoneProfiles() {
         for (config in listOf(VisionCalibrationConfig(),

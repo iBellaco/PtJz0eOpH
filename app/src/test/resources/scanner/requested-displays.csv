@@ -46,3 +46,43 @@ requested-ulefone-x10,Ulefone,Armor X10,1440,720,https://store.ulefone.com/pages
 requested-cubot-kingkong9,CUBOT,KingKong 9,2408,1080,https://cubot.net/phones/rugged-phone/kingkong9-specs/94?l=en-us
 requested-unihertz-jellystar,Unihertz,Jelly Star,854,480,https://www.unihertz.com/products/jelly-star
 requested-umidigi-bisonx10s,UMIDIGI,BISON X10S NFC,1600,720,https://umidigi.com/page-umidigi_bison_x10s_x10g_nfc_specification.html
+requested-samsung-s26-official,samsung,Galaxy S26,2340,1080,https://developer.samsung.com/galaxy-emulator-skin/galaxy-s.html
+requested-samsung-s26fe-official,samsung,Galaxy S26 FE,2340,1080,https://developer.samsung.com/galaxy-emulator-skin/galaxy-s.html
+requested-samsung-s26plus-official,samsung,Galaxy S26+,3120,1440,https://developer.samsung.com/galaxy-emulator-skin/galaxy-s.html
+requested-samsung-s26ultra-official,samsung,Galaxy S26 Ultra,3120,1440,https://developer.samsung.com/galaxy-emulator-skin/galaxy-s.html
+requested-samsung-a10-br,samsung,Galaxy A10,1520,720,https://news.samsung.com/br/samsung-anuncia-novos-galaxy-a
+requested-samsung-a20-br,samsung,Galaxy A20,1560,720,https://news.samsung.com/br/samsung-anuncia-novos-galaxy-a
+requested-samsung-a30-br,samsung,Galaxy A30,2340,1080,https://news.samsung.com/br/samsung-anuncia-novos-galaxy-a
+requested-samsung-a50-br,samsung,Galaxy A50,2340,1080,https://news.samsung.com/br/samsung-anuncia-novos-galaxy-a
+requested-samsung-a70-br,samsung,Galaxy A70,2400,1080,https://news.samsung.com/br/samsung-anuncia-novos-galaxy-a
+requested-mi8-uk,Xiaomi,Mi 8,2248,1080,https://www.mi.com/uk/mi8/specs/
+requested-mi8-explorer,Xiaomi,Mi 8 Explorer Edition,2248,1080,https://www.mi.com/mi8te/specs
+requested-redmi9a-in,Xiaomi,Redmi 9A,1600,720,https://www.mi.com/in/redmi-9a/specs/
+requested-redmi9-in,Xiaomi,Redmi 9,1600,720,https://www.mi.com/in/redmi-9/specs/
+requested-redmi9-global,Xiaomi,Redmi 9,2340,1080,https://www.mi.com/uk/support/faq/details/KA-07665/
+requested-redmi9c-pk,Xiaomi,Redmi 9C,1600,720,https://www.mi.com/pk/redmi-9c/specs/
+requested-redmi9t-global,Xiaomi,Redmi 9T,2340,1080,https://www.mi.com/global/product/redmi-9t/specs/
+requested-redmi13c-4g-global,Xiaomi,Redmi 13C,1600,720,https://www.mi.com/global/product/redmi-13c/specs/
+requested-redminote7-uk,Xiaomi,Redmi Note 7,2340,1080,https://www.mi.com/uk/redmi-note-7/specs/
+requested-redminote8-in,Xiaomi,Redmi Note 8,2340,1080,https://www.mi.com/in/redmi-note-8/specs/
+requested-redminote8pro-in,Xiaomi,Redmi Note 8 Pro,2340,1080,https://www.mi.com/in/redmi-note-8-pro/specs/
+requested-redminote8t-es,Xiaomi,Redmi Note 8T,2340,1080,https://www.mi.com/es/redmi-note-8-t/specs/
+requested-redmi10a-mx,Xiaomi,Redmi 10A,1600,720,https://www.mi.com/mx/product/redmi-10a/specs/
+requested-redmi10c-uk,Xiaomi,Redmi 10C,1650,720,https://www.mi.com/uk/product/redmi-10c/specs/
+requested-redmi12c-pk,Xiaomi,Redmi 12C,1650,720,https://www.mi.com/pk/product/redmi-12c/specs/
+requested-poco-c31-np,Xiaomi,POCO C31,1600,720,https://www.mi.com/np/c31/specs
+requested-poco-c40-uk,Xiaomi,POCO C40,1650,720,https://www.mi.com/uk/product/poco-c40/specs/
+requested-poco-c51,Xiaomi,POCO C51,1600,720,https://www.mi.com/es/support/faq/details/KA-49284
+requested-mi9,Xiaomi,Mi 9,2340,1080,https://www.mi.com/ph/support/faq/details/KA-07253/
+requested-mi9se-uk,Xiaomi,Mi 9 SE,2340,1080,https://www.mi.com/uk/mi-9-se/specs
+requested-mi9lite-global,Xiaomi,Mi 9 Lite,2340,1080,https://www.mi.com/global/mi-9-lite/specs
+requested-mate30pro-emui10,HUAWEI,Mate 30 Pro (Android EMUI 10),2400,1176,https://consumer.huawei.com/au/phones/mate30-pro/specs/
+requested-mate50pro-emui13,HUAWEI,Mate 50 Pro (EMUI 13),2616,1212,https://consumer.huawei.com/latin/phones/mate50-pro/specs/
+requested-p20-jp,HUAWEI,P20,2244,1080,https://consumer.huawei.com/jp/phones/p20/specs/
+requested-p20pro-jp,HUAWEI,P20 Pro,2240,1080,https://consumer.huawei.com/jp/phones/p20-pro/specs/
+requested-vivo-y11-2019,vivo,vivo Y11 2019,1544,720,https://www.vivo.com/en/products/param/y11
+requested-moto-g7,motorola,Moto G7,2270,1080,https://en-ca.support.motorola.com/app/answers/detail/a_id/137727/~/specifications--moto-g7
+requested-moto-g7-power,motorola,Moto G7 Power,1570,720,https://en-us.support.motorola.com/app/answers/detail/a_id/137728/~/specifications--moto-g7-power/
+requested-honor-x8a,HONOR,Honor X8a,2388,1080,https://www.honor.com/cam/phones/honor-x8a/spec/
+requested-meizu21,Meizu,MEIZU 21,2340,1080,https://www.meizu.com/global/product/meizu-21/specs
+requested-oukitel-wp62,OUKITEL,WP62,2408,1080,https://oukitel.com/pages/oukitel-wp62-specs

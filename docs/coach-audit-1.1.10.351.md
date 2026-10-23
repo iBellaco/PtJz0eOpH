@@ -105,3 +105,22 @@ y la respuesta de esta relectura cuando falla una prueba nativa.
 Se unen fragmentos completos del mismo renglón, ordenados de izquierda a derecha
 (por ejemplo V + I), sin incluir el apodo inferior ni resolver títulos ambiguos.
 Pendiente: verificar esta nueva corrección en el APK instalado y toda la matriz.
+
+## Comprobación preliminar de 40011065704
+
+Se aprobaron 748 pruebas unitarias sin omisiones y la matriz de 354 variantes.
+La comprobación nativa preliminar aprobó 9/15 casos y falló 6/15. No se publicó.
+La relectura diagnóstica pudo leer VI con más altura donde la relectura aislada
+y muy ancha no obtenía texto. Se compactan ambos atlas para minimizar su lado
+mayor, manteniendo los mismos píxeles, máscaras y coordenadas internas, y evitando
+reducir excesivamente los títulos cortos dentro del detector. Una regresión
+comprueba el tamaño óptimo y las regiones de 1–10 títulos no resueltos.
+
+Se incorporan 40 perfiles documentados adicionales, con variantes regionales
+separadas para Redmi 9, y las medidas oficiales de S26/S26 FE y S26+/Ultra.
+Se añaden medidas antes ausentes de A20, Mate 30 Pro, Mate 50 Pro, P20/P20 Pro,
+vivo Y11 2019, Moto G7/G7 Power y Honor X8a; MEIZU 21 y OUKITEL WP62 amplían
+las referencias de marcas. La ampliación prevista es de 158 perfiles y 474
+variantes (9480 comprobaciones); solo la nueva ejecución puede aprobarlas.
+No se presentan los modelos aún pendientes como probados ni los perfiles de
+pantalla como teléfonos conectados. Se conservan todas las barreras nativas.

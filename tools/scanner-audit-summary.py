@@ -6,7 +6,7 @@ from pathlib import Path
 
 GROUPS = {'device-profiles': 6, 'phone-resolutions': 20, 'tablet-resolutions': 4,
           'foldable-resolutions': 4, 'edge-anchored-resolutions': 10, 'documented-android-displays': 10,
-          'xiaomi-redmi-poco-displays': 9, 'requested-brand-displays': 47, 'cutout-safe-area-scenarios': 8}
+          'xiaomi-redmi-poco-displays': 9, 'requested-brand-displays': 87, 'cutout-safe-area-scenarios': 8}
 VARIANTS = {'original', 'changed-background', 'changed-portraits-and-bans'}
 SOURCE_SHA256 = '42661aefae3df52b4f72047c039120f72f4ea351139d7bdb5107351fe8d3342a'
 
@@ -98,7 +98,8 @@ def write_reports(directory, summary):
              'Se ejercitan dos frames de confirmación por slot y dos escaneos por baneo. '
              'No mide latencia real ni certifica teléfonos físicos, densidades, versiones de Android o todas las skins.', '',
              'Red Magic y Poco tienen confirmación previa del propietario, no una prueba física nueva. '
-             'Los S26 son escenarios de resolución: no se afirma que esas sean sus pantallas oficiales. '
+             'Los perfiles S26-simulated siguen siendo escenarios, no teléfonos físicos; '
+             'los perfiles requested-samsung-s26 usan por separado las medidas oficiales enlazadas. '
              'Los perfiles genéricos no se atribuyen a un modelo inventado.', '',
              'Adicionalmente se verifican 5133 transformaciones geométricas: anchos 640–3840 '
              'en pasos de 37 y altos 360–2160 en pasos de 31. No son 5133 imágenes reconocidas.', '',

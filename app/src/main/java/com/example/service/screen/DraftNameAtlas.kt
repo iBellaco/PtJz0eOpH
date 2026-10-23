@@ -14,19 +14,26 @@ internal class DraftNameAtlas private constructor(val bitmap: Bitmap, val tiles:
     companion object {
         private const val GUTTER = 32
 
+        private fun compactColumns(tiles:Int,cellWidth:Int,cellHeight:Int):Int =
+            (1..minOf(4,tiles)).minBy { columns ->
+                maxOf(columns*cellWidth,((tiles+columns-1)/columns)*cellHeight)
+            }
+
         /** Re-read only unresolved titles at full tile size, avoiding a wide atlas
          * shrinking a two-letter name inside the native text detector. No new text pixels. */
         fun retryUnresolved(atlas: DraftNameAtlas, unresolved: List<Tile>): DraftNameAtlas {
             require(unresolved.isNotEmpty() && unresolved.all { it.original && it in atlas.tiles })
             val cellWidth = unresolved.maxOf { it.region.width() } + GUTTER*2
             val cellHeight = unresolved.maxOf { it.region.height() } + GUTTER*2
-            val bitmap = Bitmap.createBitmap(cellWidth*3,cellHeight*unresolved.size,Bitmap.Config.ARGB_8888)
+            val columns=compactColumns(unresolved.size*3,cellWidth,cellHeight)
+            val rows=(unresolved.size*3+columns-1)/columns
+            val bitmap = Bitmap.createBitmap(cellWidth*columns,cellHeight*rows,Bitmap.Config.ARGB_8888)
             val canvas = Canvas(bitmap).apply { drawColor(Color.BLACK) }
             try {
                 val tiles = unresolved.flatMapIndexed { row, tile ->
-                    (0..2).map { column ->
-                        val contrast=column==1
-                        val binary=column==2
+                    (0..2).map { variant ->
+                        val contrast=variant==1
+                        val binary=variant==2
                         val prior = if ((contrast || binary) && tile.ally) atlas.tiles.first {
                             it.ally && it.slot==tile.slot && !it.original && it.contrast==contrast
                         } else tile
@@ -37,11 +44,12 @@ internal class DraftNameAtlas private constructor(val bitmap: Bitmap, val tiles:
                         try {
                             if (contrast && !tile.ally) enhanceTitleContrast(crop)
                             if (binary) isolateBrightTitleStrokes(crop)
-                            val left = column*cellWidth+GUTTER
-                            val top = row*cellHeight+GUTTER
+                            val index=row*3+variant
+                            val left = (index%columns)*cellWidth+GUTTER
+                            val top = (index/columns)*cellHeight+GUTTER
                             canvas.drawBitmap(crop,left.toFloat(),top.toFloat(),null)
                             tile.copy(region=Rect(left,top,left+crop.width,top+crop.height),
-                                original=column==0,contrast=column!=0)
+                                original=variant==0,contrast=variant!=0)
                         } finally { crop.recycle() }
                     }
                 }
@@ -59,7 +67,12 @@ internal class DraftNameAtlas private constructor(val bitmap: Bitmap, val tiles:
             val scale = (150f / bands.minOf { it.third.height() }).coerceIn(2f, 12f)
             val cellWidth = bands.maxOf { (it.third.width()*scale).toInt().coerceAtMost(1400) } + GUTTER*2
             val cellHeight = bands.maxOf { (it.third.height()*scale).toInt().coerceAtMost(420) } + GUTTER*2
-            val bitmap = Bitmap.createBitmap(cellWidth*4,cellHeight*5,Bitmap.Config.ARGB_8888)
+            // Native diagnostics could read the exact VI pixels in a taller
+            // retry but not in a very wide one. Minimise the longest image edge
+            // so the detector does not downsample a two-letter title away.
+            val columns=compactColumns(20,cellWidth,cellHeight)
+            val rows=(20+columns-1)/columns
+            val bitmap = Bitmap.createBitmap(cellWidth*columns,cellHeight*rows,Bitmap.Config.ARGB_8888)
             val canvas = Canvas(bitmap)
             canvas.drawColor(Color.BLACK)
             val paint = Paint().apply { color=Color.BLACK }
@@ -79,9 +92,9 @@ internal class DraftNameAtlas private constructor(val bitmap: Bitmap, val tiles:
                             if (contrast) enhanceTitleContrast(crop)
                             val width=(crop.width*scale).toInt().coerceAtMost(1400)
                             val height=(crop.height*scale).toInt().coerceAtMost(420)
-                            val column = if (!ally) 3 else variant
-                            val left=column*cellWidth+GUTTER
-                            val top=slot*cellHeight+GUTTER
+                            val index=slot*4+(if(!ally) 3 else variant)
+                            val left=(index%columns)*cellWidth+GUTTER
+                            val top=(index/columns)*cellHeight+GUTTER
                             val region=Rect(left,top,left+width,top+height)
                             val scaled=Bitmap.createScaledBitmap(crop,width,height,true)
                             try { canvas.drawBitmap(scaled,left.toFloat(),top.toFloat(),null) }

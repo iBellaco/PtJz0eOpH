@@ -94,3 +94,14 @@ class SequenceAuditTest(unittest.TestCase):
         self.assertEqual(6,len(plan['cases']))
         self.assertEqual({(0,0,0,0),(.05,0,0,.03),(0,0,.05,.03)},
                          {tuple(case['safeInsets']) for case in plan['cases']})
+
+    def test_new_documented_dimensions_also_get_the_non_release_preflight(self):
+        fixture=self.fixture()
+        dimensions=[(1560,720),(1544,720),(1570,720),(2270,1080),(2244,1080),
+                    (2240,1080),(2388,1080),(2400,1176),(2616,1212)]
+        template=fixture['profiles'][2]
+        fixture['profiles']=[dict(template,profile=f'new-{w}-{h}',display=[w,h],capture=[w,h]) for w,h in dimensions]
+        fixture['resolutionProfiles']=len(dimensions)
+        plan=planner.make_plan(fixture)
+        self.assertEqual(len(dimensions),len(plan['cases']))
+        self.assertTrue(all(case['preflight'] for case in plan['cases']))
