@@ -96,7 +96,9 @@ class DraftRecommendationQualityTest {
         val malphite = WildRiftRepository.champions.first { it.id == "malphite" }
         for (firstPick in listOf(true, false)) for (lang in listOf("es", "pt")) {
             val result = WildRiftRepository.analyzeDraft(myRole = LaneRole.MID,
-                allies = listOf(malphite), enemies = emptyList(), isFirstPick = firstPick, lang = lang)
+                allies = listOf(malphite), enemies = if (firstPick) emptyList()
+                    else listOf(WildRiftRepository.champions.first { it.id == "garen" }),
+                isFirstPick = firstPick, lang = lang)
             val orianna = result.recommendations.first { it.champion.id == "orianna" }
             assertTrue(orianna.synergyDetails.isNotBlank())
             assertFalse(orianna.tacticalReason.contains(orianna.synergyDetails))

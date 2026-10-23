@@ -24,7 +24,7 @@ test('inventory only issues read requests and reports transport failures', async
 test('inventory follows pages and never treats a partial result as verified', async () => {
   const ok = body => ({status:200,ok:true,json:async()=>body});
   const read = async url => {
-    if (url.includes('pageToken=')) return ok({backups:[{state:'READY',database:'projects/test/databases/(default)',snapshotTime:'2026-10-23T00:00:00Z',sizeBytes:'2048'}]});
+    if (url.includes('pageToken=')) return ok({backups:[{state:'READY',database:'projects/test/databases/(default)',snapshotTime:'2026-10-23T00:00:00Z',stats:{sizeBytes:'2048'}}]});
     if (url.endsWith('/backups')) return ok({backups:[],nextPageToken:'second page'});
     return ok({locationId:'test-region'});
   };

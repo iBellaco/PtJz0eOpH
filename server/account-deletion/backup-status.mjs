@@ -18,7 +18,7 @@ export function classify(database, schedules, backups) {
     backupStatus: available(backups) ? (completed.length ? 'AVAILABLE' : 'NONE') : 'UNKNOWN',
     readyBackups: completed.length,
     lastReadyBackupAt: completed.map(entry => entry.snapshotTime || '').sort().at(-1) || null,
-    latestReadyBackupBytes: completed.slice().sort((a, b) => (b.snapshotTime || '').localeCompare(a.snapshotTime || ''))[0]?.sizeBytes || null,
+    latestReadyBackupBytes: completed.slice().sort((a, b) => (b.snapshotTime || '').localeCompare(a.snapshotTime || ''))[0]?.stats?.sizeBytes || null,
     http: {database: database.status, schedules: schedules.status, backups: backups.status},
     scope: 'Document data only; identity, uploaded media and restoration are not verified by this inventory.',
   };
