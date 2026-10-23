@@ -99,6 +99,7 @@ import kotlinx.coroutines.launch
 import com.example.model.Champion
 import com.example.util.SubscriptionManager
 import com.example.util.currentAppLanguage
+import com.example.util.DraftRecommendationText
 import com.example.model.DraftAnalysisResult
 import com.example.model.DraftSlot
 import com.example.model.LaneRole
@@ -1137,10 +1138,10 @@ fun DraftAnalysisTab(
                         Spacer(modifier = Modifier.height(8.dp))
 
                         Text(
-                            text = tr(topPick.tacticalReason),
+                            text = tr(DraftRecommendationText.clean(topPick.tacticalReason)),
                             color = TextPrimary.copy(alpha = 0.95f),
-                            fontSize = 12.sp,
-                            lineHeight = 16.sp,
+                            fontSize = 11.sp,
+                            lineHeight = 15.sp,
                             maxLines = 4,
                             overflow = TextOverflow.Ellipsis,
                             modifier = Modifier.fillMaxWidth()
@@ -1158,36 +1159,42 @@ fun DraftAnalysisTab(
                                 verticalArrangement = Arrangement.spacedBy(4.dp)
                             ) {
                                 if (topPick.synergyDetails.isNotBlank()) {
-                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                                         Text(
                                             text = com.example.util.tr("🤝 " + tr("Sinergia / Combo:")),
                                             color = HextechCyan,
-                                            fontSize = 11.sp,
+                                            fontSize = 10.sp,
                                             fontWeight = FontWeight.Bold
                                         )
-                                        Spacer(modifier = Modifier.width(4.dp))
                                         Text(
-                                            text = tr(topPick.synergyDetails),
+                                            text = tr(DraftRecommendationText.clean(topPick.synergyDetails)),
                                             color = TextPrimary,
-                                            fontSize = 11.sp,
-                                            fontWeight = FontWeight.Medium
+                                            fontSize = 10.5.sp,
+                                            lineHeight = 14.sp,
+                                            fontWeight = FontWeight.Medium,
+                                            maxLines = 4,
+                                            overflow = TextOverflow.Ellipsis,
+                                            modifier = Modifier.fillMaxWidth()
                                         )
                                     }
                                 }
                                 if (topPick.counterDetails.isNotBlank()) {
-                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                                         Text(
                                             text = com.example.util.tr("🛡️ " + tr("Ventaja / Counter:")),
                                             color = HextechGold,
-                                            fontSize = 11.sp,
+                                            fontSize = 10.sp,
                                             fontWeight = FontWeight.Bold
                                         )
-                                        Spacer(modifier = Modifier.width(4.dp))
                                         Text(
-                                            text = tr(topPick.counterDetails),
+                                            text = tr(DraftRecommendationText.clean(topPick.counterDetails)),
                                             color = TextPrimary,
-                                            fontSize = 11.sp,
-                                            fontWeight = FontWeight.Medium
+                                            fontSize = 10.5.sp,
+                                            lineHeight = 14.sp,
+                                            fontWeight = FontWeight.Medium,
+                                            maxLines = 4,
+                                            overflow = TextOverflow.Ellipsis,
+                                            modifier = Modifier.fillMaxWidth()
                                         )
                                     }
                                 }

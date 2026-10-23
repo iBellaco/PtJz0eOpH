@@ -55,12 +55,13 @@ object CoachingGenerator {
             "H${it.slot} · ${it.getLocalizedName(language)}: ${it.getLocalizedDescription(language).substringBefore(". ")}."
         }
         val specific = trStr(language, champion.tacticalAdvice)
-        val result = if (pt) "Diagnóstico do erro/situação: $me · ${activeRole.getLocalizedName(language)}; confirme recursos e recargas antes de comprometer a troca.\n" +
+        val rawResult = if (pt) "Diagnóstico do erro/situação: $me · ${activeRole.getLocalizedName(language)}; confirme recursos e recargas antes de comprometer a troca.\n" +
             "Decisão Soberano: $specific\nMicro e Macro detalhe: $detail\n" +
             "Regra aplicável: resolva a onda ou o campo antes de rotacionar; sem prioridade, troque a pressão para o lado oposto."
         else "Diagnóstico del error/situación: $me · ${activeRole.getLocalizedName(language)}; confirma recursos y enfriamientos antes de comprometer el intercambio.\n" +
             "Decisión Soberano: $specific\nMicro y Macro detalle: $detail\n" +
             "Regla aplicable: resuelve la oleada o el campamento antes de rotar; sin prioridad, intercambia presión hacia el lado opuesto."
+        val result = DraftRecommendationText.clean(rawResult)
         synchronized(adviceCache) { adviceCache[key] = result }
         return result
     }

@@ -12,6 +12,7 @@ import com.example.model.ChampionSkill
 import com.example.model.DamageType
 import com.example.model.DraftAnalysisResult
 import com.example.model.DraftRecommendation
+import com.example.util.DraftRecommendationText
 import com.example.model.LaneRole
 import com.example.model.MapObjectiveItem
 import com.example.model.RuneItem
@@ -432,8 +433,8 @@ object WildRiftRepository {
         val synergyText = if (synergies.isNotEmpty()) t(lang,"Combina com: ${names(synergies)}.","Combina con: ${names(synergies)}.")
             else t(lang,"Ajuste sua função aos aliados selecionados.","Ajusta tu función a los aliados seleccionados.")
         return DraftRecommendation(champion=champ,estimatedWinrate=(champ.winrate.takeIf { it.isFinite() } ?: 50.0).coerceIn(0.0,100.0),
-            advantageBadge=badge,tacticalReason=reasons.joinToString(" "),runes=champ.recommendedRunes,
-            synergyDetails=synergyText,counterDetails=counterText,
+            advantageBadge=badge,tacticalReason=DraftRecommendationText.clean(reasons.joinToString(" ")),runes=champ.recommendedRunes,
+            synergyDetails=DraftRecommendationText.clean(synergyText),counterDetails=DraftRecommendationText.clean(counterText),
             draftFitScore=DraftScoringPolicy.score(champ,myRole,activeAllies,activeEnemies,lane,false,champions))
     }
 
@@ -620,10 +621,10 @@ object WildRiftRepository {
                     estimatedWinrate = (champ.winrate.takeIf { it.isFinite() } ?: 50.0).coerceIn(0.0,100.0),
                     draftFitScore = DraftScoringPolicy.score(champ,effectiveRole,activeAllies,activeEnemies,lane,isFirstPickEffective,champions),
                     advantageBadge = badge,
-                    tacticalReason = reason,
+                    tacticalReason = DraftRecommendationText.clean(reason),
                     runes = champ.recommendedRunes,
-                    synergyDetails = synergyText,
-                    counterDetails = counterText
+                    synergyDetails = DraftRecommendationText.clean(synergyText),
+                    counterDetails = DraftRecommendationText.clean(counterText)
                 )
             } else {
                 // REACTIVE / COUNTER & SYNERGY DRAFT CALCULATION
@@ -700,10 +701,10 @@ object WildRiftRepository {
                     estimatedWinrate = (champ.winrate.takeIf { it.isFinite() } ?: 50.0).coerceIn(0.0,100.0),
                     draftFitScore = DraftScoringPolicy.score(champ,effectiveRole,activeAllies,activeEnemies,lane,isFirstPickEffective,champions),
                     advantageBadge = badge,
-                    tacticalReason = reasonParts.joinToString(" "),
+                    tacticalReason = DraftRecommendationText.clean(reasonParts.joinToString(" ")),
                     runes = champ.recommendedRunes,
-                    synergyDetails = synergyText,
-                    counterDetails = counterText
+                    synergyDetails = DraftRecommendationText.clean(synergyText),
+                    counterDetails = DraftRecommendationText.clean(counterText)
                 )
             }
         }.sortedByDescending { it.draftFitScore }
