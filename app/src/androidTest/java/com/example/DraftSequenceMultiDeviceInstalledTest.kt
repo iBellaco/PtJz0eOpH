@@ -185,8 +185,11 @@ class DraftSequenceMultiDeviceInstalledTest {
         val width = capture.getInt(0)
         val height = capture.getInt(1)
         val frame = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+        val insets = case.getJSONArray("safeInsets")
+        val available = Rect((width*insets.getDouble(0)).toInt(),(height*insets.getDouble(1)).toInt(),
+            width-(width*insets.getDouble(2)).toInt(),height-(height*insets.getDouble(3)).toInt())
         val edge = case.getString("layout") == "synthetic-edge-anchored-side-panels"
-        val scale = if (edge) height.toFloat() / source.height else minOf(width.toFloat() / source.width, height.toFloat() / source.height)
+        val scale = if (edge) height.toFloat() / source.height else minOf(available.width().toFloat() / source.width, available.height().toFloat() / source.height)
         val canvas = Canvas(frame)
         val paint = Paint(Paint.FILTER_BITMAP_FLAG)
         canvas.drawColor(if (edge) Color.rgb(10, 15, 30) else Color.BLACK)
@@ -196,7 +199,8 @@ class DraftSequenceMultiDeviceInstalledTest {
         } else {
             val w = (source.width * scale).toInt()
             val h = (source.height * scale).toInt()
-            canvas.drawBitmap(source, null, Rect((width - w) / 2, (height - h) / 2, (width - w) / 2 + w, (height - h) / 2 + h), paint)
+            canvas.drawBitmap(source,null,Rect(available.left+(available.width()-w)/2,available.top+(available.height()-h)/2,
+                available.left+(available.width()-w)/2+w,available.top+(available.height()-h)/2+h),paint)
         }
         return frame
     }

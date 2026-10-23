@@ -34,7 +34,7 @@ def summarize(portraits, reports):
                 continue
             seen.add(key)
             before = len(failures)
-            if any(case.get(field) != planned[field] for field in ('capture', 'profiles', 'layout', 'prior', 'calibration', 'firstPick', 'language', 'shard')):
+            if any(case.get(field) != planned[field] for field in ('capture', 'profiles', 'layout', 'prior', 'calibration', 'safeInsets', 'firstPick', 'language', 'shard')):
                 failures.append('Geometría/secuencia distinta a la planificada: ' + key)
             steps = case.get('steps', [])
             if case.get('status') != 'PASS' or case.get('failures') or [step.get('step') for step in steps] != list(range(10)):
@@ -79,6 +79,8 @@ def write_report(directory, summary):
              'Ambos órdenes se distribuyen en la matriz; Red Magic y Poco ejercitan ambos. '
              'Los perfiles con idéntica captura/distribución comparten el mismo caso de píxeles: no son pruebas físicas diferentes. '
              'No certifica rendimiento, permisos de captura, densidad, skins o versiones Android de cada teléfono.', '',
+             'Los escenarios safe-area aplican márgenes sintéticos laterales del 5 % y de navegación del 3 %. '
+             'No se afirma que sean los márgenes reales de cada notch o modelo solicitado.', '',
              '| Modelo / escenario | Pantalla horizontal | Captura procesada | Distribución | Orden probado | Idioma | Resultado |',
              '| --- | --- | --- | --- | --- | --- | --- |']
     for case in summary['cases']:

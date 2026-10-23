@@ -6,7 +6,7 @@ from pathlib import Path
 
 GROUPS = {'device-profiles': 6, 'phone-resolutions': 20, 'tablet-resolutions': 4,
           'foldable-resolutions': 4, 'edge-anchored-resolutions': 10, 'documented-android-displays': 10,
-          'xiaomi-redmi-poco-displays': 9, 'requested-brand-displays': 43}
+          'xiaomi-redmi-poco-displays': 9, 'requested-brand-displays': 43, 'cutout-safe-area-scenarios': 8}
 VARIANTS = {'original', 'changed-background', 'changed-portraits-and-bans'}
 SOURCE_SHA256 = '42661aefae3df52b4f72047c039120f72f4ea351139d7bdb5107351fe8d3342a'
 
@@ -54,7 +54,7 @@ def summarize(directory):
             if any(not 0 <= error <= 6 for error in errors):
                 failures.append('Centro fuera de tolerancia: ' + name)
             row = {key: profile.get(key) for key in ['profile', 'case', 'variant', 'manufacturer',
-                   'model', 'specification', 'display', 'capture', 'viewport', 'layout', 'calibration', 'evidenceType', 'status']}
+                   'model', 'specification', 'display', 'capture', 'viewport', 'layout', 'safeInsets', 'calibration', 'evidenceType', 'status']}
             row.update(checks=len(checks), pickChecks=len(picks), banChecks=len(bans),
                        maxCenterErrorReferencePixels=max(errors, default=None),
                        minimumPortraitScore=min((check.get('score', 0) for check in picks), default=None))
@@ -82,7 +82,7 @@ def summarize(directory):
 
 def write_reports(directory, summary):
     (directory / 'audit-summary.json').write_text(json.dumps(summary, ensure_ascii=False, indent=2))
-    columns = ['profile', 'model', 'display', 'capture', 'viewport', 'variant', 'layout',
+    columns = ['profile', 'model', 'display', 'capture', 'viewport', 'safeInsets', 'variant', 'layout',
                'pickChecks', 'banChecks', 'minimumPortraitScore', 'maxCenterErrorReferencePixels', 'status', 'specification']
     with (directory / 'audit-measurements.csv').open('w', newline='') as target:
         writer = csv.DictWriter(target, fieldnames=columns, extrasaction='ignore')

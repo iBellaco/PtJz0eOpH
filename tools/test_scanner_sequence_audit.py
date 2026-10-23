@@ -83,3 +83,12 @@ class SequenceAuditTest(unittest.TestCase):
                 fixture['profiles'].pop()
             with self.assertRaises(ValueError):
                 planner.make_plan(fixture)
+
+    def test_cutout_margins_do_not_share_an_unshifted_native_sequence(self):
+        fixture = self.fixture()
+        fixture['profiles'][2]['safeInsets'] = [.05,0,0,.03]
+        fixture['profiles'][3]['safeInsets'] = [0,0,.05,.03]
+        plan = planner.make_plan(fixture)
+        self.assertEqual(6,len(plan['cases']))
+        self.assertEqual({(0,0,0,0),(.05,0,0,.03),(0,0,.05,.03)},
+                         {tuple(case['safeInsets']) for case in plan['cases']})

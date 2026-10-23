@@ -20,9 +20,10 @@ def make_plan(summary):
         calibration = row.get('calibration')
         if not calibration:
             raise ValueError('Falta la calibración medida de ' + row['profile'])
-        key = (*row['capture'], row['layout'], prior, json.dumps(calibration, sort_keys=True))
+        insets = row.get('safeInsets') or [0,0,0,0]
+        key = (*row['capture'], row['layout'], prior, json.dumps(calibration, sort_keys=True), tuple(insets))
         case = grouped.setdefault(key, dict(capture=row['capture'], layout=row['layout'],
-                                           prior=prior, calibration=calibration, profiles=[]))
+                                           prior=prior, calibration=calibration, safeInsets=insets, profiles=[]))
         case['profiles'].append({key: row[key] for key in ('profile', 'model', 'display', 'specification')})
     cases = []
     for index, case in enumerate(grouped.values()):

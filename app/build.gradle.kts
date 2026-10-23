@@ -114,8 +114,8 @@ android {
 
   // Fixtures and the measured plan belong to the test APK, never the shipped APK.
   sourceSets.getByName("androidTest").assets.srcDirs("src/test/resources", "build/generated/scanner-sequence-assets")
-  sourceSets.getByName("test").java.srcDir("src/sharedTest/java")
-  sourceSets.getByName("androidTest").java.srcDir("src/sharedTest/java")
+  sourceSets.getByName("test").kotlin.directories += "src/sharedTest/java"
+  sourceSets.getByName("androidTest").kotlin.directories += "src/sharedTest/java"
 
   testOptions {
     unitTests {

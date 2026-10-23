@@ -28,7 +28,8 @@ import kotlin.math.hypot
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class DraftMultiDeviceAuditTest {
     private data class Profile(val id: String, val manufacturer: String, val model: String, val width: Int, val height: Int,
-        val edgeAnchored: Boolean = false, val specification: String? = null)
+        val edgeAnchored: Boolean = false, val specification: String? = null,
+        val safeInsets: List<Float> = listOf(0f,0f,0f,0f))
     private val variants = listOf("original", "changed-background", "changed-portraits-and-bans")
     private val profiles = listOf(
         Profile("red-magic-reference", "nubia", "NX789J", 2688, 1216),
@@ -107,6 +108,13 @@ class DraftMultiDeviceAuditTest {
             Profile("edge-anchored-$w-$h", "generic", "synthetic-side-panels", w, h, true)
         }, "edge-anchored-resolutions")
 
+    @Test fun landscapeCutoutAndNavigationSafeAreasUseTheObservedGameViewport() = audit(
+        listOf(1600 to 720, 2408 to 1080, 3120 to 1440, 854 to 480).flatMap { (w,h) ->
+            listOf(true,false).map { left -> Profile("safe-area-$w-$h-${if(left) "left" else "right"}",
+                "generic","synthetic-cutout-safe-area-not-a-physical-model",w,h,
+                safeInsets=if(left) listOf(.05f,0f,0f,.03f) else listOf(0f,0f,.05f,.03f)) }
+        }, "cutout-safe-area-scenarios")
+
     private fun audit(cases: List<Profile>, group: String) {
         val context = RuntimeEnvironment.getApplication()
         val prefs = context.getSharedPreferences("vision_calibration_prefs", 0)
@@ -128,12 +136,15 @@ class DraftMultiDeviceAuditTest {
                 DraftVisionScanner.initCalibration(context)
                 val (w, h) = CaptureFrameDecoder.captureSize(profile.width, profile.height)
                 val frame = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
+                val available = Rect((w*profile.safeInsets[0]).toInt(),(h*profile.safeInsets[1]).toInt(),
+                    w-(w*profile.safeInsets[2]).toInt(),h-(h*profile.safeInsets[3]).toInt())
                 val scale = if (profile.edgeAnchored) h.toFloat() / source.height
-                    else minOf(w.toFloat() / source.width, h.toFloat() / source.height)
+                    else minOf(available.width().toFloat() / source.width, available.height().toFloat() / source.height)
                 val rw = (source.width * scale).toInt()
                 val rh = (source.height * scale).toInt()
                 val viewport = if (profile.edgeAnchored) Rect(0, 0, w, h)
-                    else Rect((w-rw)/2, (h-rh)/2, (w-rw)/2+rw, (h-rh)/2+rh)
+                    else Rect(available.left+(available.width()-rw)/2,available.top+(available.height()-rh)/2,
+                        available.left+(available.width()-rw)/2+rw,available.top+(available.height()-rh)/2+rh)
                 fun targetX(x: Float): Float = if (profile.edgeAnchored) {
                     if (x < source.width / 2f) x * scale else w - (source.width - x) * scale
                 } else viewport.left + x * viewport.width() / source.width
@@ -146,6 +157,7 @@ class DraftMultiDeviceAuditTest {
                     .put("layout", if (profile.edgeAnchored) "synthetic-edge-anchored-side-panels" else "uniform-fit-reference")
                     .put("display", JSONArray(listOf(profile.width, profile.height)))
                     .put("capture", JSONArray(listOf(w, h)))
+                    .put("safeInsets",JSONArray(profile.safeInsets))
                     .put("viewport", JSONArray(listOf(viewport.left, viewport.top, viewport.right, viewport.bottom)))
                 val checks = JSONArray()
                 val before = failures.size
