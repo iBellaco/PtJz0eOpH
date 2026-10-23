@@ -6,7 +6,7 @@ from pathlib import Path
 
 GROUPS = {'device-profiles': 6, 'phone-resolutions': 20, 'tablet-resolutions': 4,
           'foldable-resolutions': 4, 'edge-anchored-resolutions': 10, 'documented-android-displays': 10,
-          'xiaomi-redmi-poco-displays': 9}
+          'xiaomi-redmi-poco-displays': 9, 'requested-brand-displays': 43}
 VARIANTS = {'original', 'changed-background', 'changed-portraits-and-bans'}
 SOURCE_SHA256 = '42661aefae3df52b4f72047c039120f72f4ea351139d7bdb5107351fe8d3342a'
 

@@ -19,6 +19,27 @@ import org.robolectric.annotation.GraphicsMode
 @Config(sdk = [34], application = Application::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class DraftNameAtlasTest {
+    @Test fun oppositeOrderFixtureHasARealNinthTitleAndAnAcceptedTenthPortrait() {
+        val context = org.robolectric.RuntimeEnvironment.getApplication()
+        com.example.data.WildRiftRepository.initChampions(context, forceReload = true)
+        val source = javaClass.getResourceAsStream("/portraits/draft-ten-selected.jpg").use {
+            android.graphics.BitmapFactory.decodeStream(it)!!
+        }
+        val variant = DraftSequenceFixture.create(source, false)
+        try {
+            for (y in 400 until 415) for (x in 155 until 173)
+                assertEquals("Original VI title pixels must not be synthesized",source.getPixel(x,y),variant.getPixel(x+1019,y-1))
+            for ((ally, slot, expected) in listOf(Triple(true,4,"teemo"),Triple(false,4,"vi"))) {
+                val aligned = com.example.service.screen.DraftRingAlignment.align(variant,VisionCalibrationConfig(),null)
+                val crop = AdaptiveScreenLayoutEngine.extractSlotAvatarBitmap(variant,1280,579,ally,slot,aligned)!!
+                try {
+                    val ranked = com.example.service.screen.LiteRTVisionClassifier.rankSlotPortrait(crop,ally,context)
+                    assertEquals(expected,ranked.first().first.id)
+                    assertTrue(ranked.take(2).toString(),com.example.service.screen.PortraitMatcher.accepts(ranked[0].second,ranked[1].second,.80f))
+                } finally { crop.recycle() }
+            }
+        } finally { source.recycle(); variant.recycle() }
+    }
     @Test fun nameBandsFollowTheGameViewportAndDoNotGrowIntoAnotherPlayersRow() {
         val base = VisionCalibrationConfig()
         val layouts = listOf(Triple(1024, 768, android.graphics.Rect(0, 152, 1024, 615)),
@@ -49,7 +70,7 @@ class DraftNameAtlasTest {
             val config = VisionCalibrationConfig()
             val atlas = DraftNameAtlas.create(source, config, emptyList())
             try {
-                assertEquals(15, atlas.tiles.size)
+                assertEquals(20, atlas.tiles.size)
                 for (tile in atlas.tiles) {
                     assertEquals(AdaptiveScreenLayoutEngine.calculateSlotNameRect(640, 290, tile.ally, tile.slot, config), tile.source)
                     assertTrue("Small titles need more than a fixed 2x copy", tile.region.height() >= tile.source.height()*4)
@@ -69,7 +90,7 @@ class DraftNameAtlasTest {
                 val atlas = DraftNameAtlas.create(source, config, emptyList())
                 try {
                     val raw = atlas.tiles.single { it.ally && it.slot == 0 && it.original }
-                    val processed = atlas.tiles.single { it.ally && it.slot == 0 && !it.original }
+                    val processed = atlas.tiles.single { it.ally && it.slot == 0 && !it.original && !it.contrast }
                     fun goldPixels(tile: DraftNameAtlas.Tile): Int {
                         var count = 0
                         val end = tile.region.left + (band.height() * .65f).toInt() * 2 - 2

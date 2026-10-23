@@ -663,7 +663,8 @@ object DraftVisionScanner {
                         it.text to (it.boundingBox!!.centerY()-tile.region.top)
                     },(tile.region.height()*.30f).toInt(),allChamps,tile.titleMaxY)
                     if (tile.ally && tile.original) targetedAllyReadings[tile.slot]=reading
-                    else if (tile.ally) badgeSuppressedAllyReadings[tile.slot]=reading
+                    else if (tile.ally) badgeSuppressedAllyReadings[tile.slot]=AllyDraftNameReader.preferOriginal(
+                        badgeSuppressedAllyReadings[tile.slot], reading)
                     else targetedEnemyChampions[tile.slot]=reading.champion.takeUnless { reading.ambiguous }
                 }
                 for (slot in 0..4) {

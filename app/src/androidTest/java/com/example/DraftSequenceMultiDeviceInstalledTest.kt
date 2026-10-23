@@ -26,7 +26,6 @@ class DraftSequenceMultiDeviceInstalledTest {
     private val instrumentation = InstrumentationRegistry.getInstrumentation()
     private val context get() = instrumentation.targetContext
     private val scanner get() = DraftVisionScanner
-    private val ids = listOf("senna", "ornn", "mel", "volibear", "vi", "alistar", "caitlyn", "nocturne", "vex", "teemo")
     private val centers = listOf(110f, 188f, 265f, 343f, 420f, 110f, 188f, 265f, 342f, 419f)
     private val roles = listOf(LaneRole.ADC, LaneRole.TOP, LaneRole.MID, LaneRole.JUNGLE, LaneRole.SUPPORT)
 
@@ -53,6 +52,8 @@ class DraftSequenceMultiDeviceInstalledTest {
                 val started = android.os.SystemClock.elapsedRealtime()
                 try {
                     val order = case.getBoolean("firstPick")
+                    val ids = DraftSequenceFixture.ids(order)
+                    val sequenceSource = DraftSequenceFixture.create(source, order)
                     // Independent explicit game order; do not derive the expected sequence from the implementation.
                     val positions = if (order) listOf(0, 5, 6, 1, 2, 7, 8, 3, 4, 9)
                         else listOf(5, 0, 1, 6, 7, 2, 3, 8, 9, 4)
@@ -73,9 +74,9 @@ class DraftSequenceMultiDeviceInstalledTest {
                         allySlotYRatios = floats("allySlotYRatios"), enemySlotYRatios = floats("enemySlotYRatios"),
                         allySlotDiameterRatios = floats("allySlotDiameterRatios"), enemySlotDiameterRatios = floats("enemySlotDiameterRatios"))
                     scanner.updateCalibration(context, config)
-                    for (step in 0..9) {
+                    try { for (step in 0..9) {
                         val visible = positions.take(step).toSet()
-                        val staged = stage(source, visible, case.getString("language"))
+                        val staged = stage(sequenceSource, visible, case.getString("language"))
                         val frame = resize(staged, case)
                         staged.recycle()
                         try {
@@ -143,7 +144,7 @@ class DraftSequenceMultiDeviceInstalledTest {
                                 File(evidence, "${case.getString("id")}.png").outputStream().use { frame.compress(Bitmap.CompressFormat.PNG, 100, it) }
                             }
                         } finally { frame.recycle() }
-                    }
+                    } } finally { sequenceSource.recycle() }
                 } catch (failure: Exception) {
                     errors += "${failure.javaClass.simpleName}: ${failure.message}"
                 } finally {

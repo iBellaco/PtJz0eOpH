@@ -49,6 +49,7 @@ jobs:
         python3 -m unittest discover -s tools -p test_scanner_device_report.py
         python3 -m unittest discover -s tools -p test_scanner_audit_summary.py
         python3 -m unittest discover -s tools -p test_scanner_sequence_audit.py
+        python3 -m unittest discover -s tools -p test_scanner_request_coverage.py
         python3 -m unittest discover -s tools -p test_junit_failure_report.py
         python3 tools/generate-component-items.py --check
         python3 tools/import-component-icons.py --check
@@ -395,7 +396,7 @@ jobs:
     - name: Recheck formerly drifting portrait centers first
       env:
         CI: 'true'
-      run: ./gradlew :app:testDebugUnitTest --rerun --tests com.example.DraftMultiDeviceAuditTest.formerlyFailingCentersStayAlignedWhenPortraitsChange --max-workers=1 --stacktrace --no-daemon
+      run: ./gradlew :app:testDebugUnitTest --rerun --tests com.example.DraftMultiDeviceAuditTest.formerlyFailingCentersStayAlignedWhenPortraitsChange --tests com.example.DraftNameAtlasTest --tests com.example.AllyDraftNameReaderTest --max-workers=1 --stacktrace --no-daemon
     - name: Test scanner and matchup rules with offline fixtures
       env:
         CI: 'true'
@@ -407,7 +408,9 @@ jobs:
         CI: 'true'
       run: ./gradlew :app:testDebugUnitTest --rerun --tests com.example.DraftMultiDeviceAuditTest --tests com.example.DraftReferenceFrameTest --tests com.example.DraftRingAlignmentTest --tests com.example.CaptureCoordinateSpaceTest --tests com.example.BannedPortraitScannerTest --max-workers=1 --stacktrace --no-daemon
     - name: Distinguish simulated scanner results from physical device verification
-      run: python3 tools/scanner-audit-summary.py app/build/reports/scanner-multidevice
+      run: |
+        python3 tools/scanner-audit-summary.py app/build/reports/scanner-multidevice
+        python3 tools/scanner-request-coverage.py app/build/reports/scanner-multidevice
     - name: Retain measured scanner coordinates and visual evidence
       if: always()
       uses: actions/upload-artifact@v5

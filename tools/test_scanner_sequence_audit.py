@@ -27,7 +27,7 @@ class SequenceAuditTest(unittest.TestCase):
             steps = [dict(step=n, frames=1 if n == 0 else 2,
                           recognized=reporter.expected_names(case['firstPick'], n),
                           expected=reporter.expected_names(case['firstPick'], n), roles=dict(reporter.ROLES)) for n in range(10)]
-            last_id = 'teemo' if case['firstPick'] else 'vi'
+            last_id = 'teemo'
             cases.append(dict(case, status='PASS', failures=[], steps=steps,
                               tenth=dict(expected=last_id, recognized=last_id, confirmed=True, nameHidden=True)))
         return [dict(sourceSha256=planner.SOURCE_SHA256, cases=cases, instrumentationPassed=True)]

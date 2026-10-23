@@ -24,8 +24,8 @@ android {
     applicationId = "com.Coach"
     minSdk = 24
     targetSdk = 36
-    versionCode = 1066
-    versionName = "1.1.10.350"
+    versionCode = 1067
+    versionName = "1.1.10.351"
     ndk {
       abiFilters.addAll(listOf("armeabi-v7a", "arm64-v8a", "x86_64"))
     }
@@ -114,6 +114,8 @@ android {
 
   // Fixtures and the measured plan belong to the test APK, never the shipped APK.
   sourceSets.getByName("androidTest").assets.srcDirs("src/test/resources", "build/generated/scanner-sequence-assets")
+  sourceSets.getByName("test").java.srcDir("src/sharedTest/java")
+  sourceSets.getByName("androidTest").java.srcDir("src/sharedTest/java")
 
   testOptions {
     unitTests {

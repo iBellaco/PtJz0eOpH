@@ -93,6 +93,14 @@ class DraftMultiDeviceAuditTest {
         Profile("poco-f6-pro", "Xiaomi", "POCO F6 Pro", 3200, 1440, specification = "https://www.mi.com/global/product/poco-f6-pro/specs/"),
         Profile("xiaomi-pad-6", "Xiaomi", "Xiaomi Pad 6", 2880, 1800, specification = "https://www.mi.com/global/product/xiaomi-pad-6/specs/")
     ), "xiaomi-redmi-poco-displays")
+    @Test fun documentedRequestedBrandDisplays() {
+        val rows = javaClass.getResourceAsStream("/scanner/requested-displays.csv")!!.bufferedReader().use { it.readLines().drop(1) }
+        audit(rows.filter { it.isNotBlank() }.map { line ->
+            val fields = line.split(',')
+            require(fields.size == 6) { "Invalid requested profile: $line" }
+            Profile(fields[0],fields[1],fields[2],fields[3].toInt(),fields[4].toInt(),specification=fields[5])
+        }, "requested-brand-displays")
+    }
     @Test fun fullScreenSidePanelsRetainCircularPortraitsWithoutLetterboxing() = audit(
         listOf(640 to 360, 1280 to 720, 2400 to 1080, 2712 to 1220, 3120 to 1440,
             1024 to 768, 1600 to 1000, 2560 to 1600, 2440 to 2268, 1800 to 1800).map { (w, h) ->

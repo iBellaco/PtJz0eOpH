@@ -1,0 +1,44 @@
+id,manufacturer,model,width,height,specification
+requested-samsung-a01,samsung,Galaxy A01,1520,720,https://news.samsung.com/br/samsung-anuncia-chegada-do-galaxy-a01-ao-brasil
+requested-samsung-a02,samsung,Galaxy A02,1600,720,https://news.samsung.com/br/samsung-apresenta-galaxy-a02-e-galaxy-a32-5g-no-brasil
+requested-samsung-a02s,samsung,Galaxy A02s,1600,720,https://developer.samsung.com/galaxy-emulator-skin/galaxy-a.html
+requested-samsung-a03s,samsung,Galaxy A03s,1600,720,https://developer.samsung.com/galaxy-emulator-skin/galaxy-a.html
+requested-samsung-a04,samsung,Galaxy A04,1600,720,https://developer.samsung.com/galaxy-emulator-skin/galaxy-a.html
+requested-samsung-a05,samsung,Galaxy A05,1600,720,https://developer.samsung.com/galaxy-emulator-skin/galaxy-a.html
+requested-samsung-a05s,samsung,Galaxy A05s,2400,1080,https://developer.samsung.com/galaxy-emulator-skin/galaxy-a.html
+requested-samsung-a12,samsung,Galaxy A12,1600,720,https://developer.samsung.com/galaxy-emulator-skin/galaxy-a.html
+requested-samsung-a13-5g,samsung,Galaxy A13 5G,1600,720,https://developer.samsung.com/galaxy-emulator-skin/galaxy-a.html
+requested-samsung-a14-5g,samsung,Galaxy A14 5G,2408,1080,https://developer.samsung.com/galaxy-emulator-skin/galaxy-a.html
+requested-samsung-a15-5g,samsung,Galaxy A15 5G,2340,1080,https://developer.samsung.com/galaxy-emulator-skin/galaxy-a.html
+requested-samsung-a22,samsung,Galaxy A22 4G,1600,720,https://developer.samsung.com/galaxy-emulator-skin/galaxy-a.html
+requested-samsung-a22-5g,samsung,Galaxy A22 5G,2400,1080,https://developer.samsung.com/galaxy-emulator-skin/galaxy-a.html
+requested-samsung-a23-5g,samsung,Galaxy A23 5G,2408,1080,https://developer.samsung.com/galaxy-emulator-skin/galaxy-a.html
+requested-samsung-a31,samsung,Galaxy A31,2400,1080,https://developer.samsung.com/galaxy-emulator-skin/galaxy-a.html
+requested-samsung-a32,samsung,Galaxy A32 4G,2400,1080,https://developer.samsung.com/galaxy-emulator-skin/galaxy-a.html
+requested-samsung-a32-5g,samsung,Galaxy A32 5G,1600,720,https://developer.samsung.com/galaxy-emulator-skin/galaxy-a.html
+requested-samsung-a33-5g,samsung,Galaxy A33 5G,2400,1080,https://developer.samsung.com/galaxy-emulator-skin/galaxy-a.html
+requested-poco-c65,Xiaomi,POCO C65,1600,720,https://www.mi.com/uk/product/poco-c65/specs/
+requested-motorola-g30,motorola,Moto G30,1600,720,https://comoto.vteximg.com.br/arquivos/terminos-condiciones-motopromo.pdf
+requested-huawei-mate20pro,HUAWEI,Mate 20 Pro (Android),3120,1440,https://consumer.huawei.com/fi/phones/mate20-pro2/specs/
+requested-honor-x7a,HONOR,HONOR X7a,1600,720,https://www.honor.com/ie/phones/honor-x7a/spec/
+requested-oppo-a17,OPPO,OPPO A17 CPH2477,1612,720,https://www.oppo.com/mx/smartphones/series-a/a17/specs/
+requested-realme-c35,realme,realme C35,2408,1080,https://www.realme.com/in/realme-c35/specs
+requested-vivo-y16,vivo,vivo Y16,1600,720,https://www.vivo.com/pe/products/param/y16
+requested-sony-xperia1v,Sony,Xperia 1 V (native-panel scenario),3840,1644,https://www.sony.com/electronics/support/mobile-phones-tablets-mobile-phones/xperia-1-v-256gb/specifications
+requested-asus-rog8,asus,ROG Phone 8,2400,1080,https://rog.asus.com/phones/rog-phone-8/spec/
+requested-nokia-g21,HMD Global,Nokia G21,1600,720,https://www.hmd.com/en_in/nokia-g-21/specs
+requested-zte-a72s,ZTE,Blade A72s (not A72),1600,720,https://zteargentina.com.ar/expo/zte-a72-s/index.html
+requested-tecno-spark8c,TECNO,SPARK 8C,1612,720,https://www.tecno-mobile.com/ae/phones/tech-specs/techspecs/spark-8c-5/
+requested-infinix-hot12i,Infinix,HOT 12i,1612,720,https://activity.infinixmobility.com/specs/hot-12i
+requested-tcl-40se,TCL,TCL 40 SE,1600,720,https://www.tcl.com/eu/en/mobile/tcl-40-se/specifications
+requested-nothing-2a,Nothing,Phone (2a) (1084-wide published panel),2412,1084,https://ca-en.nothing.tech/pages/phone-2a
+requested-sharp-sense8,SHARP,AQUOS sense8,2432,1080,https://corporate.jp.sharp/news/231003-e.html
+requested-htc-u23pro,HTC,HTC U23 pro,2400,1080,https://www.htc.com/tw/comparison/
+requested-lg-g7,LGE,LG G7 ThinQ,3120,1440,https://www.lg.com/ca_en/cell-phones/g7/
+requested-fairphone5,Fairphone,Fairphone 5 (Android),2700,1224,https://www.fairphone.com/wp-content/uploads/2023/12/Fairphone-5-Information-on-how-to-repair-and-recycle.pdf
+requested-blackview-bv9200,Blackview,BV9200,2408,1080,https://store.blackview.hk/products/bv9200-66w-price
+requested-doogee-v30t,DOOGEE,V30T,2408,1080,https://is.doogee.cc/v30t/specs.html
+requested-ulefone-x10,Ulefone,Armor X10,1440,720,https://store.ulefone.com/pages/armor-x10-spec
+requested-cubot-kingkong9,CUBOT,KingKong 9,2408,1080,https://cubot.net/phones/rugged-phone/kingkong9-specs/94?l=en-us
+requested-unihertz-jellystar,Unihertz,Jelly Star,854,480,https://www.unihertz.com/products/jelly-star
+requested-umidigi-bisonx10s,UMIDIGI,BISON X10S NFC,1600,720,https://umidigi.com/page-umidigi_bison_x10s_x10g_nfc_specification.html

@@ -13,7 +13,8 @@ ROLES = dict(zip(map(str, range(5)), ['ADC', 'TOP', 'MID', 'JUNGLE', 'SUPPORT'])
 
 def expected_names(first_pick, step):
     order = [0, 5, 6, 1, 2, 7, 8, 3, 4, 9] if first_pick else [5, 0, 1, 6, 7, 2, 3, 8, 9, 4]
-    return {str(index): IDS[index] for index in order[:step]}
+    ids = IDS if first_pick else IDS[:4] + ['teemo'] + IDS[5:9] + ['vi']
+    return {str(index): ids[index] for index in order[:step]}
 
 
 def summarize(portraits, reports):
@@ -45,7 +46,7 @@ def summarize(portraits, reports):
                         or step.get('roles') != ROLES):
                     failures.append(f"Lectura de nombre/línea incorrecta: {key} paso {step['step']}")
             tenth = case.get('tenth', {})
-            last_id = 'teemo' if planned['firstPick'] else 'vi'
+            last_id = 'teemo'
             if (not tenth.get('confirmed') or not tenth.get('nameHidden')
                     or tenth.get('expected') != last_id or tenth.get('recognized') != last_id):
                 failures.append('Décima selección visual no confirmada: ' + key)
@@ -68,6 +69,8 @@ def write_report(directory, summary):
              'APK release instalado en emulador Android 34 x86_64. No hay teléfonos físicos conectados. '
              'Se redimensionan los píxeles de la captura del propietario y se simula la aparición sucesiva de los títulos. '
              'Los nombres de campeones seleccionados no se vuelven a dibujar ni se inyectan como resultados OCR. '
+             'Para el orden rival primero se intercambian los retratos finales y se traslada el título VI original: '
+             'la captura no contiene un título Teemo que pudiera leerse como noveno. '
              'Los títulos de líneas previos son sintéticos en español/portugués; los rivales sin seleccionar no tienen título. '
              'La calibración automática se mide con el perfil de cada modelo en la matriz de geometría; '
              'el APK instalado recibe ese resultado medido, sin fingir que el emulador es ese teléfono. '

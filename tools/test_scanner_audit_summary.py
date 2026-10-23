@@ -34,13 +34,13 @@ class ScannerAuditSummaryTest(unittest.TestCase):
             self.fixtures(directory)
             summary = module.summarize(directory)
             self.assertEqual('PASS', summary['status'])
-            self.assertEqual(63, summary['resolutionProfiles'])
-            self.assertEqual(189, summary['simulatedCases'])
-            self.assertEqual(3780, summary['identityChecks'])
+            self.assertEqual(106, summary['resolutionProfiles'])
+            self.assertEqual(318, summary['simulatedCases'])
+            self.assertEqual(6360, summary['identityChecks'])
             self.assertEqual(1, summary['uniqueDisplaySizes'])
             self.assertEqual([], summary['physicalDevicesTested'])
             module.write_reports(directory, summary)
-            self.assertEqual(190, len((directory / 'audit-measurements.csv').read_text().splitlines()))
+            self.assertEqual(319, len((directory / 'audit-measurements.csv').read_text().splitlines()))
             self.assertIn('no significa error geométrico cero', (directory / 'audit-report.md').read_text())
 
     def test_missing_variants_wrong_identity_and_duplicate_positions_cannot_pass(self):
