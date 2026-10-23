@@ -13,14 +13,17 @@ internal class DraftNameAtlas private constructor(val bitmap: Bitmap, val tiles:
 
     companion object {
         private const val GUTTER = 32
-        private const val SCALE = 2
 
         fun create(source: Bitmap, config: VisionCalibrationConfig, masks: List<Rect>): DraftNameAtlas {
             val bands = (0..4).flatMap { slot -> listOf(true, false).map { ally ->
                 Triple(ally, slot, AdaptiveScreenLayoutEngine.calculateSlotNameRect(source.width,source.height,ally,slot,config))
             } }
-            val cellWidth = bands.maxOf { (it.third.width()*SCALE).coerceAtMost(1400) } + GUTTER*2
-            val cellHeight = bands.maxOf { (it.third.height()*SCALE).coerceAtMost(420) } + GUTTER*2
+            // Keep small title glyphs legible to native OCR rather than making
+            // recognition depend on the input resolution. Upscaling cannot invent
+            // detail, so the native sequence audit still has to prove each size.
+            val scale = (100f / bands.minOf { it.third.height() }).coerceIn(2f, 6f)
+            val cellWidth = bands.maxOf { (it.third.width()*scale).toInt().coerceAtMost(1400) } + GUTTER*2
+            val cellHeight = bands.maxOf { (it.third.height()*scale).toInt().coerceAtMost(420) } + GUTTER*2
             val bitmap = Bitmap.createBitmap(cellWidth*3,cellHeight*5,Bitmap.Config.ARGB_8888)
             val canvas = Canvas(bitmap)
             canvas.drawColor(Color.BLACK)
@@ -36,8 +39,8 @@ internal class DraftNameAtlas private constructor(val bitmap: Bitmap, val tiles:
                             localCanvas.drawBitmap(source,band,Rect(0,0,crop.width,crop.height),null)
                             masks.forEach { mask -> localCanvas.drawRect(Rect(mask).apply { offset(-band.left,-band.top) },paint) }
                             if (ally && !original) DraftImagePreprocessor.suppressLeadingMasteryBadge(crop)
-                            val width=(crop.width*SCALE).coerceAtMost(1400)
-                            val height=(crop.height*SCALE).coerceAtMost(420)
+                            val width=(crop.width*scale).toInt().coerceAtMost(1400)
+                            val height=(crop.height*scale).toInt().coerceAtMost(420)
                             val column = if (!ally) 2 else if (original) 0 else 1
                             val left=column*cellWidth+GUTTER
                             val top=slot*cellHeight+GUTTER
@@ -46,7 +49,7 @@ internal class DraftNameAtlas private constructor(val bitmap: Bitmap, val tiles:
                             try { canvas.drawBitmap(scaled,left.toFloat(),top.toFloat(),null) }
                             finally { if(scaled!==crop) scaled.recycle() }
                             val y=if(ally) config.allySlotYRatios[slot] else config.enemySlotYRatios[slot]
-                            Tile(ally,slot,band,region,((source.height*(y+.005f)-band.top)*height/band.height()).toInt(),original)
+                            Tile(ally,slot,band,region,((source.height*(y+.005f*config.nameBandScale)-band.top)*height/band.height()).toInt(),original)
                         } finally { crop.recycle() }
                     }
                 }

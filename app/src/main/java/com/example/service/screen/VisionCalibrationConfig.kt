@@ -8,6 +8,9 @@ import android.content.SharedPreferences
  * Los valores están expresados en ratios normalizados (0.0f a 1.0f) respecto a la pantalla/captura.
  */
 data class VisionCalibrationConfig(
+    // Derived from the observed game viewport, not the physical capture height.
+    // It is recalculated per frame and must not overwrite the user's saved calibration.
+    val nameBandScale: Float = 1f,
     // Posición horizontal X central de avatares en columnas verticales de draft (0..1)
     val allyAvatarCenterX: Float = 0.072f,
     val enemyAvatarCenterX: Float = 0.959f,

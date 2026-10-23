@@ -39,6 +39,7 @@ internal object DraftFrameGeometry {
         fun y(value: Float) = (bounds.top + value * bounds.height()) / height
         val scale = bounds.height().toFloat() / height
         return base.copy(
+            nameBandScale = base.nameBandScale * scale,
             allyAvatarCenterX = x(base.allyAvatarCenterX), enemyAvatarCenterX = x(base.enemyAvatarCenterX),
             allySlotXRatios = base.allySlotXRatios.map(::x), enemySlotXRatios = base.enemySlotXRatios.map(::x),
             allySlotYRatios = base.allySlotYRatios.map(::y), enemySlotYRatios = base.enemySlotYRatios.map(::y),

@@ -13,6 +13,12 @@ La matriz de retratos y baneos incorpora nueve perfiles documentados de Xiaomi,
 Redmi y POCO: 63 perfiles, 41 dimensiones distintas y 189 variantes.
 Las referencias físicas Red Magic y Poco no cambian.
 
+La revisión encontró que las bandas OCR mantenían el alto físico de la captura
+cuando el juego estaba ajustado con bandas exteriores. Ahora siguen el alto del
+viewport observado, al igual que los retratos, evitando invadir otra fila.
+El atlas amplía proporcionalmente las bandas pequeñas (entre 2× y 6×), sin
+inventar detalle ni sustituir la lectura: cada tamaño debe pasar el OCR real.
+
 ## Secuencia verificada
 
 - Etapas 0–9: líneas aliadas inicialmente visibles; rivales sin título de campeón.
@@ -43,6 +49,9 @@ Red Magic y Poco conservan la confirmación física previa del propietario.
 
 - Matriz `DraftMultiDeviceAuditTest.kt` y generador/resumen de retratos.
 - `DraftSequenceMultiDeviceInstalledTest.kt`: OCR productivo por etapa y décimo visual.
+- `VisionCalibrationConfig.kt`, `DraftFrameGeometry.kt`, `AdaptiveScreenLayoutEngine.kt`,
+  `DraftNameAtlas.kt` y `DraftNameAtlasTest.kt`: bandas de nombres ajustadas al juego
+  y ampliación del texto antes de reconocerlo.
 - `scanner-sequence-plan.py`, `verify-draft-sequence-device.py`,
   `scanner-sequence-summary.py` y sus pruebas de integridad.
 - Flujos de validación/publicación: exigen que todas las secuencias se completen.

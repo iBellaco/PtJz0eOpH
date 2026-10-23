@@ -19,6 +19,44 @@ import org.robolectric.annotation.GraphicsMode
 @Config(sdk = [34], application = Application::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class DraftNameAtlasTest {
+    @Test fun nameBandsFollowTheGameViewportAndDoNotGrowIntoAnotherPlayersRow() {
+        val base = VisionCalibrationConfig()
+        val layouts = listOf(Triple(1024, 768, android.graphics.Rect(0, 152, 1024, 615)),
+            Triple(1080, 1080, android.graphics.Rect(0, 296, 1080, 784)),
+            Triple(1920, 1080, android.graphics.Rect(0, 106, 1920, 974)))
+        for ((width, height, viewport) in layouts) {
+            val adapted = com.example.service.screen.DraftFrameGeometry.forViewport(base, viewport, width, height)
+            for (ally in listOf(true, false)) for (slot in 0..4) {
+                val original = AdaptiveScreenLayoutEngine.calculateSlotNameRect(1280, 579, ally, slot, base)
+                val actual = AdaptiveScreenLayoutEngine.calculateSlotNameRect(width, height, ally, slot, adapted)
+                val expected = android.graphics.Rect(
+                    viewport.left + original.left * viewport.width() / 1280,
+                    viewport.top + original.top * viewport.height() / 579,
+                    viewport.left + original.right * viewport.width() / 1280,
+                    viewport.top + original.bottom * viewport.height() / 579)
+                listOf(actual.left to expected.left, actual.top to expected.top,
+                    actual.right to expected.right, actual.bottom to expected.bottom).forEach { (value, target) ->
+                    assertTrue("$width x $height $ally/$slot: $actual expected $expected", kotlin.math.abs(value-target) <= 2)
+                }
+            }
+            assertEquals(1f, base.nameBandScale, 0f)
+        }
+    }
+
+    @Test fun smallNameBandsAreUpscaledWithoutChangingTheSourceRegions() {
+        val source = Bitmap.createBitmap(640, 290, Bitmap.Config.ARGB_8888)
+        try {
+            val config = VisionCalibrationConfig()
+            val atlas = DraftNameAtlas.create(source, config, emptyList())
+            try {
+                assertEquals(15, atlas.tiles.size)
+                for (tile in atlas.tiles) {
+                    assertEquals(AdaptiveScreenLayoutEngine.calculateSlotNameRect(640, 290, tile.ally, tile.slot, config), tile.source)
+                    assertTrue("Small titles need more than a fixed 2x copy", tile.region.height() >= tile.source.height()*4)
+                }
+            } finally { atlas.bitmap.recycle() }
+        } finally { source.recycle() }
+    }
     @Test fun goldTitleSurvivesBadgeSuppressionOnBothMeasuredPhoneProfiles() {
         for (config in listOf(VisionCalibrationConfig(),
             VisionCalibrationConfig.defaultsForDevice("Xiaomi", "2412DPC0AG"))) {
