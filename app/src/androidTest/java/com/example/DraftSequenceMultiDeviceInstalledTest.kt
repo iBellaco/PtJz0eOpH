@@ -201,7 +201,7 @@ class DraftSequenceMultiDeviceInstalledTest {
                                     .put("frames",2).put("tenthExpected",fixture.tenth?:JSONObject.NULL)
                                     .put("tenthRecognized",visual?.champion?.id?:JSONObject.NULL)
                                     .put("visualCheck",if(fixture.titles.size<9) "blocked-before-nine" else
-                                        if(fixture.tenth!=null) "required" else "pending-owner-identity"))
+                                        if(fixture.tenth!=null) "required" else "not-applicable"))
                             } finally { realFrame.recycle() }
                         }
                         result.put("realCaptures",realChecks)

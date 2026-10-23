@@ -154,8 +154,8 @@ desde las instrucciones maestras. Se conservan las tres nuevas capturas reales,
 sus hashes y títulos transcritos independientemente. La matriz nativa completa
 debe leerlas en cada geometría, bloquear el décimo con ocho títulos y reconocer
 el décimo Teemo rival con nueve. Se comprueba además el baneo aliado omitido.
-La identidad del último aliado de la captura de Kai’Sa requiere confirmación del
-propietario: no se declara aprobada su identificación visual hasta conocerla.
+El propietario confirmó que el último aliado de la captura de Kai’Sa es Poppy:
+también se exige su reconocimiento visual como décima aliada con nueve títulos.
 Esto no sustituye la secuencia completa de ambos órdenes ya exigida.
 
 Solo este documento de resultados se añade a la lista exacta de archivos de

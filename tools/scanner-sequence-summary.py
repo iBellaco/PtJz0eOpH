@@ -15,7 +15,7 @@ REAL_CAPTURES = {
         visual='blocked-before-nine', tenth=None),
     'draft-kaisa-nine.jpg': dict(sha256='99fa9459a1378450c634169e0fb0e58687f5eb673ecf7ebf0046321075aedb3c',
         titles=dict(zip(['0','1','2','3','5','6','7','8','9'], ['seraphine','syndra','kai_sa','jarvan_iv','mel','tryndamere','xayah','k_sante','lux'])),
-        visual='pending-owner-identity', tenth=None),
+        visual='required', tenth='poppy'),
     'draft-mel-nine.jpg': dict(sha256='38b6b08da840289a188ccc9401297893486bcaa88752c1e03256578330755103',
         titles=dict(zip(map(str,range(9)), IDS[:9])), visual='required', tenth='teemo'),
 }
@@ -106,8 +106,8 @@ def write_report(directory, summary):
              'Los escenarios safe-area aplican márgenes sintéticos laterales del 5 % y de navegación del 3 %. '
              'No se afirma que sean los márgenes reales de cada notch o modelo solicitado.', '',
              f"Capturas reales adicionales comprobadas: {summary['realCaptureChecks']}. "
-             'Incluyen ocho títulos (décimo bloqueado), nueve con Teemo rival visual y nueve con último aliado pendiente de identificación por el propietario. '
-             'Ese último retrato no se presenta como identificación visual aprobada.', '',
+             'Incluyen ocho títulos (décimo bloqueado), nueve con Teemo rival visual y nueve con Poppy aliada visual. '
+             'La identidad de Poppy fue confirmada independientemente por el propietario.', '',
              '| Modelo / escenario | Pantalla horizontal | Captura procesada | Distribución | Orden probado | Idioma | Resultado |',
              '| --- | --- | --- | --- | --- | --- | --- |']
     for case in summary['cases']:

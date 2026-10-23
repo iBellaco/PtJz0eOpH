@@ -62,5 +62,6 @@ disponible. El APK Android no es una aplicación iOS.
 
 Capturas reales adicionales: `draft-swain-eight.jpg` (ocho títulos, APOYO aún
 visible); `draft-kaisa-nine.jpg` (nueve títulos, CALLE DEL BARÓN aún visible y
-segundo baneo aliado omitido); `draft-mel-nine.jpg` (nueve títulos y décimo rival
+segundo baneo aliado omitido; décimo aliado Poppy, confirmado por el propietario);
+`draft-mel-nine.jpg` (nueve títulos y décimo rival Teemo
 sin título). Todas están en `app/src/test/resources/portraits/`.

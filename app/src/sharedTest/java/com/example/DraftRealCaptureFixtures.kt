@@ -11,7 +11,7 @@ internal object DraftRealCaptureFixtures {
             com.example.model.LaneRole.SUPPORT),
         Capture("draft-kaisa-nine.jpg","99fa9459a1378450c634169e0fb0e58687f5eb673ecf7ebf0046321075aedb3c",false,
             mapOf(0 to "seraphine",1 to "syndra",2 to "kai_sa",3 to "jarvan_iv",5 to "mel",6 to "tryndamere",7 to "xayah",8 to "k_sante",9 to "lux"),
-            com.example.model.LaneRole.TOP),
+            com.example.model.LaneRole.TOP,"poppy"),
         Capture("draft-mel-nine.jpg","38b6b08da840289a188ccc9401297893486bcaa88752c1e03256578330755103",true,
             mapOf(0 to "senna",1 to "ornn",2 to "mel",3 to "volibear",4 to "vi",5 to "alistar",6 to "caitlyn",7 to "nocturne",8 to "vex"),
             null,"teemo")
