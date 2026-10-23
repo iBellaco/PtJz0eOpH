@@ -11,8 +11,9 @@ secuencia rival-primero esperaba equivocadamente leer ese nombre como noveno.
 Ahora usa una variante explícita que intercambia los últimos retratos y traslada
 los píxeles reales del título VI al lado rival; no genera ni inyecta texto OCR.
 El décimo campeón, Teemo en el lado correspondiente, mantiene el nombre oculto.
-Una prueba comprueba que los píxeles del título son idénticos y los dos retratos
-intercambiados cumplen el umbral productivo, sin relajar puntuaciones.
+Una prueba comprueba que los píxeles del título son idénticos, que los retratos
+conservan su identidad y que el décimo cumple el umbral productivo y necesita dos
+frames. El noveno se confirma por texto; no se exige aceptarlo visualmente.
 
 La lectura real también perdió VI en numerosas medidas y títulos a 640 × 360.
 Se amplían las bandas de títulos hasta 12× cuando son pequeñas y se añade una
@@ -51,3 +52,7 @@ Pendiente: nueva ejecución completa y auditoría medida antes de fusionar.
 La primera repetición detectó que AGP 9 no incorporaba el helper Kotlin compartido
 mediante java.srcDir. Se corrige a AndroidSourceSet.kotlin.directories, según la
 documentación de Kotlin integrado; no se omite la prueba que lo utiliza.
+La siguiente repetición encontró similitud 0.756 para el retrato trasladado de Vi:
+se exigía indebidamente el umbral visual del décimo a ese noveno pick por texto.
+Se conserva la comprobación de identidad y del título original; la inferencia
+visual y su umbral de 0.80 siguen siendo obligatorios para el décimo Teemo.

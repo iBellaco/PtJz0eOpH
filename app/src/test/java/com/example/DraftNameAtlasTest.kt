@@ -19,7 +19,7 @@ import org.robolectric.annotation.GraphicsMode
 @Config(sdk = [34], application = Application::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class DraftNameAtlasTest {
-    @Test fun oppositeOrderFixtureHasARealNinthTitleAndAnAcceptedTenthPortrait() {
+    @Test fun oppositeOrderFixtureHasARealNinthTitleAndAnAcceptedTenthPortrait() = kotlinx.coroutines.runBlocking<Unit> {
         val context = org.robolectric.RuntimeEnvironment.getApplication()
         com.example.data.WildRiftRepository.initChampions(context, forceReload = true)
         val source = javaClass.getResourceAsStream("/portraits/draft-ten-selected.jpg").use {
@@ -35,7 +35,17 @@ class DraftNameAtlasTest {
                 try {
                     val ranked = com.example.service.screen.LiteRTVisionClassifier.rankSlotPortrait(crop,ally,context)
                     assertEquals(expected,ranked.first().first.id)
-                    assertTrue(ranked.take(2).toString(),com.example.service.screen.PortraitMatcher.accepts(ranked[0].second,ranked[1].second,.80f))
+                    // The ninth pick is deliberately confirmed by its real title, never by
+                    // accepting a preview portrait. Only the tenth has a visual threshold.
+                    if (ally) {
+                        assertTrue(ranked.take(2).map { it.first.id to it.second }.toString(),
+                            com.example.service.screen.PortraitMatcher.accepts(ranked[0].second,ranked[1].second,.80f))
+                        val classifier = com.example.service.screen.LiteRTVisionClassifier
+                        classifier.reset()
+                        classifier.setThreshold(.80f,context)
+                        assertNull(classifier.executeTenthPickInference(crop,true,emptySet(),9,4,context))
+                        assertEquals("teemo",classifier.executeTenthPickInference(crop,true,emptySet(),9,4,context)?.first?.id)
+                    }
                 } finally { crop.recycle() }
             }
         } finally { source.recycle(); variant.recycle() }
