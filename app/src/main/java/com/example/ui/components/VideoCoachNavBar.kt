@@ -6,6 +6,7 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -25,13 +26,17 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.ui.theme.AppThemeManager
 import com.example.ui.theme.CoachNavStyle
 import com.example.util.tr
 import kotlin.math.min
+import kotlin.math.floor
 
 /** Each indicator and its icon share one coordinate system, including animated travel. */
 @Composable
@@ -44,11 +49,24 @@ fun VideoCoachNavBar(items: List<CoachNavItem>, selectedIndex: Int, style: Coach
     val accent = AppThemeManager.getNavBarAccentColor()
     val active = AppThemeManager.getNavBarSelectedIconColor()
     val inactive = AppThemeManager.getNavBarUnselectedColor()
-    val fontScale = LocalDensity.current.fontScale.coerceAtLeast(1f)
-    val labelHeight = (30 * fontScale).dp
-    val barHeight = 64.dp + labelHeight
-    Box(modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 4.dp)
-        .height(barHeight).testTag("video_nav_surface")) {
+    val density = LocalDensity.current
+    val measurer = rememberTextMeasurer()
+    val labelStyle = LocalTextStyle.current.merge(TextStyle(fontSize = 10.sp, lineHeight = 13.sp,
+        textAlign = TextAlign.Center))
+    BoxWithConstraints(modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 4.dp)) {
+      // Measure the narrowest rounded slot with the same font, locale and scale as Text.
+      // Portuguese labels can need three lines at accessibility sizes.
+      val labelWidth = with(density) { (floor(maxWidth.toPx() / items.size).toInt() - 2.dp.roundToPx()).coerceAtLeast(1) }
+      val labelPixels = items.maxOf { item ->
+          val title = tr(item.title)
+          listOf(FontWeight.Bold, FontWeight.Medium).maxOf { weight ->
+              measurer.measure(title, style = labelStyle.copy(fontWeight = weight),
+                  constraints = Constraints(maxWidth = labelWidth)).size.height
+          }
+      }
+      val labelHeight = with(density) { labelPixels.toDp() } + 4.dp
+      val barHeight = 64.dp + labelHeight
+      Box(Modifier.fillMaxWidth().height(barHeight).testTag("video_nav_surface")) {
         Canvas(Modifier.fillMaxSize()) {
             val slot = size.width / items.size
             val x = slot * (position + .5f)
@@ -133,10 +151,11 @@ fun VideoCoachNavBar(items: List<CoachNavItem>, selectedIndex: Int, style: Coach
                     }
                     Text(tr(item.title), modifier = Modifier.fillMaxWidth().height(labelHeight)
                         .padding(horizontal = 1.dp).testTag("nav_label_$i"),
-                        color = tint, fontSize = 10.sp, lineHeight = 13.sp, textAlign = TextAlign.Center,
+                        color = tint, style = labelStyle,
                         fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium)
                 }
             }
         }
+      }
     }
 }
