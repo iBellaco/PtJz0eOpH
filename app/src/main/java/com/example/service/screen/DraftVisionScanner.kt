@@ -386,7 +386,9 @@ object DraftVisionScanner {
             calibrationConfig.enemySlotDiameterRatios != defaults.enemySlotDiameterRatios
         val now = android.os.SystemClock.elapsedRealtime()
         // Detect bars at the same cadence as ring alignment, not on every OCR pass.
-        val refresh = alignedSize != (bitmap.width to bitmap.height) || lastAlignmentAt == 0L || now-lastAlignmentAt >= 2000
+        // Reinitialization invalidates the viewport too, even when capture dimensions
+        // stay identical (full-screen HUD versus the same surface with outer bars).
+        val refresh = alignedBase == null || alignedSize != (bitmap.width to bitmap.height) || lastAlignmentAt == 0L || now-lastAlignmentAt >= 2000
         if (refresh) activeViewport = DraftFrameGeometry.contentBounds(bitmap)
         val normalized = AdaptiveScreenLayoutEngine.computeAdaptiveConfig(bitmap.width, bitmap.height, calibrationConfig)
         val base = if (manual) normalized else DraftFrameGeometry.forViewport(normalized, activeViewport, bitmap.width, bitmap.height)

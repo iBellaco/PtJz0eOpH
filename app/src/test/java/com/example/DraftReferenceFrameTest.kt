@@ -20,6 +20,33 @@ class DraftReferenceFrameTest {
     private val expected = listOf("senna", "ornn", "mel", "volibear", "vi",
         "alistar", "caitlyn", "nocturne", "vex", "teemo")
 
+    @Test fun calibrationRestartInvalidatesViewportEvenAtTheSameCaptureSize() {
+        val context = RuntimeEnvironment.getApplication()
+        val preferences = context.getSharedPreferences("vision_calibration_prefs", 0)
+        preferences.edit().clear().commit()
+        val source = javaClass.getResourceAsStream("/portraits/draft-ten-selected.jpg").use { BitmapFactory.decodeStream(it)!! }
+        val plain = Bitmap.createBitmap(1024, 768, Bitmap.Config.ARGB_8888)
+        val letterboxed = Bitmap.createBitmap(1024, 768, Bitmap.Config.ARGB_8888)
+        try {
+            org.robolectric.shadows.ShadowSystemClock.advanceBy(java.time.Duration.ofMillis(100))
+            Canvas(plain).drawColor(Color.rgb(30, 35, 45))
+            DraftVisionScanner.initCalibration(context)
+            DraftVisionScanner.configForFrame(plain)
+            Canvas(letterboxed).apply {
+                drawColor(Color.BLACK)
+                drawBitmap(source, null, Rect(0, 152, 1024, 615), Paint(Paint.FILTER_BITMAP_FLAG))
+            }
+            DraftVisionScanner.initCalibration(context)
+            val aligned = DraftVisionScanner.configForFrame(letterboxed)
+            val crop = AdaptiveScreenLayoutEngine.calculateSlotCropRect(1024, 768, true, 0, aligned)
+            assertEquals(152 + 110f * 463 / 579, crop.exactCenterY(), 5f)
+        } finally {
+            source.recycle(); plain.recycle(); letterboxed.recycle()
+            preferences.edit().clear().commit()
+            DraftVisionScanner.initCalibration(context)
+        }
+    }
+
     @Test fun tenRealPortraitsRemainInTheirOwnSlotsAcrossCaptureSizesAndLetterboxing() {
         val context = RuntimeEnvironment.getApplication()
         WildRiftRepository.initChampions(context, forceReload = true)
@@ -158,6 +185,7 @@ class DraftReferenceFrameTest {
     @Test fun viewportAndMaskMappingRemainConsistentAcrossDenseSizeMatrix() {
         // Geometry only: not a claim of recognition or physical device testing at these sizes.
         val base = VisionCalibrationConfig()
+        var checked = 0
         for (width in 640..3840 step 37) for (height in 360..2160 step 31) {
             val scale = minOf(width / 1280.0, height / 579.0)
             val w = (1280 * scale).toInt(); val h = (579 * scale).toInt()
@@ -170,7 +198,14 @@ class DraftReferenceFrameTest {
             val mask = CaptureCoordinateSpace.map(Rect(0,0,1280,579),1280,579,width,height)
             assertTrue(mask.left >= 0 && mask.top >= 0 && mask.right <= width && mask.bottom <= height)
             assertTrue(kotlin.math.abs(mask.left-bounds.left) <= 1 && kotlin.math.abs(mask.top-bounds.top) <= 1)
+            checked++
         }
+        val report = java.io.File("build/reports/scanner-multidevice/geometry-transformations.json")
+        report.parentFile.mkdirs()
+        report.writeText(org.json.JSONObject().put("status", "PASS").put("cases", checked)
+            .put("evidenceType", "geometry-only-not-image-recognition")
+            .put("widthRange", org.json.JSONArray(listOf(640, 3840, 37)))
+            .put("heightRange", org.json.JSONArray(listOf(360, 2160, 31))).toString(2))
     }
 
     @Test fun manualHeaderGeometryIsNotReplacedAndOrientationProfilesAreDistinct() {

@@ -47,6 +47,7 @@ jobs:
         python3 -m unittest discover -s .github/scripts -p test_patch_content.py
         python3 -m unittest discover -s tools -p test_draft_audit_retry.py
         python3 -m unittest discover -s tools -p test_scanner_device_report.py
+        python3 -m unittest discover -s tools -p test_scanner_audit_summary.py
         python3 -m unittest discover -s tools -p test_junit_failure_report.py
         python3 tools/generate-component-items.py --check
         python3 tools/import-component-icons.py --check
@@ -381,6 +382,10 @@ jobs:
     - *id005
     - name: Validate the committed Gradle wrapper
       uses: gradle/actions/wrapper-validation@v4
+    - name: Recheck formerly drifting portrait centers first
+      env:
+        CI: 'true'
+      run: ./gradlew :app:testDebugUnitTest --tests com.example.DraftMultiDeviceAuditTest.formerlyFailingCentersStayAlignedWhenPortraitsChange --max-workers=1 --stacktrace --no-daemon
     - name: Test scanner and matchup rules with offline fixtures
       env:
         CI: 'true'
