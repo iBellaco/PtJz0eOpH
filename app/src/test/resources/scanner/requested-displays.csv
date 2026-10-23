@@ -1,4 +1,8 @@
 id,manufacturer,model,width,height,specification
+requested-pixel3xl,Google,Pixel 3 XL,2960,1440,https://support.google.com/pixelphone/answer/16043605?hl=en
+requested-poco-f1,Xiaomi,POCOPHONE F1,2246,1080,https://www.mi.com/uk/poco-f1/specs/
+requested-mi8pro,Xiaomi,Mi 8 Pro,2248,1080,https://www.mi.com/uk/mi-8-pro/specs/
+requested-zenfone5,asus,Zenfone 5 (ZE620KL),2246,1080,https://www.asus.com/pl/mobile-handhelds/phones/zenfone/zenfone-5/techspec/
 requested-samsung-a01,samsung,Galaxy A01,1520,720,https://news.samsung.com/br/samsung-anuncia-chegada-do-galaxy-a01-ao-brasil
 requested-samsung-a02,samsung,Galaxy A02,1600,720,https://news.samsung.com/br/samsung-apresenta-galaxy-a02-e-galaxy-a32-5g-no-brasil
 requested-samsung-a02s,samsung,Galaxy A02s,1600,720,https://developer.samsung.com/galaxy-emulator-skin/galaxy-a.html

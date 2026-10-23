@@ -26,9 +26,10 @@ lecturas para confirmar. Los resultados del próximo flujo determinarán si bast
 Se registran las 32 marcas y todos los modelos solicitados en
 `scanner-requested-models.json`. Apple/iOS no puede ejecutar el APK Android.
 Los modelos de una marca no heredan compatibilidad ni medidas de otro modelo.
-Se añaden 43 perfiles con medidas y fichas públicas primarias: la matriz prevista
-incluye además ocho escenarios de márgenes de recorte/navegación: 114 perfiles,
-342 variantes y 6840 comprobaciones previstas de retratos/baneos.
+Se añaden 47 perfiles con medidas y fichas públicas primarias, incluidos Pixel 3 XL,
+POCOPHONE F1, Mi 8 Pro y Zenfone 5 ZE620KL de la lista de notch clásico.
+La matriz incluye además ocho escenarios de márgenes de recorte/navegación:
+118 perfiles, 354 variantes y 7080 comprobaciones previstas de retratos/baneos.
 Esos márgenes son sintéticos (5 % lateral y 3 % de navegación), a izquierda y
 derecha, y no se atribuyen como dimensiones reales del notch de cada modelo.
 El informe genera explícitamente pendientes por modelo; no se afirma haber

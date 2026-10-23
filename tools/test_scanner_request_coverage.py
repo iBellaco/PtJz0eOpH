@@ -23,7 +23,7 @@ class CoverageTest(unittest.TestCase):
         path = module.ROOT/'app/src/test/resources/scanner/requested-displays.csv'
         with path.open() as source:
             rows = list(csv.DictReader(source))
-        self.assertEqual(43,len(rows))
+        self.assertEqual(47,len(rows))
         self.assertEqual(len(rows),len({row['id'] for row in rows}))
         self.assertTrue(all(int(row['width'])>=int(row['height'])>0 and row['specification'].startswith('https://') for row in rows))
         requested = json.loads((module.ROOT/'docs/scanner-requested-models.json').read_text())
