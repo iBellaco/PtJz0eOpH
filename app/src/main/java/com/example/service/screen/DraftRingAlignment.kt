@@ -24,11 +24,9 @@ internal object DraftRingAlignment {
         }
         val scale = if (slopes.isEmpty()) 1f else median(slopes)
         val shift = median(observations.map { (slot,y) -> y - ys[slot]*height*scale })
-        val result = ys.map { ((it*height*scale+shift)/height).coerceIn(0f,1f) }.toMutableList()
-        observations.forEach { (slot,y) ->
-            if (abs(y-result[slot]*height) <= maxOf(3f,radius*.12f)) result[slot] = y.toFloat()/height
-        }
-        return result
+        // Slot spacing belongs to the grid, not to the artwork in a single portrait.
+        // Snapping individual rows back to a noisy rim undoes this robust fit.
+        return ys.map { ((it*height*scale+shift)/height).coerceIn(0f,1f) }
     }
 
     fun align(bitmap: Bitmap, base: VisionCalibrationConfig, excluded: Rect?, ignoreDebugRings: Boolean = false): VisionCalibrationConfig {
@@ -47,7 +45,7 @@ internal object DraftRingAlignment {
         bitmap.getPixels(pixels, 0, w, 0, 0, w, h)
         fun fit(ally: Boolean): Pair<List<Float>, List<Float>>? {
             val ys = if (ally) base.allySlotYRatios else base.enemySlotYRatios
-            val fits = mutableListOf<Pair<Int, Pair<Int, Int>>>()
+            val fits = mutableListOf<Triple<Int, Pair<Int, Int>, Int>>()
             val radius = (h * base.avatarDiameterRatio / 2).roundToInt().coerceAtLeast(8)
             val radialRange = maxOf(3, (radius * .12f).toInt())
             val edgeDistance = maxOf(4, (radius * .16f).toInt())
@@ -111,7 +109,8 @@ internal object DraftRingAlignment {
                             if (bestRadialQuality > 0) hits++
                             quality += bestRadialQuality
                         }
-                        return if (hits >= minimumHits) quality else 0
+                        // Keep coverage as a tie-breaker and as evidence for grid recovery.
+                        return if (hits >= minimumHits) quality * 64 + hits else 0
                 }
                 var best = 0
                 var center: Pair<Int, Int>? = null
@@ -133,7 +132,7 @@ internal object DraftRingAlignment {
                     for (cy in max(minY, coarse.second-3)..min(maxY, coarse.second+3))
                         for (cx in max(minX, coarse.first-3)..min(maxX, coarse.first+3)) consider(cx, cy)
                 }
-                center?.let { if (best > 0) fits += slot to it }
+                center?.let { if (best > 0) fits += Triple(slot, it, best % 64) }
             }
             if (fits.size < 2) return null
             val medianX = fits.map { it.second.first }.sorted()[fits.size / 2]
@@ -146,9 +145,11 @@ internal object DraftRingAlignment {
             // on a face must not drag its row away from the rest of the column.
             // A preset from another layout can have both a different X and row spacing.
             // Once X agrees with the observed rings, sparse evidence must not stretch Y.
-            val foreignColumn = consistent.count { (slot, center) ->
+            val foreignColumn = consistent.count { (slot, center, coverage) ->
                 val nominalX = w * if (ally) base.getAllySlotX(slot) else base.getEnemySlotX(slot)
-                abs(center.first - nominalX) > radius * .5f
+                // Two partial rims can locate X, but cannot justify stretching all
+                // five rows. Require at least 70% circular coverage for that recovery.
+                coverage >= 28 && abs(center.first - nominalX) > radius * .5f
             } >= 2
             val alignedYs = alignRows(ys, h, radius, consistent.map { it.first to it.second.second }, foreignColumn)
             return List(5) { medianX.toFloat() / w } to alignedYs

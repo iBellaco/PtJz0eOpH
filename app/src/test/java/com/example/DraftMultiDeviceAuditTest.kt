@@ -56,6 +56,11 @@ class DraftMultiDeviceAuditTest {
     @Test fun referenceDevicesAndS26CaptureScenarios() = audit(profiles.take(6), "device-profiles")
     @Test fun phoneResolutionMatrix() = audit(profiles.drop(6).take(20), "phone-resolutions")
     @Test fun tabletResolutionMatrix() = audit(profiles.takeLast(4), "tablet-resolutions")
+    @Test fun formerlyFailingCentersStayAlignedWhenPortraitsChange() = audit(listOf(
+        Profile("regression-square", "generic", "square-resolution-simulation", 1800, 1800),
+        Profile("regression-small-edge", "generic", "synthetic-side-panels", 640, 360, true),
+        Profile("regression-tablet-edge", "generic", "synthetic-side-panels", 1024, 768, true)
+    ), "center-regressions")
     @Test fun documentedAndroidDisplayProfiles() = audit(listOf(
         Profile("pixel-8", "Google", "Pixel 8", 2400, 1080, specification = PIXEL_SPECS),
         Profile("pixel-8-pro", "Google", "Pixel 8 Pro", 2992, 1344, specification = PIXEL_SPECS),

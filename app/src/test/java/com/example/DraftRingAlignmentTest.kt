@@ -27,6 +27,12 @@ class DraftRingAlignmentTest {
         val result = DraftRingAlignment.alignRows(ys,579,32,listOf(0 to 119,3 to 352))
         ys.indices.forEach { assertEquals(ys[it]+10f/579,result[it],.002f) }
     }
+    @Test fun aNoisyPortraitCannotPullItsRowAwayFromTheFittedGrid() {
+        val ys = VisionCalibrationConfig().enemySlotYRatios
+        val result = DraftRingAlignment.alignRows(ys, 768, 42,
+            listOf(0 to 151, 1 to 252, 2 to 353, 3 to 455, 4 to 556))
+        assertEquals(ys[0] * 768 + 2, result[0] * 768, 3f)
+    }
     @Test fun anIndependentlyDetectedForeignColumnCanStillRecoverItsInitialSpacing() {
         val ys = VisionCalibrationConfig.defaultsForDevice("Xiaomi","2412DPC0AG").enemySlotYRatios
         val observations = listOf(1 to 190, 4 to 419)
