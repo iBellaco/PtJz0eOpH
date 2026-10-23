@@ -28,7 +28,7 @@ class SequenceAuditTest(unittest.TestCase):
                           recognized=reporter.expected_names(case['firstPick'], n),
                           expected=reporter.expected_names(case['firstPick'], n), roles=dict(reporter.ROLES)) for n in range(10)]
             last_id = 'teemo'
-            cases.append(dict(case, status='PASS', failures=[], steps=steps,
+            cases.append(dict(case, status='PASS', failures=[], steps=steps,validationMode='full',
                               tenth=dict(expected=last_id, recognized=last_id, confirmed=True, nameHidden=True)))
         return [dict(sourceSha256=planner.SOURCE_SHA256, cases=cases, instrumentationPassed=True)]
 
@@ -42,7 +42,7 @@ class SequenceAuditTest(unittest.TestCase):
         self.assertEqual('PASS', reporter.summarize(self.fixture(), self.reports(self.fixture()))['status'])
 
     def test_missing_ocr_steps_wrong_names_tenth_duplicates_and_changes_cannot_pass(self):
-        for mutation in ['missing', 'step', 'name', 'forged_expected', 'tenth', 'duplicate', 'geometry', 'source', 'roles', 'wrong_role', 'transport']:
+        for mutation in ['missing', 'step', 'name', 'forged_expected', 'tenth', 'duplicate', 'geometry', 'source', 'roles', 'wrong_role', 'transport','preflight']:
             with self.subTest(mutation=mutation):
                 fixture = self.fixture()
                 reports = self.reports(fixture)
@@ -68,6 +68,8 @@ class SequenceAuditTest(unittest.TestCase):
                     first['steps'][4]['roles'].pop('0')
                 elif mutation == 'transport':
                     reports[0]['instrumentationPassed'] = False
+                elif mutation == 'preflight':
+                    first['validationMode']='preflight-not-release'
                 else:
                     first['steps'][4]['roles']['0'] = 'MID'
                 self.assertEqual('FAIL', reporter.summarize(fixture, reports)['status'])

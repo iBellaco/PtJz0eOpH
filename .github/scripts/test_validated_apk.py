@@ -76,10 +76,12 @@ class ValidatedApkTest(unittest.TestCase):
     def test_missing_or_failed_native_sequence_matrix_prevents_reuse(self):
         self.assertEqual(('', ''), self.invoke(failed_job='scanner-sequence-audit'))
         self.assertEqual(('', ''), self.invoke(missing_job='scanner-sequence-audit'))
+        self.assertEqual(('', ''), self.invoke(failed_job='native-title-preflight'))
+        self.assertEqual(('', ''), self.invoke(missing_job='native-title-preflight'))
 
     def test_parallel_build_cannot_publish_before_full_and_native_regressions(self):
         release = self.workflow.split('  build-and-release:', 1)[1].split('  cleanup-history:', 1)[0]
-        for dependency in ['core-and-rendered', 'installed-audit', 'installed-spanish', 'scanner-sequence-audit']:
+        for dependency in ['core-and-rendered', 'installed-audit', 'installed-spanish', 'scanner-sequence-audit','native-title-preflight']:
             self.assertIn('    - ' + dependency + '\n', release)
         self.assertIn("'RENDERED_RESULT', 'DEVICE_RESULT', 'SPANISH_RESULT', 'SEQUENCE_RESULT'", release)
         self.assertIn('if any(value != expected for value in results.values())', release)

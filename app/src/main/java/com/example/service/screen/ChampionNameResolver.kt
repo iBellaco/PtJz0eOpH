@@ -122,6 +122,7 @@ object ChampionNameResolver {
         "nautilus" to "nautilus",
         "nilah" to "nilah",
         "nocturne" to "nocturne",
+        "ndcturne" to "nocturne", // Complete title: compressed O read as D; never substring/fuzzy matching.
         "nunu & willump" to "nunu_willump",
         "nunu y willump" to "nunu_willump",
         "nunu" to "nunu_willump",
@@ -191,6 +192,8 @@ object ChampionNameResolver {
         "viktor" to "viktor",
         "vladimir" to "vladimir",
         "volibear" to "volibear",
+        "volirear" to "volibear",
+        "voliear" to "volibear",
         "voliber" to "volibear",
         "volibea" to "volibear",
         "volbear" to "volibear",

@@ -35,6 +35,8 @@ def make_plan(summary):
                               firstPick=order, language='es' if order else 'pt'))
     for index, case in enumerate(cases):
         case['shard'] = index % 4
+        case['preflight'] = (tuple(case['capture']) in {(640,360),(800,450),(1024,768),(1600,1000),(854,480),(1520,720)}
+                             or any(row['profile'] in ('red-magic-reference','poco-x7-pro') for row in case['profiles']))
     return dict(sourceSha256=SOURCE_SHA256, modelProfiles=len(profiles),
                 physicalDevicesTested=[], cases=cases)
 

@@ -615,7 +615,7 @@ object DraftVisionScanner {
         val enemyOcrChampions = Array<Champion?>(5) { null }
         val textDiagnosticsList = mutableListOf<TextBlockDiagnostic>()
         val targetedAllyReadings = Array(5) { AllyDraftNameReader.Reading() }
-        val badgeSuppressedAllyReadings = Array(5) { AllyDraftNameReader.Reading() }
+        val targetedEnemyReadings = Array(5) { AllyDraftNameReader.Reading() }
         val targetedEnemyChampions = Array<Champion?>(5) { null }
 
         // -----------------------------------------------------------------------------------------
@@ -646,9 +646,10 @@ object DraftVisionScanner {
             // of a name band partly covered by the central assistant window.
             val atlas = DraftNameAtlas.create(bitmap,calib,exclusions+listOfNotNull(frameOverlay))
             try {
-                val text = recognizer.process(InputImage.fromBitmap(atlas.bitmap,0)).await()
+                suspend fun readTitles(input: DraftNameAtlas) {
+                val text = recognizer.process(InputImage.fromBitmap(input.bitmap,0)).await()
                 val lines = text.textBlocks.flatMap { it.lines }
-                for (tile in atlas.tiles) {
+                for (tile in input.tiles) {
                     val selected = lines.filter { line ->
                         line.boundingBox?.let { tile.region.contains(it.centerX(),it.centerY()) } == true
                     }
@@ -662,14 +663,24 @@ object DraftVisionScanner {
                     val reading = AllyDraftNameReader.readTitleRows(titleLines.map {
                         it.text to (it.boundingBox!!.centerY()-tile.region.top)
                     },(tile.region.height()*.30f).toInt(),allChamps,tile.titleMaxY)
-                    if (tile.ally && tile.original) targetedAllyReadings[tile.slot]=reading
-                    else if (tile.ally) badgeSuppressedAllyReadings[tile.slot]=AllyDraftNameReader.preferOriginal(
-                        badgeSuppressedAllyReadings[tile.slot], reading)
-                    else targetedEnemyChampions[tile.slot]=reading.champion.takeUnless { reading.ambiguous }
+                    val readings = if(tile.ally) targetedAllyReadings else targetedEnemyReadings
+                    readings[tile.slot]=AllyDraftNameReader.preferOriginal(readings[tile.slot],reading)
+                }
+                }
+                readTitles(atlas)
+                val unresolved = atlas.tiles.filter { tile -> tile.original &&
+                    (if(tile.ally) targetedAllyReadings else targetedEnemyReadings)[tile.slot].let {
+                        !it.ambiguous && it.champion==null && it.lane==null
+                    }
+                }
+                if (unresolved.isNotEmpty()) {
+                    val retry = DraftNameAtlas.retryUnresolved(atlas,unresolved)
+                    try { readTitles(retry) } finally { retry.bitmap.recycle() }
                 }
                 for (slot in 0..4) {
-                    targetedAllyReadings[slot] = AllyDraftNameReader.preferOriginal(
-                        targetedAllyReadings[slot], badgeSuppressedAllyReadings[slot])
+                    targetedEnemyChampions[slot] = targetedEnemyReadings[slot].let {
+                        it.champion.takeUnless { _ -> it.ambiguous }
+                    }
                 }
             } finally { atlas.bitmap.recycle() }
 

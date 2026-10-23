@@ -34,10 +34,11 @@ def summarize(portraits, reports):
                 continue
             seen.add(key)
             before = len(failures)
-            if any(case.get(field) != planned[field] for field in ('capture', 'profiles', 'layout', 'prior', 'calibration', 'safeInsets', 'firstPick', 'language', 'shard')):
+            if any(case.get(field) != planned[field] for field in ('capture', 'profiles', 'layout', 'prior', 'calibration', 'safeInsets', 'firstPick', 'language', 'shard','preflight')):
                 failures.append('Geometría/secuencia distinta a la planificada: ' + key)
             steps = case.get('steps', [])
-            if case.get('status') != 'PASS' or case.get('failures') or [step.get('step') for step in steps] != list(range(10)):
+            if (case.get('validationMode')!='full' or case.get('status') != 'PASS' or case.get('failures')
+                    or [step.get('step') for step in steps] != list(range(10))):
                 failures.append('Secuencia incompleta: ' + key)
             for step in steps:
                 exact = expected_names(planned['firstPick'], step['step'])

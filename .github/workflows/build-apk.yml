@@ -505,8 +505,55 @@ jobs:
         name: spanish-device-audit
         path: app/build/reports/spanish-device/
         retention-days: 14
-  native-name-sequence:
+  native-title-preflight:
     needs: build-apk
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+    - *id001
+    - *id002
+    - *id006
+    - name: Download the release APKs for targeted native title verification
+      uses: actions/download-artifact@v4
+      with:
+        name: installed-audit-apks
+        path: app/build/outputs/apk/
+    - name: Download the measured matrix for title verification
+      uses: actions/download-artifact@v4
+      with:
+        name: scanner-multidevice-audit
+        path: app/build/
+    - name: Reconstruct the same complete native sequence plan
+      run: python3 tools/scanner-sequence-plan.py app/build/reports/scanner-multidevice/audit-summary.json app/build/generated/scanner-sequence-assets/scanner-sequence-plan.json
+    - name: Enable Android virtual device acceleration
+      run: |
+        echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+        sudo udevadm control --reload-rules
+        sudo udevadm trigger --name-match=kvm
+        sudo chmod 666 /dev/kvm || true
+    - name: Recheck compressed and short titles before the full sequence matrix
+      uses: reactivecircus/android-emulator-runner@v2
+      env:
+        COACH_SEQUENCE_SHARD: '0'
+        COACH_SEQUENCE_PREFLIGHT: 'true'
+      with:
+        api-level: 34
+        arch: x86_64
+        target: google_apis
+        disable-animations: true
+        emulator-boot-timeout: 300
+        emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
+        script: python3 tools/verify-draft-sequence-device.py
+    - name: Preserve the targeted native title evidence without treating it as a full sequence
+      if: always()
+      uses: actions/upload-artifact@v5
+      with:
+        name: scanner-title-preflight
+        path: app/build/reports/scanner-sequence-preflight/
+        if-no-files-found: error
+        retention-days: 14
+  native-name-sequence:
+    needs: [build-apk,native-title-preflight]
     runs-on: ubuntu-latest
     timeout-minutes: 60
     strategy:
@@ -593,6 +640,7 @@ jobs:
     - core-and-rendered
     - installed-audit
     - installed-spanish
+    - native-title-preflight
     - scanner-sequence-audit
     runs-on: ubuntu-latest
     steps:
@@ -605,12 +653,13 @@ jobs:
         DEVICE_RESULT: ${{ needs.installed-audit.result }}
         SPANISH_RESULT: ${{ needs.installed-spanish.result }}
         SEQUENCE_RESULT: ${{ needs.scanner-sequence-audit.result }}
+        PREFLIGHT_RESULT: ${{ needs.native-title-preflight.result }}
         REUSE_RUN: ${{ needs.find-validated-apk.outputs.run_id }}
         REUSE_RESULT: ${{ needs.find-validated-apk.result }}
       run: |
         python3 - <<'PYRESULT'
         import os
-        results = {key: os.environ[key] for key in ('DATA_RESULT', 'SCANNER_RESULT', 'BUILD_RESULT', 'RENDERED_RESULT', 'DEVICE_RESULT', 'SPANISH_RESULT', 'SEQUENCE_RESULT')}
+        results = {key: os.environ[key] for key in ('DATA_RESULT', 'SCANNER_RESULT', 'BUILD_RESULT', 'RENDERED_RESULT', 'DEVICE_RESULT', 'SPANISH_RESULT', 'SEQUENCE_RESULT','PREFLIGHT_RESULT')}
         print(results)
         expected = 'skipped' if os.environ.get('REUSE_RUN') and os.environ.get('REUSE_RESULT') == 'success' else 'success'
         if any(value != expected for value in results.values()):
@@ -735,6 +784,7 @@ jobs:
     - core-and-rendered
     - installed-audit
     - installed-spanish
+    - native-title-preflight
     - scanner-sequence-audit
     - build-and-release
     runs-on: ubuntu-latest

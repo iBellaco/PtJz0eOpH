@@ -14,6 +14,38 @@ internal class DraftNameAtlas private constructor(val bitmap: Bitmap, val tiles:
     companion object {
         private const val GUTTER = 32
 
+        /** Re-read only unresolved titles at full tile size, avoiding a wide atlas
+         * shrinking a two-letter name inside the native text detector. No new text pixels. */
+        fun retryUnresolved(atlas: DraftNameAtlas, unresolved: List<Tile>): DraftNameAtlas {
+            require(unresolved.isNotEmpty() && unresolved.all { it.original && it in atlas.tiles })
+            val cellWidth = unresolved.maxOf { it.region.width() } + GUTTER*2
+            val cellHeight = unresolved.maxOf { it.region.height() } + GUTTER*2
+            val bitmap = Bitmap.createBitmap(cellWidth*2,cellHeight*unresolved.size,Bitmap.Config.ARGB_8888)
+            val canvas = Canvas(bitmap).apply { drawColor(Color.BLACK) }
+            try {
+                val tiles = unresolved.flatMapIndexed { row, tile ->
+                    listOf(false,true).mapIndexed { column, contrast ->
+                        val prior = if (contrast && tile.ally) atlas.tiles.first {
+                            it.ally && it.slot==tile.slot && it.contrast
+                        } else tile
+                        val sampled = Bitmap.createBitmap(atlas.bitmap,prior.region.left,prior.region.top,
+                            prior.region.width(),prior.region.height())
+                        val crop = try { sampled.copy(Bitmap.Config.ARGB_8888,true) }
+                            finally { if(sampled!==atlas.bitmap) sampled.recycle() }
+                        try {
+                            if (contrast && !tile.ally) enhanceTitleContrast(crop)
+                            val left = column*cellWidth+GUTTER
+                            val top = row*cellHeight+GUTTER
+                            canvas.drawBitmap(crop,left.toFloat(),top.toFloat(),null)
+                            tile.copy(region=Rect(left,top,left+crop.width,top+crop.height),
+                                original=!contrast,contrast=contrast)
+                        } finally { crop.recycle() }
+                    }
+                }
+                return DraftNameAtlas(bitmap,tiles)
+            } catch (error: Throwable) { bitmap.recycle(); throw error }
+        }
+
         fun create(source: Bitmap, config: VisionCalibrationConfig, masks: List<Rect>): DraftNameAtlas {
             val bands = (0..4).flatMap { slot -> listOf(true, false).map { ally ->
                 Triple(ally, slot, AdaptiveScreenLayoutEngine.calculateSlotNameRect(source.width,source.height,ally,slot,config))

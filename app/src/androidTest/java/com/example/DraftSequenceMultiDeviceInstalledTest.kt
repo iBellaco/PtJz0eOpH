@@ -31,6 +31,8 @@ class DraftSequenceMultiDeviceInstalledTest {
 
     @Test fun firstNineNamesThenOnlyTheTenthPortraitAtEveryPlannedGeometry() = kotlinx.coroutines.runBlocking<Unit> {
         val shard = InstrumentationRegistry.getArguments().getString("sequenceShard")!!.toInt()
+        val preflight = InstrumentationRegistry.getArguments().getString("sequencePreflight")=="true"
+        val stages = if(preflight) listOf(0,9) else (0..9).toList()
         val plan = instrumentation.context.assets.open("scanner-sequence-plan.json").bufferedReader().use { JSONObject(it.readText()) }
         val cases = plan.getJSONArray("cases")
         val bytes = instrumentation.context.assets.open("portraits/draft-ten-selected.jpg").use { it.readBytes() }
@@ -39,14 +41,15 @@ class DraftSequenceMultiDeviceInstalledTest {
         val source = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)!!
         val previous = scanner.calibrationConfig
         val failures = mutableListOf<String>()
-        val evidence = File(context.getExternalFilesDir(null), "scanner-sequence-audit").apply { mkdirs() }
+        val evidence = File(context.getExternalFilesDir(null), if(preflight) "scanner-sequence-preflight" else "scanner-sequence-audit").apply { mkdirs() }
         try {
             scanner.overlayRect = null
             scanner.debugTextRects = emptyList()
             for (index in 0 until cases.length()) {
                 val case = cases.getJSONObject(index)
-                if (case.getInt("shard") != shard) continue
+                if (if(preflight) !case.getBoolean("preflight") else case.getInt("shard")!=shard) continue
                 val result = JSONObject(case.toString()).put("evidenceType", "installed-native-ocr-resized-fixture-not-physical-model")
+                    .put("validationMode",if(preflight) "preflight-not-release" else "full")
                 val checks = JSONArray()
                 val errors = mutableListOf<String>()
                 val started = android.os.SystemClock.elapsedRealtime()
@@ -74,7 +77,7 @@ class DraftSequenceMultiDeviceInstalledTest {
                         allySlotYRatios = floats("allySlotYRatios"), enemySlotYRatios = floats("enemySlotYRatios"),
                         allySlotDiameterRatios = floats("allySlotDiameterRatios"), enemySlotDiameterRatios = floats("enemySlotDiameterRatios"))
                     scanner.updateCalibration(context, config)
-                    try { for (step in 0..9) {
+                    try { for (step in stages) {
                         val visible = positions.take(step).toSet()
                         val staged = stage(sequenceSource, visible, case.getString("language"))
                         val frame = resize(staged, case)
@@ -149,7 +152,7 @@ class DraftSequenceMultiDeviceInstalledTest {
                     errors += "${failure.javaClass.simpleName}: ${failure.message}"
                 } finally {
                     result.put("steps", checks).put("failures", JSONArray(errors))
-                        .put("status", if (errors.isEmpty() && checks.length() == 10) "PASS" else "FAIL")
+                        .put("status", if (errors.isEmpty() && checks.length() == stages.size) "PASS" else "FAIL")
                         .put("elapsedMs", android.os.SystemClock.elapsedRealtime() - started)
                     instrumentation.sendStatus(2, Bundle().apply { putString("stream", "\nCOACH_SEQUENCE_CASE: $result\n") })
                     failures += errors.map { "${case.getString("id")}: $it" }

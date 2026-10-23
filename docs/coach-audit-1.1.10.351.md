@@ -57,3 +57,33 @@ La siguiente repetición encontró similitud 0.756 para el retrato trasladado de
 se exigía indebidamente el umbral visual del décimo a ese noveno pick por texto.
 Se conserva la comprobación de identidad y del título original; la inferencia
 visual y su umbral de 0.80 siguen siendo obligatorios para el décimo Teemo.
+
+## Resultado de 39994943410 y segunda corrección
+
+La matriz de imágenes aprobó 118 perfiles, 52 medidas, 354 variantes y 7080
+comprobaciones. Se aprobaron 743 pruebas unitarias sin omisiones, la firma/R8
+(1383 clases renombradas), 39 pantallas instaladas en español y 41 en portugués.
+El APK no incorporó los archivos de la matriz. Se revisaron las imágenes de
+Jelly Star, Pixel 3 XL, margen 854 × 480 y pantallas portuguesas.
+
+Sin embargo, la secuencia nativa completa aprobó solo 29/63 casos. No se fusionó
+ni publicó: persistían VI sin lectura, títulos pequeños mal leídos y un caso Vex
+con confirmación tardía. La auditoría parcial publicada no certifica esta fase.
+
+La inspección de los atlas mostró una insignia de maestría parcialmente borrada
+junto a VI. La supresión ahora localiza componentes dorados altos en lugar de
+recortar un ancho fijo, manteniendo las letras doradas pequeñas y el original.
+Los títulos no resueltos se vuelven a leer en una imagen pequeña independiente,
+con píxeles y exclusiones conservados; no se incrementa la confirmación por
+obtener dos respuestas OCR dentro del mismo fotograma.
+
+Se normalizan únicamente lecturas completas observadas (NDCTURNE, VOLIREAR,
+VOLIEAR y títulos completos de líneas comprimidos); no se añaden coincidencias
+parciales, apodos, abreviaciones ni inferencia de línea por campeón/posición.
+
+Se añade una comprobación nativa preliminar de los tamaños problemáticos y las
+dos referencias conocidas, con etapas 0/9. Su modo es explícitamente no
+publicable; el informe final rechaza usarlo como sustituto de los 63 casos con
+etapas 0–9. Así una lectura aún incorrecta se detecta antes de lanzar toda la
+matriz. Las barreras completas de publicación y los umbrales no se reducen.
+Pendiente: repetir toda la validación con esta corrección.

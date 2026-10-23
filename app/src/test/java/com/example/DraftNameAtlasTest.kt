@@ -19,6 +19,46 @@ import org.robolectric.annotation.GraphicsMode
 @Config(sdk = [34], application = Application::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class DraftNameAtlasTest {
+    @Test fun actualMasteryBadgeIsFullyRemovedWithoutTouchingTheTwoViLetters() {
+        val source=javaClass.getResourceAsStream("/portraits/draft-ten-selected.jpg").use {
+            android.graphics.BitmapFactory.decodeStream(it)!!
+        }
+        val original=Bitmap.createBitmap(source,130,390,50,32)
+        val cleaned=original.copy(Bitmap.Config.ARGB_8888,true)
+        try {
+            com.example.service.screen.DraftImagePreprocessor.suppressLeadingMasteryBadge(cleaned)
+            fun gold(bitmap:Bitmap):Int=(0 until bitmap.height).sumOf { y -> (0 until bitmap.width).count { x ->
+                val c=bitmap.getPixel(x,y)
+                Color.red(c)>95 && Color.green(c)>65 && Color.red(c)>Color.green(c)*1.08f && Color.green(c)>Color.blue(c)*1.25f
+            } }
+            assertTrue(gold(original)>10)
+            assertEquals("A partial badge must not remain attached to VI",0,gold(cleaned))
+            for(y in 14..24) for(x in 26..39)
+                assertEquals("Real VI pixels must remain unchanged",original.getPixel(x,y),cleaned.getPixel(x,y))
+        } finally { cleaned.recycle();original.recycle();source.recycle() }
+    }
+    @Test fun retryKeepsExactMaskedPixelsAndTitleBoundsButOnlyTheUnresolvedSlots() {
+        val source = Bitmap.createBitmap(1280,579,Bitmap.Config.ARGB_8888)
+        Canvas(source).drawColor(Color.rgb(40,60,90))
+        val config=VisionCalibrationConfig()
+        val band=AdaptiveScreenLayoutEngine.calculateSlotNameRect(1280,579,false,4,config)
+        val atlas=DraftNameAtlas.create(source,config,listOf(band))
+        try {
+            val tile=atlas.tiles.single { !it.ally && it.slot==4 }
+            val retry=DraftNameAtlas.retryUnresolved(atlas,listOf(tile))
+            try {
+                assertEquals(2,retry.tiles.size)
+                assertTrue(retry.tiles.all { !it.ally && it.slot==4 && it.source==tile.source && it.titleMaxY==tile.titleMaxY })
+                val raw=retry.tiles.single { it.original }
+                assertTrue(retry.bitmap.width<atlas.bitmap.width)
+                for(y in 0 until tile.region.height()) for(x in 0 until tile.region.width()) {
+                    assertEquals(Color.BLACK,atlas.bitmap.getPixel(tile.region.left+x,tile.region.top+y))
+                    assertEquals(atlas.bitmap.getPixel(tile.region.left+x,tile.region.top+y),
+                        retry.bitmap.getPixel(raw.region.left+x,raw.region.top+y))
+                }
+            } finally { retry.bitmap.recycle() }
+        } finally { atlas.bitmap.recycle(); source.recycle() }
+    }
     @Test fun oppositeOrderFixtureHasARealNinthTitleAndAnAcceptedTenthPortrait() = kotlinx.coroutines.runBlocking<Unit> {
         val context = org.robolectric.RuntimeEnvironment.getApplication()
         com.example.data.WildRiftRepository.initChampions(context, forceReload = true)
@@ -111,7 +151,7 @@ class DraftNameAtlasTest {
                         return count
                     }
                     assertTrue("The untouched title must retain its leading letters", goldPixels(raw) > 20)
-                    assertEquals("Badge removal would have erased those letters", 0, goldPixels(processed))
+                    assertTrue("Small golden title letters must survive badge removal too", goldPixels(processed)>20)
                 } finally { atlas.bitmap.recycle() }
             } finally { source.recycle() }
         }
