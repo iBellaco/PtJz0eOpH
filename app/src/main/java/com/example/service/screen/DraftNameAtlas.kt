@@ -20,13 +20,15 @@ internal class DraftNameAtlas private constructor(val bitmap: Bitmap, val tiles:
             require(unresolved.isNotEmpty() && unresolved.all { it.original && it in atlas.tiles })
             val cellWidth = unresolved.maxOf { it.region.width() } + GUTTER*2
             val cellHeight = unresolved.maxOf { it.region.height() } + GUTTER*2
-            val bitmap = Bitmap.createBitmap(cellWidth*2,cellHeight*unresolved.size,Bitmap.Config.ARGB_8888)
+            val bitmap = Bitmap.createBitmap(cellWidth*3,cellHeight*unresolved.size,Bitmap.Config.ARGB_8888)
             val canvas = Canvas(bitmap).apply { drawColor(Color.BLACK) }
             try {
                 val tiles = unresolved.flatMapIndexed { row, tile ->
-                    listOf(false,true).mapIndexed { column, contrast ->
-                        val prior = if (contrast && tile.ally) atlas.tiles.first {
-                            it.ally && it.slot==tile.slot && it.contrast
+                    (0..2).map { column ->
+                        val contrast=column==1
+                        val binary=column==2
+                        val prior = if ((contrast || binary) && tile.ally) atlas.tiles.first {
+                            it.ally && it.slot==tile.slot && !it.original && it.contrast==contrast
                         } else tile
                         val sampled = Bitmap.createBitmap(atlas.bitmap,prior.region.left,prior.region.top,
                             prior.region.width(),prior.region.height())
@@ -34,11 +36,12 @@ internal class DraftNameAtlas private constructor(val bitmap: Bitmap, val tiles:
                             finally { if(sampled!==atlas.bitmap) sampled.recycle() }
                         try {
                             if (contrast && !tile.ally) enhanceTitleContrast(crop)
+                            if (binary) isolateBrightTitleStrokes(crop)
                             val left = column*cellWidth+GUTTER
                             val top = row*cellHeight+GUTTER
                             canvas.drawBitmap(crop,left.toFloat(),top.toFloat(),null)
                             tile.copy(region=Rect(left,top,left+crop.width,top+crop.height),
-                                original=!contrast,contrast=contrast)
+                                original=column==0,contrast=column!=0)
                         } finally { crop.recycle() }
                     }
                 }
@@ -90,6 +93,38 @@ internal class DraftNameAtlas private constructor(val bitmap: Bitmap, val tiles:
                 }
                 return DraftNameAtlas(bitmap,tiles)
             } catch (error: Throwable) { bitmap.recycle(); throw error }
+        }
+
+        /** Another reading of the same pixels, never a generated champion label. */
+        private fun isolateBrightTitleStrokes(crop: Bitmap) {
+            val width=crop.width;val height=crop.height
+            val pixels=IntArray(width*height)
+            crop.getPixels(pixels,0,width,0,0,width,height)
+            val light=IntArray(pixels.size) { i ->
+                (Color.red(pixels[i])*299+Color.green(pixels[i])*587+Color.blue(pixels[i])*114)/1000
+            }
+            val stride=width+1
+            val integral=LongArray(stride*(height+1))
+            for(y in 0 until height) {
+                var row=0L
+                for(x in 0 until width) {
+                    row+=light[y*width+x]
+                    integral[(y+1)*stride+x+1]=integral[y*stride+x+1]+row
+                }
+            }
+            val radius=(height*.10f).toInt().coerceAtLeast(2)
+            for(y in 0 until height) for(x in 0 until width) {
+                val left=(x-radius).coerceAtLeast(0);val right=(x+radius+1).coerceAtMost(width)
+                val top=(y-radius).coerceAtLeast(0);val bottom=(y+radius+1).coerceAtMost(height)
+                val sum=integral[bottom*stride+right]-integral[top*stride+right]-
+                    integral[bottom*stride+left]+integral[top*stride+left]
+                val mean=sum.toFloat()/((right-left)*(bottom-top))
+                val value=light[y*width+x]
+                // Local contrast removes the changing blue scenery without
+                // drawing a glyph or guessing a champion from a portrait.
+                pixels[y*width+x]=if(value>=80 && value>=mean+8f) Color.BLACK else Color.WHITE
+            }
+            crop.setPixels(pixels,0,width,0,0,width,height)
         }
 
         /** Another reading of the same pixels, never a generated champion label. */

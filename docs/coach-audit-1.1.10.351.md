@@ -87,3 +87,19 @@ publicable; el informe final rechaza usarlo como sustituto de los 63 casos con
 etapas 0–9. Así una lectura aún incorrecta se detecta antes de lanzar toda la
 matriz. Las barreras completas de publicación y los umbrales no se reducen.
 Pendiente: repetir toda la validación con esta corrección.
+
+## Comprobación preliminar de 40004549460
+
+Se aprobaron de nuevo las 354 variantes y 746 pruebas unitarias sin omisiones,
+la compilación, firma persistente y R8. El APK de esta ejecución tiene SHA-256
+`bf717add778abada04b032840bc5effa0e36e0555ee95cfbaeb5c4cc32e13046`.
+La prueba preliminar nativa aprobó 7/15 casos y falló 8/15: principalmente VI,
+además de Volibear a 640 × 360. No se aprobó ni publicó ese APK.
+
+El atlas conservaba alas pálidas de la insignia tras redimensionar: la máscara
+ahora incluye el dorado mezclado, con una regresión de los píxeles reales a
+1920 × 869 y conservación exacta de VI. La relectura añade una alternativa de
+contraste local binario para separar los trazos del fondo cambiante; no dibuja
+letras ni utiliza retratos para los primeros nueve. Se guarda también el atlas
+y la respuesta de esta relectura cuando falla una prueba nativa.
+Pendiente: verificar esta nueva corrección en el APK instalado y toda la matriz.

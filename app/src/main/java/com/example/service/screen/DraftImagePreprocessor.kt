@@ -26,7 +26,9 @@ object DraftImagePreprocessor {
         for (y in 0 until crop.height) for (x in 0 until iconWidth) {
             val pixel = crop.getPixel(x, y)
             val red = Color.red(pixel); val green = Color.green(pixel); val blue = Color.blue(pixel)
-            gold[y*iconWidth+x] = red>95 && green>65 && red>green*1.08f && green>blue*1.25f
+            // Resizing blends the pale wings with the blue background. Requiring
+            // strongly saturated gold left those wings attached to short titles.
+            gold[y*iconWidth+x] = red>95 && green>65 && red>green*.95f && green>blue*1.05f
         }
         val seen = BooleanArray(gold.size)
         val canvas = android.graphics.Canvas(crop)

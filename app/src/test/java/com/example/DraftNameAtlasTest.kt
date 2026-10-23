@@ -19,6 +19,26 @@ import org.robolectric.annotation.GraphicsMode
 @Config(sdk = [34], application = Application::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class DraftNameAtlasTest {
+    @Test fun resizedPaleBadgeWingsAreRemovedWithoutErasingVi() {
+        val source=javaClass.getResourceAsStream("/portraits/draft-ten-selected.jpg").use {
+            android.graphics.BitmapFactory.decodeStream(it)!!
+        }
+        val frame=Bitmap.createBitmap(1920,869,Bitmap.Config.ARGB_8888)
+        Canvas(frame).drawBitmap(source,null,android.graphics.Rect(0,0,1920,868),Paint(Paint.FILTER_BITMAP_FLAG))
+        val original=Bitmap.createBitmap(frame,183,586,269,48)
+        val cleaned=original.copy(Bitmap.Config.ARGB_8888,true)
+        try {
+            com.example.service.screen.DraftImagePreprocessor.suppressLeadingMasteryBadge(cleaned)
+            fun gold(bitmap:Bitmap):Int=(0 until bitmap.height).sumOf { y -> (0 until 50).count { x ->
+                val c=bitmap.getPixel(x,y)
+                Color.red(c)>95 && Color.green(c)>65 && Color.red(c)>Color.green(c)*1.08f && Color.green(c)>Color.blue(c)*1.25f
+            } }
+            assertTrue(gold(original)>100)
+            assertEquals("Resizing must not leave warm wings beside a two-letter title",0,gold(cleaned))
+            for(y in 19..34) for(x in 52..71)
+                assertEquals(original.getPixel(x,y),cleaned.getPixel(x,y))
+        } finally { cleaned.recycle();original.recycle();frame.recycle();source.recycle() }
+    }
     @Test fun actualMasteryBadgeIsFullyRemovedWithoutTouchingTheTwoViLetters() {
         val source=javaClass.getResourceAsStream("/portraits/draft-ten-selected.jpg").use {
             android.graphics.BitmapFactory.decodeStream(it)!!
@@ -47,7 +67,7 @@ class DraftNameAtlasTest {
             val tile=atlas.tiles.single { !it.ally && it.slot==4 }
             val retry=DraftNameAtlas.retryUnresolved(atlas,listOf(tile))
             try {
-                assertEquals(2,retry.tiles.size)
+                assertEquals(3,retry.tiles.size)
                 assertTrue(retry.tiles.all { !it.ally && it.slot==4 && it.source==tile.source && it.titleMaxY==tile.titleMaxY })
                 val raw=retry.tiles.single { it.original }
                 assertTrue(retry.bitmap.width<atlas.bitmap.width)
@@ -56,6 +76,9 @@ class DraftNameAtlasTest {
                     assertEquals(atlas.bitmap.getPixel(tile.region.left+x,tile.region.top+y),
                         retry.bitmap.getPixel(raw.region.left+x,raw.region.top+y))
                 }
+                val binary=retry.tiles[2]
+                for(y in binary.region.top until binary.region.bottom) for(x in binary.region.left until binary.region.right)
+                    assertEquals("A fully masked title cannot acquire a black stroke",Color.WHITE,retry.bitmap.getPixel(x,y))
             } finally { retry.bitmap.recycle() }
         } finally { atlas.bitmap.recycle(); source.recycle() }
     }

@@ -117,6 +117,21 @@ class DraftSequenceMultiDeviceInstalledTest {
                                     }
                                     val text = recognizer.process(com.google.mlkit.vision.common.InputImage.fromBitmap(atlas.bitmap, 0)).await()
                                     result.put("diagnosticOcrText", text.text)
+                                    val missing=atlas.tiles.filter { tile -> tile.original &&
+                                        !actual.containsKey(tile.slot+if(tile.ally) 0 else 5) }
+                                    if(missing.isNotEmpty()) {
+                                        val retry=DraftNameAtlas.retryUnresolved(atlas,missing)
+                                        try {
+                                            File(evidence,"${case.getString("id")}-retry-atlas.png").outputStream().use {
+                                                retry.bitmap.compress(Bitmap.CompressFormat.PNG,100,it)
+                                            }
+                                            val reread=recognizer.process(com.google.mlkit.vision.common.InputImage.fromBitmap(retry.bitmap,0)).await()
+                                            result.put("diagnosticRetryText",reread.text)
+                                            result.put("diagnosticRetryLines",JSONArray(reread.textBlocks.flatMap { it.lines }.map {
+                                                JSONObject().put("text",it.text).put("bounds",it.boundingBox.toString())
+                                            }))
+                                        } finally { retry.bitmap.recycle() }
+                                    }
                                 } finally { recognizer.close(); atlas.bitmap.recycle() }
                             }
                             val snapshot = scanner.calibrationReportSnapshot()
