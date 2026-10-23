@@ -514,7 +514,12 @@ enum class CoachNavStyle(val id: String, val title: String) {
     TOP_BEACON("top_beacon", "Faro superior"),
     UNDERLINE("underline", "Trazo luminoso"),
     ACTIVE_LABEL("active_label", "Etiqueta activa"),
-    ORBIT("orbit", "Órbita de cristal");
+    ORBIT("orbit", "Órbita de cristal"),
+    GLASS_PILL("glass_pill", "Cápsula de vidrio"),
+    TABS_V2("tabs_v2", "Pestañas compactas"),
+    PREMIUM_MENU("premium_menu", "Menú premium"),
+    PURPLE_MESSAGES("purple_messages", "Mensajes violeta"),
+    MENISCUS("meniscus", "Menisco luminoso");
 
     companion object {
         fun fromId(id: String?): CoachNavStyle = entries.firstOrNull { it.id == id } ?: ORIGINAL

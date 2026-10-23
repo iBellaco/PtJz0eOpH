@@ -20,4 +20,16 @@ class CoachNavStyleTest {
         assertEquals(CoachNavStyle.ORIGINAL, CoachNavStyle.fromId("missing"))
         assertEquals(CoachNavStyle.ORIGINAL, CoachNavStyle.fromId(null))
     }
+
+    @Test fun referenceVideoStylesArePersistable() {
+        listOf(
+            CoachNavStyle.GLASS_PILL,
+            CoachNavStyle.TABS_V2,
+            CoachNavStyle.PREMIUM_MENU,
+            CoachNavStyle.PURPLE_MESSAGES,
+            CoachNavStyle.MENISCUS
+        ).forEach { style ->
+            assertEquals(style, CoachNavStyle.fromId(style.id))
+        }
+    }
 }
