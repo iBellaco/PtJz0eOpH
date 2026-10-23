@@ -82,6 +82,17 @@ class DraftMultiDeviceAuditTest {
         listOf(1920 to 1792, 2208 to 1840, 2440 to 2268, 1800 to 1800).map { (w, h) ->
             Profile("foldable-$w-$h", "generic", "foldable-resolution-simulation", w, h)
         }, "foldable-resolutions")
+    @Test fun documentedXiaomiRedmiAndPocoDisplays() = audit(listOf(
+        Profile("xiaomi-14", "Xiaomi", "Xiaomi 14", 2670, 1200, specification = "https://www.mi.com/global/product/xiaomi-14/specs/"),
+        Profile("xiaomi-14-ultra", "Xiaomi", "Xiaomi 14 Ultra", 3200, 1440, specification = "https://www.mi.com/global/product/xiaomi-14-ultra/specs/"),
+        Profile("redmi-note-13-pro-plus-5g", "Xiaomi", "Redmi Note 13 Pro+ 5G", 2712, 1220, specification = "https://www.mi.com/global/product/redmi-note-13-pro-plus-5g/specs/"),
+        Profile("redmi-note-13-pro-5g", "Xiaomi", "Redmi Note 13 Pro 5G", 2712, 1220, specification = "https://www.mi.com/global/product/redmi-note-13-pro-5g/specs/"),
+        Profile("redmi-note-13", "Xiaomi", "Redmi Note 13", 2400, 1080, specification = "https://www.mi.com/global/product/redmi-note-13/specs/"),
+        Profile("redmi-12-5g", "Xiaomi", "Redmi 12 5G", 2460, 1080, specification = "https://www.mi.com/global/product/redmi-12-5g/specs/"),
+        Profile("redmi-a3", "Xiaomi", "Redmi A3", 1650, 720, specification = "https://www.mi.com/global/product/redmi-a3/specs/"),
+        Profile("poco-f6-pro", "Xiaomi", "POCO F6 Pro", 3200, 1440, specification = "https://www.mi.com/global/product/poco-f6-pro/specs/"),
+        Profile("xiaomi-pad-6", "Xiaomi", "Xiaomi Pad 6", 2880, 1800, specification = "https://www.mi.com/global/product/xiaomi-pad-6/specs/")
+    ), "xiaomi-redmi-poco-displays")
     @Test fun fullScreenSidePanelsRetainCircularPortraitsWithoutLetterboxing() = audit(
         listOf(640 to 360, 1280 to 720, 2400 to 1080, 2712 to 1220, 3120 to 1440,
             1024 to 768, 1600 to 1000, 2560 to 1600, 2440 to 2268, 1800 to 1800).map { (w, h) ->

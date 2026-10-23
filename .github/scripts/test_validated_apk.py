@@ -73,6 +73,10 @@ class ValidatedApkTest(unittest.TestCase):
     def test_failed_spanish_overlay_audit_prevents_reuse(self):
         self.assertEqual(('', ''), self.invoke(failed_job='installed-spanish'))
 
+    def test_missing_or_failed_native_sequence_matrix_prevents_reuse(self):
+        self.assertEqual(('', ''), self.invoke(failed_job='scanner-sequence-audit'))
+        self.assertEqual(('', ''), self.invoke(missing_job='scanner-sequence-audit'))
+
     def test_expired_artifact_prevents_reuse(self):
         self.assertEqual(('', ''), self.invoke(expired=True))
 

@@ -24,8 +24,8 @@ android {
     applicationId = "com.Coach"
     minSdk = 24
     targetSdk = 36
-    versionCode = 1065
-    versionName = "1.1.10.349"
+    versionCode = 1066
+    versionName = "1.1.10.350"
     ndk {
       abiFilters.addAll(listOf("armeabi-v7a", "arm64-v8a", "x86_64"))
     }
@@ -111,6 +111,9 @@ android {
   // Instrument the same R8 variant delivered to users. AGP rewrites test
   // references with the release mapping; debug tests cannot target it safely.
   testBuildType = providers.gradleProperty("coachInstrumentedBuildType").getOrElse("debug")
+
+  // Fixtures and the measured plan belong to the test APK, never the shipped APK.
+  sourceSets.getByName("androidTest").assets.srcDirs("src/test/resources", "build/generated/scanner-sequence-assets")
 
   testOptions {
     unitTests {
