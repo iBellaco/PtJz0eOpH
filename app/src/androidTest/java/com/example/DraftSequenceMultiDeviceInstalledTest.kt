@@ -18,6 +18,7 @@ import org.json.JSONObject
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
+import kotlinx.coroutines.tasks.await
 
 /** Real OCR of resized screenshot pixels, with synthetic successive title visibility. No mock recognizer. */
 @RunWith(AndroidJUnit4::class)
@@ -88,6 +89,22 @@ class DraftSequenceMultiDeviceInstalledTest {
                             val actualRoles = read!!.allyRolesBySlot
                             roles.forEachIndexed { slot, role ->
                                 if (actualRoles[slot] != role) errors += "step=$step: observed lane $slot expected=$role actual=${actualRoles[slot]}"
+                            }
+                            if (errors.isNotEmpty() && !result.has("firstFailureStage")) {
+                                result.put("firstFailureStage", step)
+                                val atlas = DraftNameAtlas.create(frame, scanner.alignedConfigFlow.value, emptyList())
+                                val recognizer = com.google.mlkit.vision.text.TextRecognition.getClient(
+                                    com.google.mlkit.vision.text.latin.TextRecognizerOptions.DEFAULT_OPTIONS)
+                                try {
+                                    File(evidence, "${case.getString("id")}-first-failure.png").outputStream().use {
+                                        frame.compress(Bitmap.CompressFormat.PNG, 100, it)
+                                    }
+                                    File(evidence, "${case.getString("id")}-title-atlas.png").outputStream().use {
+                                        atlas.bitmap.compress(Bitmap.CompressFormat.PNG, 100, it)
+                                    }
+                                    val text = recognizer.process(com.google.mlkit.vision.common.InputImage.fromBitmap(atlas.bitmap, 0)).await()
+                                    result.put("diagnosticOcrText", text.text)
+                                } finally { recognizer.close(); atlas.bitmap.recycle() }
                             }
                             val snapshot = scanner.calibrationReportSnapshot()
                             if (snapshot.width != frame.width || snapshot.height != frame.height ||

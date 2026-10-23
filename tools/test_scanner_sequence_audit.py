@@ -25,10 +25,11 @@ class SequenceAuditTest(unittest.TestCase):
         cases = []
         for case in planner.make_plan(fixture)['cases']:
             steps = [dict(step=n, frames=1 if n == 0 else 2,
-                          recognized={str(i): 'name' for i in range(n)}, expected={str(i): 'name' for i in range(n)},
-                          roles={str(i): 'MID' for i in range(5)}) for n in range(10)]
+                          recognized=reporter.expected_names(case['firstPick'], n),
+                          expected=reporter.expected_names(case['firstPick'], n), roles=dict(reporter.ROLES)) for n in range(10)]
+            last_id = 'teemo' if case['firstPick'] else 'vi'
             cases.append(dict(case, status='PASS', failures=[], steps=steps,
-                              tenth=dict(expected='vi', recognized='vi', confirmed=True, nameHidden=True)))
+                              tenth=dict(expected=last_id, recognized=last_id, confirmed=True, nameHidden=True)))
         return [dict(sourceSha256=planner.SOURCE_SHA256, cases=cases)]
 
     def test_equal_dimensions_share_pixels_without_losing_models_or_known_device_orders(self):
@@ -41,7 +42,7 @@ class SequenceAuditTest(unittest.TestCase):
         self.assertEqual('PASS', reporter.summarize(self.fixture(), self.reports(self.fixture()))['status'])
 
     def test_missing_ocr_steps_wrong_names_tenth_duplicates_and_changes_cannot_pass(self):
-        for mutation in ['missing', 'step', 'name', 'tenth', 'duplicate', 'geometry', 'source', 'roles']:
+        for mutation in ['missing', 'step', 'name', 'forged_expected', 'tenth', 'duplicate', 'geometry', 'source', 'roles', 'wrong_role']:
             with self.subTest(mutation=mutation):
                 fixture = self.fixture()
                 reports = self.reports(fixture)
@@ -52,6 +53,9 @@ class SequenceAuditTest(unittest.TestCase):
                     first['steps'].pop()
                 elif mutation == 'name':
                     first['steps'][4]['recognized']['0'] = 'wrong'
+                elif mutation == 'forged_expected':
+                    first['steps'][4]['recognized']['0'] = 'wrong'
+                    first['steps'][4]['expected']['0'] = 'wrong'
                 elif mutation == 'tenth':
                     first['tenth']['confirmed'] = False
                 elif mutation == 'duplicate':
@@ -60,8 +64,10 @@ class SequenceAuditTest(unittest.TestCase):
                     first['capture'] = [1, 1]
                 elif mutation == 'source':
                     reports[0]['sourceSha256'] = 'wrong'
-                else:
+                elif mutation == 'roles':
                     first['steps'][4]['roles'].pop('0')
+                else:
+                    first['steps'][4]['roles']['0'] = 'MID'
                 self.assertEqual('FAIL', reporter.summarize(fixture, reports)['status'])
 
     def test_unapproved_or_incomplete_portrait_matrix_is_not_a_native_plan(self):

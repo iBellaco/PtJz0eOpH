@@ -7,6 +7,13 @@ from pathlib import Path
 spec = importlib.util.spec_from_file_location('sequence_plan', Path(__file__).with_name('scanner-sequence-plan.py'))
 planner = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(planner)
+IDS = ['senna', 'ornn', 'mel', 'volibear', 'vi', 'alistar', 'caitlyn', 'nocturne', 'vex', 'teemo']
+ROLES = dict(zip(map(str, range(5)), ['ADC', 'TOP', 'MID', 'JUNGLE', 'SUPPORT']))
+
+
+def expected_names(first_pick, step):
+    order = [0, 5, 6, 1, 2, 7, 8, 3, 4, 9] if first_pick else [5, 0, 1, 6, 7, 2, 3, 8, 9, 4]
+    return {str(index): IDS[index] for index in order[:step]}
 
 
 def summarize(portraits, reports):
@@ -30,13 +37,15 @@ def summarize(portraits, reports):
             if case.get('status') != 'PASS' or case.get('failures') or [step.get('step') for step in steps] != list(range(10)):
                 failures.append('Secuencia incompleta: ' + key)
             for step in steps:
-                if (len(step.get('recognized', {})) != step['step'] or step.get('recognized') != step.get('expected')
+                exact = expected_names(planned['firstPick'], step['step'])
+                if (step.get('recognized') != exact or step.get('expected') != exact
                         or step.get('frames') != (1 if step['step'] == 0 else 2)
-                        or set(step.get('roles', {})) != {'0', '1', '2', '3', '4'}):
+                        or step.get('roles') != ROLES):
                     failures.append(f"Lectura de nombre/línea incorrecta: {key} paso {step['step']}")
             tenth = case.get('tenth', {})
-            if (not tenth.get('confirmed') or not tenth.get('nameHidden') or not tenth.get('expected')
-                    or tenth.get('expected') != tenth.get('recognized')):
+            last_id = 'teemo' if planned['firstPick'] else 'vi'
+            if (not tenth.get('confirmed') or not tenth.get('nameHidden')
+                    or tenth.get('expected') != last_id or tenth.get('recognized') != last_id):
                 failures.append('Décima selección visual no confirmada: ' + key)
             result = dict(case)
             result['status'] = 'PASS' if before == len(failures) else 'FAIL'
