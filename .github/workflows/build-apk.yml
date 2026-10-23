@@ -284,7 +284,7 @@ jobs:
     - name: Inspect rendered Portuguese screens
       env:
         CI: 'true'
-      run: ./gradlew :app:testDebugUnitTest --tests com.example.PortugueseRenderedAuditTest --tests com.example.PortugueseGeneratedSurfaceTest --tests
+      run: ./gradlew :app:testDebugUnitTest --rerun --tests com.example.PortugueseRenderedAuditTest --tests com.example.PortugueseGeneratedSurfaceTest --tests
         com.example.HubChampionNavigationTest --tests com.example.HistoryConsistencyRenderedTest --tests com.example.BuildCoachingRenderedTest --tests com.example.SpellCatalogRenderedTest --tests com.example.SupportReportDecoderTest --tests com.example.OfflinePortugueseAuditTest --tests
         com.example.RuntimeBehaviorTest --tests com.example.RuntimeVisibilityTest --tests com.example.DraftChampionSelectionTest --tests com.example.RequiredItemCorrectionsTest --tests com.example.ComponentItemsCatalogTest --tests com.example.AccountDeletionRenderedTest
         -Proborazzi.test.record=true --stacktrace --no-daemon
@@ -395,7 +395,7 @@ jobs:
     - name: Recheck formerly drifting portrait centers first
       env:
         CI: 'true'
-      run: ./gradlew :app:testDebugUnitTest --tests com.example.DraftMultiDeviceAuditTest.formerlyFailingCentersStayAlignedWhenPortraitsChange --max-workers=1 --stacktrace --no-daemon
+      run: ./gradlew :app:testDebugUnitTest --rerun --tests com.example.DraftMultiDeviceAuditTest.formerlyFailingCentersStayAlignedWhenPortraitsChange --max-workers=1 --stacktrace --no-daemon
     - name: Test scanner and matchup rules with offline fixtures
       env:
         CI: 'true'
@@ -405,7 +405,7 @@ jobs:
     - name: Audit real reference slots and bans across capture profiles
       env:
         CI: 'true'
-      run: ./gradlew :app:testDebugUnitTest --tests com.example.DraftMultiDeviceAuditTest --tests com.example.DraftReferenceFrameTest --tests com.example.DraftRingAlignmentTest --tests com.example.CaptureCoordinateSpaceTest --tests com.example.BannedPortraitScannerTest --max-workers=1 --stacktrace --no-daemon
+      run: ./gradlew :app:testDebugUnitTest --rerun --tests com.example.DraftMultiDeviceAuditTest --tests com.example.DraftReferenceFrameTest --tests com.example.DraftRingAlignmentTest --tests com.example.CaptureCoordinateSpaceTest --tests com.example.BannedPortraitScannerTest --max-workers=1 --stacktrace --no-daemon
     - name: Distinguish simulated scanner results from physical device verification
       run: python3 tools/scanner-audit-summary.py app/build/reports/scanner-multidevice
     - name: Retain measured scanner coordinates and visual evidence

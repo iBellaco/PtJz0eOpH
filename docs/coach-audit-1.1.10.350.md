@@ -43,6 +43,9 @@ Cuatro particiones conservan todos los fallos antes de generar una auditoría
 La compilación usa otro ejecutor y puede avanzar mientras continúan las pruebas
 completas. La publicación mantiene como requisitos tanto esas regresiones como
 todas las pruebas del APK instalado; no se relaja ninguna comprobación.
+Las tareas que generan capturas se vuelven a ejecutar explícitamente: restaurar
+solo el XML de pruebas desde caché no equivale a recuperar sus evidencias gráficas.
+Se mantiene la caché de compilación y no se omiten los reconocimientos.
 
 Las etapas y etiquetas de líneas son sintéticas; los nombres seleccionados son
 píxeles reales de la captura. No son partidas grabadas en cada modelo físico.

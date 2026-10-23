@@ -84,6 +84,13 @@ class ValidatedApkTest(unittest.TestCase):
         self.assertIn("'RENDERED_RESULT', 'DEVICE_RESULT', 'SPANISH_RESULT', 'SEQUENCE_RESULT'", release)
         self.assertIn('if any(value != expected for value in results.values())', release)
 
+    def test_picture_evidence_is_regenerated_even_when_test_results_are_cached(self):
+        for marker in ['com.example.PortugueseRenderedAuditTest',
+                       'com.example.DraftMultiDeviceAuditTest.formerlyFailingCentersStayAlignedWhenPortraitsChange',
+                       'com.example.DraftMultiDeviceAuditTest --tests']:
+            command = next(line for line in self.workflow.splitlines() if 'run: ./gradlew' in line and marker in line)
+            self.assertIn(':app:testDebugUnitTest --rerun ', command)
+
     def test_expired_artifact_prevents_reuse(self):
         self.assertEqual(('', ''), self.invoke(expired=True))
 
