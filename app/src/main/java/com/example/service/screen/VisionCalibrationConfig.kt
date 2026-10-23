@@ -9,7 +9,7 @@ import android.content.SharedPreferences
  */
 data class VisionCalibrationConfig(
     // Derived from the observed game viewport, not the physical capture height.
-    // It is recalculated per frame and must not overwrite the user's saved calibration.
+    // Preserve it when a user explicitly saves that frame-relative calibration.
     val nameBandScale: Float = 1f,
     // Posición horizontal X central de avatares en columnas verticales de draft (0..1)
     val allyAvatarCenterX: Float = 0.072f,
@@ -219,6 +219,7 @@ data class VisionCalibrationConfig(
     fun toKotlinCode(): String {
         return """
 VisionCalibrationConfig(
+    nameBandScale = ${nameBandScale}f,
     allyAvatarCenterX = ${allyAvatarCenterX}f,
     enemyAvatarCenterX = ${enemyAvatarCenterX}f,
     avatarDiameterRatio = ${avatarDiameterRatio}f,
@@ -254,6 +255,7 @@ VisionCalibrationConfig(
         prefs.edit().apply {
             putString("calibration_device_model", deviceModelKey())
             putInt("calibration_version", CURRENT_CALIBRATION_VERSION)
+            putFloat("nameBandScale", nameBandScale)
             allyBanXRatios.forEachIndexed { i, x -> putFloat("ban_ally_x_$i", x) }
             enemyBanXRatios.forEachIndexed { i, x -> putFloat("ban_enemy_x_$i", x) }
             putFloat("ban_ally_y", allyBanYRatio)
@@ -289,6 +291,7 @@ VisionCalibrationConfig(
         val prefs = context.getSharedPreferences("vision_calibration_prefs", Context.MODE_PRIVATE)
         val prefix = "profile_${deviceModelKey()}_${profileKey}_"
         prefs.edit().apply {
+            putFloat(prefix + "nameBandScale", nameBandScale)
             putFloat(prefix + "allyAvatarCenterX", allyAvatarCenterX)
             putFloat(prefix + "enemyAvatarCenterX", enemyAvatarCenterX)
             putFloat(prefix + "avatarDiameterRatio", avatarDiameterRatio)
@@ -342,6 +345,7 @@ VisionCalibrationConfig(
             fun f(name: String, fallback: Float) = prefs.getFloat(prefix + name, fallback)
             fun b(name: String, fallback: Boolean) = prefs.getBoolean(prefix + name, fallback)
             return base.copy(
+                nameBandScale = f("nameBandScale", base.nameBandScale),
                 allyAvatarCenterX = f("allyAvatarCenterX", base.allyAvatarCenterX),
                 enemyAvatarCenterX = f("enemyAvatarCenterX", base.enemyAvatarCenterX),
                 avatarDiameterRatio = f("avatarDiameterRatio", base.avatarDiameterRatio),
@@ -490,6 +494,7 @@ VisionCalibrationConfig(
             val resolvedEnemyX = if (loadedEnemyX == 0.928f) default.enemyAvatarCenterX else loadedEnemyX
 
             return VisionCalibrationConfig(
+                nameBandScale = prefs.getFloat("nameBandScale", default.nameBandScale),
                 allyAvatarCenterX = prefs.getFloat("allyAvatarCenterX", default.allyAvatarCenterX),
                 enemyAvatarCenterX = resolvedEnemyX,
                 avatarDiameterRatio = prefs.getFloat("avatarDiameterRatio", default.avatarDiameterRatio),

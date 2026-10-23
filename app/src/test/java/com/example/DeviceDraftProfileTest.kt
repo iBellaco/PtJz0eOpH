@@ -21,7 +21,7 @@ class DeviceDraftProfileTest {
         try {
             ShadowBuild.setManufacturer("nubia");ShadowBuild.setModel("NX789J")
             val key=VisionCalibrationConfig.captureProfileKey(2688,1216)
-            val manual=VisionCalibrationConfig().adjustDraftSlot(true,2,deltaX=.01f)
+            val manual=VisionCalibrationConfig(nameBandScale=.45f).adjustDraftSlot(true,2,deltaX=.01f)
             manual.saveProfileToPrefs(context,key)
             assertEquals(manual,VisionCalibrationConfig.loadProfileFromPrefs(context,key))
             assertTrue(VisionCalibrationConfig.hasCaptureProfiles(context))
@@ -46,7 +46,7 @@ class DeviceDraftProfileTest {
             assertEquals(.911f, preset.getEnemySlotX(0), .00001f)
             assertEquals(listOf(.184f, .320f, .454f, .592f, .728f), preset.allySlotYRatios)
             assertEquals(listOf(.179f, .315f, .449f, .587f, .723f), preset.enemySlotYRatios)
-            val manual = preset.adjustDraftSlot(true, 0, deltaX = .005f, deltaY = -.005f)
+            val manual = preset.copy(nameBandScale = .7f).adjustDraftSlot(true, 0, deltaX = .005f, deltaY = -.005f)
             manual.saveToPrefs(context)
             com.example.service.screen.DraftVisionScanner.initCalibration(context)
             assertEquals(manual, com.example.service.screen.DraftVisionScanner.calibrationConfig)
