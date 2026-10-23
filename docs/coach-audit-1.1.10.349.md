@@ -7,6 +7,12 @@ propietario de 1280 × 579 (SHA-256
 `42661aefae3df52b4f72047c039120f72f4ea351139d7bdb5107351fe8d3342a`).
 No cambia las coordenadas productivas confirmadas de Red Magic ni Poco.
 
+La matriz ampliada detectó desplazamientos de centros en tres variantes:
+1800 × 1800 ajustado con bandas, y paneles anclados de 640 × 360 y 1024 × 768.
+El buscador de anillos ahora pondera la distancia radial y refina a un píxel
+la búsqueda gruesa de tres píxeles. Conserva el mínimo de evidencia circular,
+los umbrales del clasificador y la tolerancia geométrica de la prueba.
+
 ## Pruebas
 
 - 54 perfiles de pantalla y distribución: 6 referencias/escenarios S26, 20
@@ -37,6 +43,7 @@ esas transformaciones no se cuentan como reconocimientos de imágenes.
 
 - `DraftMultiDeviceAuditTest.kt`: perfiles, variaciones y confirmación productiva.
 - `DraftReferenceFrameTest.kt`: evidencia de las transformaciones geométricas.
+- `DraftRingAlignment.kt`: precisión del ajuste de los bordes circulares.
 - `tools/scanner-audit-summary.py`: comprobación estricta e informes Markdown/CSV/JSON.
 - `tools/test_scanner_audit_summary.py`: pruebas positivas y negativas del informe.
 - Workflow de validación y versión de la aplicación.
