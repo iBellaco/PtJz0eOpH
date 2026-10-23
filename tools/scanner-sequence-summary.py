@@ -21,6 +21,8 @@ def summarize(portraits, reports):
     expected = {case['id']: case for case in plan['cases']}
     seen, failures, results = set(), [], []
     for report in reports:
+        if report.get('instrumentationPassed') is not True:
+            failures.append('La ejecución nativa no terminó correctamente')
         if report.get('sourceSha256') != plan['sourceSha256']:
             failures.append('Referencia OCR distinta')
         for case in report.get('cases', []):
@@ -90,9 +92,13 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('portraits', type=Path)
     parser.add_argument('reports', type=Path)
+    parser.add_argument('--execution-result', required=True)
     args = parser.parse_args()
     reports = [json.loads(path.read_text()) for path in sorted(args.reports.glob('**/sequence-[0-3].json'))]
     summary = summarize(json.loads(args.portraits.read_text()), reports)
+    if args.execution_result != 'success':
+        summary['status'] = 'FAIL'
+        summary['failures'].append('Alguna partición de la ejecución nativa no terminó correctamente')
     write_report(args.reports, summary)
     print('SCANNER_SEQUENCE:', summary['status'], summary['sequences'], '/', summary['expectedSequences'])
     raise SystemExit(0 if summary['status'] == 'PASS' else 1)

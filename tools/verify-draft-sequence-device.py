@@ -25,7 +25,8 @@ def main():
     print(output, flush=True)
     cases = [json.loads(line) for line in re.findall(r'COACH_SEQUENCE_CASE: (\{[^\r\n]+\})', output)]
     report = dict(shard=shard, sourceSha256=plan['sourceSha256'], cases=cases,
-                  expectedCases=sorted(expected), physicalDevicesTested=[])
+                  expectedCases=sorted(expected), physicalDevicesTested=[],
+                  instrumentationPassed=completed.returncode == 0 and 'OK (1 test)' in output and 'FAILURES' not in output)
     (directory / f'sequence-{shard}.json').write_text(json.dumps(report, ensure_ascii=False, indent=2))
     subprocess.run(['adb', 'pull', '/sdcard/Android/data/com.Coach/files/scanner-sequence-audit/',
                     str(directory / 'images')], capture_output=True, timeout=120)

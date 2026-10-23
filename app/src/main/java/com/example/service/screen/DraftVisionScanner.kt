@@ -882,7 +882,7 @@ object DraftVisionScanner {
                 val isolated = targetedAllyReadings[i]
                 val reading = if (isolated.ambiguous || isolated.lane != null || isolated.champion != null) isolated
                     else AllyDraftNameReader.readTitleRows(titleLines, (titleRect.height() * 0.30f).toInt(), allChamps,
-                        (height * (calib.allySlotYRatios[i] + 0.005f)).toInt())
+                        (height * (calib.allySlotYRatios[i] + 0.005f * calib.nameBandScale)).toInt())
                 detectedRoleInSlot = reading.lane
                 val stableTitle = titleConfirmation.observe(true, i,
                     reading.champion?.id ?: reading.lane?.let { "lane:${it.name}" })
@@ -912,7 +912,7 @@ object DraftVisionScanner {
                             lineNorm.contains("winrate")
 
                         val selfMarker = AllyDraftNameReader.identifiesUser(line, emptyList())
-                        val isPlayerNameLine = box != null && box.centerY() > height * (calib.allySlotYRatios[i] + 0.005f)
+                        val isPlayerNameLine = box != null && box.centerY() > height * (calib.allySlotYRatios[i] + 0.005f * calib.nameBandScale)
                         val isUserTag = !isLegendaryRanked && (selfMarker ||
                             (isPlayerNameLine && AllyDraftNameReader.identifiesUser(line, currentUserNameClean)))
 

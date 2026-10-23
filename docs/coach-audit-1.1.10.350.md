@@ -52,7 +52,7 @@ Red Magic y Poco conservan la confirmación física previa del propietario.
 - Matriz `DraftMultiDeviceAuditTest.kt` y generador/resumen de retratos.
 - `DraftSequenceMultiDeviceInstalledTest.kt`: OCR productivo por etapa y décimo visual.
 - `VisionCalibrationConfig.kt`, `DraftFrameGeometry.kt`, `AdaptiveScreenLayoutEngine.kt`,
-  `DraftNameAtlas.kt` y `DraftNameAtlasTest.kt`: bandas de nombres ajustadas al juego
+  `DraftVisionScanner.kt`, `DraftNameAtlas.kt`, `DeviceDraftProfileTest.kt` y `DraftNameAtlasTest.kt`: bandas de nombres ajustadas al juego
   y ampliación del texto antes de reconocerlo.
 - `scanner-sequence-plan.py`, `verify-draft-sequence-device.py`,
   `scanner-sequence-summary.py` y sus pruebas de integridad.

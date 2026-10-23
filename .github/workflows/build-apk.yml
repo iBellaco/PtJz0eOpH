@@ -567,7 +567,9 @@ jobs:
         name: scanner-multidevice-audit
         path: app/build/reports/scanner-multidevice/
     - name: Require every planned resolution and every OCR step
-      run: python3 tools/scanner-sequence-summary.py app/build/reports/scanner-multidevice/audit-summary.json app/build/reports/scanner-sequence/
+      env:
+        COACH_NATIVE_SEQUENCE_RESULT: ${{ needs.native-name-sequence.result }}
+      run: python3 tools/scanner-sequence-summary.py app/build/reports/scanner-multidevice/audit-summary.json app/build/reports/scanner-sequence/ --execution-result "$COACH_NATIVE_SEQUENCE_RESULT"
     - name: Publish the complete native sequence audit
       if: always()
       uses: actions/upload-artifact@v5

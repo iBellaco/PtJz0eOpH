@@ -30,7 +30,7 @@ class SequenceAuditTest(unittest.TestCase):
             last_id = 'teemo' if case['firstPick'] else 'vi'
             cases.append(dict(case, status='PASS', failures=[], steps=steps,
                               tenth=dict(expected=last_id, recognized=last_id, confirmed=True, nameHidden=True)))
-        return [dict(sourceSha256=planner.SOURCE_SHA256, cases=cases)]
+        return [dict(sourceSha256=planner.SOURCE_SHA256, cases=cases, instrumentationPassed=True)]
 
     def test_equal_dimensions_share_pixels_without_losing_models_or_known_device_orders(self):
         plan = planner.make_plan(self.fixture())
@@ -42,7 +42,7 @@ class SequenceAuditTest(unittest.TestCase):
         self.assertEqual('PASS', reporter.summarize(self.fixture(), self.reports(self.fixture()))['status'])
 
     def test_missing_ocr_steps_wrong_names_tenth_duplicates_and_changes_cannot_pass(self):
-        for mutation in ['missing', 'step', 'name', 'forged_expected', 'tenth', 'duplicate', 'geometry', 'source', 'roles', 'wrong_role']:
+        for mutation in ['missing', 'step', 'name', 'forged_expected', 'tenth', 'duplicate', 'geometry', 'source', 'roles', 'wrong_role', 'transport']:
             with self.subTest(mutation=mutation):
                 fixture = self.fixture()
                 reports = self.reports(fixture)
@@ -66,6 +66,8 @@ class SequenceAuditTest(unittest.TestCase):
                     reports[0]['sourceSha256'] = 'wrong'
                 elif mutation == 'roles':
                     first['steps'][4]['roles'].pop('0')
+                elif mutation == 'transport':
+                    reports[0]['instrumentationPassed'] = False
                 else:
                     first['steps'][4]['roles']['0'] = 'MID'
                 self.assertEqual('FAIL', reporter.summarize(fixture, reports)['status'])
