@@ -13,9 +13,11 @@ El buscador de anillos ahora pondera la distancia radial y refina a un píxel
 la búsqueda gruesa de tres píxeles. Conserva el mínimo de evidencia circular,
 los umbrales del clasificador y la tolerancia geométrica de la prueba.
 Dos bordes parciales no justifican estirar las cinco filas: la recuperación
-con solo dos observaciones exige 70 % de cobertura circular. Las filas conservan
+con solo dos observaciones exige 70 % de cobertura circular o un desplazamiento
+inequívoco de más de 1.25 radios respecto al perfil previo. Las filas conservan
 el ajuste robusto de la cuadrícula en lugar de volver a un borde individual ruidoso.
-Una regresión enfocada de los tres formatos se ejecuta antes de la matriz completa.
+Una regresión enfocada de los tres formatos y de Red Magic/Poco se ejecuta antes
+de la matriz completa.
 
 ## Pruebas
 

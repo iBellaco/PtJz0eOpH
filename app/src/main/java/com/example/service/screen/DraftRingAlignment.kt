@@ -147,9 +147,11 @@ internal object DraftRingAlignment {
             // Once X agrees with the observed rings, sparse evidence must not stretch Y.
             val foreignColumn = consistent.count { (slot, center, coverage) ->
                 val nominalX = w * if (ally) base.getAllySlotX(slot) else base.getEnemySlotX(slot)
-                // Two partial rims can locate X, but cannot justify stretching all
-                // five rows. Require at least 70% circular coverage for that recovery.
-                coverage >= 28 && abs(center.first - nominalX) > radius * .5f
+                val displacement = abs(center.first - nominalX)
+                // Sparse partial rims must not stretch a nearly correct grid. A
+                // displacement larger than 1.25 radii, however, is unmistakably
+                // another layout's preset and still needs its initial row recovery.
+                displacement > radius * 1.25f || coverage >= 28 && displacement > radius * .5f
             } >= 2
             val alignedYs = alignRows(ys, h, radius, consistent.map { it.first to it.second.second }, foreignColumn)
             return List(5) { medianX.toFloat() / w } to alignedYs

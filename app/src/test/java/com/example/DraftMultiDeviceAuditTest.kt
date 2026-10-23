@@ -57,6 +57,8 @@ class DraftMultiDeviceAuditTest {
     @Test fun phoneResolutionMatrix() = audit(profiles.drop(6).take(20), "phone-resolutions")
     @Test fun tabletResolutionMatrix() = audit(profiles.takeLast(4), "tablet-resolutions")
     @Test fun formerlyFailingCentersStayAlignedWhenPortraitsChange() = audit(listOf(
+        Profile("regression-red-magic", "nubia", "NX789J", 2688, 1216),
+        Profile("regression-poco", "Xiaomi", "2412DPC0AG", 2712, 1220),
         Profile("regression-square", "generic", "square-resolution-simulation", 1800, 1800),
         Profile("regression-small-edge", "generic", "synthetic-side-panels", 640, 360, true),
         Profile("regression-tablet-edge", "generic", "synthetic-side-panels", 1024, 768, true)
