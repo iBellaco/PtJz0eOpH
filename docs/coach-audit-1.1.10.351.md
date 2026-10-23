@@ -124,3 +124,12 @@ las referencias de marcas. La ampliación prevista es de 158 perfiles y 474
 variantes (9480 comprobaciones); solo la nueva ejecución puede aprobarlas.
 No se presentan los modelos aún pendientes como probados ni los perfiles de
 pantalla como teléfonos conectados. Se conservan todas las barreras nativas.
+
+La revisión de las medidas añade otras seis referencias: Hot 10 Play G35
+(1640 × 720), Mate 60 Pro (2720 × 1260, únicamente pantalla; no certifica
+HarmonyOS NEXT), CAT S62 Pro, iQOO Z9x 5G, Alcatel 1S 2020 y CMF Phone 1.
+Las fuentes de estas seis filas distinguen la ficha oficial de iQOO de las
+mediciones/revisiones originales de unidades de DXOMARK, Notebookcheck y
+YugaTech; no se atribuyen sus pruebas físicas a Coach. Así quedan previstas
+164 referencias, 492 variantes y 9840 comprobaciones. Las medidas nuevas se
+incluyen en el plan preliminar no publicable y en la secuencia nativa completa.

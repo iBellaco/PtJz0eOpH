@@ -97,8 +97,8 @@ class SequenceAuditTest(unittest.TestCase):
 
     def test_new_documented_dimensions_also_get_the_non_release_preflight(self):
         fixture=self.fixture()
-        dimensions=[(1560,720),(1544,720),(1570,720),(2270,1080),(2244,1080),
-                    (2240,1080),(2388,1080),(2400,1176),(2616,1212)]
+        dimensions=[(1560,720),(1544,720),(1570,720),(1640,720),(2270,1080),(2244,1080),
+                    (2240,1080),(2388,1080),(2400,1176),(2616,1212),(2720,1260)]
         template=fixture['profiles'][2]
         fixture['profiles']=[dict(template,profile=f'new-{w}-{h}',display=[w,h],capture=[w,h]) for w,h in dimensions]
         fixture['resolutionProfiles']=len(dimensions)
