@@ -21,7 +21,7 @@ internal class DraftNameAtlas private constructor(val bitmap: Bitmap, val tiles:
 
         /** Re-read only unresolved titles at full tile size, avoiding a wide atlas
          * shrinking a two-letter name inside the native text detector. No new text pixels. */
-        fun retryUnresolved(atlas: DraftNameAtlas, unresolved: List<Tile>): DraftNameAtlas {
+        fun retryUnresolved(atlas: DraftNameAtlas, unresolved: List<Tile>, titleOnly: Boolean = false): DraftNameAtlas {
             require(unresolved.isNotEmpty() && unresolved.all { it.original && it in atlas.tiles })
             val cellWidth = unresolved.maxOf { it.region.width() } + GUTTER*2
             val cellHeight = unresolved.maxOf { it.region.height() } + GUTTER*2
@@ -37,8 +37,13 @@ internal class DraftNameAtlas private constructor(val bitmap: Bitmap, val tiles:
                         val prior = if ((contrast || binary) && tile.ally) atlas.tiles.first {
                             it.ally && it.slot==tile.slot && !it.original && it.contrast==contrast
                         } else tile
-                        val sampled = Bitmap.createBitmap(atlas.bitmap,prior.region.left,prior.region.top,
-                            prior.region.width(),prior.region.height())
+                        // The lower edge can contain the beginning of a very large
+                        // summoner nickname. A last, isolated reading excludes that
+                        // edge, without generating glyphs or guessing a short name.
+                        val topCut=if(titleOnly) (prior.region.height()*.12f).toInt() else 0
+                        val bottom=if(titleOnly) (prior.region.height()*.80f).toInt() else prior.region.height()
+                        val sampled = Bitmap.createBitmap(atlas.bitmap,prior.region.left,prior.region.top+topCut,
+                            prior.region.width(),bottom-topCut)
                         val crop = try { sampled.copy(Bitmap.Config.ARGB_8888,true) }
                             finally { if(sampled!==atlas.bitmap) sampled.recycle() }
                         try {
@@ -48,7 +53,7 @@ internal class DraftNameAtlas private constructor(val bitmap: Bitmap, val tiles:
                             val left = (index%columns)*cellWidth+GUTTER
                             val top = (index/columns)*cellHeight+GUTTER
                             canvas.drawBitmap(crop,left.toFloat(),top.toFloat(),null)
-                            tile.copy(region=Rect(left,top,left+crop.width,top+crop.height),
+                            tile.copy(region=Rect(left,top,left+crop.width,top+crop.height),titleMaxY=tile.titleMaxY-topCut,
                                 original=variant==0,contrast=variant!=0)
                         } finally { crop.recycle() }
                     }
@@ -88,8 +93,6 @@ internal class DraftNameAtlas private constructor(val bitmap: Bitmap, val tiles:
                             val localCanvas = Canvas(crop)
                             localCanvas.drawBitmap(source,band,Rect(0,0,crop.width,crop.height),null)
                             masks.forEach { mask -> localCanvas.drawRect(Rect(mask).apply { offset(-band.left,-band.top) },paint) }
-                            if (ally && !original) DraftImagePreprocessor.suppressLeadingMasteryBadge(crop)
-                            if (contrast) enhanceTitleContrast(crop)
                             val width=(crop.width*scale).toInt().coerceAtMost(1400)
                             val height=(crop.height*scale).toInt().coerceAtMost(420)
                             val index=slot*4+(if(!ally) 3 else variant)
@@ -97,7 +100,13 @@ internal class DraftNameAtlas private constructor(val bitmap: Bitmap, val tiles:
                             val top=(index/columns)*cellHeight+GUTTER
                             val region=Rect(left,top,left+width,top+height)
                             val scaled=Bitmap.createScaledBitmap(crop,width,height,true)
-                            try { canvas.drawBitmap(scaled,left.toFloat(),top.toFloat(),null) }
+                            try {
+                                // At small capture sizes a one-pixel badge padding
+                                // can erase the neighbouring I. Mask after resizing.
+                                if(ally && !original) DraftImagePreprocessor.suppressLeadingMasteryBadge(scaled)
+                                if(contrast) enhanceTitleContrast(scaled)
+                                canvas.drawBitmap(scaled,left.toFloat(),top.toFloat(),null)
+                            }
                             finally { if(scaled!==crop) scaled.recycle() }
                             val y=if(ally) config.allySlotYRatios[slot] else config.enemySlotYRatios[slot]
                             Tile(ally,slot,band,region,((source.height*(y+.005f*config.nameBandScale)-band.top)*height/band.height()).toInt(),original,contrast)

@@ -59,6 +59,10 @@ El orden jerárquico de los rangos para consejos tácticos es:
 
 ## Continuidad y comprobaciones
 
+Antes de cambiar el escáner, leer completo `docs/draft-recognition-contract.md`.
+Es el contrato de capturas confirmado por el propietario: nueve selecciones por
+título completo, décima visual en el lado correspondiente y baneos omitidos vacíos.
+
 ## 2. Protocolo de Lectura (Antes de Modificar)
 Antes de generar código o responder a un requerimiento, el agente debe seguir estos pasos de lectura:
 

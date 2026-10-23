@@ -18,6 +18,7 @@ DELIVERY_ONLY_FILES = {
     '.github/scripts/test_apk_signing.py',
     'docs/coach-audit-1.1.10.257.md',
     'docs/coach-audit-1.1.10.336.md',
+    'docs/coach-audit-1.1.10.351.md',
 }
 
 REQUIRED_JOBS = {'catalog-validation', 'security-auth-tests', 'scanner-tests',

@@ -50,7 +50,10 @@ class ValidatedApkTest(unittest.TestCase):
 
     def test_build_inputs_and_renamed_source_cannot_be_excluded(self):
         for filename in ['app/build.gradle.kts', '.github/workflows/build-apk.yml',
-                         'gradle/libs.versions.toml', 'AGENTS.md']:
+                         'gradle/libs.versions.toml', 'AGENTS.md',
+                         'docs/draft-recognition-contract.md',
+                         'app/src/test/resources/scanner/requested-displays.csv',
+                         'app/src/test/resources/portraits/draft-kaisa-nine.jpg']:
             self.assertEqual(('', ''), self.invoke(changed_tree=True, files=[{'filename': filename}]))
         self.assertEqual(('', ''), self.invoke(changed_tree=True, files=[{
             'filename': '.github/scripts/cleanup-completed-runs.cjs',

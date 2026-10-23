@@ -677,6 +677,15 @@ object DraftVisionScanner {
                     val retry = DraftNameAtlas.retryUnresolved(atlas,unresolved)
                     try { readTitles(retry) } finally { retry.bitmap.recycle() }
                 }
+                // Only still-unresolved titles incur an isolated request. Do not
+                // count these alternative OCR requests as confirmation frames.
+                for(tile in unresolved) {
+                    val reading=(if(tile.ally) targetedAllyReadings else targetedEnemyReadings)[tile.slot]
+                    if(!reading.ambiguous && reading.champion==null && reading.lane==null) {
+                        val focused=DraftNameAtlas.retryUnresolved(atlas,listOf(tile),titleOnly=true)
+                        try { readTitles(focused) } finally { focused.bitmap.recycle() }
+                    }
+                }
                 for (slot in 0..4) {
                     targetedEnemyChampions[slot] = targetedEnemyReadings[slot].let {
                         it.champion.takeUnless { _ -> it.ambiguous }

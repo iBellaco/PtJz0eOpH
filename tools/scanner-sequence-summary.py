@@ -9,6 +9,16 @@ planner = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(planner)
 IDS = ['senna', 'ornn', 'mel', 'volibear', 'vi', 'alistar', 'caitlyn', 'nocturne', 'vex', 'teemo']
 ROLES = dict(zip(map(str, range(5)), ['ADC', 'TOP', 'MID', 'JUNGLE', 'SUPPORT']))
+REAL_CAPTURES = {
+    'draft-swain-eight.jpg': dict(sha256='5479ce8aea0396625cf3404a08aac2b588283f81210d85acc1ba7296a3692ac8',
+        titles=dict(zip(['0','1','2','3','5','6','7','8'], ['swain','kayn','volibear','jhin','draven','zyra','vayne','yunara'])),
+        visual='blocked-before-nine', tenth=None),
+    'draft-kaisa-nine.jpg': dict(sha256='99fa9459a1378450c634169e0fb0e58687f5eb673ecf7ebf0046321075aedb3c',
+        titles=dict(zip(['0','1','2','3','5','6','7','8','9'], ['seraphine','syndra','kai_sa','jarvan_iv','mel','tryndamere','xayah','k_sante','lux'])),
+        visual='pending-owner-identity', tenth=None),
+    'draft-mel-nine.jpg': dict(sha256='38b6b08da840289a188ccc9401297893486bcaa88752c1e03256578330755103',
+        titles=dict(zip(map(str,range(9)), IDS[:9])), visual='required', tenth='teemo'),
+}
 
 
 def expected_names(first_pick, step):
@@ -51,6 +61,18 @@ def summarize(portraits, reports):
             if (not tenth.get('confirmed') or not tenth.get('nameHidden')
                     or tenth.get('expected') != last_id or tenth.get('recognized') != last_id):
                 failures.append('Décima selección visual no confirmada: ' + key)
+            real = case.get('realCaptures', [])
+            if len(real) != len(REAL_CAPTURES) or {r.get('file') for r in real} != set(REAL_CAPTURES):
+                failures.append('Faltan capturas reales o están duplicadas: ' + key)
+            for reading in real:
+                ground = REAL_CAPTURES.get(reading.get('file'))
+                if ground is None or (reading.get('sha256') != ground['sha256']
+                        or reading.get('expectedTitles') != ground['titles']
+                        or reading.get('recognizedTitles') != ground['titles']
+                        or reading.get('frames') != 2 or reading.get('visualCheck') != ground['visual']
+                        or reading.get('tenthExpected') != ground['tenth']
+                        or reading.get('tenthRecognized') != ground['tenth']):
+                    failures.append('Captura real incorrecta: ' + key + '/' + str(reading.get('file')))
             result = dict(case)
             result['status'] = 'PASS' if before == len(failures) else 'FAIL'
             results.append(result)
@@ -58,6 +80,7 @@ def summarize(portraits, reports):
     return dict(status='FAIL' if failures else 'PASS', sourceSha256=plan['sourceSha256'],
                 modelProfiles=plan['modelProfiles'], sequences=len(results), expectedSequences=len(expected),
                 nativeOcrFrames=sum(step.get('frames', 0) for case in results for step in case.get('steps', [])),
+                realCaptureChecks=sum(len(case.get('realCaptures', [])) for case in results),
                 physicalDevicesTested=[], cases=results, failures=failures)
 
 
@@ -82,6 +105,9 @@ def write_report(directory, summary):
              'No certifica rendimiento, permisos de captura, densidad, skins o versiones Android de cada teléfono.', '',
              'Los escenarios safe-area aplican márgenes sintéticos laterales del 5 % y de navegación del 3 %. '
              'No se afirma que sean los márgenes reales de cada notch o modelo solicitado.', '',
+             f"Capturas reales adicionales comprobadas: {summary['realCaptureChecks']}. "
+             'Incluyen ocho títulos (décimo bloqueado), nueve con Teemo rival visual y nueve con último aliado pendiente de identificación por el propietario. '
+             'Ese último retrato no se presenta como identificación visual aprobada.', '',
              '| Modelo / escenario | Pantalla horizontal | Captura procesada | Distribución | Orden probado | Idioma | Resultado |',
              '| --- | --- | --- | --- | --- | --- | --- |']
     for case in summary['cases']:

@@ -19,6 +19,56 @@ import org.robolectric.annotation.GraphicsMode
 @Config(sdk = [34], application = Application::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class DraftNameAtlasTest {
+    @Test fun focusedRetryKeepsTheActualTitlePixelsAndExcludesTheSummonerEdge() {
+        val source=javaClass.getResourceAsStream("/portraits/draft-ten-selected.jpg").use {
+            android.graphics.BitmapFactory.decodeStream(it)!!
+        }
+        val atlas=DraftNameAtlas.create(source,VisionCalibrationConfig(),emptyList())
+        try {
+            for(tile in atlas.tiles.filter { it.original }) {
+                val focused=DraftNameAtlas.retryUnresolved(atlas,listOf(tile),titleOnly=true)
+                try {
+                    val raw=focused.tiles.single { it.original }
+                    val cut=(tile.region.height()*.12f).toInt()
+                    assertEquals(tile.source,raw.source)
+                    assertEquals(tile.titleMaxY-cut,raw.titleMaxY)
+                    assertTrue(raw.region.height()<tile.region.height())
+                    for(y in 0 until raw.region.height()) for(x in 0 until raw.region.width())
+                        assertEquals(atlas.bitmap.getPixel(tile.region.left+x,tile.region.top+cut+y),
+                            focused.bitmap.getPixel(raw.region.left+x,raw.region.top+y))
+                } finally { focused.bitmap.recycle() }
+            }
+        } finally { atlas.bitmap.recycle();source.recycle() }
+    }
+
+    @Test fun realCaptureTitlesAndEmptyBanAreRecordedWithoutInventingSelections() {
+        val context=org.robolectric.RuntimeEnvironment.getApplication()
+        com.example.data.WildRiftRepository.initChampions(context,forceReload=true)
+        for(fixture in DraftRealCaptureFixtures.captures) {
+            val bytes=javaClass.getResourceAsStream("/portraits/${fixture.file}")!!.use { it.readBytes() }
+            assertEquals(fixture.sha256,java.security.MessageDigest.getInstance("SHA-256").digest(bytes)
+                .joinToString("") { "%02x".format(it) })
+            fixture.titles.values.forEach { id ->
+                val champion=com.example.data.WildRiftRepository.getChampionById(id)!!
+                assertEquals(id,com.example.service.screen.ChampionNameResolver.findChampionInNameBand(
+                    champion.name.uppercase(),com.example.data.WildRiftRepository.champions)?.id)
+            }
+            if(fixture.file=="draft-swain-eight.jpg") assertEquals(8,fixture.titles.size)
+        }
+        val frame=javaClass.getResourceAsStream("/portraits/draft-kaisa-nine.jpg").use {
+            android.graphics.BitmapFactory.decodeStream(it)!!
+        }
+        try {
+            val scanner=com.example.service.screen.BannedPortraitScanner()
+            scanner.scan(frame,context,0)
+            scanner.scan(frame,context,1500)
+            val empty=scanner.slots.single { it.side==com.example.service.screen.BanSide.ALLY && it.index==1 }
+            assertNull("Omitted ban cannot become a champion",empty.championId)
+            assertEquals(com.example.service.screen.BanState.EMPTY,empty.state)
+            assertEquals(10,scanner.slots.size)
+        } finally { frame.recycle() }
+    }
+
     @Test fun resizedPaleBadgeWingsAreRemovedWithoutErasingVi() {
         val source=javaClass.getResourceAsStream("/portraits/draft-ten-selected.jpg").use {
             android.graphics.BitmapFactory.decodeStream(it)!!

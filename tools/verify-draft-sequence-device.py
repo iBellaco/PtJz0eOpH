@@ -38,6 +38,17 @@ def main():
     assert completed.returncode == 0 and 'OK (1 test)' in output and 'FAILURES' not in output, output[-12000:]
     assert all(case['status'] == 'PASS' for case in cases), 'Hay resoluciones que no completan la secuencia'
     assert all(case.get('validationMode')==('preflight-not-release' if preflight else 'full') for case in cases)
+    required_files = {'draft-swain-eight.jpg', 'draft-kaisa-nine.jpg', 'draft-mel-nine.jpg'}
+    for case in cases:
+        if not preflight or any(p['profile'] in {'red-magic-reference','poco-x7-pro'} for p in case['profiles']):
+            real = case.get('realCaptures', [])
+            assert len(real) == 3 and {r['file'] for r in real} == required_files, 'Faltan capturas reales'
+            assert all(r['expectedTitles'] == r['recognizedTitles'] and r['frames'] == 2 for r in real), 'Falló un título real'
+            for r in real:
+                if r['visualCheck'] == 'blocked-before-nine':
+                    assert r['tenthRecognized'] is None, 'No activar el décimo antes de nueve títulos'
+                if r['visualCheck'] == 'required':
+                    assert r['tenthRecognized'] == r['tenthExpected'], 'Falló el décimo real'
     print('NATIVE_TITLE_PREFLIGHT' if preflight else 'NATIVE_SEQUENCE_AUDIT', ': PASS', len(cases),
           'casos; OCR nativo sin sustituciones; 0 teléfonos físicos; prueba preliminar no publicable' if preflight else 'secuencias completas; 0 teléfonos físicos')
 

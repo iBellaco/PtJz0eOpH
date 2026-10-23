@@ -162,7 +162,51 @@ class DraftSequenceMultiDeviceInstalledTest {
                                 File(evidence, "${case.getString("id")}.png").outputStream().use { frame.compress(Bitmap.CompressFormat.PNG, 100, it) }
                             }
                         } finally { frame.recycle() }
-                    } } finally { sequenceSource.recycle() }
+                    }
+                    // Real captures complement the staged order test: no drawn
+                    // lane labels, transplanted names or expected OCR injections.
+                    // In preflight retain the two known phone priors; the full
+                    // matrix must exercise these three captures at every geometry.
+                    if(!preflight || case.getJSONArray("profiles").toString().let {
+                        it.contains("red-magic-reference") || it.contains("poco-x7-pro") }) {
+                        val realChecks=JSONArray()
+                        for(fixture in DraftRealCaptureFixtures.captures) {
+                            scanner.resetSlotMemory()
+                            val rawBytes=instrumentation.context.assets.open("portraits/${fixture.file}").use { it.readBytes() }
+                            val rawHash=java.security.MessageDigest.getInstance("SHA-256").digest(rawBytes)
+                                .joinToString("") { "%02x".format(it) }
+                            check(rawHash==fixture.sha256)
+                            val raw=BitmapFactory.decodeByteArray(rawBytes,0,rawBytes.size)!!
+                            val realFrame=try { resize(raw,case) } finally { raw.recycle() }
+                            try {
+                                var realRead:DraftScanResult?=null
+                                repeat(2) { realRead=scanner.scanDraftFromBitmap(realFrame,context,fixture.firstPick,LaneRole.MID,namesOnly=true) }
+                                val actual=realRead!!.alliesBySlot.mapKeys { it.key }.mapValues { it.value.id }+
+                                    realRead!!.enemiesBySlot.mapKeys { it.key+5 }.mapValues { it.value.id }
+                                if(actual!=fixture.titles) errors+="${fixture.file}: expected=${fixture.titles} actual=$actual"
+                                fixture.remainingAllyLane?.let { lane ->
+                                    if(realRead!!.allyRolesBySlot[4]!=lane) errors+="${fixture.file}: observed last ally lane must be $lane"
+                                }
+                                val turn=scanner.getDraftPickSequence(fixture.firstPick).last()
+                                var visual:ScannedSlotInfo?=null
+                                if(fixture.titles.size<9 || fixture.tenth!=null) {
+                                    repeat(2) { visual=scanner.scanActiveSlotDirectly(realFrame,turn,context) }
+                                    if(fixture.titles.size<9 && visual!=null) errors+="${fixture.file}: visual pick before nine names"
+                                    if(fixture.tenth!=null && visual?.champion?.id!=fixture.tenth)
+                                        errors+="${fixture.file}: tenth expected=${fixture.tenth} actual=${visual?.champion?.id}"
+                                }
+                                realChecks.put(JSONObject().put("file",fixture.file).put("sha256",rawHash)
+                                    .put("expectedTitles",JSONObject(fixture.titles.mapKeys { it.key.toString() }))
+                                    .put("recognizedTitles",JSONObject(actual.mapKeys { it.key.toString() }))
+                                    .put("frames",2).put("tenthExpected",fixture.tenth?:JSONObject.NULL)
+                                    .put("tenthRecognized",visual?.champion?.id?:JSONObject.NULL)
+                                    .put("visualCheck",if(fixture.titles.size<9) "blocked-before-nine" else
+                                        if(fixture.tenth!=null) "required" else "pending-owner-identity"))
+                            } finally { realFrame.recycle() }
+                        }
+                        result.put("realCaptures",realChecks)
+                    }
+                    } finally { sequenceSource.recycle() }
                 } catch (failure: Exception) {
                     errors += "${failure.javaClass.simpleName}: ${failure.message}"
                 } finally {

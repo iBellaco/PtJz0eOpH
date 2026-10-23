@@ -29,6 +29,10 @@ class SequenceAuditTest(unittest.TestCase):
                           expected=reporter.expected_names(case['firstPick'], n), roles=dict(reporter.ROLES)) for n in range(10)]
             last_id = 'teemo'
             cases.append(dict(case, status='PASS', failures=[], steps=steps,validationMode='full',
+                              realCaptures=[dict(file=file,sha256=ground['sha256'],expectedTitles=dict(ground['titles']),
+                                  recognizedTitles=dict(ground['titles']),frames=2,visualCheck=ground['visual'],
+                                  tenthExpected=ground['tenth'],tenthRecognized=ground['tenth'])
+                                  for file,ground in reporter.REAL_CAPTURES.items()],
                               tenth=dict(expected=last_id, recognized=last_id, confirmed=True, nameHidden=True)))
         return [dict(sourceSha256=planner.SOURCE_SHA256, cases=cases, instrumentationPassed=True)]
 
@@ -85,6 +89,20 @@ class SequenceAuditTest(unittest.TestCase):
                 fixture['profiles'].pop()
             with self.assertRaises(ValueError):
                 planner.make_plan(fixture)
+
+    def test_missing_forged_real_capture_or_early_visual_selection_cannot_pass(self):
+        for mutation in ['missing','duplicate','hash','forged','visual']:
+            fixture=self.fixture()
+            reports=self.reports(fixture)
+            real=reports[0]['cases'][0]['realCaptures']
+            if mutation=='missing': real.pop()
+            elif mutation=='duplicate': real.append(real[0])
+            elif mutation=='hash': real[0]['sha256']='wrong'
+            elif mutation=='visual': real[0]['tenthRecognized']='vi'
+            else:
+                real[0]['recognizedTitles']['0']='wrong'
+                real[0]['expectedTitles']['0']='wrong'
+            self.assertEqual('FAIL',reporter.summarize(fixture,reports)['status'])
 
     def test_cutout_margins_do_not_share_an_unshifted_native_sequence(self):
         fixture = self.fixture()

@@ -133,3 +133,31 @@ mediciones/revisiones originales de unidades de DXOMARK, Notebookcheck y
 YugaTech; no se atribuyen sus pruebas físicas a Coach. Así quedan previstas
 164 referencias, 492 variantes y 9840 comprobaciones. Las medidas nuevas se
 incluyen en el plan preliminar no publicable y en la secuencia nativa completa.
+
+## Resultado de 40018536124 y capturas del propietario
+
+Se midieron 164 perfiles, 63 medidas, 492 variantes y 9840 comprobaciones de
+identidad aprobadas; también 749 pruebas unitarias sin errores ni omisiones.
+La compilación, firma, R8 y revisiones instaladas en español/portugués aprobaron.
+La comprobación nativa preliminar aprobó 24/26 escenarios: fallaron 640 × 360
+y 854 × 480 con margen derecho/inferior. No se publicó ni fusionó ese APK.
+
+El diagnóstico muestra que el relleno de un píxel de la máscara a resolución
+pequeña puede dañar un título adyacente y que la banda conserva el inicio del
+nombre de invocador. Se traslada la máscara a la copia ampliada y se añade una
+última lectura aislada de la parte de título para los slots aún no resueltos.
+No se acepta V como Vi, no se dibujan nombres y las relecturas no cuentan como
+fotogramas nuevos. Falta que el reconocimiento nativo valide esta corrección.
+
+Se guarda el contrato completo en `docs/draft-recognition-contract.md`, enlazado
+desde las instrucciones maestras. Se conservan las tres nuevas capturas reales,
+sus hashes y títulos transcritos independientemente. La matriz nativa completa
+debe leerlas en cada geometría, bloquear el décimo con ocho títulos y reconocer
+el décimo Teemo rival con nueve. Se comprueba además el baneo aliado omitido.
+La identidad del último aliado de la captura de Kai’Sa requiere confirmación del
+propietario: no se declara aprobada su identificación visual hasta conocerla.
+Esto no sustituye la secuencia completa de ambos órdenes ya exigida.
+
+Solo este documento de resultados se añade a la lista exacta de archivos de
+entrega que permiten reutilizar un APK previamente aprobado. Contrato, reglas,
+capturas, conjuntos de datos, pruebas y flujos siguen obligando a validación nueva.
