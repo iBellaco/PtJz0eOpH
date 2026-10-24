@@ -10,7 +10,7 @@ import android.graphics.Rect
 internal class DraftNameAtlas private constructor(val bitmap: Bitmap, val tiles: List<Tile>) {
     data class Tile(val ally: Boolean, val slot: Int, val source: Rect, val region: Rect,
                     val titleMaxY: Int, val original: Boolean = true, val contrast: Boolean = false,
-                    val titleMinY: Int = 0)
+                    val titleMinY: Int = 0, val badgeRemoved: Boolean = false)
 
     companion object {
         private const val GUTTER = 32
@@ -256,7 +256,8 @@ internal class DraftNameAtlas private constructor(val bitmap: Bitmap, val tiles:
                     source = source,
                     region = Rect(GUTTER, GUTTER, GUTTER + width, GUTTER + height),
                     titleMinY = tile.titleMinY,
-                    titleMaxY = tile.titleMaxY
+                    titleMaxY = tile.titleMaxY,
+                    badgeRemoved = true
                 )))
             } catch (error: Throwable) {
                 bitmap.recycle()

@@ -677,11 +677,17 @@ object DraftVisionScanner {
                             if(mapped !in candidates) candidates+=mapped
                         }
                     }
-                    val reading = AllyDraftNameReader.readTitleRows(titleLines.sortedBy { it.boundingBox!!.left }.map {
+                    val titlePairs = titleLines.sortedBy { it.boundingBox!!.left }.map {
                         it.text to (it.boundingBox!!.centerY()-tile.region.top)
-                    },(tile.region.height()*.30f).toInt(),allChamps,tile.titleMaxY)
+                    }
+                    val reading = AllyDraftNameReader.readTitleRows(titlePairs,
+                        (tile.region.height()*.30f).toInt(),allChamps,tile.titleMaxY)
+                    val separatedBadgeReading = if (tile.badgeRemoved && tile.ally)
+                        AllyDraftNameReader.readBadgeSeparatedShortTitle(titlePairs,allChamps)
+                    else AllyDraftNameReader.Reading()
                     val readings = if(tile.ally) targetedAllyReadings else targetedEnemyReadings
-                    readings[tile.slot]=AllyDraftNameReader.preferOriginal(readings[tile.slot],reading)
+                    val candidateReading=AllyDraftNameReader.preferOriginal(reading,separatedBadgeReading)
+                    readings[tile.slot]=AllyDraftNameReader.preferOriginal(readings[tile.slot],candidateReading)
                 }
                 }
                 readTitles(atlas)
@@ -725,7 +731,7 @@ object DraftVisionScanner {
                     // to recover the title. Repeating three near-identical
                     // crops for every missing slot made narrow 640x360 frames
                     // spend the whole native OCR timeout on redundant work.
-                    val candidates=(detected+fallback).distinct().take(2)
+                    val candidates=if (detected.isNotEmpty()) detected else listOf(fallback)
                     for(line in candidates) {
                         if(!unresolvedReading()) break
                         val focused=DraftNameAtlas.focusDetectedLine(atlas,tile,line)
@@ -741,14 +747,18 @@ object DraftVisionScanner {
                 // profiles, so color separation is an independent final request.
                 for((tile,bounds) in unresolved) {
                     val reading=(if(tile.ally) targetedAllyReadings else targetedEnemyReadings)[tile.slot]
-                    if(!reading.ambiguous && reading.champion==null && reading.lane==null) {
+                    if(!tile.ally && !reading.ambiguous && reading.champion==null && reading.lane==null) {
                         val color=DraftNameAtlas.focusTitle(atlas,tile,bounds,colorOnly=true)
                         try { readTitles(color) } finally { color.bitmap.recycle() }
                     }
                 }
                 val observedTitleIds=(targetedAllyReadings.toList()+targetedEnemyReadings.toList())
                     .mapNotNull { it.champion?.id }.toSet()
-                if(observedTitleIds.size<9 && unresolved.any { (tile,_) ->
+                if(observedTitleIds.size<9 && (width>640 || unresolved.count { (tile,_) ->
+                    (if(tile.ally) targetedAllyReadings else targetedEnemyReadings)[tile.slot].let {
+                        !it.ambiguous && it.champion==null && it.lane==null
+                    }
+                } <= 2) && unresolved.any { (tile,_) ->
                     (if(tile.ally) targetedAllyReadings else targetedEnemyReadings)[tile.slot].let {
                         !it.ambiguous && it.champion==null && it.lane==null
                     }

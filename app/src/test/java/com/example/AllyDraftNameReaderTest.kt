@@ -43,6 +43,12 @@ class AllyDraftNameReaderTest {
         assertTrue(AllyDraftNameReader.readTitleRows(listOf("JINX" to 0,"YUUMI" to 1),10,catalog).ambiguous)
     }
 
+    @Test fun badgeSeparatedOpticalNoiseCanOnlyResolveTheIsolatedShortViTitle() {
+        assertEquals("vi", AllyDraftNameReader.readBadgeSeparatedShortTitle(listOf("IA" to 0), catalog).champion?.id)
+        assertEquals("vi", AllyDraftNameReader.readBadgeSeparatedShortTitle(listOf("rVI" to 0), catalog).champion?.id)
+        assertNull(AllyDraftNameReader.readBadgeSeparatedShortTitle(listOf("XCS IA" to 0), catalog).champion)
+    }
+
     @Test fun laneTitlesBecomeNamesInTheSameBandInBothLanguages() {
         val labels = listOf("JUNGLA" to LaneRole.JUNGLE, "CALLE DEL DRAGÓN" to LaneRole.ADC,
             "CALLE CENTRAL" to LaneRole.MID, "CALLE DEL BARÓN" to LaneRole.TOP, "APOYO" to LaneRole.SUPPORT,
