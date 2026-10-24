@@ -225,8 +225,9 @@ internal class DraftNameAtlas private constructor(val bitmap: Bitmap, val tiles:
         }
 
         /**
-         * Re-read an allied title after removing only the leading mastery badge
-         * area. The badge is part of the captured pixels, but it is not the
+         * Re-read the existing badge-suppressed alternative at full band width.
+         * Never crop a percentage of the band: it can remove title letters.
+         * The badge is part of the captured pixels, but it is not the
          * champion title and ML Kit can merge its silhouette with short names
          * such as "Vi". The crop never supplies a name or a portrait; it only
          * gives OCR the same title pixels with the calibrated badge margin out
@@ -234,20 +235,20 @@ internal class DraftNameAtlas private constructor(val bitmap: Bitmap, val tiles:
          */
         fun withoutLeadingBadge(atlas: DraftNameAtlas, tile: Tile): DraftNameAtlas {
             require(tile.original && tile in atlas.tiles && tile.ally)
-            val trim = (tile.region.width() * .24f).toInt().coerceIn(1, tile.region.width() - 1)
-            val width = tile.region.width() - trim
+            val prior = atlas.tiles.single { it.ally && it.slot == tile.slot && !it.original && !it.contrast }
+            val width = tile.region.width()
             val height = tile.region.height()
             val bitmap = Bitmap.createBitmap(width + GUTTER * 2, height + GUTTER * 2,
                 Bitmap.Config.ARGB_8888)
             val canvas = Canvas(bitmap).apply { drawColor(Color.BLACK) }
             try {
-                val crop = Bitmap.createBitmap(atlas.bitmap, tile.region.left + trim,
-                    tile.region.top, width, height)
+                val crop = Bitmap.createBitmap(atlas.bitmap, prior.region.left,
+                    prior.region.top, width, height)
                 try {
                     canvas.drawBitmap(crop, GUTTER.toFloat(), GUTTER.toFloat(), null)
                 } finally { crop.recycle() }
                 val source = Rect(
-                    tile.source.left + trim * tile.source.width() / tile.region.width(),
+                    tile.source.left,
                     tile.source.top,
                     tile.source.right,
                     tile.source.bottom

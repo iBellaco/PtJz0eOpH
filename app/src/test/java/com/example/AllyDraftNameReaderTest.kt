@@ -44,8 +44,9 @@ class AllyDraftNameReaderTest {
     }
 
     @Test fun badgeSeparatedOpticalNoiseCanOnlyResolveTheIsolatedShortViTitle() {
-        assertEquals("vi", AllyDraftNameReader.readBadgeSeparatedShortTitle(listOf("IA" to 0), catalog).champion?.id)
-        assertEquals("vi", AllyDraftNameReader.readBadgeSeparatedShortTitle(listOf("rVI" to 0), catalog).champion?.id)
+        assertNull(AllyDraftNameReader.readBadgeSeparatedShortTitle(listOf("IA" to 0), catalog).champion)
+        assertNull(AllyDraftNameReader.readBadgeSeparatedShortTitle(listOf("rVI" to 0), catalog).champion)
+        assertEquals("vi", AllyDraftNameReader.readBadgeSeparatedShortTitle(listOf("VI" to 0), catalog).champion?.id)
         assertNull(AllyDraftNameReader.readBadgeSeparatedShortTitle(listOf("XCS IA" to 0), catalog).champion)
     }
 

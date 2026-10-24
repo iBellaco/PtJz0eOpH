@@ -38,16 +38,13 @@ object AllyDraftNameReader {
     }
 
     /**
-     * The mastery badge is removed before this method is called. Some native
-     * OCR profiles still render the two glyphs of the complete title "Vi" as
-     * IA, IAA or rVI. These are optical readings of that isolated two-letter
-     * title, not aliases accepted from arbitrary player text; keep the
-     * correction private to the badge-separated title pass.
+     * Require the complete two-letter title after badge suppression too.
+     * Unknown readings such as IA, IAA and rVI cannot establish an identity.
      */
     internal fun readBadgeSeparatedShortTitle(lines: List<Pair<String, Int>>, catalog: List<Champion>): Reading {
         val text = lines.sortedBy { it.second }.joinToString(" ") { it.first }
         val key = DraftValidationLayer.normalize(text).replace(" ", "")
-        if (key !in setOf("ia", "iaa", "rvi", "vi", "v1", "vl")) return Reading()
+        if (key !in setOf("vi", "v1", "vl")) return Reading()
         val champion = catalog.firstOrNull { it.id == "vi" }
         return champion?.let { Reading(champion = it) } ?: Reading()
     }

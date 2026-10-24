@@ -77,7 +77,8 @@ class DraftNameAtlasTest {
             try {
                 assertEquals(1,withoutBadge.tiles.size)
                 val result=withoutBadge.tiles.single()
-                assertTrue(result.source.left>tile.source.left)
+                assertEquals(tile.source, result.source)
+                assertEquals(tile.region.width(), result.region.width())
                 assertEquals(tile.source.top,result.source.top)
                 assertEquals(tile.source.right,result.source.right)
                 assertEquals(tile.region.height(),result.region.height())
