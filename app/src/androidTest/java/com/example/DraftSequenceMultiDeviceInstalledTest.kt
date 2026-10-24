@@ -162,6 +162,18 @@ class DraftSequenceMultiDeviceInstalledTest {
                                                         JSONObject().put("text",it.text).put("bounds",it.boundingBox.toString())
                                                     })))
                                             } finally { focused.bitmap.recycle() }
+                                            val color=DraftNameAtlas.focusTitle(atlas,tile,bounds,colorOnly=true)
+                                            try {
+                                                File(evidence,"${case.getString("id")}-color-${tile.ally}-${tile.slot}.png").outputStream().use {
+                                                    color.bitmap.compress(Bitmap.CompressFormat.PNG,100,it)
+                                                }
+                                                val read=recognizer.process(com.google.mlkit.vision.common.InputImage.fromBitmap(color.bitmap,0)).await()
+                                                focusedDiagnostics.put(JSONObject().put("ally",tile.ally).put("slot",tile.slot)
+                                                    .put("variant","independent-color").put("text",read.text)
+                                                    .put("lines",JSONArray(read.textBlocks.flatMap { it.lines }.map {
+                                                        JSONObject().put("text",it.text).put("bounds",it.boundingBox.toString())
+                                                    })))
+                                            } finally { color.bitmap.recycle() }
                                         }
                                         result.put("focusedDiagnostics",focusedDiagnostics)
                                         val lineDiagnostics=JSONArray()
