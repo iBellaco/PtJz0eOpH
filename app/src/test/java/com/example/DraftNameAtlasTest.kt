@@ -169,6 +169,12 @@ class DraftNameAtlasTest {
                 val bounds=DraftNameAtlas.titleFocusBounds(atlas,tile) ?: continue
                 val focused=DraftNameAtlas.focusTitle(atlas,tile,bounds)
                 try {
+                    assertEquals("Established OCR input variants keep their original size",3,focused.tiles.size)
+                    val color=DraftNameAtlas.focusTitle(atlas,tile,bounds,colorOnly=true)
+                    try {
+                        assertEquals(1,color.tiles.size)
+                        assertEquals(tile.region.height()+64,color.bitmap.height)
+                    } finally { color.bitmap.recycle() }
                     val raw=focused.tiles.single { it.original }
                     assertTrue(tile.source.contains(raw.source))
                     assertEquals(minOf(tile.titleMaxY,(tile.region.height()*.85f).toInt()),raw.titleMaxY)

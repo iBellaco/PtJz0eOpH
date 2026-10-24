@@ -277,3 +277,11 @@ cuentas ni capturas. Los ajustes nuevos posteriores se guardan normalmente.
 Una regresión comprueba eliminación de los formatos anteriores, base genérica,
 conservación de otros perfiles y persistencia de los ajustes nuevos. La prueba
 física de esta versión en el teléfono del propietario sigue pendiente.
+
+La fuente 29d09c3a tampoco aprobó el reconocimiento preliminar: persistieron
+lecturas faltantes de Vi/Volibear, con regresiones adicionales en perfiles antes
+aprobados. La nueva separación por color se ejecuta en una imagen independiente,
+sin aumentar la altura de las tres variantes anteriores. Una regresión fija sus
+dimensiones y exige una sola variante para esa lectura adicional. No se incorporan
+alias a partir de las lecturas erróneas. La publicación sigue bloqueada hasta
+aprobar la validación completa de la fuente nueva.

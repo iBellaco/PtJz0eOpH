@@ -721,7 +721,7 @@ object DraftVisionScanner {
                     }
                 }
                 // Keep established OCR image sizes unchanged. A fourth stacked
-                // variant altered detector downsampling on previously passing
+                // variant changed the detector input size on previously passing
                 // profiles, so color separation is an independent final request.
                 for((tile,bounds) in unresolved) {
                     val reading=(if(tile.ally) targetedAllyReadings else targetedEnemyReadings)[tile.slot]
