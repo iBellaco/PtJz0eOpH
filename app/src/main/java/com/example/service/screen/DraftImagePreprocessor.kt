@@ -59,7 +59,10 @@ object DraftImagePreprocessor {
                         left=minOf(left,x);right=maxOf(right,x)
                     }
                 canvas.drawRect((left-1).coerceAtLeast(0).toFloat(),(top-1).coerceAtLeast(0).toFloat(),
-                    (right+2).coerceAtMost(crop.width).toFloat(),(bottom+2).coerceAtMost(crop.height).toFloat(),paint)
+                    // right is an inclusive component coordinate. An extra
+                    // source pixel here erased the left stroke of V at 640px.
+                    // Include the badge itself, never pad toward the title.
+                    (right+1).coerceAtMost(crop.width).toFloat(),(bottom+2).coerceAtMost(crop.height).toFloat(),paint)
             }
         }
     }

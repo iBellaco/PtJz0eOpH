@@ -130,6 +130,24 @@ class DraftNameAtlasTest {
                                 viewport.left+(glyph.right*rw+1279)/1280,viewport.top+(glyph.bottom*rh+578)/579)
                             assertTrue("Both letters must remain at $w/$h, ally=$firstPick: $expected",
                                 focused.tiles.single { it.original }.source.contains(expected))
+                            if(firstPick) {
+                                val cleaned=atlas.tiles.single { it.ally && it.slot==4 && !it.original && !it.contrast }
+                                val l=((expected.left-tile.source.left)*tile.region.width()/tile.source.width()).coerceAtLeast(0)
+                                val r=((expected.right-tile.source.left)*tile.region.width()/tile.source.width()).coerceAtMost(tile.region.width())
+                                val t=((expected.top-tile.source.top)*tile.region.height()/tile.source.height()).coerceAtLeast(0)
+                                val b=((expected.bottom-tile.source.top)*tile.region.height()/tile.source.height()).coerceAtMost(tile.region.height())
+                                var strokes=0
+                                for(y in t until b) for(x in l until r) {
+                                    val c=atlas.bitmap.getPixel(tile.region.left+x,tile.region.top+y)
+                                    val channels=listOf(Color.red(c),Color.green(c),Color.blue(c))
+                                    if(channels.min()>100 && channels.max()-channels.min()<70) {
+                                        strokes++
+                                        assertEquals("Removing a badge cannot erase a real VI stroke at $w/$h ($x,$y)",
+                                            c,atlas.bitmap.getPixel(cleaned.region.left+x,cleaned.region.top+y))
+                                    }
+                                }
+                                assertTrue("The independent real title must contain visible ink",strokes>0)
+                            }
                         } finally { focused.bitmap.recycle() }
                     } finally { atlas.bitmap.recycle() }
                 } finally { frame.recycle() }
