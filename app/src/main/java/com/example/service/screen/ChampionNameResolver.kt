@@ -238,6 +238,15 @@ object ChampionNameResolver {
             .lowercase(Locale.ROOT)
     }
 
+    // OCR óptico observado en capturas comprimidas de la ranura de Volibear.
+    // Son lecturas de la línea completa del campeón, no abreviaturas ni
+    // extracción de tokens desde un nombre de invocador.
+    private val observedFullTitleAliases = mapOf(
+        "olielar" to "volibear",
+        "olieea" to "volibear",
+        "oliela" to "volibear"
+    )
+
     // Encuentra el campeón correspondiente a una línea de texto OCR con validación anti-falsos positivos estricta
     /** Whole title only: never extract a champion token from a player's nickname. */
     fun findChampionInNameBand(text: String, allChampions: List<Champion>): Champion? {
@@ -254,7 +263,7 @@ object ChampionNameResolver {
         if (compact.length > 3 && compact.first() in "wvykutxnhodcljfpsza0123456789") variants.add(compact.drop(1))
         for (variant in variants) {
             val key = normalizeCompact(variant)
-            val id = if (key in setOf("vl", "v1")) "vi" else
+            val id = observedFullTitleAliases[key] ?: if (key in setOf("vl", "v1")) "vi" else
                 KNOWN_CHAMPIONS_MAP[variant] ?: KNOWN_CHAMPIONS_MAP[key]
             allChampions.firstOrNull { champion ->
                 (id != null && champion.id == id) || key == normalizeCompact(champion.name) || key == normalizeCompact(champion.id)
