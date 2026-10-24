@@ -39,7 +39,8 @@ class DraftNameAtlasTest {
                     raw.source.contains(android.graphics.Rect(155,400,173,415)))
                 val top=(line.top-(line.height()*.20f).toInt().coerceAtLeast(2)).coerceAtLeast(0)
                 val left=(line.left-line.height()).coerceAtLeast(0)
-                assertEquals((tile.titleMaxY-top).coerceIn(0,raw.region.height()),raw.titleMaxY)
+                assertEquals((minOf(tile.titleMaxY,(tile.region.height()*.85f).toInt())-top)
+                    .coerceIn(0,raw.region.height()),raw.titleMaxY)
                 for(y in 0 until raw.region.height()) for(x in 0 until raw.region.width()) {
                     assertEquals(atlas.bitmap.getPixel(tile.region.left+left+x,tile.region.top+top+y),
                         focused.bitmap.getPixel(raw.region.left+x,raw.region.top+y))
@@ -63,6 +64,13 @@ class DraftNameAtlasTest {
                     assertEquals("Masked pixels cannot be restored by a tighter reading",Color.BLACK,focused.bitmap.getPixel(x,y))
                 assertTrue(raw.titleMaxY<=raw.region.height())
                 assertTrue(raw.titleMinY>=0)
+                val playerRow=DraftNameAtlas.focusDetectedLine(atlas,tile,android.graphics.Rect(100,135,150,149))
+                try {
+                    val player=playerRow.tiles.single { it.original }
+                    val playerCenter=142-(135-(14*.20f).toInt().coerceAtLeast(2))
+                    assertTrue("A lower player-name line must remain outside the title acceptance region",
+                        playerCenter>player.titleMaxY)
+                } finally { playerRow.bitmap.recycle() }
             } finally { focused.bitmap.recycle() }
         } finally { atlas.bitmap.recycle();source.recycle() }
     }

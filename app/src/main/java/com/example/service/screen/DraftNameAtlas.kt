@@ -159,7 +159,7 @@ internal class DraftNameAtlas private constructor(val bitmap: Bitmap, val tiles:
                         tile.copy(source=source,region=Rect(GUTTER,top,GUTTER+width,top+height),
                             original=variant==0,contrast=variant!=0,
                             titleMinY=((tile.region.height()*.30f).toInt()-bounds.top).coerceIn(0,height),
-                            titleMaxY=(tile.titleMaxY-bounds.top).coerceIn(0,height))
+                            titleMaxY=(minOf(tile.titleMaxY,(tile.region.height()*.85f).toInt())-bounds.top).coerceIn(0,height))
                     } finally { crop.recycle() }
                 }
                 return DraftNameAtlas(bitmap,tiles)

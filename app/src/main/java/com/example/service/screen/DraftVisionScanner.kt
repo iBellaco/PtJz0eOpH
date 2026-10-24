@@ -668,7 +668,7 @@ object DraftVisionScanner {
                     for(line in titleLines) {
                         val box=line.boundingBox!!
                         val y=box.centerY()-tile.region.top
-                        if(y<tile.region.height()*.30f || y>tile.titleMaxY) continue
+                        if(y<tile.region.height()*.30f || y>minOf(tile.titleMaxY,(tile.region.height()*.85f).toInt())) continue
                         if(AllyDraftNameReader.read(listOf(line.text),allChamps).let {
                             it.champion!=null || it.lane!=null || it.ambiguous }) continue
                         fun sourceX(x:Int)=tile.source.left+(x-tile.region.left)*tile.source.width()/tile.region.width()
