@@ -656,20 +656,18 @@ object DraftVisionScanner {
                         line.boundingBox?.let { tile.region.contains(it.centerX(),it.centerY()) &&
                             it.centerY()-tile.region.top>=tile.titleMinY } == true
                     }
-                    val titleLines = if (tile.ally) selected.filterNot { line ->
-                        val box=line.boundingBox!!
-                        box.right-tile.region.left < tile.region.width()*.12f &&
-                            AllyDraftNameReader.read(listOf(line.text),allChamps).let {
-                                it.champion==null && it.lane==null && !it.ambiguous
-                            }
-                    } else selected
+                    // In a focused recovery crop the title legitimately starts
+                    // at the left edge. Do not discard it as if it were the
+                    // mastery badge; the title reader still requires a whole
+                    // champion name or a complete lane title.
+                    val titleLines = selected
                     // Keep unknown native line boxes for a tighter pixel-only
                     // re-read. Never accept their partial text as a champion.
                     val original=atlas.tiles.single { it.original && it.ally==tile.ally && it.slot==tile.slot }
                     for(line in titleLines) {
                         val box=line.boundingBox!!
                         val y=box.centerY()-tile.region.top
-                        if(y<tile.region.height()*.30f || y>minOf(tile.titleMaxY,(tile.region.height()*.85f).toInt())) continue
+                        if(y>minOf(tile.titleMaxY,(tile.region.height()*.85f).toInt())) continue
                         if(AllyDraftNameReader.read(listOf(line.text),allChamps).let {
                             it.champion!=null || it.lane!=null || it.ambiguous }) continue
                         val mapped=DraftNameAtlas.mapDetectedLine(original,tile,box)

@@ -258,7 +258,10 @@ internal class DraftNameAtlas private constructor(val bitmap: Bitmap, val tiles:
                             tile.source.top+(bounds.bottom*tile.source.height()+tile.region.height()-1)/tile.region.height())
                         tile.copy(source=source,region=Rect(GUTTER,top,GUTTER+width,top+height),
                             original=variant==0,contrast=variant!=0,
-                            titleMinY=((tile.region.height()*.30f).toInt()-bounds.top).coerceIn(0,height),
+                            // The focused crop already starts at the calibrated
+                            // title band; a second 30% cutoff can remove the
+                            // first row on short 640x360 captures.
+                            titleMinY=0,
                             titleMaxY=(minOf(tile.titleMaxY,(tile.region.height()*.85f).toInt())-bounds.top).coerceIn(0,height))
                     } finally { crop.recycle() }
                 }

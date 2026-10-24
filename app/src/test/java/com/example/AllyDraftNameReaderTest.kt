@@ -47,6 +47,7 @@ class AllyDraftNameReaderTest {
         for(text in listOf("IA","rVI","XCS IA"))
             assertNull(AllyDraftNameReader.readTitleRows(listOf(text to 0),10,catalog,20).champion)
         assertEquals("vi",AllyDraftNameReader.readTitleRows(listOf("VI" to 0),10,catalog,20).champion?.id)
+        assertEquals("vi",AllyDraftNameReader.readTitleRows(listOf("FVI" to 0),10,catalog,20).champion?.id)
         assertNull(AllyDraftNameReader.readTitleRows(listOf("VI" to 25),10,catalog,20).champion)
         assertNull(AllyDraftNameReader.readTitleRows(listOf("V" to 0,"I" to 25),10,catalog,20).champion)
     }
