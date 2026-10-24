@@ -38,8 +38,9 @@ def main():
                 if (case['preflight'] if preflight else case['shard']==shard)
                 and (not targets or case['id'] in targets)}
     assert expected, 'La partición no puede estar vacía'
-    for apk in ['app/build/outputs/apk/release/app-release.apk',
-                'app/build/outputs/apk/androidTest/release/app-release-androidTest.apk']:
+    build_type = os.environ.get('COACH_SEQUENCE_BUILD_TYPE', 'release').lower()
+    for apk in [f'app/build/outputs/apk/{build_type}/app-{build_type}.apk',
+                f'app/build/outputs/apk/androidTest/{build_type}/app-{build_type}-androidTest.apk']:
         subprocess.run(['adb', 'install', '-r', apk], check=True, timeout=120)
     command = ['adb', 'shell', 'am', 'instrument', '-w', '-r', '-e', 'class',
                'com.example.DraftSequenceMultiDeviceInstalledTest', '-e', 'sequenceShard', str(shard),

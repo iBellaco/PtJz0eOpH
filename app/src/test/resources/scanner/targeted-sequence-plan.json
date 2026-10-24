@@ -1,0 +1,70 @@
+{
+  "sourceSha256": "42661aefae3df52b4f72047c039120f72f4ea351139d7bdb5107351fe8d3342a",
+  "modelProfiles": 3,
+  "physicalDevicesTested": [],
+  "cases": [
+    {
+      "capture": [640, 360],
+      "layout": "uniform-fit-reference",
+      "prior": "default",
+      "calibration": {
+        "nameBandScale": 0.80277777,
+        "allySlotXRatios": [0.0734375, 0.0734375, 0.0734375, 0.0734375, 0.0734375],
+        "enemySlotXRatios": [0.9578125, 0.9578125, 0.9578125, 0.9578125, 0.9578125],
+        "allySlotYRatios": [0.24906832, 0.35787874, 0.465089, 0.5714992, 0.67870945],
+        "enemySlotYRatios": [0.24815832, 0.35733607, 0.46410558, 0.5708749, 0.6768417],
+        "allySlotDiameterRatios": [0.088305555, 0.088305555, 0.088305555, 0.088305555, 0.08429166],
+        "enemySlotDiameterRatios": [0.088305555, 0.088305555, 0.088305555, 0.088305555, 0.088305555]
+      },
+      "safeInsets": [0, 0, 0, 0],
+      "profiles": [{"profile": "generic-640-360", "model": "resolution-simulation", "display": [640, 360], "specification": null}],
+      "id": "sequence-4-ally-first",
+      "firstPick": true,
+      "language": "es",
+      "shard": 0,
+      "preflight": true
+    },
+    {
+      "capture": [1920, 924],
+      "layout": "uniform-fit-reference",
+      "prior": "default",
+      "calibration": {
+        "nameBandScale": 0.93939394,
+        "allySlotXRatios": [0.0703125, 0.0703125, 0.0703125, 0.0703125, 0.0703125],
+        "enemySlotXRatios": [0.9578125, 0.9578125, 0.9578125, 0.9578125, 0.9578125],
+        "allySlotYRatios": [0.21428572, 0.340504, 0.4648661, 0.5883001, 0.7126623],
+        "enemySlotYRatios": [0.21266234, 0.33917627, 0.4628995, 0.5866226, 0.70941556],
+        "allySlotDiameterRatios": [0.10333333, 0.10333333, 0.10333333, 0.10333333, 0.09863636],
+        "enemySlotDiameterRatios": [0.10333333, 0.10333333, 0.10333333, 0.10333333, 0.10333333]
+      },
+      "safeInsets": [0, 0, 0, 0],
+      "profiles": [{"profile": "requested-p20-jp", "model": "P20", "display": [2244, 1080], "specification": "https://consumer.huawei.com/jp/phones/p20/specs/"}],
+      "id": "sequence-56-ally-first",
+      "firstPick": true,
+      "language": "es",
+      "shard": 0,
+      "preflight": true
+    },
+    {
+      "capture": [1920, 868],
+      "layout": "uniform-fit-reference",
+      "prior": "default",
+      "calibration": {
+        "nameBandScale": 1.0,
+        "allySlotXRatios": [0.071875, 0.071875, 0.071875, 0.071875, 0.071875],
+        "enemySlotXRatios": [0.959375, 0.959375, 0.959375, 0.959375, 0.959375],
+        "allySlotYRatios": [0.19170982, 0.32686865, 0.46003988, 0.5922173, 0.7253886],
+        "enemySlotYRatios": [0.19241278, 0.32841277, 0.46141276, 0.59441274, 0.7264128],
+        "allySlotDiameterRatios": [0.11, 0.11, 0.11, 0.11, 0.105],
+        "enemySlotDiameterRatios": [0.11, 0.11, 0.11, 0.11, 0.11]
+      },
+      "safeInsets": [0, 0, 0, 0],
+      "profiles": [{"profile": "requested-honor-x8a", "model": "Honor X8a", "display": [2388, 1080], "specification": "https://www.honor.com/cam/phones/honor-x8a/spec/"}],
+      "id": "sequence-61-enemy-first",
+      "firstPick": false,
+      "language": "pt",
+      "shard": 0,
+      "preflight": true
+    }
+  ]
+}
