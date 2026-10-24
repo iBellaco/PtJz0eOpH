@@ -244,7 +244,8 @@ object ChampionNameResolver {
     private val observedFullTitleAliases = mapOf(
         "olielar" to "volibear",
         "olieea" to "volibear",
-        "oliela" to "volibear"
+        "oliela" to "volibear",
+        "wourear" to "volibear"
     )
 
     // Encuentra el campeón correspondiente a una línea de texto OCR con validación anti-falsos positivos estricta

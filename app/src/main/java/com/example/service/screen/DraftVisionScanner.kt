@@ -748,6 +748,15 @@ object DraftVisionScanner {
                             // Native evidence already reads MEL from the second
                             // unscaled crop. Do not normalize away that evidence.
                             readTitles(focused)
+                            // Short titles such as Vi can disappear at the
+                            // source crop size. The diagnostic path proved that
+                            // these same pixels become readable at native text
+                            // sizes; use that bounded recovery in production as
+                            // well, without inventing a champion identity.
+                            if (unresolvedReading(tile)) {
+                                val native = DraftNameAtlas.nativeTextSizes(focused, line.height())
+                                try { readTitles(native) } finally { native.bitmap.recycle() }
+                            }
                         } finally { focused.bitmap.recycle() }
                     }
                 }
