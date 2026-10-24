@@ -720,6 +720,16 @@ object DraftVisionScanner {
                         try { readTitles(focused) } finally { focused.bitmap.recycle() }
                     }
                 }
+                // Keep established OCR image sizes unchanged. A fourth stacked
+                // variant altered detector downsampling on previously passing
+                // profiles, so color separation is an independent final request.
+                for((tile,bounds) in unresolved) {
+                    val reading=(if(tile.ally) targetedAllyReadings else targetedEnemyReadings)[tile.slot]
+                    if(!reading.ambiguous && reading.champion==null && reading.lane==null) {
+                        val color=DraftNameAtlas.focusTitle(atlas,tile,bounds,colorOnly=true)
+                        try { readTitles(color) } finally { color.bitmap.recycle() }
+                    }
+                }
                 for (slot in 0..4) {
                     targetedEnemyChampions[slot] = targetedEnemyReadings[slot].let {
                         it.champion.takeUnless { _ -> it.ambiguous }

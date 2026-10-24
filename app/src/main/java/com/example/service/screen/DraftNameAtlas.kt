@@ -104,15 +104,16 @@ internal class DraftNameAtlas private constructor(val bitmap: Bitmap, val tiles:
 
         /** A compact reading of intact text pixels, not a rendered name or a
          * portrait fallback. In particular, retain BOTH strokes of VI. */
-        fun focusTitle(atlas: DraftNameAtlas, tile: Tile, bounds: Rect): DraftNameAtlas {
+        fun focusTitle(atlas: DraftNameAtlas, tile: Tile, bounds: Rect, colorOnly: Boolean = false): DraftNameAtlas {
             require(tile.original && tile in atlas.tiles && bounds.top==0 &&
                 bounds.bottom==tile.region.height() && bounds.left>=0 && bounds.right<=tile.region.width() && bounds.width()>0)
             val width=bounds.width();val height=bounds.height()
-            val bitmap=Bitmap.createBitmap(width+GUTTER*2,(height+GUTTER*2)*4,Bitmap.Config.ARGB_8888)
+            val variants=if(colorOnly) listOf(3) else (0..2).toList()
+            val bitmap=Bitmap.createBitmap(width+GUTTER*2,(height+GUTTER*2)*variants.size,Bitmap.Config.ARGB_8888)
             val canvas=Canvas(bitmap).apply { drawColor(Color.BLACK) }
             val tiles=mutableListOf<Tile>()
             try {
-                for(variant in 0..3) {
+                for((index,variant) in variants.withIndex()) {
                     val prior=if(variant==3 && tile.ally) atlas.tiles.first {
                         it.ally && it.slot==tile.slot && !it.original && !it.contrast
                     } else tile
@@ -123,7 +124,7 @@ internal class DraftNameAtlas private constructor(val bitmap: Bitmap, val tiles:
                         if(variant==1) enhanceTitleContrast(crop)
                         if(variant==2) isolateBrightTitleStrokes(crop)
                         if(variant==3) isolateTitleColor(crop)
-                        val top=variant*(height+GUTTER*2)+GUTTER
+                        val top=index*(height+GUTTER*2)+GUTTER
                         canvas.drawBitmap(crop,GUTTER.toFloat(),top.toFloat(),null)
                         val source=Rect(tile.source.left+bounds.left*tile.source.width()/tile.region.width(),
                             tile.source.top,tile.source.left+(bounds.right*tile.source.width()+tile.region.width()-1)/tile.region.width(),tile.source.bottom)
@@ -150,10 +151,10 @@ internal class DraftNameAtlas private constructor(val bitmap: Bitmap, val tiles:
                 (line.bottom+vertical).coerceAtMost(tile.region.height()))
             require(bounds.width()>0 && bounds.height()>0)
             val width=bounds.width();val height=bounds.height()
-            val bitmap=Bitmap.createBitmap(width+GUTTER*2,(height+GUTTER*2)*4,Bitmap.Config.ARGB_8888)
+            val bitmap=Bitmap.createBitmap(width+GUTTER*2,(height+GUTTER*2)*3,Bitmap.Config.ARGB_8888)
             val canvas=Canvas(bitmap).apply { drawColor(Color.BLACK) }
             try {
-                val tiles=(0..3).map { variant ->
+                val tiles=(0..2).map { variant ->
                     val prior=if(variant!=0 && tile.ally) atlas.tiles.first {
                         it.ally && it.slot==tile.slot && !it.original && !it.contrast
                     } else tile
