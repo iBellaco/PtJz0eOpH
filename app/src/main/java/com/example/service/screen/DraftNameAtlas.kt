@@ -158,7 +158,8 @@ internal class DraftNameAtlas private constructor(val bitmap: Bitmap, val tiles:
          * The original, full-height band is always read before this alternative. */
         fun focusDetectedLine(atlas: DraftNameAtlas, tile: Tile, line: Rect): DraftNameAtlas {
             require(tile.original && tile in atlas.tiles && line.width()>0 && line.height()>0)
-            val leftPadding=(line.height()*.15f).toInt()
+            val leftPadding=if(!tile.ally || line.width()<line.height()/2) line.height()
+                else (line.height()*.15f).toInt()
             val horizontal=line.height()
             val vertical=(line.height()*.20f).toInt().coerceAtLeast(2)
             val bounds=Rect((line.left-leftPadding).coerceAtLeast(0),

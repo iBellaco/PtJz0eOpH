@@ -19,6 +19,24 @@ import org.robolectric.annotation.GraphicsMode
 @Config(sdk = [34], application = Application::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class DraftNameAtlasTest {
+    @Test fun aDetectorSeeingOnlyTheLastEnemyLetterMustStillRetainTheWholeViTitle() {
+        val reference=javaClass.getResourceAsStream("/portraits/draft-ten-selected.jpg").use {
+            android.graphics.BitmapFactory.decodeStream(it)!!
+        }
+        val source=DraftSequenceFixture.create(reference,false)
+        val atlas=DraftNameAtlas.create(source,VisionCalibrationConfig(),emptyList())
+        try {
+            val tile=atlas.tiles.single { it.original && !it.ally && it.slot==4 }
+            val lastLetter=android.graphics.Rect(
+                (1186-tile.source.left)*tile.region.width()/tile.source.width(),
+                (399-tile.source.top)*tile.region.height()/tile.source.height(),
+                (1192-tile.source.left)*tile.region.width()/tile.source.width(),
+                (414-tile.source.top)*tile.region.height()/tile.source.height())
+            val focused=DraftNameAtlas.focusDetectedLine(atlas,tile,lastLetter)
+            try { assertTrue(focused.tiles.single { it.original }.source.contains(android.graphics.Rect(1174,399,1192,414))) }
+                finally { focused.bitmap.recycle() }
+        } finally { atlas.bitmap.recycle();source.recycle();reference.recycle() }
+    }
     @Test fun detectedLinesMapBackToTheOriginalTitleWithoutUsingANameHint() {
         val original=DraftNameAtlas.Tile(true,3,android.graphics.Rect(10,20,110,60),
             android.graphics.Rect(32,32,1032,432),400)
