@@ -34,7 +34,7 @@ class DraftNameAtlasTest {
                     assertEquals(1,normal.tiles.count { it.original })
                     for((index,part) in normal.tiles.withIndex()) {
                         val original=focused.tiles[index]
-                        val factor=36f/40
+                        val factor=48f/40
                         assertEquals(32,part.region.left)
                         if(index>0) assertTrue(part.region.top>normal.tiles[index-1].region.bottom)
                         assertEquals(original.source,part.source)
