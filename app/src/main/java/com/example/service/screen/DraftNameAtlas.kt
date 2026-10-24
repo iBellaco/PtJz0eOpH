@@ -224,6 +224,35 @@ internal class DraftNameAtlas private constructor(val bitmap: Bitmap, val tiles:
             } catch(error:Throwable) { bitmap.recycle();throw error }
         }
 
+        /** Native OCR expects ordinary text sizes, not enlarged title logos.
+         * Resample the same measured line at two character heights, retaining
+         * all variants, source rectangles and title-only acceptance bounds. */
+        fun nativeTextSizes(atlas: DraftNameAtlas, measuredTextHeight: Int): DraftNameAtlas {
+            require(measuredTextHeight>0 && atlas.tiles.isNotEmpty())
+            val entries=listOf(24,36).flatMap { target -> atlas.tiles.map { tile ->
+                tile to (target.toFloat()/measuredTextHeight).coerceIn(.10f,4f)
+            } }
+            fun size(value:Int,factor:Float)=kotlin.math.round(value*factor).toInt().coerceAtLeast(1)
+            val cellWidth=entries.maxOf { (tile,factor) -> size(tile.region.width(),factor) }+GUTTER*2
+            val cellHeight=entries.maxOf { (tile,factor) -> size(tile.region.height(),factor) }+GUTTER*2
+            val columns=compactColumns(entries.size,cellWidth,cellHeight)
+            val bitmap=Bitmap.createBitmap(cellWidth*columns,
+                ((entries.size+columns-1)/columns)*cellHeight,Bitmap.Config.ARGB_8888)
+            try {
+                val canvas=Canvas(bitmap).apply { drawColor(Color.BLACK) }
+                val tiles=entries.mapIndexed { index,(tile,factor) ->
+                    val left=(index%columns)*cellWidth+GUTTER
+                    val top=(index/columns)*cellHeight+GUTTER
+                    val region=Rect(left,top,left+size(tile.region.width(),factor),top+size(tile.region.height(),factor))
+                    canvas.drawBitmap(atlas.bitmap,tile.region,region,Paint(Paint.FILTER_BITMAP_FLAG))
+                    tile.copy(region=region,
+                        titleMinY=kotlin.math.round(tile.titleMinY*factor).toInt().coerceIn(0,region.height()),
+                        titleMaxY=kotlin.math.round(tile.titleMaxY*factor).toInt().coerceIn(0,region.height()))
+                }
+                return DraftNameAtlas(bitmap,tiles)
+            } catch(error:Throwable) { bitmap.recycle();throw error }
+        }
+
         /** Project white/gold title ink away from blue scenery, then select a
          * threshold from this crop's histogram. No letter templates or identities;
          * black exclusions stay background even next to bright game effects. */

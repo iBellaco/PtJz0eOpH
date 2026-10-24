@@ -717,7 +717,11 @@ object DraftVisionScanner {
                     for(line in candidates) {
                         if(!unresolvedReading()) break
                         val focused=DraftNameAtlas.focusDetectedLine(atlas,tile,line)
-                        try { readTitles(focused) } finally { focused.bitmap.recycle() }
+                        try {
+                            val normal=DraftNameAtlas.nativeTextSizes(focused,line.height())
+                            try { readTitles(normal) } finally { normal.bitmap.recycle() }
+                            if(unresolvedReading()) readTitles(focused)
+                        } finally { focused.bitmap.recycle() }
                     }
                 }
                 // Keep established OCR image sizes unchanged. A fourth stacked

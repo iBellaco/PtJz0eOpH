@@ -314,3 +314,23 @@ Las exclusiones se aplican antes y después del escalado; no se altera la geomet
 del visor ni la confirmación de dos fotogramas. La nueva prueba verifica regiones,
 coordenadas originales y máscaras. El informe nativo conservará las líneas reales
 de esas bandas para diagnosticar el resultado. Falta validar esta fuente nueva.
+
+La fuente 43932301 completó los 26 casos preliminares en 1758 segundos: 22
+aprobaron y cuatro fallaron. El margen derecho de 854 × 480 aprobó ahora;
+persistieron Vi en POCO/P20 y Vi/Volibear en 640 × 360. Mate 60 Pro simulado
+devolvió un error de procesamiento en una lectura; falta precisar su causa.
+La escena original tampoco detectó las líneas cortas faltantes. No se publicó
+ni fusionó ese APK. Las 764 pruebas generales/96 suites y las comprobaciones
+instaladas ES/PT aprobaron. Se revisaron las capturas ES/PT actuales. La revisión
+portuguesa cubrió 41 pantallas sin hallazgos; la selección necesitó dos intentos
+por una raíz nula del controlador al iniciar, conservándose ambos resultados.
+
+Los recortes medidos conservan los glifos, pero presentan letras muy ampliadas
+al detector. Se añade una relectura de las mismas tres variantes a alturas de
+texto de 24 y 36 píxeles, calculadas a partir de la caja medida, sin plantillas,
+texto generado, alias nuevos ni cambios en las identidades esperadas. Se mantienen
+las fuentes, máscaras, límites del título y confirmaciones. Una prueba verifica
+los seis recortes resultantes y sus coordenadas. El informe nativo incorpora
+sus respuestas reales y el tiempo/estado de cada captura. Validación pendiente.
+El propietario eligió esperar a que aprueben todos los controles: no se entregará
+un APK experimental ni se contarán imágenes o emuladores como teléfonos físicos.

@@ -19,6 +19,33 @@ import org.robolectric.annotation.GraphicsMode
 @Config(sdk = [34], application = Application::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class DraftNameAtlasTest {
+    @Test fun normalTextSizesKeepBothOriginalSourcesAndTitleBoundsWithoutRestoringMasks() {
+        val source=Bitmap.createBitmap(1280,579,Bitmap.Config.ARGB_8888).apply { eraseColor(Color.WHITE) }
+        val config=VisionCalibrationConfig()
+        val mask=AdaptiveScreenLayoutEngine.calculateSlotNameRect(1280,579,false,4,config)
+        val atlas=DraftNameAtlas.create(source,config,listOf(mask))
+        try {
+            val tile=atlas.tiles.single { it.original && !it.ally && it.slot==4 }
+            val focused=DraftNameAtlas.focusDetectedLine(atlas,tile,android.graphics.Rect(100,60,150,100))
+            try {
+                val normal=DraftNameAtlas.nativeTextSizes(focused,40)
+                try {
+                    assertEquals(6,normal.tiles.size)
+                    assertEquals(2,normal.tiles.count { it.original })
+                    for((index,part) in normal.tiles.withIndex()) {
+                        val original=focused.tiles[index%3]
+                        val factor=if(index<3) 24f/40 else 36f/40
+                        assertEquals(original.source,part.source)
+                        assertEquals(kotlin.math.round(original.region.width()*factor).toInt(),part.region.width())
+                        assertEquals(kotlin.math.round(original.titleMaxY*factor).toInt(),part.titleMaxY)
+                        assertEquals(kotlin.math.round(original.titleMinY*factor).toInt(),part.titleMinY)
+                        if(part.original) for(y in part.region.top until part.region.bottom) for(x in part.region.left until part.region.right)
+                            assertEquals(Color.BLACK,normal.bitmap.getPixel(x,y))
+                    }
+                } finally { normal.bitmap.recycle() }
+            } finally { focused.bitmap.recycle() }
+        } finally { atlas.bitmap.recycle();source.recycle() }
+    }
     @Test fun sceneRereadingRetainsOriginalSceneButOnlyDecodesTenMaskedTitleBands() {
         val source=Bitmap.createBitmap(640,360,Bitmap.Config.ARGB_8888).apply { eraseColor(Color.WHITE) }
         val config=VisionCalibrationConfig()

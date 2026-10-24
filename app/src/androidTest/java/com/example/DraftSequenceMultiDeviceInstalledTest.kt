@@ -87,9 +87,14 @@ class DraftSequenceMultiDeviceInstalledTest {
                             var read: DraftScanResult? = null
                             val readings = if (step == 0) 1 else 2
                             repeat(readings) {
+                                val frameStarted=android.os.SystemClock.elapsedRealtime()
                                 read = kotlinx.coroutines.withTimeout(60_000) {
                                     scanner.scanDraftFromBitmap(frame, context, order, LaneRole.MID, namesOnly = true)
                                 }
+                                if(!result.has("ocrFrames")) result.put("ocrFrames",JSONArray())
+                                result.getJSONArray("ocrFrames").put(JSONObject().put("step",step).put("frame",it)
+                                    .put("elapsedMs",android.os.SystemClock.elapsedRealtime()-frameStarted)
+                                    .put("successful",read?.isSuccessful).put("status",read?.statusMessage))
                                 if (read?.isSuccessful != true) errors += "step=$step: OCR request failed"
                                 if (it == 0 && step > 0) {
                                     val unconfirmed = (if (positions[step - 1] < 5) read!!.alliesBySlot else read!!.enemiesBySlot)[positions[step - 1] % 5]
@@ -195,6 +200,18 @@ class DraftSequenceMultiDeviceInstalledTest {
                                             for((candidateIndex,line) in candidates.withIndex()) {
                                                 val focused=DraftNameAtlas.focusDetectedLine(atlas,tile,line)
                                                 try {
+                                                    val normal=DraftNameAtlas.nativeTextSizes(focused,line.height())
+                                                    try {
+                                                        File(evidence,"${case.getString("id")}-normal-${tile.ally}-${tile.slot}-$candidateIndex.png").outputStream().use {
+                                                            normal.bitmap.compress(Bitmap.CompressFormat.PNG,100,it)
+                                                        }
+                                                        val text=recognizer.process(com.google.mlkit.vision.common.InputImage.fromBitmap(normal.bitmap,0)).await()
+                                                        lineDiagnostics.put(JSONObject().put("ally",tile.ally).put("slot",tile.slot)
+                                                            .put("candidate",candidateIndex).put("variant","normal-text-sizes")
+                                                            .put("text",text.text).put("lines",JSONArray(text.textBlocks.flatMap { it.lines }.map {
+                                                                JSONObject().put("text",it.text).put("bounds",it.boundingBox.toString())
+                                                            })))
+                                                    } finally { normal.bitmap.recycle() }
                                                     File(evidence,"${case.getString("id")}-line-${tile.ally}-${tile.slot}-$candidateIndex.png").outputStream().use {
                                                         focused.bitmap.compress(Bitmap.CompressFormat.PNG,100,it)
                                                     }
