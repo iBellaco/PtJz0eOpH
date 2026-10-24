@@ -21,17 +21,50 @@ object DraftImagePreprocessor {
 
     /** Remove a gold mastery badge only inside the leading icon zone, leaving the title and player line intact. */
     internal fun suppressLeadingMasteryBadge(crop: Bitmap) {
-        val iconWidth = (crop.height * .65f).toInt().coerceIn(1, crop.width)
-        val iconHeight = (crop.height * .85f).toInt().coerceAtLeast(1)
-        var gold = 0
-        for (y in 0 until iconHeight) for (x in 0 until iconWidth) {
+        val iconWidth = (crop.height * 1.35f).toInt().coerceIn(1, crop.width)
+        val gold = BooleanArray(iconWidth*crop.height)
+        for (y in 0 until crop.height) for (x in 0 until iconWidth) {
             val pixel = crop.getPixel(x, y)
             val red = Color.red(pixel); val green = Color.green(pixel); val blue = Color.blue(pixel)
-            if (red > 95 && green > 65 && red > green * 1.08f && green > blue * 1.25f) gold++
+            // Resizing blends the pale wings with the blue background. Requiring
+            // strongly saturated gold left those wings attached to short titles.
+            gold[y*iconWidth+x] = red>95 && green>65 && red>green*.95f && green>blue*1.05f
         }
-        if (gold < maxOf(6, crop.height / 4)) return
-        android.graphics.Canvas(crop).drawRect(0f, 0f, iconWidth.toFloat(), crop.height.toFloat(),
-            android.graphics.Paint().apply { color = Color.BLACK })
+        val seen = BooleanArray(gold.size)
+        val canvas = android.graphics.Canvas(crop)
+        val paint = android.graphics.Paint().apply { color=Color.BLACK }
+        for(start in gold.indices) if(gold[start] && !seen[start]) {
+            val queue=ArrayDeque<Int>().apply { add(start) }
+            seen[start]=true
+            var left=iconWidth;var right=0;var top=crop.height;var bottom=0;var count=0
+            while(queue.isNotEmpty()) {
+                val index=queue.removeFirst();val x=index%iconWidth;val y=index/iconWidth
+                left=minOf(left,x);right=maxOf(right,x);top=minOf(top,y);bottom=maxOf(bottom,y);count++
+                for(dy in -1..1) for(dx in -1..1) {
+                    val nx=x+dx;val ny=y+dy
+                    if(nx in 0 until iconWidth && ny in 0 until crop.height) {
+                        val next=ny*iconWidth+nx
+                        if(gold[next] && !seen[next]) { seen[next]=true;queue.add(next) }
+                    }
+                }
+            }
+            val w=right-left+1;val h=bottom-top+1
+            // Badge taller than a title glyph; do not erase small golden name letters.
+            if(count>=maxOf(6,crop.height/4) && h>=crop.height*.38f && w>=h*.55f && w<=h*2.4f) {
+                // Include detached gold wing pixels around the tall core, but do
+                // not extend a fixed rectangle into the following title glyphs.
+                val centerX=(left+right)/2f
+                for(y in (top-1).coerceAtLeast(0)..(bottom+1).coerceAtMost(crop.height-1))
+                    for(x in 0 until iconWidth) if(gold[y*iconWidth+x] && kotlin.math.abs(x-centerX)<=h*.7f) {
+                        left=minOf(left,x);right=maxOf(right,x)
+                    }
+                canvas.drawRect((left-1).coerceAtLeast(0).toFloat(),(top-1).coerceAtLeast(0).toFloat(),
+                    // right is an inclusive component coordinate. An extra
+                    // source pixel here erased the left stroke of V at 640px.
+                    // Include the badge itself, never pad toward the title.
+                    (right+1).coerceAtMost(crop.width).toFloat(),(bottom+2).coerceAtMost(crop.height).toFloat(),paint)
+            }
+        }
     }
 
     /**

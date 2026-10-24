@@ -28,7 +28,8 @@ import kotlin.math.hypot
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class DraftMultiDeviceAuditTest {
     private data class Profile(val id: String, val manufacturer: String, val model: String, val width: Int, val height: Int,
-        val edgeAnchored: Boolean = false, val specification: String? = null)
+        val edgeAnchored: Boolean = false, val specification: String? = null,
+        val safeInsets: List<Float> = listOf(0f,0f,0f,0f))
     private val variants = listOf("original", "changed-background", "changed-portraits-and-bans")
     private val profiles = listOf(
         Profile("red-magic-reference", "nubia", "NX789J", 2688, 1216),
@@ -82,11 +83,37 @@ class DraftMultiDeviceAuditTest {
         listOf(1920 to 1792, 2208 to 1840, 2440 to 2268, 1800 to 1800).map { (w, h) ->
             Profile("foldable-$w-$h", "generic", "foldable-resolution-simulation", w, h)
         }, "foldable-resolutions")
+    @Test fun documentedXiaomiRedmiAndPocoDisplays() = audit(listOf(
+        Profile("xiaomi-14", "Xiaomi", "Xiaomi 14", 2670, 1200, specification = "https://www.mi.com/global/product/xiaomi-14/specs/"),
+        Profile("xiaomi-14-ultra", "Xiaomi", "Xiaomi 14 Ultra", 3200, 1440, specification = "https://www.mi.com/global/product/xiaomi-14-ultra/specs/"),
+        Profile("redmi-note-13-pro-plus-5g", "Xiaomi", "Redmi Note 13 Pro+ 5G", 2712, 1220, specification = "https://www.mi.com/global/product/redmi-note-13-pro-plus-5g/specs/"),
+        Profile("redmi-note-13-pro-5g", "Xiaomi", "Redmi Note 13 Pro 5G", 2712, 1220, specification = "https://www.mi.com/global/product/redmi-note-13-pro-5g/specs/"),
+        Profile("redmi-note-13", "Xiaomi", "Redmi Note 13", 2400, 1080, specification = "https://www.mi.com/global/product/redmi-note-13/specs/"),
+        Profile("redmi-12-5g", "Xiaomi", "Redmi 12 5G", 2460, 1080, specification = "https://www.mi.com/global/product/redmi-12-5g/specs/"),
+        Profile("redmi-a3", "Xiaomi", "Redmi A3", 1650, 720, specification = "https://www.mi.com/global/product/redmi-a3/specs/"),
+        Profile("poco-f6-pro", "Xiaomi", "POCO F6 Pro", 3200, 1440, specification = "https://www.mi.com/global/product/poco-f6-pro/specs/"),
+        Profile("xiaomi-pad-6", "Xiaomi", "Xiaomi Pad 6", 2880, 1800, specification = "https://www.mi.com/global/product/xiaomi-pad-6/specs/")
+    ), "xiaomi-redmi-poco-displays")
+    @Test fun documentedRequestedBrandDisplays() {
+        val rows = javaClass.getResourceAsStream("/scanner/requested-displays.csv")!!.bufferedReader().use { it.readLines().drop(1) }
+        audit(rows.filter { it.isNotBlank() }.map { line ->
+            val fields = line.split(',')
+            require(fields.size == 6) { "Invalid requested profile: $line" }
+            Profile(fields[0],fields[1],fields[2],fields[3].toInt(),fields[4].toInt(),specification=fields[5])
+        }, "requested-brand-displays")
+    }
     @Test fun fullScreenSidePanelsRetainCircularPortraitsWithoutLetterboxing() = audit(
         listOf(640 to 360, 1280 to 720, 2400 to 1080, 2712 to 1220, 3120 to 1440,
             1024 to 768, 1600 to 1000, 2560 to 1600, 2440 to 2268, 1800 to 1800).map { (w, h) ->
             Profile("edge-anchored-$w-$h", "generic", "synthetic-side-panels", w, h, true)
         }, "edge-anchored-resolutions")
+
+    @Test fun landscapeCutoutAndNavigationSafeAreasUseTheObservedGameViewport() = audit(
+        listOf(1600 to 720, 2408 to 1080, 3120 to 1440, 854 to 480).flatMap { (w,h) ->
+            listOf(true,false).map { left -> Profile("safe-area-$w-$h-${if(left) "left" else "right"}",
+                "generic","synthetic-cutout-safe-area-not-a-physical-model",w,h,
+                safeInsets=if(left) listOf(.05f,0f,0f,.03f) else listOf(0f,0f,.05f,.03f)) }
+        }, "cutout-safe-area-scenarios")
 
     private fun audit(cases: List<Profile>, group: String) {
         val context = RuntimeEnvironment.getApplication()
@@ -109,12 +136,15 @@ class DraftMultiDeviceAuditTest {
                 DraftVisionScanner.initCalibration(context)
                 val (w, h) = CaptureFrameDecoder.captureSize(profile.width, profile.height)
                 val frame = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
+                val available = Rect((w*profile.safeInsets[0]).toInt(),(h*profile.safeInsets[1]).toInt(),
+                    w-(w*profile.safeInsets[2]).toInt(),h-(h*profile.safeInsets[3]).toInt())
                 val scale = if (profile.edgeAnchored) h.toFloat() / source.height
-                    else minOf(w.toFloat() / source.width, h.toFloat() / source.height)
+                    else minOf(available.width().toFloat() / source.width, available.height().toFloat() / source.height)
                 val rw = (source.width * scale).toInt()
                 val rh = (source.height * scale).toInt()
                 val viewport = if (profile.edgeAnchored) Rect(0, 0, w, h)
-                    else Rect((w-rw)/2, (h-rh)/2, (w-rw)/2+rw, (h-rh)/2+rh)
+                    else Rect(available.left+(available.width()-rw)/2,available.top+(available.height()-rh)/2,
+                        available.left+(available.width()-rw)/2+rw,available.top+(available.height()-rh)/2+rh)
                 fun targetX(x: Float): Float = if (profile.edgeAnchored) {
                     if (x < source.width / 2f) x * scale else w - (source.width - x) * scale
                 } else viewport.left + x * viewport.width() / source.width
@@ -127,6 +157,7 @@ class DraftMultiDeviceAuditTest {
                     .put("layout", if (profile.edgeAnchored) "synthetic-edge-anchored-side-panels" else "uniform-fit-reference")
                     .put("display", JSONArray(listOf(profile.width, profile.height)))
                     .put("capture", JSONArray(listOf(w, h)))
+                    .put("safeInsets",JSONArray(profile.safeInsets))
                     .put("viewport", JSONArray(listOf(viewport.left, viewport.top, viewport.right, viewport.bottom)))
                 val checks = JSONArray()
                 val before = failures.size
@@ -145,6 +176,14 @@ class DraftMultiDeviceAuditTest {
                     val detected = DraftFrameGeometry.contentBounds(frame)
                     if (viewport != detected) failures += "${profile.id}: viewport $detected expected $viewport"
                     val config = DraftVisionScanner.configForFrame(frame)
+                    entry.put("calibration", JSONObject()
+                        .put("nameBandScale", config.nameBandScale)
+                        .put("allySlotXRatios", JSONArray(config.allySlotXRatios))
+                        .put("enemySlotXRatios", JSONArray(config.enemySlotXRatios))
+                        .put("allySlotYRatios", JSONArray(config.allySlotYRatios))
+                        .put("enemySlotYRatios", JSONArray(config.enemySlotYRatios))
+                        .put("allySlotDiameterRatios", JSONArray(config.allySlotDiameterRatios))
+                        .put("enemySlotDiameterRatios", JSONArray(config.enemySlotDiameterRatios)))
                     if (config != DraftVisionScanner.alignedConfigFlow.value) failures += "${profile.id}: viewer configuration differs from scanner"
                     val measured = DraftVisionScanner.calibrationReportSnapshot()
                     if (measured.width != w || measured.height != h || measured.config != config)

@@ -6,6 +6,13 @@ import com.example.model.LaneRole
 /** Reads the same player title before and after selection, independently of champion affinity. */
 object AllyDraftNameReader {
     data class Reading(val lane: LaneRole? = null, val champion: Champion? = null, val ambiguous: Boolean = false)
+    // Full-title OCR readings observed in compressed captures, not fuzzy substrings.
+    private val observedLaneTitles=mapOf("calle del daagon" to LaneRole.ADC,"calle del daagcn" to LaneRole.ADC,
+        "calle del damgon" to LaneRole.ADC,"calle del barcn" to LaneRole.TOP,
+        "calle del bardn" to LaneRole.TOP,"cale cntral" to LaneRole.MID,
+        "cmle cntral" to LaneRole.MID,"cale (ntral" to LaneRole.MID,
+        "jnala" to LaneRole.JUNGLE,"jmala" to LaneRole.JUNGLE,
+        "ajoyo" to LaneRole.SUPPORT,"aporo" to LaneRole.SUPPORT)
 
     /** An exact intact title takes precedence over a destructively processed alternative. */
     internal fun preferOriginal(original: Reading, withoutBadge: Reading): Reading =
@@ -18,6 +25,10 @@ object AllyDraftNameReader {
         val title = titleLines.filter { it.second <= top + rowDistance }.map { it.first }
         val reading = read(title, catalog)
         if (reading.ambiguous || reading.lane != null || reading.champion != null) return reading
+        // Native OCR can split the complete title into neighbouring fragments
+        // (V + I, LEE + SIN). Join only this same top row, never the player's row.
+        val joined=read(listOf(title.joinToString(" ")),catalog)
+        if(joined.ambiguous || joined.lane!=null || joined.champion!=null) return joined
         // A long lane title may wrap. A player's second-line name cannot become
         // the selected champion when the first line was unreadable.
         if (title.any { Regex("\\b(calle|carril|linea|rota|lane)\\b").containsMatchIn(DraftValidationLayer.normalize(it)) }) {
@@ -38,6 +49,9 @@ object AllyDraftNameReader {
     }
 
     private fun laneTitle(text: String): LaneRole? {
+        // Match the whole raw title before legacy badge stripping, so a player
+        // nickname such as XCS JNALA cannot turn into a compressed lane alias.
+        observedLaneTitles[DraftValidationLayer.normalize(text)]?.let { return it }
         val clean = DraftValidationLayer.normalize(DraftValidationLayer.stripLeadingMasteryOrRoleIcon(text))
         val vocabulary = setOf("calle", "carril", "linea", "rota", "lane", "del", "de", "do", "da", "d", "el", "la",
             "baron", "barao", "dragon", "dragao", "central", "medio", "meio", "jungla", "jungle", "selva",

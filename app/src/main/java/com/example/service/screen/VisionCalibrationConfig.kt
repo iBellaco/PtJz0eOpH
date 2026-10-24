@@ -8,6 +8,9 @@ import android.content.SharedPreferences
  * Los valores están expresados en ratios normalizados (0.0f a 1.0f) respecto a la pantalla/captura.
  */
 data class VisionCalibrationConfig(
+    // Derived from the observed game viewport, not the physical capture height.
+    // Preserve it when a user explicitly saves that frame-relative calibration.
+    val nameBandScale: Float = 1f,
     // Posición horizontal X central de avatares en columnas verticales de draft (0..1)
     val allyAvatarCenterX: Float = 0.072f,
     val enemyAvatarCenterX: Float = 0.959f,
@@ -216,6 +219,7 @@ data class VisionCalibrationConfig(
     fun toKotlinCode(): String {
         return """
 VisionCalibrationConfig(
+    nameBandScale = ${nameBandScale}f,
     allyAvatarCenterX = ${allyAvatarCenterX}f,
     enemyAvatarCenterX = ${enemyAvatarCenterX}f,
     avatarDiameterRatio = ${avatarDiameterRatio}f,
@@ -247,10 +251,12 @@ VisionCalibrationConfig(
     }
 
     fun saveToPrefs(context: Context) {
+        discardOldRedMagicGeometry(context)
         val prefs = context.getSharedPreferences("vision_calibration_prefs", Context.MODE_PRIVATE)
         prefs.edit().apply {
             putString("calibration_device_model", deviceModelKey())
             putInt("calibration_version", CURRENT_CALIBRATION_VERSION)
+            putFloat("nameBandScale", nameBandScale)
             allyBanXRatios.forEachIndexed { i, x -> putFloat("ban_ally_x_$i", x) }
             enemyBanXRatios.forEachIndexed { i, x -> putFloat("ban_enemy_x_$i", x) }
             putFloat("ban_ally_y", allyBanYRatio)
@@ -283,9 +289,11 @@ VisionCalibrationConfig(
 
     /** Saves the geometry that was calibrated for one capture aspect ratio. */
     fun saveProfileToPrefs(context: Context, profileKey: String) {
+        discardOldRedMagicGeometry(context)
         val prefs = context.getSharedPreferences("vision_calibration_prefs", Context.MODE_PRIVATE)
         val prefix = "profile_${deviceModelKey()}_${profileKey}_"
         prefs.edit().apply {
+            putFloat(prefix + "nameBandScale", nameBandScale)
             putFloat(prefix + "allyAvatarCenterX", allyAvatarCenterX)
             putFloat(prefix + "enemyAvatarCenterX", enemyAvatarCenterX)
             putFloat(prefix + "avatarDiameterRatio", avatarDiameterRatio)
@@ -317,6 +325,29 @@ VisionCalibrationConfig(
         private fun deviceModelKey(): String =
             "${android.os.Build.MANUFACTURER}:${android.os.Build.MODEL}".lowercase(java.util.Locale.ROOT)
 
+        /** One-time opt-in requested by the owner of the NX789J reference phone.
+         * Forget old geometry, not accounts or future manual adjustments. The
+         * normal viewport/ring alignment then handles this model like any other. */
+        @Synchronized
+        private fun discardOldRedMagicGeometry(context: Context) {
+            val model=android.os.Build.MODEL.lowercase(java.util.Locale.ROOT).filter { it.isLetterOrDigit() }
+            if(model!="nx789j" && !model.startsWith("redmagic10")) return
+            val prefs=context.getSharedPreferences("vision_calibration_prefs",Context.MODE_PRIVATE)
+            val marker="red_magic_adaptive_geometry_v1"
+            if(prefs.getBoolean(marker,false)) return
+            val globals=setOf("nameBandScale","allyAvatarCenterX","enemyAvatarCenterX","avatarDiameterRatio",
+                "allyOcrMinX","allyOcrMaxX","enemyOcrMinX","enemyOcrMaxX","topAvatarYRatio",
+                "topAvatarDiameterRatio","topAlly5XRatio","topEnemy5XRatio","calibration_device_model",
+                "calibration_version","device_profile_checked","spellLeftRatio","spellSizeRatio","spellYOffsetRatio")
+            val prefixes=listOf("ally_slot_","enemy_slot_","top_ally_","top_enemy_","ban_",
+                "profile_${deviceModelKey()}_","profile_true_","profile_false_")
+            prefs.edit().apply {
+                prefs.all.keys.filter { key -> key in globals || prefixes.any { key.startsWith(it) } }.forEach { remove(it) }
+                putBoolean(marker,true)
+                apply()
+            }
+        }
+
         /** Resolution-independent profile: density changes do not create a new calibration. */
         internal fun captureProfileKey(width: Int, height: Int): String {
             require(width > 0 && height > 0)
@@ -328,6 +359,7 @@ VisionCalibrationConfig(
 
         /** Returns the capture-specific geometry, or null when this profile has not been calibrated. */
         internal fun loadProfileFromPrefs(context: Context, profileKey: String): VisionCalibrationConfig? {
+            discardOldRedMagicGeometry(context)
             val prefs = context.getSharedPreferences("vision_calibration_prefs", Context.MODE_PRIVATE)
             val scoped = "profile_${deviceModelKey()}_${profileKey}_"
             val legacy = "profile_${profileKey}_"
@@ -339,6 +371,7 @@ VisionCalibrationConfig(
             fun f(name: String, fallback: Float) = prefs.getFloat(prefix + name, fallback)
             fun b(name: String, fallback: Boolean) = prefs.getBoolean(prefix + name, fallback)
             return base.copy(
+                nameBandScale = f("nameBandScale", base.nameBandScale),
                 allyAvatarCenterX = f("allyAvatarCenterX", base.allyAvatarCenterX),
                 enemyAvatarCenterX = f("enemyAvatarCenterX", base.enemyAvatarCenterX),
                 avatarDiameterRatio = f("avatarDiameterRatio", base.avatarDiameterRatio),
@@ -365,6 +398,7 @@ VisionCalibrationConfig(
         }
 
         internal fun hasCaptureProfiles(context: Context): Boolean {
+            discardOldRedMagicGeometry(context)
             val prefs = context.getSharedPreferences("vision_calibration_prefs", Context.MODE_PRIVATE)
             return prefs.all.keys.any { key ->
                 key.startsWith("profile_${deviceModelKey()}_") ||
@@ -397,6 +431,7 @@ VisionCalibrationConfig(
         }
 
         fun loadFromPrefs(context: Context): VisionCalibrationConfig {
+            discardOldRedMagicGeometry(context)
             val prefs = context.getSharedPreferences("vision_calibration_prefs", Context.MODE_PRIVATE)
             val savedModel = prefs.getString("calibration_device_model", null)
             if (savedModel != null && savedModel != deviceModelKey()) {
@@ -487,6 +522,7 @@ VisionCalibrationConfig(
             val resolvedEnemyX = if (loadedEnemyX == 0.928f) default.enemyAvatarCenterX else loadedEnemyX
 
             return VisionCalibrationConfig(
+                nameBandScale = prefs.getFloat("nameBandScale", default.nameBandScale),
                 allyAvatarCenterX = prefs.getFloat("allyAvatarCenterX", default.allyAvatarCenterX),
                 enemyAvatarCenterX = resolvedEnemyX,
                 avatarDiameterRatio = prefs.getFloat("avatarDiameterRatio", default.avatarDiameterRatio),

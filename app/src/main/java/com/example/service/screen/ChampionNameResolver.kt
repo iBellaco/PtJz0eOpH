@@ -122,6 +122,7 @@ object ChampionNameResolver {
         "nautilus" to "nautilus",
         "nilah" to "nilah",
         "nocturne" to "nocturne",
+        "ndcturne" to "nocturne", // Complete title: compressed O read as D; never substring/fuzzy matching.
         "nunu & willump" to "nunu_willump",
         "nunu y willump" to "nunu_willump",
         "nunu" to "nunu_willump",
@@ -191,6 +192,8 @@ object ChampionNameResolver {
         "viktor" to "viktor",
         "vladimir" to "vladimir",
         "volibear" to "volibear",
+        "volirear" to "volibear",
+        "voliear" to "volibear",
         "voliber" to "volibear",
         "volibea" to "volibear",
         "volbear" to "volibear",
@@ -241,6 +244,9 @@ object ChampionNameResolver {
         val title = text.replace(Regex("\\s*\\((?:tu|tú|you|você|voce)\\)\\s*$", RegexOption.IGNORE_CASE), "")
         val normalized = normalize(title).trim()
         val variants = linkedSetOf(normalized)
+        // Optical 0/O confusion within a complete title; no edit distance,
+        // missing-letter completion or champion token extraction from nicknames.
+        if('0' in normalized) variants.add(normalized.replace('0','o'))
         val mastery = Regex("^(?:m\\d{1,2}|lvl?\\d{1,2}|(?:maestria|mastery|nivel|level)\\s*\\d{1,2}|i{1,3}|iv|vi{0,3}|ix|x|[wvykutxnhodcljfpsza0-9])\\s+")
         variants.add(normalized.replace(mastery, ""))
         variants.add(normalized.replace(Regex("^(?:m\\d{1,2}|lvl?\\d{1,2})"), ""))

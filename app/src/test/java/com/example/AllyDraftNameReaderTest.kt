@@ -8,6 +8,19 @@ import org.junit.Assert.*
 import org.junit.Test
 
 class AllyDraftNameReaderTest {
+    @Test fun compressedWholeTitlesAreCorrectedWithoutAcceptingNicknamesOrAbbreviations() {
+        val champs=listOf("nocturne","volibear").map { Champion(id=it,name=it) }
+        assertEquals("nocturne",ChampionNameResolver.findChampionInNameBand("NDCTURNE",champs)?.id)
+        for(text in listOf("VOLIREAR","VOLIEAR","V0LIREAR"))
+            assertEquals("volibear",ChampionNameResolver.findChampionInNameBand(text,champs)?.id)
+        for(text in listOf("XCS NDCTURNE","Mi VOLIREAR","Jugador 3 VOLIEAR","XCS V0LIREAR","0LIREAR","NDC","VLR","V","IA"))
+            assertNull(text,ChampionNameResolver.findChampionInNameBand(text,champs))
+        val lanes=mapOf("CALLE DEL DAAGCN" to LaneRole.ADC,"CALLE DEL BARCN" to LaneRole.TOP,
+            "CALE CNTRAL" to LaneRole.MID,"JNALA" to LaneRole.JUNGLE,"APOrO" to LaneRole.SUPPORT)
+        lanes.forEach { (text,role)->assertEquals(text,role,AllyDraftNameReader.read(listOf(text),champs).lane) }
+        for(text in listOf("XCS JNALA","Jugador CALLE DEL DAAGCN","Mi CALE CNTRAL"))
+            assertNull(text,AllyDraftNameReader.read(listOf(text),champs).lane)
+    }
     @Test fun intactTitleWinsOverBadgeRemovalAndUnknownTitlesCanUseTheAlternative() {
         val original = AllyDraftNameReader.Reading(champion = Champion(id = "jhin", name = "Jhin"))
         val altered = AllyDraftNameReader.Reading(champion = Champion(id = "jinx", name = "Jinx"))
@@ -20,6 +33,22 @@ class AllyDraftNameReaderTest {
     }
     private val catalog = listOf("yuumi", "jinx", "brand", "skarner", "pantheon", "vi", "lee_sin").map {
         Champion(id = it, name = if (it == "lee_sin") "Lee Sin" else it)
+    }
+
+    @Test fun completeTitleFragmentsJoinOnlyInsideTheSameTopRow() {
+        assertEquals("vi",AllyDraftNameReader.readTitleRows(listOf("V" to 0,"I" to 1),10,catalog).champion?.id)
+        assertEquals("lee_sin",AllyDraftNameReader.readTitleRows(listOf("LEE" to 0,"SIN" to 1),10,catalog).champion?.id)
+        assertNull(AllyDraftNameReader.readTitleRows(listOf("V" to 0,"I" to 25),10,catalog).champion)
+        assertNull(AllyDraftNameReader.readTitleRows(listOf("V" to 0,"XCS" to 0,"I" to 0),10,catalog).champion)
+        assertTrue(AllyDraftNameReader.readTitleRows(listOf("JINX" to 0,"YUUMI" to 1),10,catalog).ambiguous)
+    }
+
+    @Test fun shortNamesStillRequireAnExactTitleInsideTheTitleRow() {
+        for(text in listOf("IA","rVI","XCS IA"))
+            assertNull(AllyDraftNameReader.readTitleRows(listOf(text to 0),10,catalog,20).champion)
+        assertEquals("vi",AllyDraftNameReader.readTitleRows(listOf("VI" to 0),10,catalog,20).champion?.id)
+        assertNull(AllyDraftNameReader.readTitleRows(listOf("VI" to 25),10,catalog,20).champion)
+        assertNull(AllyDraftNameReader.readTitleRows(listOf("V" to 0,"I" to 25),10,catalog,20).champion)
     }
 
     @Test fun laneTitlesBecomeNamesInTheSameBandInBothLanguages() {
