@@ -11,9 +11,9 @@ class AllyDraftNameReaderTest {
     @Test fun compressedWholeTitlesAreCorrectedWithoutAcceptingNicknamesOrAbbreviations() {
         val champs=listOf("nocturne","volibear").map { Champion(id=it,name=it) }
         assertEquals("nocturne",ChampionNameResolver.findChampionInNameBand("NDCTURNE",champs)?.id)
-        for(text in listOf("VOLIREAR","VOLIEAR"))
+        for(text in listOf("VOLIREAR","VOLIEAR","V0LIREAR"))
             assertEquals("volibear",ChampionNameResolver.findChampionInNameBand(text,champs)?.id)
-        for(text in listOf("XCS NDCTURNE","Mi VOLIREAR","Jugador 3 VOLIEAR","NDC","VLR"))
+        for(text in listOf("XCS NDCTURNE","Mi VOLIREAR","Jugador 3 VOLIEAR","XCS V0LIREAR","0LIREAR","NDC","VLR","V","IA"))
             assertNull(text,ChampionNameResolver.findChampionInNameBand(text,champs))
         val lanes=mapOf("CALLE DEL DAAGCN" to LaneRole.ADC,"CALLE DEL BARCN" to LaneRole.TOP,
             "CALE CNTRAL" to LaneRole.MID,"JNALA" to LaneRole.JUNGLE,"APOrO" to LaneRole.SUPPORT)

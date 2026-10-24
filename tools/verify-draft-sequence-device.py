@@ -43,7 +43,7 @@ def main():
                '-e','sequencePreflight','true' if preflight else 'false',
                'com.Coach.test/androidx.test.runner.AndroidJUnitRunner']
     code, output = run_instrumentation(command, directory / f'instrumentation-{label}.txt',
-                                       1500 if preflight else 3300)
+                                       1800 if preflight else 3300)
     cases = [json.loads(line) for line in re.findall(r'COACH_SEQUENCE_CASE: (\{[^\r\n]+\})', output)]
     report = dict(shard=shard, sourceSha256=plan['sourceSha256'], cases=cases,
                   expectedCases=sorted(expected), physicalDevicesTested=[],

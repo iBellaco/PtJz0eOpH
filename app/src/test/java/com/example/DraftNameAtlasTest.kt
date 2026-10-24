@@ -64,7 +64,7 @@ class DraftNameAtlasTest {
                 assertTrue("Padding must preserve I even if the detector returned only V",
                     raw.source.contains(android.graphics.Rect(155,400,173,415)))
                 val top=(line.top-(line.height()*.20f).toInt().coerceAtLeast(2)).coerceAtLeast(0)
-                val left=(line.left-line.height()).coerceAtLeast(0)
+                val left=(line.left-(line.height()*.15f).toInt()).coerceAtLeast(0)
                 assertEquals((minOf(tile.titleMaxY,(tile.region.height()*.85f).toInt())-top)
                     .coerceIn(0,raw.region.height()),raw.titleMaxY)
                 for(y in 0 until raw.region.height()) for(x in 0 until raw.region.width()) {
@@ -173,7 +173,7 @@ class DraftNameAtlasTest {
                     val color=DraftNameAtlas.focusTitle(atlas,tile,bounds,colorOnly=true)
                     try {
                         assertEquals(1,color.tiles.size)
-                        assertEquals(tile.region.height()+64,color.bitmap.height)
+                        assertEquals(kotlin.math.round((tile.region.height()+64)*72f/tile.region.height()).toInt(),color.bitmap.height)
                     } finally { color.bitmap.recycle() }
                     val raw=focused.tiles.single { it.original }
                     assertTrue(tile.source.contains(raw.source))

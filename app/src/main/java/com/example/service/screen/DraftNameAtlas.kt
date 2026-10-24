@@ -133,6 +133,21 @@ internal class DraftNameAtlas private constructor(val bitmap: Bitmap, val tiles:
                             titleMinY=(height*.30f).toInt(),titleMaxY=minOf(tile.titleMaxY,(height*.85f).toInt()))
                     } finally { crop.recycle() }
                 }
+                if(colorOnly) {
+                    // Keep isolated glyphs near the native recognizer's normal
+                    // text size instead of presenting an enlarged two-letter logo.
+                    val factor=72f/height
+                    val resized=Bitmap.createScaledBitmap(bitmap,
+                        kotlin.math.round(bitmap.width*factor).toInt().coerceAtLeast(1),
+                        kotlin.math.round(bitmap.height*factor).toInt().coerceAtLeast(1),false)
+                    val adjusted=tiles.map { part -> part.copy(region=Rect(
+                        kotlin.math.round(part.region.left*factor).toInt(),kotlin.math.round(part.region.top*factor).toInt(),
+                        kotlin.math.round(part.region.right*factor).toInt(),kotlin.math.round(part.region.bottom*factor).toInt()),
+                        titleMinY=kotlin.math.round(part.titleMinY*factor).toInt(),
+                        titleMaxY=kotlin.math.round(part.titleMaxY*factor).toInt()) }
+                    if(resized!==bitmap) bitmap.recycle()
+                    return DraftNameAtlas(resized,adjusted)
+                }
                 return DraftNameAtlas(bitmap,tiles)
             } catch(error:Throwable) { bitmap.recycle();throw error }
         }
@@ -143,9 +158,10 @@ internal class DraftNameAtlas private constructor(val bitmap: Bitmap, val tiles:
          * The original, full-height band is always read before this alternative. */
         fun focusDetectedLine(atlas: DraftNameAtlas, tile: Tile, line: Rect): DraftNameAtlas {
             require(tile.original && tile in atlas.tiles && line.width()>0 && line.height()>0)
+            val leftPadding=(line.height()*.15f).toInt()
             val horizontal=line.height()
             val vertical=(line.height()*.20f).toInt().coerceAtLeast(2)
-            val bounds=Rect((line.left-horizontal).coerceAtLeast(0),
+            val bounds=Rect((line.left-leftPadding).coerceAtLeast(0),
                 (line.top-vertical).coerceAtLeast(0),
                 (line.right+horizontal).coerceAtMost(tile.region.width()),
                 (line.bottom+vertical).coerceAtMost(tile.region.height()))

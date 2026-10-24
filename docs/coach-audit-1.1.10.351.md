@@ -285,3 +285,16 @@ sin aumentar la altura de las tres variantes anteriores. Una regresión fija sus
 dimensiones y exige una sola variante para esa lectura adicional. No se incorporan
 alias a partir de las lecturas erróneas. La publicación sigue bloqueada hasta
 aprobar la validación completa de la fuente nueva.
+
+La fuente 64178523 aprobó 762 pruebas y los controles instalados ES/PT, pero
+su comprobación preliminar terminó 25/26 casos antes del límite de 1500 segundos:
+22 aprobaron y tres fallaron; el último no quedó comprobado. No se publicó.
+El motor devolvió el título completo `V0LIREAR` en una relectura de Volibear:
+se normaliza exclusivamente la confusión óptica 0/O antes de consultar el
+diccionario existente; no se completan letras ausentes ni se aceptan V o IA.
+El recorte de línea reduce el relleno izquierdo que volvía a incluir la insignia,
+manteniendo el relleno derecho para conservar la I. La lectura de color adicional
+se reduce a una altura de banda de 72 píxeles para presentar glifos de tamaño
+normal, sin modificar las tres entradas anteriores. El plazo preliminar aumenta
+a 1800 segundos para exigir los 26 casos completos y guardar todos sus resultados;
+el cambio de plazo no convierte ninguna lectura fallida en aprobada.

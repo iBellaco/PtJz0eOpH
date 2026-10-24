@@ -509,7 +509,7 @@ jobs:
   native-title-preflight:
     needs: build-apk
     runs-on: ubuntu-latest
-    timeout-minutes: 35
+    timeout-minutes: 40
     steps:
     - *id001
     - *id002
@@ -533,7 +533,7 @@ jobs:
         sudo udevadm trigger --name-match=kvm
         sudo chmod 666 /dev/kvm || true
     - name: Recheck compressed and short titles before the full sequence matrix
-      timeout-minutes: 30
+      timeout-minutes: 35
       uses: reactivecircus/android-emulator-runner@v2
       env:
         COACH_SEQUENCE_SHARD: '0'
