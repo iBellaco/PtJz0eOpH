@@ -30,11 +30,11 @@ class DraftNameAtlasTest {
             try {
                 val normal=DraftNameAtlas.nativeTextSizes(focused,40)
                 try {
-                    assertEquals(6,normal.tiles.size)
-                    assertEquals(2,normal.tiles.count { it.original })
+                    assertEquals(3,normal.tiles.size)
+                    assertEquals(1,normal.tiles.count { it.original })
                     for((index,part) in normal.tiles.withIndex()) {
-                        val original=focused.tiles[index%3]
-                        val factor=if(index<3) 24f/40 else 36f/40
+                        val original=focused.tiles[index]
+                        val factor=36f/40
                         assertEquals(32,part.region.left)
                         if(index>0) assertTrue(part.region.top>normal.tiles[index-1].region.bottom)
                         assertEquals(original.source,part.source)
