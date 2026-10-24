@@ -229,7 +229,7 @@ internal class DraftNameAtlas private constructor(val bitmap: Bitmap, val tiles:
          * all variants, source rectangles and title-only acceptance bounds. */
         fun nativeTextSizes(atlas: DraftNameAtlas, measuredTextHeight: Int): DraftNameAtlas {
             require(measuredTextHeight>0 && atlas.tiles.isNotEmpty())
-            val entries=listOf(24,36).flatMap { target -> atlas.tiles.map { tile ->
+            val entries=listOf(36).flatMap { target -> atlas.tiles.map { tile ->
                 tile to (target.toFloat()/measuredTextHeight).coerceIn(.10f,4f)
             } }
             fun size(value:Int,factor:Float)=kotlin.math.round(value*factor).toInt().coerceAtLeast(1)
