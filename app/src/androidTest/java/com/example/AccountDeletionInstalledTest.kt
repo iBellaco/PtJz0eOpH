@@ -58,7 +58,9 @@ class AccountDeletionInstalledTest {
         click("account_delete_password")
         compose.onNodeWithTag("account_delete_password").assertIsFocused()
         compose.onNodeWithTag("account_delete_password").performTextInput(value); frame()
-        compose.onNodeWithTag("account_delete_password").assertTextContains(value)
+        // Password semantics expose the transformed display value, not the secret.
+        // Verify masking here and the exact original value at the submit boundary.
+        compose.onNodeWithTag("account_delete_password").assertTextContains("\u2022".repeat(value.length))
         compose.onNodeWithTag("account_delete_password").performImeAction(); frame()
         compose.onNodeWithTag("account_delete_password").assertIsNotFocused()
     }
@@ -67,7 +69,8 @@ class AccountDeletionInstalledTest {
     @Test fun pendingRequestPreventsRepeatedSubmissionAndCancellation() {
         language("es");var calls=0;var delivered=false
         val reply=kotlinx.coroutines.CompletableDeferred<Long>()
-        content { MyApplicationTheme { AccountDeletionCard("owner@test.invalid",submit={calls++;reply.await()},onScheduled={delivered=true}) } }
+        var submittedPassword:String?=null
+        content { MyApplicationTheme { AccountDeletionCard("owner@test.invalid",submit={submittedPassword=it;calls++;reply.await()},onScheduled={delivered=true}) } }
         click("account_delete_open")
         openFinal()
         password("test-password")
@@ -75,13 +78,13 @@ class AccountDeletionInstalledTest {
         compose.onNodeWithTag("account_delete_final_confirm").assertIsNotEnabled()
         compose.onNodeWithTag("account_delete_second_cancel").assertIsNotEnabled()
         compose.onNodeWithTag("account_delete_password").assertIsNotEnabled()
-        assertEquals(1,calls);assertFalse(delivered)
+        assertEquals(1,calls);assertEquals("test-password",submittedPassword);assertFalse(delivered)
         compose.runOnIdle { reply.complete(123456789L) };frame()
         assertEquals(1,calls);assertTrue(delivered)
     }
     private fun confirmations(lang: String) {
-        language(lang); var calls=0; var delivered:Long?=null
-        content { MyApplicationTheme { AccountDeletionCard("owner@test.invalid",submit={calls++;123456789L},onScheduled={delivered=it}) } }
+        language(lang); var calls=0; var delivered:Long?=null;var submittedPassword:String?=null
+        content { MyApplicationTheme { AccountDeletionCard("owner@test.invalid",submit={submittedPassword=it;calls++;123456789L},onScheduled={delivered=it}) } }
         click("account_delete_open")
         capture("account-delete-first-$lang")
         click("account_delete_first_cancel")
@@ -91,26 +94,26 @@ class AccountDeletionInstalledTest {
         compose.onNodeWithTag("account_delete_final_confirm").assertIsNotEnabled()
         capture("account-delete-final-$lang")
         click("account_delete_second_cancel")
-        assertEquals(0,calls); assertNull(delivered)
+        assertEquals(0,calls); assertNull(delivered);assertNull(submittedPassword)
         click("account_delete_open")
         openFinal()
         password("test-password")
         click("account_delete_final_confirm")
         compose.waitForIdle()
-        assertEquals(1,calls);assertEquals(123456789L,delivered ?: -1L)
+        assertEquals(1,calls);assertEquals("test-password",submittedPassword);assertEquals(123456789L,delivered ?: -1L)
         compose.onAllNodesWithTag("account_delete_final_confirm").assertCountEquals(0)
     }
     @Test fun failureNeverClaimsScheduledSpanishDeletion()=failure("es")
     @Test fun failureNeverClaimsScheduledPortugueseDeletion()=failure("pt")
     private fun failure(lang: String) {
-        language(lang);var calls=0;var delivered=false
-        content { MyApplicationTheme { AccountDeletionCard("owner@test.invalid",submit={calls++;error("rejected")},onScheduled={delivered=true}) } }
+        language(lang);var calls=0;var delivered=false;var submittedPassword:String?=null
+        content { MyApplicationTheme { AccountDeletionCard("owner@test.invalid",submit={submittedPassword=it;calls++;error("rejected")},onScheduled={delivered=true}) } }
         click("account_delete_open")
         openFinal()
         password("wrong-password")
         click("account_delete_final_confirm");compose.waitForIdle()
         compose.onNodeWithTag("account_delete_error").assertIsDisplayed()
         compose.onNodeWithTag("account_delete_final_confirm").assertIsNotEnabled()
-        assertEquals(1,calls);assertFalse(delivered)
+        assertEquals(1,calls);assertEquals("wrong-password",submittedPassword);assertFalse(delivered)
     }
 }

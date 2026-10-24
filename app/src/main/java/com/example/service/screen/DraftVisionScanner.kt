@@ -646,6 +646,7 @@ object DraftVisionScanner {
             // of a name band partly covered by the central assistant window.
             val atlas = DraftNameAtlas.create(bitmap,calib,exclusions+listOfNotNull(frameOverlay))
             try {
+                val detectedTitleLines=mutableMapOf<Pair<Boolean,Int>,MutableList<Rect>>()
                 suspend fun readTitles(input: DraftNameAtlas) {
                 val text = recognizer.process(InputImage.fromBitmap(input.bitmap,0)).await()
                 val lines = text.textBlocks.flatMap { it.lines }
@@ -661,6 +662,26 @@ object DraftVisionScanner {
                                 it.champion==null && it.lane==null && !it.ambiguous
                             }
                     } else selected
+                    // Keep unknown native line boxes for a tighter pixel-only
+                    // re-read. Never accept their partial text as a champion.
+                    val original=atlas.tiles.single { it.original && it.ally==tile.ally && it.slot==tile.slot }
+                    for(line in titleLines) {
+                        val box=line.boundingBox!!
+                        val y=box.centerY()-tile.region.top
+                        if(y<tile.region.height()*.30f || y>tile.titleMaxY) continue
+                        if(AllyDraftNameReader.read(listOf(line.text),allChamps).let {
+                            it.champion!=null || it.lane!=null || it.ambiguous }) continue
+                        fun sourceX(x:Int)=tile.source.left+(x-tile.region.left)*tile.source.width()/tile.region.width()
+                        fun sourceY(y:Int)=tile.source.top+(y-tile.region.top)*tile.source.height()/tile.region.height()
+                        val mapped=Rect((sourceX(box.left)-original.source.left)*original.region.width()/original.source.width(),
+                            (sourceY(box.top)-original.source.top)*original.region.height()/original.source.height(),
+                            (sourceX(box.right)-original.source.left)*original.region.width()/original.source.width(),
+                            (sourceY(box.bottom)-original.source.top)*original.region.height()/original.source.height())
+                        if(mapped.width()>0 && mapped.height()>0) {
+                            val candidates=detectedTitleLines.getOrPut(tile.ally to tile.slot) { mutableListOf() }
+                            if(mapped !in candidates) candidates+=mapped
+                        }
+                    }
                     val reading = AllyDraftNameReader.readTitleRows(titleLines.sortedBy { it.boundingBox!!.left }.map {
                         it.text to (it.boundingBox!!.centerY()-tile.region.top)
                     },(tile.region.height()*.30f).toInt(),allChamps,tile.titleMaxY)
@@ -684,6 +705,23 @@ object DraftVisionScanner {
                     val reading=(if(tile.ally) targetedAllyReadings else targetedEnemyReadings)[tile.slot]
                     if(!reading.ambiguous && reading.champion==null && reading.lane==null) {
                         val focused=DraftNameAtlas.focusTitle(atlas,tile,bounds)
+                        try { readTitles(focused) } finally { focused.bitmap.recycle() }
+                    }
+                }
+                for((tile,bounds) in unresolved) {
+                    fun unresolvedReading()=(if(tile.ally) targetedAllyReadings else targetedEnemyReadings)[tile.slot].let {
+                        !it.ambiguous && it.champion==null && it.lane==null
+                    }
+                    if(!unresolvedReading()) continue
+                    // First use measured native text boxes. If the detector did
+                    // not find a line, also isolate the calibrated title row;
+                    // the untouched full band has already been read above.
+                    val candidates=detectedTitleLines[tile.ally to tile.slot].orEmpty().take(3)+
+                        Rect(bounds.left,(tile.region.height()*.30f).toInt(),bounds.right,
+                            minOf(tile.titleMaxY+(tile.region.height()*.12f).toInt(),(tile.region.height()*.90f).toInt()))
+                    for(line in candidates) {
+                        if(!unresolvedReading()) break
+                        val focused=DraftNameAtlas.focusDetectedLine(atlas,tile,line)
                         try { readTitles(focused) } finally { focused.bitmap.recycle() }
                     }
                 }

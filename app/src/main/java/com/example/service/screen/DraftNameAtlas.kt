@@ -122,6 +122,50 @@ internal class DraftNameAtlas private constructor(val bitmap: Bitmap, val tiles:
             } catch(error:Throwable) { bitmap.recycle();throw error }
         }
 
+        /** Re-run the native recognizer on a detected text line, not its guessed
+         * identity. A detector returning only V still supplies a useful box: the
+         * padding retains the adjacent I. All variants use existing image pixels.
+         * The original, full-height band is always read before this alternative. */
+        fun focusDetectedLine(atlas: DraftNameAtlas, tile: Tile, line: Rect): DraftNameAtlas {
+            require(tile.original && tile in atlas.tiles && line.width()>0 && line.height()>0)
+            val horizontal=line.height()
+            val vertical=(line.height()*.20f).toInt().coerceAtLeast(2)
+            val bounds=Rect((line.left-horizontal).coerceAtLeast(0),
+                (line.top-vertical).coerceAtLeast(0),
+                (line.right+horizontal).coerceAtMost(tile.region.width()),
+                (line.bottom+vertical).coerceAtMost(tile.region.height()))
+            require(bounds.width()>0 && bounds.height()>0)
+            val width=bounds.width();val height=bounds.height()
+            val bitmap=Bitmap.createBitmap(width+GUTTER*2,(height+GUTTER*2)*3,Bitmap.Config.ARGB_8888)
+            val canvas=Canvas(bitmap).apply { drawColor(Color.BLACK) }
+            try {
+                val tiles=(0..2).map { variant ->
+                    val prior=if(variant!=0 && tile.ally) atlas.tiles.first {
+                        it.ally && it.slot==tile.slot && !it.original && !it.contrast
+                    } else tile
+                    val sample=Bitmap.createBitmap(atlas.bitmap,prior.region.left+bounds.left,
+                        prior.region.top+bounds.top,width,height)
+                    val crop=try { sample.copy(Bitmap.Config.ARGB_8888,true) }
+                        finally { if(sample!==atlas.bitmap) sample.recycle() }
+                    try {
+                        if(variant==1) enhanceTitleContrast(crop)
+                        if(variant==2) isolateBrightTitleStrokes(crop)
+                        val top=variant*(height+GUTTER*2)+GUTTER
+                        canvas.drawBitmap(crop,GUTTER.toFloat(),top.toFloat(),null)
+                        val source=Rect(tile.source.left+bounds.left*tile.source.width()/tile.region.width(),
+                            tile.source.top+bounds.top*tile.source.height()/tile.region.height(),
+                            tile.source.left+(bounds.right*tile.source.width()+tile.region.width()-1)/tile.region.width(),
+                            tile.source.top+(bounds.bottom*tile.source.height()+tile.region.height()-1)/tile.region.height())
+                        tile.copy(source=source,region=Rect(GUTTER,top,GUTTER+width,top+height),
+                            original=variant==0,contrast=variant!=0,
+                            titleMinY=((tile.region.height()*.30f).toInt()-bounds.top).coerceIn(0,height),
+                            titleMaxY=(tile.titleMaxY-bounds.top).coerceIn(0,height))
+                    } finally { crop.recycle() }
+                }
+                return DraftNameAtlas(bitmap,tiles)
+            } catch(error:Throwable) { bitmap.recycle();throw error }
+        }
+
         fun create(source: Bitmap, config: VisionCalibrationConfig, masks: List<Rect>): DraftNameAtlas {
             val bands = (0..4).flatMap { slot -> listOf(true, false).map { ally ->
                 Triple(ally, slot, AdaptiveScreenLayoutEngine.calculateSlotNameRect(source.width,source.height,ally,slot,config))

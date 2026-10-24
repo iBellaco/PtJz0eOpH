@@ -202,3 +202,29 @@ ahora toca explícitamente el campo, espera el fotograma y comprueba el texto
 introducido antes de continuar. Se mantienen las dos confirmaciones, contraseña
 obligatoria, bloqueo de envíos duplicados y comprobaciones de error; no se cambia
 la autorización de la aplicación ni se ejecutan eliminaciones reales.
+
+## Resultado de 40043912574 y corrección de la comprobación de contraseña
+
+La fuente 84493729 terminó en rojo. Catálogo, seguridad, regresiones, matriz de
+imágenes, compilación y revisión instalada en portugués aprobaron. La comprobación
+nativa preliminar aprobó 24/26 casos, no la secuencia completa: faltaron Mel,
+Volibear y Vi en 640 × 360 y Vi rival en 854 × 480 con márgenes derecho/inferior.
+El décimo quedó bloqueado correctamente al faltar títulos. No se publicó.
+
+Los cinco casos de eliminación fallaron por una aserción nueva incorrecta: el
+campo expone puntos de ocultación, no la contraseña original. Se comprueba ahora
+la ocultación y el valor original exacto recibido por el envío simulado, sin
+revelar la contraseña ni cambiar la interfaz productiva, sus dos confirmaciones,
+el bloqueo durante el envío o el tratamiento de errores.
+
+El último intento OCR conserva las bandas intactas y utiliza además los recuadros
+de líneas detectadas por el motor para releer sus píxeles con menos fondo. Incluye
+relleno para no perder una letra adyacente cuando el detector solo devuelve V;
+V nunca se acepta como Vi. Si no hay línea detectada, se relee la banda de título
+calibrada. Los límites originales de aceptación siguen excluyendo al invocador.
+Las variantes se procesan dentro del mismo fotograma y no incrementan la
+confirmación temporal. Se añaden regresiones para la conservación exacta de los
+píxeles originales, ambas letras y las exclusiones del visor.
+
+Pendiente: validar esta corrección con todas las comprobaciones obligatorias.
+No se atribuyen estas pruebas de imágenes/emulador a teléfonos físicos.

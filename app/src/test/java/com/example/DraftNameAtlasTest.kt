@@ -19,6 +19,54 @@ import org.robolectric.annotation.GraphicsMode
 @Config(sdk = [34], application = Application::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class DraftNameAtlasTest {
+    @Test fun detectedLineRetryRetainsBothLettersAndNeverPromotesThePlayerRow() {
+        val source=javaClass.getResourceAsStream("/portraits/draft-ten-selected.jpg").use {
+            android.graphics.BitmapFactory.decodeStream(it)!!
+        }
+        val atlas=DraftNameAtlas.create(source,VisionCalibrationConfig(),emptyList())
+        try {
+            val tile=atlas.tiles.single { it.original && it.ally && it.slot==4 }
+            // Simulate a text detector returning only the V, not a champion label.
+            val line=android.graphics.Rect(
+                (155-tile.source.left)*tile.region.width()/tile.source.width(),
+                (400-tile.source.top)*tile.region.height()/tile.source.height(),
+                (166-tile.source.left)*tile.region.width()/tile.source.width(),
+                (415-tile.source.top)*tile.region.height()/tile.source.height())
+            val focused=DraftNameAtlas.focusDetectedLine(atlas,tile,line)
+            try {
+                val raw=focused.tiles.single { it.original }
+                assertTrue("Padding must preserve I even if the detector returned only V",
+                    raw.source.contains(android.graphics.Rect(155,400,173,415)))
+                val top=(line.top-(line.height()*.20f).toInt().coerceAtLeast(2)).coerceAtLeast(0)
+                val left=(line.left-line.height()).coerceAtLeast(0)
+                assertEquals((tile.titleMaxY-top).coerceIn(0,raw.region.height()),raw.titleMaxY)
+                for(y in 0 until raw.region.height()) for(x in 0 until raw.region.width()) {
+                    assertEquals(atlas.bitmap.getPixel(tile.region.left+left+x,tile.region.top+top+y),
+                        focused.bitmap.getPixel(raw.region.left+x,raw.region.top+y))
+                }
+            } finally { focused.bitmap.recycle() }
+        } finally { atlas.bitmap.recycle();source.recycle() }
+    }
+
+    @Test fun detectedLineRetryRetainsExactPixelsAndDiagnosticExclusions() {
+        val source=Bitmap.createBitmap(1280,579,Bitmap.Config.ARGB_8888).apply { eraseColor(Color.WHITE) }
+        val config=VisionCalibrationConfig()
+        val band=AdaptiveScreenLayoutEngine.calculateSlotNameRect(1280,579,false,4,config)
+        val atlas=DraftNameAtlas.create(source,config,listOf(band))
+        try {
+            val tile=atlas.tiles.single { it.original && !it.ally && it.slot==4 }
+            val line=android.graphics.Rect(100,60,150,100)
+            val focused=DraftNameAtlas.focusDetectedLine(atlas,tile,line)
+            try {
+                val raw=focused.tiles.single { it.original }
+                for(y in raw.region.top until raw.region.bottom) for(x in raw.region.left until raw.region.right)
+                    assertEquals("Masked pixels cannot be restored by a tighter reading",Color.BLACK,focused.bitmap.getPixel(x,y))
+                assertTrue(raw.titleMaxY<=raw.region.height())
+                assertTrue(raw.titleMinY>=0)
+            } finally { focused.bitmap.recycle() }
+        } finally { atlas.bitmap.recycle();source.recycle() }
+    }
+
     @Test fun bothRealViGlyphsStayInsideTheFocusedRegionAtTheFailingMeasures() {
         val reference=javaClass.getResourceAsStream("/portraits/draft-ten-selected.jpg").use {
             android.graphics.BitmapFactory.decodeStream(it)!!
