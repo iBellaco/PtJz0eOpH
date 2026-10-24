@@ -265,3 +265,15 @@ de líneas y la respuesta real del motor, además de ambas observaciones visuale
 
 Pendiente: validar la nueva fuente con todas las comprobaciones y la secuencia
 completa. No se fusionó ni publicó ninguno de los APK anteriores fallidos.
+
+## Red Magic 10: retirar calibraciones antiguas por solicitud del propietario
+
+El propietario confirmó que las capturas son de su NX789J. Este modelo ya parte
+de los valores genéricos, pero los perfiles manuales guardados pueden desactivar
+la alineación adaptativa. Se añade una migración local de una sola vez que retira
+su geometría antigua global y por relación de aspecto, incluidos baneos; mantiene
+los perfiles de otros teléfonos y las preferencias ajenas a geometría. No toca
+cuentas ni capturas. Los ajustes nuevos posteriores se guardan normalmente.
+Una regresión comprueba eliminación de los formatos anteriores, base genérica,
+conservación de otros perfiles y persistencia de los ajustes nuevos. La prueba
+física de esta versión en el teléfono del propietario sigue pendiente.

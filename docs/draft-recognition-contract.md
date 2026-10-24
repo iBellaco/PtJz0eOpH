@@ -3,6 +3,13 @@
 Confirmado por el propietario el 23 de octubre de 2026. Leer antes de modificar
 la captura, el visor, la calibración, el reconocimiento o sus pruebas.
 
+Actualización del propietario: las capturas suministradas proceden de su Red Magic
+10 (NX789J). Solicita descartar sus coordenadas guardadas anteriores y aplicar a
+ese modelo el mismo método adaptativo de ventana, slots y baneos de los demás.
+La migración se realiza una sola vez al actualizar; no elimina las capturas ni
+los ajustes manuales nuevos que guarde después. El propietario puede realizar
+las pruebas físicas de la nueva versión; todavía no se cuentan como realizadas.
+
 ## Información que se observa
 
 Los cinco slots aliados, cinco rivales y cinco baneos de cada lado conservan

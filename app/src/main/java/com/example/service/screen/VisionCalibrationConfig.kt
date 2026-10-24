@@ -251,6 +251,7 @@ VisionCalibrationConfig(
     }
 
     fun saveToPrefs(context: Context) {
+        discardOldRedMagicGeometry(context)
         val prefs = context.getSharedPreferences("vision_calibration_prefs", Context.MODE_PRIVATE)
         prefs.edit().apply {
             putString("calibration_device_model", deviceModelKey())
@@ -288,6 +289,7 @@ VisionCalibrationConfig(
 
     /** Saves the geometry that was calibrated for one capture aspect ratio. */
     fun saveProfileToPrefs(context: Context, profileKey: String) {
+        discardOldRedMagicGeometry(context)
         val prefs = context.getSharedPreferences("vision_calibration_prefs", Context.MODE_PRIVATE)
         val prefix = "profile_${deviceModelKey()}_${profileKey}_"
         prefs.edit().apply {
@@ -323,6 +325,29 @@ VisionCalibrationConfig(
         private fun deviceModelKey(): String =
             "${android.os.Build.MANUFACTURER}:${android.os.Build.MODEL}".lowercase(java.util.Locale.ROOT)
 
+        /** One-time opt-in requested by the owner of the NX789J reference phone.
+         * Forget old geometry, not accounts or future manual adjustments. The
+         * normal viewport/ring alignment then handles this model like any other. */
+        @Synchronized
+        private fun discardOldRedMagicGeometry(context: Context) {
+            val model=android.os.Build.MODEL.lowercase(java.util.Locale.ROOT).filter { it.isLetterOrDigit() }
+            if(model!="nx789j" && !model.startsWith("redmagic10")) return
+            val prefs=context.getSharedPreferences("vision_calibration_prefs",Context.MODE_PRIVATE)
+            val marker="red_magic_adaptive_geometry_v1"
+            if(prefs.getBoolean(marker,false)) return
+            val globals=setOf("nameBandScale","allyAvatarCenterX","enemyAvatarCenterX","avatarDiameterRatio",
+                "allyOcrMinX","allyOcrMaxX","enemyOcrMinX","enemyOcrMaxX","topAvatarYRatio",
+                "topAvatarDiameterRatio","topAlly5XRatio","topEnemy5XRatio","calibration_device_model",
+                "calibration_version","device_profile_checked","spellLeftRatio","spellSizeRatio","spellYOffsetRatio")
+            val prefixes=listOf("ally_slot_","enemy_slot_","top_ally_","top_enemy_","ban_",
+                "profile_${deviceModelKey()}_","profile_true_","profile_false_")
+            prefs.edit().apply {
+                prefs.all.keys.filter { key -> key in globals || prefixes.any { key.startsWith(it) } }.forEach { remove(it) }
+                putBoolean(marker,true)
+                apply()
+            }
+        }
+
         /** Resolution-independent profile: density changes do not create a new calibration. */
         internal fun captureProfileKey(width: Int, height: Int): String {
             require(width > 0 && height > 0)
@@ -334,6 +359,7 @@ VisionCalibrationConfig(
 
         /** Returns the capture-specific geometry, or null when this profile has not been calibrated. */
         internal fun loadProfileFromPrefs(context: Context, profileKey: String): VisionCalibrationConfig? {
+            discardOldRedMagicGeometry(context)
             val prefs = context.getSharedPreferences("vision_calibration_prefs", Context.MODE_PRIVATE)
             val scoped = "profile_${deviceModelKey()}_${profileKey}_"
             val legacy = "profile_${profileKey}_"
@@ -372,6 +398,7 @@ VisionCalibrationConfig(
         }
 
         internal fun hasCaptureProfiles(context: Context): Boolean {
+            discardOldRedMagicGeometry(context)
             val prefs = context.getSharedPreferences("vision_calibration_prefs", Context.MODE_PRIVATE)
             return prefs.all.keys.any { key ->
                 key.startsWith("profile_${deviceModelKey()}_") ||
@@ -404,6 +431,7 @@ VisionCalibrationConfig(
         }
 
         fun loadFromPrefs(context: Context): VisionCalibrationConfig {
+            discardOldRedMagicGeometry(context)
             val prefs = context.getSharedPreferences("vision_calibration_prefs", Context.MODE_PRIVATE)
             val savedModel = prefs.getString("calibration_device_model", null)
             if (savedModel != null && savedModel != deviceModelKey()) {
