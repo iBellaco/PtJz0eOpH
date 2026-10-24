@@ -19,6 +19,32 @@ import org.robolectric.annotation.GraphicsMode
 @Config(sdk = [34], application = Application::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class DraftNameAtlasTest {
+    @Test fun detectedLinesMapBackToTheOriginalTitleWithoutUsingANameHint() {
+        val original=DraftNameAtlas.Tile(true,3,android.graphics.Rect(10,20,110,60),
+            android.graphics.Rect(32,32,1032,432),400)
+        val focused=original.copy(source=android.graphics.Rect(30,25,80,55),
+            region=android.graphics.Rect(32,32,532,332))
+        assertEquals(android.graphics.Rect(300,100,400,200),DraftNameAtlas.mapDetectedLine(original,focused,
+            android.graphics.Rect(132,82,232,182)))
+    }
+    @Test fun projectedTitleInkSeparatesWhiteAndGoldFromBlueWithoutRestoringMasks() {
+        val crop=Bitmap.createBitmap(6,1,Bitmap.Config.ARGB_8888)
+        crop.setPixels(intArrayOf(Color.rgb(30,70,150),Color.WHITE,Color.rgb(230,180,60),
+            Color.BLACK,Color.rgb(15,30,90),Color.rgb(80,80,80)),0,6,0,0,6,1)
+        try {
+            DraftNameAtlas.isolateTitleColor(crop)
+            assertEquals(Color.WHITE,crop.getPixel(0,0))
+            assertEquals(Color.BLACK,crop.getPixel(1,0))
+            assertEquals(Color.BLACK,crop.getPixel(2,0))
+            assertEquals("A black exclusion is always background",Color.WHITE,crop.getPixel(3,0))
+            assertEquals(Color.WHITE,crop.getPixel(4,0))
+            for(color in listOf(Color.BLACK,Color.WHITE,Color.rgb(30,70,150),Color.rgb(180,150,80))) {
+                crop.eraseColor(color)
+                DraftNameAtlas.isolateTitleColor(crop)
+                for(x in 0 until crop.width) assertEquals("Uniform fields cannot acquire letter strokes",Color.WHITE,crop.getPixel(x,0))
+            }
+        } finally { crop.recycle() }
+    }
     @Test fun detectedLineRetryRetainsBothLettersAndNeverPromotesThePlayerRow() {
         val source=javaClass.getResourceAsStream("/portraits/draft-ten-selected.jpg").use {
             android.graphics.BitmapFactory.decodeStream(it)!!

@@ -228,3 +228,40 @@ píxeles originales, ambas letras y las exclusiones del visor.
 
 Pendiente: validar esta corrección con todas las comprobaciones obligatorias.
 No se atribuyen estas pruebas de imágenes/emulador a teléfonos físicos.
+
+## Resultado de 40050751266 y procesamiento local pendiente
+
+La fuente 34fab067 aprobó 756 pruebas en 95 suites, sin errores ni omisiones;
+164 perfiles, 63 medidas, 492 variantes y 9840 comprobaciones de retratos/baneos;
+firma persistente y R8 con 1383 clases renombradas; las revisiones instaladas de
+39 pantallas españolas y 41 portuguesas. Los cinco casos de contraseña en ambos
+idiomas aprobaron con el valor original verificado en el envío simulado, sin
+eliminaciones reales. Se revisaron las capturas de confirmación y selección.
+La revisión portuguesa de la selección necesitó el reintento permitido por el
+entorno al no obtener el árbol inicial de interfaz; ambos intentos se conservan.
+
+El APK de esa fuente tiene SHA-256
+`7d18ee781ff482559d0976ed81dbcc577bb289d04079de88754f4c85243db315`.
+No se publica: la fase preliminar nativa pasó 23/26 casos en 1208 segundos.
+Mel ya se leyó en 640 × 360, pero faltaron Volibear y Vi; también faltó Vi rival
+en 854 × 480 con márgenes. El caso Red Magic leyó los nueve títulos, pero no
+confirmó el décimo Teemo; las tres capturas reales adicionales de esa misma
+geometría sí aprobaron. Esto no equivale a aprobar el caso ni la secuencia final.
+
+La continuidad visual medía el tiempo antes de comparar los retratos: una primera
+indexación lenta podía consumir la ventana de 1200 ms y reiniciar el contador en
+la siguiente captura. Ahora se registra el final de cada comparación válida,
+manteniendo dos capturas, la pausa máxima entre observaciones y nueve nombres
+antes de confirmar. Pruebas deterministas comprueban arranque lento, pausa real,
+cambio de candidato, reinicio y tiempos inválidos.
+
+Se añade una alternativa de separación de tinta blanca/dorada mediante sus
+canales de color y un umbral calculado del histograma local. Conserva las copias
+intactas, las máscaras y los límites del título; no usa plantillas de letras,
+retratos, nombres esperados ni nuevos alias. Las pruebas verifican que un campo
+uniforme o enmascarado no se convierta en trazos y que las cajas nativas se
+remapeen a su ubicación original. El diagnóstico conserva también los recortes
+de líneas y la respuesta real del motor, además de ambas observaciones visuales.
+
+Pendiente: validar la nueva fuente con todas las comprobaciones y la secuencia
+completa. No se fusionó ni publicó ninguno de los APK anteriores fallidos.

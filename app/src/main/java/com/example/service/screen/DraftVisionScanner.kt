@@ -671,12 +671,7 @@ object DraftVisionScanner {
                         if(y<tile.region.height()*.30f || y>minOf(tile.titleMaxY,(tile.region.height()*.85f).toInt())) continue
                         if(AllyDraftNameReader.read(listOf(line.text),allChamps).let {
                             it.champion!=null || it.lane!=null || it.ambiguous }) continue
-                        fun sourceX(x:Int)=tile.source.left+(x-tile.region.left)*tile.source.width()/tile.region.width()
-                        fun sourceY(y:Int)=tile.source.top+(y-tile.region.top)*tile.source.height()/tile.region.height()
-                        val mapped=Rect((sourceX(box.left)-original.source.left)*original.region.width()/original.source.width(),
-                            (sourceY(box.top)-original.source.top)*original.region.height()/original.source.height(),
-                            (sourceX(box.right)-original.source.left)*original.region.width()/original.source.width(),
-                            (sourceY(box.bottom)-original.source.top)*original.region.height()/original.source.height())
+                        val mapped=DraftNameAtlas.mapDetectedLine(original,tile,box)
                         if(mapped.width()>0 && mapped.height()>0) {
                             val candidates=detectedTitleLines.getOrPut(tile.ally to tile.slot) { mutableListOf() }
                             if(mapped !in candidates) candidates+=mapped

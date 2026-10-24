@@ -397,7 +397,7 @@ jobs:
     - name: Recheck formerly drifting portrait centers first
       env:
         CI: 'true'
-      run: ./gradlew :app:testDebugUnitTest --rerun --tests com.example.DraftMultiDeviceAuditTest.formerlyFailingCentersStayAlignedWhenPortraitsChange --tests com.example.DraftNameAtlasTest --tests com.example.AllyDraftNameReaderTest --max-workers=1 --stacktrace --no-daemon
+      run: ./gradlew :app:testDebugUnitTest --rerun --tests com.example.DraftMultiDeviceAuditTest.formerlyFailingCentersStayAlignedWhenPortraitsChange --tests com.example.DraftNameAtlasTest --tests com.example.AllyDraftNameReaderTest --tests com.example.CompletedFrameStabilityTest --max-workers=1 --stacktrace --no-daemon
     - name: Test scanner and matchup rules with offline fixtures
       env:
         CI: 'true'

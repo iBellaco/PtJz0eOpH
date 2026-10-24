@@ -20,6 +20,16 @@ internal class DraftNameAtlas private constructor(val bitmap: Bitmap, val tiles:
                 maxOf(columns*cellWidth,((tiles+columns-1)/columns)*cellHeight)
             }
 
+        internal fun mapDetectedLine(original: Tile, tile: Tile, box: Rect): Rect {
+            require(original.ally==tile.ally && original.slot==tile.slot)
+            fun sourceX(x:Int)=tile.source.left+(x-tile.region.left)*tile.source.width()/tile.region.width()
+            fun sourceY(y:Int)=tile.source.top+(y-tile.region.top)*tile.source.height()/tile.region.height()
+            return Rect((sourceX(box.left)-original.source.left)*original.region.width()/original.source.width(),
+                (sourceY(box.top)-original.source.top)*original.region.height()/original.source.height(),
+                (sourceX(box.right)-original.source.left)*original.region.width()/original.source.width(),
+                (sourceY(box.bottom)-original.source.top)*original.region.height()/original.source.height())
+        }
+
         /** Re-read only unresolved titles at full tile size, avoiding a wide atlas
          * shrinking a two-letter name inside the native text detector. No new text pixels. */
         fun retryUnresolved(atlas: DraftNameAtlas, unresolved: List<Tile>): DraftNameAtlas {
@@ -98,17 +108,21 @@ internal class DraftNameAtlas private constructor(val bitmap: Bitmap, val tiles:
             require(tile.original && tile in atlas.tiles && bounds.top==0 &&
                 bounds.bottom==tile.region.height() && bounds.left>=0 && bounds.right<=tile.region.width() && bounds.width()>0)
             val width=bounds.width();val height=bounds.height()
-            val bitmap=Bitmap.createBitmap(width+GUTTER*2,(height+GUTTER*2)*3,Bitmap.Config.ARGB_8888)
+            val bitmap=Bitmap.createBitmap(width+GUTTER*2,(height+GUTTER*2)*4,Bitmap.Config.ARGB_8888)
             val canvas=Canvas(bitmap).apply { drawColor(Color.BLACK) }
             val tiles=mutableListOf<Tile>()
             try {
-                for(variant in 0..2) {
-                    val sample=Bitmap.createBitmap(atlas.bitmap,tile.region.left+bounds.left,tile.region.top,width,height)
+                for(variant in 0..3) {
+                    val prior=if(variant==3 && tile.ally) atlas.tiles.first {
+                        it.ally && it.slot==tile.slot && !it.original && !it.contrast
+                    } else tile
+                    val sample=Bitmap.createBitmap(atlas.bitmap,prior.region.left+bounds.left,prior.region.top,width,height)
                     val crop=try { sample.copy(Bitmap.Config.ARGB_8888,true) }
                         finally { if(sample!==atlas.bitmap) sample.recycle() }
                     try {
                         if(variant==1) enhanceTitleContrast(crop)
                         if(variant==2) isolateBrightTitleStrokes(crop)
+                        if(variant==3) isolateTitleColor(crop)
                         val top=variant*(height+GUTTER*2)+GUTTER
                         canvas.drawBitmap(crop,GUTTER.toFloat(),top.toFloat(),null)
                         val source=Rect(tile.source.left+bounds.left*tile.source.width()/tile.region.width(),
@@ -136,10 +150,10 @@ internal class DraftNameAtlas private constructor(val bitmap: Bitmap, val tiles:
                 (line.bottom+vertical).coerceAtMost(tile.region.height()))
             require(bounds.width()>0 && bounds.height()>0)
             val width=bounds.width();val height=bounds.height()
-            val bitmap=Bitmap.createBitmap(width+GUTTER*2,(height+GUTTER*2)*3,Bitmap.Config.ARGB_8888)
+            val bitmap=Bitmap.createBitmap(width+GUTTER*2,(height+GUTTER*2)*4,Bitmap.Config.ARGB_8888)
             val canvas=Canvas(bitmap).apply { drawColor(Color.BLACK) }
             try {
-                val tiles=(0..2).map { variant ->
+                val tiles=(0..3).map { variant ->
                     val prior=if(variant!=0 && tile.ally) atlas.tiles.first {
                         it.ally && it.slot==tile.slot && !it.original && !it.contrast
                     } else tile
@@ -150,6 +164,7 @@ internal class DraftNameAtlas private constructor(val bitmap: Bitmap, val tiles:
                     try {
                         if(variant==1) enhanceTitleContrast(crop)
                         if(variant==2) isolateBrightTitleStrokes(crop)
+                        if(variant==3) isolateTitleColor(crop)
                         val top=variant*(height+GUTTER*2)+GUTTER
                         canvas.drawBitmap(crop,GUTTER.toFloat(),top.toFloat(),null)
                         val source=Rect(tile.source.left+bounds.left*tile.source.width()/tile.region.width(),
@@ -164,6 +179,36 @@ internal class DraftNameAtlas private constructor(val bitmap: Bitmap, val tiles:
                 }
                 return DraftNameAtlas(bitmap,tiles)
             } catch(error:Throwable) { bitmap.recycle();throw error }
+        }
+
+        /** Project white/gold title ink away from blue scenery, then select a
+         * threshold from this crop's histogram. No letter templates or identities;
+         * black exclusions stay background even next to bright game effects. */
+        internal fun isolateTitleColor(crop: Bitmap) {
+            val pixels=IntArray(crop.width*crop.height)
+            crop.getPixels(pixels,0,crop.width,0,0,crop.width,crop.height)
+            val ink=IntArray(pixels.size) { i ->
+                val c=pixels[i];val r=Color.red(c);val g=Color.green(c);val b=Color.blue(c)
+                (minOf(r,g)-maxOf(0,b-maxOf(r,g))).coerceAtLeast(0)
+            }
+            val histogram=IntArray(256)
+            ink.forEach { histogram[it]++ }
+            val total=ink.size
+            val sum=ink.sumOf { it.toLong() }
+            var backgroundWeight=0L;var backgroundSum=0L;var threshold=0;var best=-1.0
+            for(value in 0..254) {
+                backgroundWeight+=histogram[value]
+                if(backgroundWeight==0L) continue
+                val foregroundWeight=total-backgroundWeight
+                if(foregroundWeight==0L) break
+                backgroundSum+=value.toLong()*histogram[value]
+                val distance=backgroundSum.toDouble()/backgroundWeight-
+                    (sum-backgroundSum).toDouble()/foregroundWeight
+                val variance=backgroundWeight.toDouble()*foregroundWeight*distance*distance
+                if(variance>best) { best=variance;threshold=value }
+            }
+            for(i in pixels.indices) pixels[i]=if(best>=0 && ink[i]>threshold && ink[i]>=45) Color.BLACK else Color.WHITE
+            crop.setPixels(pixels,0,crop.width,0,0,crop.width,crop.height)
         }
 
         fun create(source: Bitmap, config: VisionCalibrationConfig, masks: List<Rect>): DraftNameAtlas {

@@ -120,12 +120,27 @@ class DraftSequenceMultiDeviceInstalledTest {
                                     val missing=atlas.tiles.filter { tile -> tile.original &&
                                         !actual.containsKey(tile.slot+if(tile.ally) 0 else 5) }
                                     if(missing.isNotEmpty()) {
+                                        val detectedLines=mutableMapOf<Pair<Boolean,Int>,MutableList<Rect>>()
+                                        fun collectLines(input:DraftNameAtlas,read:com.google.mlkit.vision.text.Text) {
+                                            for(original in missing) for(tile in input.tiles.filter { it.ally==original.ally && it.slot==original.slot })
+                                                for(line in read.textBlocks.flatMap { it.lines }) {
+                                                    val box=line.boundingBox ?: continue
+                                                    if(!tile.region.contains(box.centerX(),box.centerY())) continue
+                                                    val y=box.centerY()-tile.region.top
+                                                    if(y<tile.region.height()*.30f || y>minOf(tile.titleMaxY,(tile.region.height()*.85f).toInt())) continue
+                                                    val mapped=DraftNameAtlas.mapDetectedLine(original,tile,box)
+                                                    if(mapped.width()>0 && mapped.height()>0)
+                                                        detectedLines.getOrPut(original.ally to original.slot) { mutableListOf() }.add(mapped)
+                                                }
+                                        }
+                                        collectLines(atlas,text)
                                         val retry=DraftNameAtlas.retryUnresolved(atlas,missing)
                                         try {
                                             File(evidence,"${case.getString("id")}-retry-atlas.png").outputStream().use {
                                                 retry.bitmap.compress(Bitmap.CompressFormat.PNG,100,it)
                                             }
                                             val reread=recognizer.process(com.google.mlkit.vision.common.InputImage.fromBitmap(retry.bitmap,0)).await()
+                                            collectLines(retry,reread)
                                             result.put("diagnosticRetryText",reread.text)
                                             result.put("diagnosticRetryLines",JSONArray(reread.textBlocks.flatMap { it.lines }.map {
                                                 JSONObject().put("text",it.text).put("bounds",it.boundingBox.toString())
@@ -140,6 +155,7 @@ class DraftSequenceMultiDeviceInstalledTest {
                                                     focused.bitmap.compress(Bitmap.CompressFormat.PNG,100,it)
                                                 }
                                                 val text=recognizer.process(com.google.mlkit.vision.common.InputImage.fromBitmap(focused.bitmap,0)).await()
+                                                collectLines(focused,text)
                                                 focusedDiagnostics.put(JSONObject().put("ally",tile.ally).put("slot",tile.slot)
                                                     .put("text",text.text).put("bounds",bounds.toString())
                                                     .put("lines",JSONArray(text.textBlocks.flatMap { it.lines }.map {
@@ -148,6 +164,25 @@ class DraftSequenceMultiDeviceInstalledTest {
                                             } finally { focused.bitmap.recycle() }
                                         }
                                         result.put("focusedDiagnostics",focusedDiagnostics)
+                                        val lineDiagnostics=JSONArray()
+                                        for(tile in missing.filter { expected.containsKey(it.slot+if(it.ally) 0 else 5) }) {
+                                            val bounds=DraftNameAtlas.titleFocusBounds(atlas,tile) ?: continue
+                                            val candidates=detectedLines[tile.ally to tile.slot].orEmpty().distinct().take(3)+
+                                                Rect(bounds.left,(tile.region.height()*.30f).toInt(),bounds.right,
+                                                    minOf(tile.titleMaxY+(tile.region.height()*.12f).toInt(),(tile.region.height()*.90f).toInt()))
+                                            for((candidateIndex,line) in candidates.withIndex()) {
+                                                val focused=DraftNameAtlas.focusDetectedLine(atlas,tile,line)
+                                                try {
+                                                    File(evidence,"${case.getString("id")}-line-${tile.ally}-${tile.slot}-$candidateIndex.png").outputStream().use {
+                                                        focused.bitmap.compress(Bitmap.CompressFormat.PNG,100,it)
+                                                    }
+                                                    val read=recognizer.process(com.google.mlkit.vision.common.InputImage.fromBitmap(focused.bitmap,0)).await()
+                                                    lineDiagnostics.put(JSONObject().put("ally",tile.ally).put("slot",tile.slot)
+                                                        .put("bounds",line.toString()).put("text",read.text))
+                                                } finally { focused.bitmap.recycle() }
+                                            }
+                                        }
+                                        result.put("lineFocusedDiagnostics",lineDiagnostics)
                                     }
                                 } finally { recognizer.close(); atlas.bitmap.recycle() }
                             }
@@ -162,13 +197,21 @@ class DraftSequenceMultiDeviceInstalledTest {
                                 val turn = scanner.getDraftPickSequence(order).last()
                                 if (turn.isAlly != !order || turn.slotIndex != 4) errors += "incorrect tenth position"
                                 var visual: ScannedSlotInfo? = null
-                                repeat(2) { visual = scanner.scanActiveSlotDirectly(frame, turn, context) }
+                                val visualFrames=JSONArray()
+                                repeat(2) {
+                                    visual = scanner.scanActiveSlotDirectly(frame, turn, context)
+                                    val report=LiteRTVisionClassifier.reportFlow.value
+                                    visualFrames.put(JSONObject().put("candidate",report.pickedChampion?.id?:JSONObject.NULL)
+                                        .put("score",report.topCandidates.firstOrNull()?.similarityScore?:JSONObject.NULL)
+                                        .put("frames",report.stableFramesCount).put("confirmed",report.isConfirmed)
+                                        .put("processingMs",report.inferenceTimeMs).put("reason",report.decisionReason))
+                                }
                                 val expectedLast = ids[positions.last()]
                                 if (visual?.champion?.id != expectedLast) errors += "tenth: expected=$expectedLast actual=${visual?.champion?.id}"
                                 result.put("tenth", JSONObject().put("expected", expectedLast)
                                     .put("recognized", visual?.champion?.id ?: JSONObject.NULL)
                                     .put("confirmed", LiteRTVisionClassifier.reportFlow.value.isConfirmed)
-                                    .put("nameHidden", true))
+                                    .put("nameHidden", true).put("observations",visualFrames))
                                 if (!LiteRTVisionClassifier.reportFlow.value.isConfirmed) errors += "tenth: not confirmed"
                                 val canvas = Canvas(frame)
                                 val paint = Paint().apply { color = Color.GREEN; style = Paint.Style.STROKE; strokeWidth = 2f }
