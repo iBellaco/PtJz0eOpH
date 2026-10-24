@@ -44,9 +44,10 @@ def main():
         subprocess.run(['adb', 'install', '-r', apk], check=True, timeout=120)
     command = ['adb', 'shell', 'am', 'instrument', '-w', '-r', '-e', 'class',
                'com.example.DraftSequenceMultiDeviceInstalledTest', '-e', 'sequenceShard', str(shard),
-               '-e','sequencePreflight','true' if preflight else 'false',
-               '-e','sequenceTargets',','.join(sorted(targets)),
-               'com.Coach.test/androidx.test.runner.AndroidJUnitRunner']
+               '-e', 'sequencePreflight', 'true' if preflight else 'false']
+    if targets:
+        command += ['-e', 'sequenceTargets', ','.join(sorted(targets))]
+    command += ['com.Coach.test/androidx.test.runner.AndroidJUnitRunner']
     code, output = run_instrumentation(command, directory / f'instrumentation-{label}.txt',
                                        1800 if preflight else 3300)
     cases = [json.loads(line) for line in re.findall(r'COACH_SEQUENCE_CASE: (\{[^\r\n]+\})', output)]
