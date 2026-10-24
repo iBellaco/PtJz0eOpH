@@ -44,9 +44,18 @@ jobs:
         run: |
           cp .env.example .env 2>/dev/null || touch .env
           cp .env app/.env 2>/dev/null || true
-          python3 .github/scripts/restore-google-services.py
-        env:
-          COACH_GOOGLE_SERVICES_JSON: ${{ secrets.COACH_GOOGLE_SERVICES_JSON }}
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          Path('app/google-services.json').write_text(json.dumps({
+              'project_info': {'project_number': '1234567890', 'project_id': 'coach-fix-error-local'},
+              'client': [{'client_info': {
+                  'mobilesdk_app_id': '1:1234567890:android:0000000000000000',
+                  'android_client_info': {'package_name': 'com.Coach'}},
+                  'api_key': [{'current_key': 'local-targeted-ocr-test-only'}]}],
+              'configuration_version': '1'
+          }) + '\n')
+          PY
 
       - name: Configurar Gradle 9.3.1
         uses: gradle/actions/setup-gradle@v4
