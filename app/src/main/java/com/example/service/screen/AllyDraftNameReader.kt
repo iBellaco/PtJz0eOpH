@@ -37,18 +37,6 @@ object AllyDraftNameReader {
         return Reading()
     }
 
-    /**
-     * Require the complete two-letter title after badge suppression too.
-     * Unknown readings such as IA, IAA and rVI cannot establish an identity.
-     */
-    internal fun readBadgeSeparatedShortTitle(lines: List<Pair<String, Int>>, catalog: List<Champion>): Reading {
-        val text = lines.sortedBy { it.second }.joinToString(" ") { it.first }
-        val key = DraftValidationLayer.normalize(text).replace(" ", "")
-        if (key !in setOf("vi", "v1", "vl")) return Reading()
-        val champion = catalog.firstOrNull { it.id == "vi" }
-        return champion?.let { Reading(champion = it) } ?: Reading()
-    }
-
     fun read(lines: List<String>, catalog: List<Champion>): Reading {
         val names = lines.mapNotNull { ChampionNameResolver.findChampionInNameBand(it, catalog) }.distinctBy { it.id }
         val lanes = (lines + lines.joinToString(" ")).mapNotNull { laneTitle(it) }.distinct()

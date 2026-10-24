@@ -30,11 +30,11 @@ class DraftNameAtlasTest {
             try {
                 val normal=DraftNameAtlas.nativeTextSizes(focused,40)
                 try {
-                    assertEquals(3,normal.tiles.size)
-                    assertEquals(1,normal.tiles.count { it.original })
+                    assertEquals(9,normal.tiles.size)
+                    assertEquals(3,normal.tiles.count { it.original })
                     for((index,part) in normal.tiles.withIndex()) {
-                        val original=focused.tiles[index]
-                        val factor=48f/40
+                        val original=focused.tiles[index%3]
+                        val factor=listOf(24f,36f,48f)[index/3]/40
                         assertEquals(32,part.region.left)
                         if(index>0) assertTrue(part.region.top>normal.tiles[index-1].region.bottom)
                         assertEquals(original.source,part.source)
@@ -46,6 +46,46 @@ class DraftNameAtlasTest {
                     }
                 } finally { normal.bitmap.recycle() }
             } finally { focused.bitmap.recycle() }
+        } finally { atlas.bitmap.recycle();source.recycle() }
+    }
+    @Test fun retriesKeepSecondMeasuredBoxAndCalibratedRowWithoutRepeatingIdenticalBoxes() {
+        val first=android.graphics.Rect(200,30,270,80)
+        val second=android.graphics.Rect(190,10,280,90)
+        val fallback=android.graphics.Rect(0,48,900,144)
+        assertEquals(listOf(first,second,fallback),DraftNameAtlas.retryLineBounds(
+            listOf(first,first,second,android.graphics.Rect(210,20,280,90)),fallback))
+        assertEquals(listOf(fallback),DraftNameAtlas.retryLineBounds(emptyList(),fallback))
+        assertEquals(listOf(fallback),DraftNameAtlas.retryLineBounds(listOf(fallback),fallback))
+        assertEquals(listOf(fallback),DraftNameAtlas.retryLineBounds(listOf(android.graphics.Rect()),fallback))
+    }
+    @Test fun batchedAlternativesPreserveEveryPixelMaskAndTitleBoundOnBoundedPages() {
+        val source=Bitmap.createBitmap(1280,579,Bitmap.Config.ARGB_8888).apply { eraseColor(Color.BLUE) }
+        val config=VisionCalibrationConfig()
+        val mask=AdaptiveScreenLayoutEngine.calculateSlotNameRect(1280,579,true,4,config)
+        val atlas=DraftNameAtlas.create(source,config,listOf(mask))
+        try {
+            val pages=DraftNameAtlas.packAlternatives(listOf(atlas))
+            try {
+                assertTrue(pages.size<atlas.tiles.size)
+                assertEquals(atlas.tiles.size,pages.sumOf { it.tiles.size })
+                var index=0
+                for(page in pages) {
+                    assertTrue(page.bitmap.height<=1536)
+                    for(tile in page.tiles) {
+                        val original=atlas.tiles[index++]
+                        assertEquals(original.copy(region=tile.region),tile)
+                        val expected=IntArray(original.region.width()*original.region.height())
+                        val actual=IntArray(expected.size)
+                        atlas.bitmap.getPixels(expected,0,original.region.width(),original.region.left,
+                            original.region.top,original.region.width(),original.region.height())
+                        page.bitmap.getPixels(actual,0,tile.region.width(),tile.region.left,
+                            tile.region.top,tile.region.width(),tile.region.height())
+                        assertArrayEquals(expected,actual)
+                    }
+                }
+            } finally { pages.forEach { it.bitmap.recycle() } }
+            assertFalse("Packing does not recycle its caller's input",atlas.bitmap.isRecycled)
+            assertTrue(DraftNameAtlas.packAlternatives(emptyList()).isEmpty())
         } finally { atlas.bitmap.recycle();source.recycle() }
     }
     @Test fun sceneRereadingRetainsOriginalSceneButOnlyDecodesTenMaskedTitleBands() {

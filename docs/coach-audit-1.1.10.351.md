@@ -1,5 +1,12 @@
 # Coach 1.1.10.351 — build 1067
 
+## Revisión actual de los reintentos
+
+La evidencia de la ejecución `40104597791`, los fallos todavía pendientes y
+las nuevas regresiones están en [Auditoría de reintentos OCR](ocr-retry-audit-1067.md).
+Esta entrega sigue sin publicarse; aprobar pruebas anteriores no certifica los
+cambios actuales ni constituye una prueba física en otros teléfonos.
+
 ## Fallo observado y corrección
 
 La ejecución 39985321014 no se aprobó: 42 de 46 secuencias nativas fallaron.

@@ -88,13 +88,22 @@ class DraftSequenceMultiDeviceInstalledTest {
                             val readings = if (step == 0) 1 else 2
                             repeat(readings) {
                                 val frameStarted=android.os.SystemClock.elapsedRealtime()
-                                read = kotlinx.coroutines.withTimeout(60_000) {
-                                    scanner.scanDraftFromBitmap(frame, context, order, LaneRole.MID, namesOnly = true)
-                                }
                                 if(!result.has("ocrFrames")) result.put("ocrFrames",JSONArray())
-                                result.getJSONArray("ocrFrames").put(JSONObject().put("step",step).put("frame",it)
-                                    .put("elapsedMs",android.os.SystemClock.elapsedRealtime()-frameStarted)
-                                    .put("successful",read?.isSuccessful).put("status",read?.statusMessage))
+                                val frameEvidence=JSONObject().put("step",step).put("frame",it)
+                                result.getJSONArray("ocrFrames").put(frameEvidence)
+                                try {
+                                    read = kotlinx.coroutines.withTimeout(60_000) {
+                                        scanner.scanDraftFromBitmap(frame, context, order, LaneRole.MID, namesOnly = true)
+                                    }
+                                    frameEvidence.put("successful",read?.isSuccessful).put("status",read?.statusMessage)
+                                } catch(error:Exception) {
+                                    frameEvidence.put("successful",false).put("error",error.javaClass.simpleName)
+                                    File(evidence,"${case.getString("id")}-failed-step-$step-frame-$it.png")
+                                        .outputStream().use { output -> frame.compress(Bitmap.CompressFormat.PNG,100,output) }
+                                    throw error
+                                } finally {
+                                    frameEvidence.put("elapsedMs",android.os.SystemClock.elapsedRealtime()-frameStarted)
+                                }
                                 if (read?.isSuccessful != true) errors += "step=$step: OCR request failed"
                                 if (it == 0 && step > 0) {
                                     val unconfirmed = (if (positions[step - 1] < 5) read!!.alliesBySlot else read!!.enemiesBySlot)[positions[step - 1] % 5]

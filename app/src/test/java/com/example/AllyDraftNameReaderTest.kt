@@ -43,11 +43,12 @@ class AllyDraftNameReaderTest {
         assertTrue(AllyDraftNameReader.readTitleRows(listOf("JINX" to 0,"YUUMI" to 1),10,catalog).ambiguous)
     }
 
-    @Test fun badgeSeparatedOpticalNoiseCanOnlyResolveTheIsolatedShortViTitle() {
-        assertNull(AllyDraftNameReader.readBadgeSeparatedShortTitle(listOf("IA" to 0), catalog).champion)
-        assertNull(AllyDraftNameReader.readBadgeSeparatedShortTitle(listOf("rVI" to 0), catalog).champion)
-        assertEquals("vi", AllyDraftNameReader.readBadgeSeparatedShortTitle(listOf("VI" to 0), catalog).champion?.id)
-        assertNull(AllyDraftNameReader.readBadgeSeparatedShortTitle(listOf("XCS IA" to 0), catalog).champion)
+    @Test fun shortNamesStillRequireAnExactTitleInsideTheTitleRow() {
+        for(text in listOf("IA","rVI","XCS IA"))
+            assertNull(AllyDraftNameReader.readTitleRows(listOf(text to 0),10,catalog,20).champion)
+        assertEquals("vi",AllyDraftNameReader.readTitleRows(listOf("VI" to 0),10,catalog,20).champion?.id)
+        assertNull(AllyDraftNameReader.readTitleRows(listOf("VI" to 25),10,catalog,20).champion)
+        assertNull(AllyDraftNameReader.readTitleRows(listOf("V" to 0,"I" to 25),10,catalog,20).champion)
     }
 
     @Test fun laneTitlesBecomeNamesInTheSameBandInBothLanguages() {

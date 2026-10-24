@@ -15,6 +15,48 @@ internal class DraftNameAtlas private constructor(val bitmap: Bitmap, val tiles:
     companion object {
         private const val GUTTER = 32
 
+        /** Pack alternatives without rescaling their pixels. Bounded pages keep
+         * the detector from shrinking small glyphs and avoid one request per crop.
+         * Inputs remain owned by the caller; returned pages own independent pixels. */
+        fun packAlternatives(inputs: List<DraftNameAtlas>): List<DraftNameAtlas> {
+            val pages = mutableListOf<DraftNameAtlas>()
+            val pending = mutableListOf<Pair<DraftNameAtlas, Tile>>()
+            var pageHeight = GUTTER
+            fun flush() {
+                if (pending.isEmpty()) return
+                val width = pending.maxOf { it.second.region.width() } + 2 * GUTTER
+                val bitmap = Bitmap.createBitmap(width, pageHeight, Bitmap.Config.ARGB_8888)
+                try {
+                    val canvas = Canvas(bitmap).apply { drawColor(Color.BLACK) }
+                    var top = GUTTER
+                    val tiles = pending.map { (input, tile) ->
+                        val region = Rect(GUTTER, top, GUTTER + tile.region.width(), top + tile.region.height())
+                        canvas.drawBitmap(input.bitmap, tile.region, region, null)
+                        top = region.bottom + GUTTER
+                        tile.copy(region = region)
+                    }
+                    pages += DraftNameAtlas(bitmap, tiles)
+                } catch (error: Throwable) { bitmap.recycle(); throw error }
+                pending.clear()
+                pageHeight = GUTTER
+            }
+            try {
+                for (input in inputs) for (tile in input.tiles) {
+                    if (pageHeight + tile.region.height() + GUTTER > 1536) flush()
+                    pending += input to tile
+                    pageHeight += tile.region.height() + GUTTER
+                }
+                flush()
+                return pages
+            } catch (error: Throwable) { pages.forEach { it.bitmap.recycle() }; throw error }
+        }
+
+        /** The first native box may cover a badge or only one glyph. Keep two
+         * distinct measured boxes plus the full calibrated row, without guesses. */
+        fun retryLineBounds(detected: List<Rect>, fallback: Rect): List<Rect> =
+            (detected.filter { it.width() > 0 && it.height() > 0 }.distinct().take(2) + fallback)
+                .filter { it.width() > 0 && it.height() > 0 }.distinct()
+
         private fun compactColumns(tiles:Int,cellWidth:Int,cellHeight:Int):Int =
             (1..minOf(4,tiles)).minBy { columns ->
                 maxOf(columns*cellWidth,((tiles+columns-1)/columns)*cellHeight)
@@ -267,11 +309,11 @@ internal class DraftNameAtlas private constructor(val bitmap: Bitmap, val tiles:
         }
 
         /** Native OCR expects ordinary text sizes, not enlarged title logos.
-         * Resample the same measured line at two character heights, retaining
+         * Resample the same measured line at three character heights, retaining
          * all variants, source rectangles and title-only acceptance bounds. */
         fun nativeTextSizes(atlas: DraftNameAtlas, measuredTextHeight: Int): DraftNameAtlas {
             require(measuredTextHeight>0 && atlas.tiles.isNotEmpty())
-            val entries=listOf(48).flatMap { target -> atlas.tiles.map { tile ->
+            val entries=listOf(24,36,48).flatMap { target -> atlas.tiles.map { tile ->
                 tile to (target.toFloat()/measuredTextHeight).coerceIn(.10f,4f)
             } }
             fun size(value:Int,factor:Float)=kotlin.math.round(value*factor).toInt().coerceAtLeast(1)
