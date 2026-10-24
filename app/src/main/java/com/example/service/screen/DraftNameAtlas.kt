@@ -9,7 +9,8 @@ import android.graphics.Rect
 /** Isolated title bands in one OCR request, including an intact copy of every allied title. */
 internal class DraftNameAtlas private constructor(val bitmap: Bitmap, val tiles: List<Tile>) {
     data class Tile(val ally: Boolean, val slot: Int, val source: Rect, val region: Rect,
-                    val titleMaxY: Int, val original: Boolean = true, val contrast: Boolean = false)
+                    val titleMaxY: Int, val original: Boolean = true, val contrast: Boolean = false,
+                    val titleMinY: Int = 0)
 
     companion object {
         private const val GUTTER = 32
@@ -21,7 +22,7 @@ internal class DraftNameAtlas private constructor(val bitmap: Bitmap, val tiles:
 
         /** Re-read only unresolved titles at full tile size, avoiding a wide atlas
          * shrinking a two-letter name inside the native text detector. No new text pixels. */
-        fun retryUnresolved(atlas: DraftNameAtlas, unresolved: List<Tile>, titleOnly: Boolean = false): DraftNameAtlas {
+        fun retryUnresolved(atlas: DraftNameAtlas, unresolved: List<Tile>): DraftNameAtlas {
             require(unresolved.isNotEmpty() && unresolved.all { it.original && it in atlas.tiles })
             val cellWidth = unresolved.maxOf { it.region.width() } + GUTTER*2
             val cellHeight = unresolved.maxOf { it.region.height() } + GUTTER*2
@@ -37,13 +38,8 @@ internal class DraftNameAtlas private constructor(val bitmap: Bitmap, val tiles:
                         val prior = if ((contrast || binary) && tile.ally) atlas.tiles.first {
                             it.ally && it.slot==tile.slot && !it.original && it.contrast==contrast
                         } else tile
-                        // The lower edge can contain the beginning of a very large
-                        // summoner nickname. A last, isolated reading excludes that
-                        // edge, without generating glyphs or guessing a short name.
-                        val topCut=if(titleOnly) (prior.region.height()*.12f).toInt() else 0
-                        val bottom=if(titleOnly) (prior.region.height()*.80f).toInt() else prior.region.height()
-                        val sampled = Bitmap.createBitmap(atlas.bitmap,prior.region.left,prior.region.top+topCut,
-                            prior.region.width(),bottom-topCut)
+                        val sampled = Bitmap.createBitmap(atlas.bitmap,prior.region.left,prior.region.top,
+                            prior.region.width(),prior.region.height())
                         val crop = try { sampled.copy(Bitmap.Config.ARGB_8888,true) }
                             finally { if(sampled!==atlas.bitmap) sampled.recycle() }
                         try {
@@ -53,13 +49,77 @@ internal class DraftNameAtlas private constructor(val bitmap: Bitmap, val tiles:
                             val left = (index%columns)*cellWidth+GUTTER
                             val top = (index/columns)*cellHeight+GUTTER
                             canvas.drawBitmap(crop,left.toFloat(),top.toFloat(),null)
-                            tile.copy(region=Rect(left,top,left+crop.width,top+crop.height),titleMaxY=tile.titleMaxY-topCut,
+                            tile.copy(region=Rect(left,top,left+crop.width,top+crop.height),
                                 original=variant==0,contrast=variant!=0)
                         } finally { crop.recycle() }
                     }
                 }
                 return DraftNameAtlas(bitmap,tiles)
             } catch (error: Throwable) { bitmap.recycle(); throw error }
+        }
+
+        /** Locate possible title strokes, never a champion identity. Large side
+         * padding retains the whole word, including weak leading/trailing glyphs.
+         * Uniform/fully masked slots do not need more native OCR requests. */
+        fun titleFocusBounds(atlas: DraftNameAtlas, tile: Tile): Rect? {
+            require(tile.original && tile in atlas.tiles)
+            val w=tile.region.width();val h=tile.region.height()
+            val pixels=IntArray(w*h)
+            atlas.bitmap.getPixels(pixels,0,w,tile.region.left,tile.region.top,w,h)
+            fun light(index:Int):Int {
+                val c=pixels[index]
+                return (Color.red(c)*299+Color.green(c)*587+Color.blue(c)*114)/1000
+            }
+            val radius=(h*.08f).toInt().coerceAtLeast(2)
+            var left=w;var right=-1
+            for(y in (h*.15f).toInt() until (h*.85f).toInt()) for(x in 0 until w) {
+                val c=pixels[y*w+x];val r=Color.red(c);val g=Color.green(c);val b=Color.blue(c)
+                val neutral=maxOf(r,g,b)-minOf(r,g,b)<=70
+                val warm=r>95 && g>65 && r>=g*.85f && g>=b*.90f
+                if(!neutral && !warm) continue
+                val value=light(y*w+x)
+                if(value<70) continue
+                val mean=(light(y*w+(x-radius).coerceAtLeast(0))+
+                    light(y*w+(x+radius).coerceAtMost(w-1))+
+                    light((y-radius).coerceAtLeast(0)*w+x)+
+                    light((y+radius).coerceAtMost(h-1)*w+x))/4
+                if(value>=mean+5) { left=minOf(left,x);right=maxOf(right,x) }
+            }
+            if(right<left) return null
+            val padding=maxOf(h,(w*.20f).toInt())
+            // Keep the entire vertical band: a fixed .80 cutoff clipped the
+            // bottom of short titles in some measured configurations.
+            return Rect((left-padding).coerceAtLeast(0),0,(right+padding+1).coerceAtMost(w),h)
+        }
+
+        /** A compact reading of intact text pixels, not a rendered name or a
+         * portrait fallback. In particular, retain BOTH strokes of VI. */
+        fun focusTitle(atlas: DraftNameAtlas, tile: Tile, bounds: Rect): DraftNameAtlas {
+            require(tile.original && tile in atlas.tiles && bounds.top==0 &&
+                bounds.bottom==tile.region.height() && bounds.left>=0 && bounds.right<=tile.region.width() && bounds.width()>0)
+            val width=bounds.width();val height=bounds.height()
+            val bitmap=Bitmap.createBitmap(width+GUTTER*2,(height+GUTTER*2)*3,Bitmap.Config.ARGB_8888)
+            val canvas=Canvas(bitmap).apply { drawColor(Color.BLACK) }
+            val tiles=mutableListOf<Tile>()
+            try {
+                for(variant in 0..2) {
+                    val sample=Bitmap.createBitmap(atlas.bitmap,tile.region.left+bounds.left,tile.region.top,width,height)
+                    val crop=try { sample.copy(Bitmap.Config.ARGB_8888,true) }
+                        finally { if(sample!==atlas.bitmap) sample.recycle() }
+                    try {
+                        if(variant==1) enhanceTitleContrast(crop)
+                        if(variant==2) isolateBrightTitleStrokes(crop)
+                        val top=variant*(height+GUTTER*2)+GUTTER
+                        canvas.drawBitmap(crop,GUTTER.toFloat(),top.toFloat(),null)
+                        val source=Rect(tile.source.left+bounds.left*tile.source.width()/tile.region.width(),
+                            tile.source.top,tile.source.left+(bounds.right*tile.source.width()+tile.region.width()-1)/tile.region.width(),tile.source.bottom)
+                        tiles+=tile.copy(source=source,region=Rect(GUTTER,top,GUTTER+width,top+height),
+                            original=variant==0,contrast=variant!=0,
+                            titleMinY=(height*.30f).toInt(),titleMaxY=minOf(tile.titleMaxY,(height*.85f).toInt()))
+                    } finally { crop.recycle() }
+                }
+                return DraftNameAtlas(bitmap,tiles)
+            } catch(error:Throwable) { bitmap.recycle();throw error }
         }
 
         fun create(source: Bitmap, config: VisionCalibrationConfig, masks: List<Rect>): DraftNameAtlas {
@@ -93,6 +153,11 @@ internal class DraftNameAtlas private constructor(val bitmap: Bitmap, val tiles:
                             val localCanvas = Canvas(crop)
                             localCanvas.drawBitmap(source,band,Rect(0,0,crop.width,crop.height),null)
                             masks.forEach { mask -> localCanvas.drawRect(Rect(mask).apply { offset(-band.left,-band.top) },paint) }
+                            // Keep the established source-resolution alternative.
+                            // Enlarged masking regressed Volibear and one known
+                            // phone reference; the intact copy always remains.
+                            if(ally && !original) DraftImagePreprocessor.suppressLeadingMasteryBadge(crop)
+                            if(contrast) enhanceTitleContrast(crop)
                             val width=(crop.width*scale).toInt().coerceAtMost(1400)
                             val height=(crop.height*scale).toInt().coerceAtMost(420)
                             val index=slot*4+(if(!ally) 3 else variant)
@@ -101,10 +166,6 @@ internal class DraftNameAtlas private constructor(val bitmap: Bitmap, val tiles:
                             val region=Rect(left,top,left+width,top+height)
                             val scaled=Bitmap.createScaledBitmap(crop,width,height,true)
                             try {
-                                // At small capture sizes a one-pixel badge padding
-                                // can erase the neighbouring I. Mask after resizing.
-                                if(ally && !original) DraftImagePreprocessor.suppressLeadingMasteryBadge(scaled)
-                                if(contrast) enhanceTitleContrast(scaled)
                                 canvas.drawBitmap(scaled,left.toFloat(),top.toFloat(),null)
                             }
                             finally { if(scaled!==crop) scaled.recycle() }

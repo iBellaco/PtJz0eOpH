@@ -651,7 +651,8 @@ object DraftVisionScanner {
                 val lines = text.textBlocks.flatMap { it.lines }
                 for (tile in input.tiles) {
                     val selected = lines.filter { line ->
-                        line.boundingBox?.let { tile.region.contains(it.centerX(),it.centerY()) } == true
+                        line.boundingBox?.let { tile.region.contains(it.centerX(),it.centerY()) &&
+                            it.centerY()-tile.region.top>=tile.titleMinY } == true
                     }
                     val titleLines = if (tile.ally) selected.filterNot { line ->
                         val box=line.boundingBox!!
@@ -672,17 +673,17 @@ object DraftVisionScanner {
                     (if(tile.ally) targetedAllyReadings else targetedEnemyReadings)[tile.slot].let {
                         !it.ambiguous && it.champion==null && it.lane==null
                     }
-                }
+                }.mapNotNull { tile -> DraftNameAtlas.titleFocusBounds(atlas,tile)?.let { tile to it } }
                 if (unresolved.isNotEmpty()) {
-                    val retry = DraftNameAtlas.retryUnresolved(atlas,unresolved)
+                    val retry = DraftNameAtlas.retryUnresolved(atlas,unresolved.map { it.first })
                     try { readTitles(retry) } finally { retry.bitmap.recycle() }
                 }
                 // Only still-unresolved titles incur an isolated request. Do not
                 // count these alternative OCR requests as confirmation frames.
-                for(tile in unresolved) {
+                for((tile,bounds) in unresolved) {
                     val reading=(if(tile.ally) targetedAllyReadings else targetedEnemyReadings)[tile.slot]
                     if(!reading.ambiguous && reading.champion==null && reading.lane==null) {
-                        val focused=DraftNameAtlas.retryUnresolved(atlas,listOf(tile),titleOnly=true)
+                        val focused=DraftNameAtlas.focusTitle(atlas,tile,bounds)
                         try { readTitles(focused) } finally { focused.bitmap.recycle() }
                     }
                 }

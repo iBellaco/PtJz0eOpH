@@ -131,6 +131,23 @@ class DraftSequenceMultiDeviceInstalledTest {
                                                 JSONObject().put("text",it.text).put("bounds",it.boundingBox.toString())
                                             }))
                                         } finally { retry.bitmap.recycle() }
+                                        val focusedDiagnostics=JSONArray()
+                                        for(tile in missing.filter { expected.containsKey(it.slot+if(it.ally) 0 else 5) }) {
+                                            val bounds=DraftNameAtlas.titleFocusBounds(atlas,tile) ?: continue
+                                            val focused=DraftNameAtlas.focusTitle(atlas,tile,bounds)
+                                            try {
+                                                File(evidence,"${case.getString("id")}-focused-${tile.ally}-${tile.slot}.png").outputStream().use {
+                                                    focused.bitmap.compress(Bitmap.CompressFormat.PNG,100,it)
+                                                }
+                                                val text=recognizer.process(com.google.mlkit.vision.common.InputImage.fromBitmap(focused.bitmap,0)).await()
+                                                focusedDiagnostics.put(JSONObject().put("ally",tile.ally).put("slot",tile.slot)
+                                                    .put("text",text.text).put("bounds",bounds.toString())
+                                                    .put("lines",JSONArray(text.textBlocks.flatMap { it.lines }.map {
+                                                        JSONObject().put("text",it.text).put("bounds",it.boundingBox.toString())
+                                                    })))
+                                            } finally { focused.bitmap.recycle() }
+                                        }
+                                        result.put("focusedDiagnostics",focusedDiagnostics)
                                     }
                                 } finally { recognizer.close(); atlas.bitmap.recycle() }
                             }
@@ -180,7 +197,13 @@ class DraftSequenceMultiDeviceInstalledTest {
                             val realFrame=try { resize(raw,case) } finally { raw.recycle() }
                             try {
                                 var realRead:DraftScanResult?=null
-                                repeat(2) { realRead=scanner.scanDraftFromBitmap(realFrame,context,fixture.firstPick,LaneRole.MID,namesOnly=true) }
+                                repeat(2) { frameIndex ->
+                                    realRead=kotlinx.coroutines.withTimeout(60_000) {
+                                        scanner.scanDraftFromBitmap(realFrame,context,fixture.firstPick,LaneRole.MID,namesOnly=true)
+                                    }
+                                    if(frameIndex==0 && (realRead!!.alliesBySlot.isNotEmpty() || realRead!!.enemiesBySlot.isNotEmpty()))
+                                        errors+="${fixture.file}: names confirmed before the second frame"
+                                }
                                 val actual=realRead!!.alliesBySlot.mapKeys { it.key }.mapValues { it.value.id }+
                                     realRead!!.enemiesBySlot.mapKeys { it.key+5 }.mapValues { it.value.id }
                                 if(actual!=fixture.titles) errors+="${fixture.file}: expected=${fixture.titles} actual=$actual"

@@ -161,3 +161,44 @@ Esto no sustituye la secuencia completa de ambos órdenes ya exigida.
 Solo este documento de resultados se añade a la lista exacta de archivos de
 entrega que permiten reutilizar un APK previamente aprobado. Contrato, reglas,
 capturas, conjuntos de datos, pruebas y flujos siguen obligando a validación nueva.
+
+## Resultado de 40036800896 y relectura de títulos completos
+
+La fuente bf7684e9 aprobó 164 perfiles, 63 medidas, 492 variantes, 9840
+comprobaciones de identidad y 751 pruebas unitarias sin fallos ni omisiones.
+Pasaron la compilación firmada, R8 (1383 clases renombradas), el renderizado y
+41 pantallas del APK instalado en portugués, con cero textos españoles detectados.
+El APK tiene SHA-256 `17f908ca792a73cc4d8ac14a031b820586f8463ce2c093badf70032b61ea7d2a`.
+No se aprueba para entrega: el reconocimiento nativo pasó 23/26 escenarios.
+
+Las 12 comprobaciones adicionales de las tres nuevas capturas sí aprobaron:
+ocho títulos sin activar el décimo, nueve con Poppy aliada y nueve con Teemo rival.
+Fallaron el título Vi en una referencia 1920 × 864, Vi/Volibear en 640 × 360
+y Vi rival en 854 × 480 con márgenes. La prueba terminó todos sus casos en
+1346 segundos; no fue un agotamiento del tiempo ni se omitieron escenarios.
+La revisión instalada en español falló antes de iniciar la app por una imagen
+de emulador descargada como archivo ZIP inválido; se solicitó su repetición.
+
+Los recortes muestran ambos trazos de VI, pero demasiado pequeños dentro de una
+banda con amplias zonas vacías. Se restaura la alternativa de insignia previa a
+la ampliación, que no tenía la regresión observada en Volibear y la referencia
+conocida. La última relectura se centra horizontalmente en posibles trazos,
+con relleno amplio y manteniendo toda la altura y los píxeles originales.
+Los límites verticales de aceptación excluyen ruido superior y el apodo inferior;
+no se generan letras ni se acepta V como si fuera VI.
+
+Los slots uniformes o completamente enmascarados no disparan relecturas extra.
+Se añaden pruebas que conservan los nombres completos del catálogo en blanco
+y dorado, los dos glifos reales de VI en las medidas problemáticas y las máscaras.
+Se conserva la confirmación en dos fotogramas, las tres capturas y todos los
+casos del plan. La instrumentación transmite y guarda su progreso al recibirlo;
+si falla o se agota el tiempo, sus datos parciales no se marcan como aprobados.
+Pendiente: nueva validación completa antes de fusionar o publicar.
+
+En el reintento de la revisión española se superó la descarga del emulador.
+Uno de los cinco casos detectó un nodo de contraseña obsoleto tras reabrir el
+diálogo nativo: la escritura se ejecutó antes de estabilizar el foco. La prueba
+ahora toca explícitamente el campo, espera el fotograma y comprueba el texto
+introducido antes de continuar. Se mantienen las dos confirmaciones, contraseña
+obligatoria, bloqueo de envíos duplicados y comprobaciones de error; no se cambia
+la autorización de la aplicación ni se ejecutan eliminaciones reales.

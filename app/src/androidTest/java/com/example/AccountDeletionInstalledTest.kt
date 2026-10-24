@@ -53,7 +53,12 @@ class AccountDeletionInstalledTest {
         frame()
     }
     private fun password(value: String) {
+        // Reopening a native dialog recreates its text semantics after focus.
+        // Focus explicitly and settle that frame before resolving the input node.
+        click("account_delete_password")
+        compose.onNodeWithTag("account_delete_password").assertIsFocused()
         compose.onNodeWithTag("account_delete_password").performTextInput(value); frame()
+        compose.onNodeWithTag("account_delete_password").assertTextContains(value)
         compose.onNodeWithTag("account_delete_password").performImeAction(); frame()
         compose.onNodeWithTag("account_delete_password").assertIsNotFocused()
     }

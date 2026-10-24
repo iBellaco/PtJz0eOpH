@@ -19,26 +19,99 @@ import org.robolectric.annotation.GraphicsMode
 @Config(sdk = [34], application = Application::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class DraftNameAtlasTest {
-    @Test fun focusedRetryKeepsTheActualTitlePixelsAndExcludesTheSummonerEdge() {
+    @Test fun bothRealViGlyphsStayInsideTheFocusedRegionAtTheFailingMeasures() {
+        val reference=javaClass.getResourceAsStream("/portraits/draft-ten-selected.jpg").use {
+            android.graphics.BitmapFactory.decodeStream(it)!!
+        }
+        try { for(firstPick in listOf(true,false)) {
+            val source=DraftSequenceFixture.create(reference,firstPick)
+            try { for((w,h,rightInset) in listOf(Triple(1280,579,0f),Triple(640,360,0f),
+                Triple(1920,864,0f),Triple(854,480,.05f))) {
+                val frame=Bitmap.createBitmap(w,h,Bitmap.Config.ARGB_8888)
+                try {
+                    val available=android.graphics.Rect(0,0,w-(w*rightInset).toInt(),h-if(rightInset>0) (h*.03f).toInt() else 0)
+                    val scale=minOf(available.width().toFloat()/source.width,available.height().toFloat()/source.height)
+                    val rw=(source.width*scale).toInt();val rh=(source.height*scale).toInt()
+                    val viewport=android.graphics.Rect((available.width()-rw)/2,(available.height()-rh)/2,
+                        (available.width()-rw)/2+rw,(available.height()-rh)/2+rh)
+                    Canvas(frame).apply { drawColor(Color.BLACK);drawBitmap(source,null,viewport,Paint(Paint.FILTER_BITMAP_FLAG)) }
+                    val adapted=com.example.service.screen.DraftFrameGeometry.forViewport(VisionCalibrationConfig(),viewport,w,h)
+                    val config=com.example.service.screen.DraftRingAlignment.align(frame,adapted,null)
+                    val atlas=DraftNameAtlas.create(frame,config,emptyList())
+                    try {
+                        val tile=atlas.tiles.single { it.original && it.ally==firstPick && it.slot==4 }
+                        val bounds=DraftNameAtlas.titleFocusBounds(atlas,tile)!!
+                        val focused=DraftNameAtlas.focusTitle(atlas,tile,bounds)
+                        try {
+                            val glyph=if(firstPick) android.graphics.Rect(155,400,173,415) else android.graphics.Rect(1174,399,1192,414)
+                            val expected=android.graphics.Rect(viewport.left+glyph.left*rw/1280,viewport.top+glyph.top*rh/579,
+                                viewport.left+(glyph.right*rw+1279)/1280,viewport.top+(glyph.bottom*rh+578)/579)
+                            assertTrue("Both letters must remain at $w/$h, ally=$firstPick: $expected",
+                                focused.tiles.single { it.original }.source.contains(expected))
+                        } finally { focused.bitmap.recycle() }
+                    } finally { atlas.bitmap.recycle() }
+                } finally { frame.recycle() }
+            } } finally { source.recycle() }
+        } } finally { reference.recycle() }
+    }
+
+    @Test fun focusedRetryKeepsTheActualTitlePixelsAndTheirEntireHeight() {
         val source=javaClass.getResourceAsStream("/portraits/draft-ten-selected.jpg").use {
             android.graphics.BitmapFactory.decodeStream(it)!!
         }
         val atlas=DraftNameAtlas.create(source,VisionCalibrationConfig(),emptyList())
         try {
             for(tile in atlas.tiles.filter { it.original }) {
-                val focused=DraftNameAtlas.retryUnresolved(atlas,listOf(tile),titleOnly=true)
+                val bounds=DraftNameAtlas.titleFocusBounds(atlas,tile) ?: continue
+                val focused=DraftNameAtlas.focusTitle(atlas,tile,bounds)
                 try {
                     val raw=focused.tiles.single { it.original }
-                    val cut=(tile.region.height()*.12f).toInt()
-                    assertEquals(tile.source,raw.source)
-                    assertEquals(tile.titleMaxY-cut,raw.titleMaxY)
-                    assertTrue(raw.region.height()<tile.region.height())
+                    assertTrue(tile.source.contains(raw.source))
+                    assertEquals(minOf(tile.titleMaxY,(tile.region.height()*.85f).toInt()),raw.titleMaxY)
+                    assertEquals((tile.region.height()*.30f).toInt(),raw.titleMinY)
+                    assertEquals(tile.region.height(),raw.region.height())
                     for(y in 0 until raw.region.height()) for(x in 0 until raw.region.width())
-                        assertEquals(atlas.bitmap.getPixel(tile.region.left+x,tile.region.top+cut+y),
+                        assertEquals(atlas.bitmap.getPixel(tile.region.left+bounds.left+x,tile.region.top+y),
                             focused.bitmap.getPixel(raw.region.left+x,raw.region.top+y))
                 } finally { focused.bitmap.recycle() }
             }
         } finally { atlas.bitmap.recycle();source.recycle() }
+    }
+
+    @Test fun blankOrFullyMaskedTitlesNeverRequestAnIsolatedOcrReading() {
+        for(color in listOf(Color.BLACK,Color.rgb(30,60,110))) {
+            val source=Bitmap.createBitmap(1280,579,Bitmap.Config.ARGB_8888).apply { eraseColor(color) }
+            val atlas=DraftNameAtlas.create(source,VisionCalibrationConfig(),emptyList())
+            try { atlas.tiles.filter { it.original }.forEach { assertNull(DraftNameAtlas.titleFocusBounds(atlas,it)) } }
+                finally { atlas.bitmap.recycle();source.recycle() }
+        }
+    }
+
+    @Test fun everyCompleteCatalogTitleSurvivesFocusInWhiteAndGoldWithoutRedrawingInput() {
+        val context=org.robolectric.RuntimeEnvironment.getApplication()
+        com.example.data.WildRiftRepository.initChampions(context,forceReload=true)
+        for(champion in com.example.data.WildRiftRepository.champions) for(color in listOf(Color.WHITE,Color.rgb(210,180,80))) {
+            val source=Bitmap.createBitmap(1280,579,Bitmap.Config.ARGB_8888)
+            val config=VisionCalibrationConfig()
+            val band=AdaptiveScreenLayoutEngine.calculateSlotNameRect(source.width,source.height,true,0,config)
+            val paint=Paint(Paint.ANTI_ALIAS_FLAG).apply { this.color=color;textSize=9f }
+            val text=champion.name.uppercase()
+            val glyphs=android.graphics.Rect().also { paint.getTextBounds(text,0,text.length,it) }
+            val x=band.left+8f;val baseline=band.top+band.height()*.70f
+            Canvas(source).drawText(text,x,baseline,paint)
+            val atlas=DraftNameAtlas.create(source,config,emptyList())
+            try {
+                val tile=atlas.tiles.single { it.original && it.ally && it.slot==0 }
+                val bounds=DraftNameAtlas.titleFocusBounds(atlas,tile)!!
+                val focused=DraftNameAtlas.focusTitle(atlas,tile,bounds)
+                try {
+                    val kept=focused.tiles.single { it.original }.source
+                    val expected=android.graphics.Rect((x+glyphs.left).toInt(),(baseline+glyphs.top).toInt(),
+                        kotlin.math.ceil((x+glyphs.right).toDouble()).toInt(),kotlin.math.ceil((baseline+glyphs.bottom).toDouble()).toInt())
+                    assertTrue("The WHOLE $text title must survive: $expected in $kept",kept.contains(expected))
+                } finally { focused.bitmap.recycle() }
+            } finally { atlas.bitmap.recycle();source.recycle() }
+        }
     }
 
     @Test fun realCaptureTitlesAndEmptyBanAreRecordedWithoutInventingSelections() {

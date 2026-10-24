@@ -4,6 +4,26 @@ import os
 from pathlib import Path
 import re
 import subprocess
+import threading
+
+
+def run_instrumentation(command, log_path, timeout):
+    """Flush native progress as it arrives; retain actual partial output on a failure."""
+    with log_path.open('w') as log:
+        with subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                              text=True, bufsize=1) as process:
+            timer = threading.Timer(timeout, process.kill)
+            timer.daemon = True
+            timer.start()
+            try:
+                for line in process.stdout:
+                    log.write(line)
+                    log.flush()
+                    print(line, end='', flush=True)
+                code = process.wait()
+            finally:
+                timer.cancel()
+    return code, log_path.read_text()
 
 
 def main():
@@ -22,20 +42,18 @@ def main():
                'com.example.DraftSequenceMultiDeviceInstalledTest', '-e', 'sequenceShard', str(shard),
                '-e','sequencePreflight','true' if preflight else 'false',
                'com.Coach.test/androidx.test.runner.AndroidJUnitRunner']
-    completed = subprocess.run(command, capture_output=True, text=True, timeout=3300)
-    output = completed.stdout + completed.stderr
-    (directory / f'instrumentation-{label}.txt').write_text(output)
-    print(output, flush=True)
+    code, output = run_instrumentation(command, directory / f'instrumentation-{label}.txt',
+                                       1500 if preflight else 3300)
     cases = [json.loads(line) for line in re.findall(r'COACH_SEQUENCE_CASE: (\{[^\r\n]+\})', output)]
     report = dict(shard=shard, sourceSha256=plan['sourceSha256'], cases=cases,
                   expectedCases=sorted(expected), physicalDevicesTested=[],
-                  instrumentationPassed=completed.returncode == 0 and 'OK (1 test)' in output and 'FAILURES' not in output)
+                  instrumentationPassed=code == 0 and 'OK (1 test)' in output and 'FAILURES' not in output)
     (directory / f'sequence-{label}.json').write_text(json.dumps(report, ensure_ascii=False, indent=2))
     remote = 'scanner-sequence-preflight' if preflight else 'scanner-sequence-audit'
     subprocess.run(['adb', 'pull', f'/sdcard/Android/data/com.Coach/files/{remote}/',
                     str(directory / 'images')], capture_output=True, timeout=120)
     assert {case['id'] for case in cases} == expected and len(cases) == len(expected), 'No se completaron todos los casos'
-    assert completed.returncode == 0 and 'OK (1 test)' in output and 'FAILURES' not in output, output[-12000:]
+    assert code == 0 and 'OK (1 test)' in output and 'FAILURES' not in output, output[-12000:]
     assert all(case['status'] == 'PASS' for case in cases), 'Hay resoluciones que no completan la secuencia'
     assert all(case.get('validationMode')==('preflight-not-release' if preflight else 'full') for case in cases)
     required_files = {'draft-swain-eight.jpg', 'draft-kaisa-nine.jpg', 'draft-mel-nine.jpg'}
