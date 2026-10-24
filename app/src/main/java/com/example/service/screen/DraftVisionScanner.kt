@@ -715,32 +715,20 @@ object DraftVisionScanner {
                     val retry = DraftNameAtlas.retryUnresolved(atlas,unresolved.map { it.first })
                     try { readTitles(retry) } finally { retry.bitmap.recycle() }
                 }
-                val remaining=unresolved.map { it.first }.filter(::unresolvedReading)
-                // Limit peak bitmap memory as well as native request dimensions
-                // when many titles are unreadable at once on a low-memory phone.
-                for(group in remaining.chunked(2)) {
-                    val active=group.filter(::unresolvedReading)
-                    if(active.isEmpty()) continue
-                    val retry=DraftNameAtlas.retryUnresolved(atlas,active)
-                    try {
-                        // Start with a batched multiscale pass before expensive
-                        // per-slot fallbacks. Keep full title bands and masks.
-                        val normal=DraftNameAtlas.nativeTextSizes(retry,
-                            (active.minOf { it.region.height() }*.30f).toInt().coerceAtLeast(1))
-                        readAlternatives(listOf(normal))
-                    } finally { retry.bitmap.recycle() }
-                }
-                // Only still-unresolved titles incur alternative requests. Batch
-                // crops into bounded pages; never count them as new frames.
-                for((tile,bounds) in unresolved) {
-                    if(unresolvedReading(tile)) {
-                        val focused=DraftNameAtlas.focusTitle(atlas,tile,bounds)
-                        val alternatives=mutableListOf(focused)
-                        try {
-                            if(tile.ally) alternatives+=DraftNameAtlas.withoutLeadingBadge(atlas,tile)
-                        } catch(error:Throwable) { focused.bitmap.recycle();throw error }
-                        readAlternatives(alternatives)
+                // Keep the recovery bounded: the previous global multiscale pass
+                // created several large OCR requests per unresolved slot and made
+                // 640x360 hit the 60-second frame deadline. One shared page now
+                // contains only the focused row and its badge-suppressed sibling.
+                val focusedAlternatives=mutableListOf<DraftNameAtlas>()
+                try {
+                    for((tile,bounds) in unresolved) if(unresolvedReading(tile)) {
+                        focusedAlternatives += DraftNameAtlas.focusTitle(atlas,tile,bounds)
+                        if(tile.ally) focusedAlternatives += DraftNameAtlas.withoutLeadingBadge(atlas,tile)
                     }
+                    if(focusedAlternatives.isNotEmpty()) readAlternatives(focusedAlternatives)
+                } catch(error:Throwable) {
+                    focusedAlternatives.forEach { if(!it.bitmap.isRecycled) it.bitmap.recycle() }
+                    throw error
                 }
                 for((tile,bounds) in unresolved) {
                     if(!unresolvedReading(tile)) continue
@@ -753,7 +741,8 @@ object DraftVisionScanner {
                     // The second measured box reads MEL in the native 640x360
                     // evidence; discarding it after the first unreadable box
                     // made recovery impossible. The full row stays available.
-                    val candidates=DraftNameAtlas.retryLineBounds(detected,fallback)
+                    val candidates=if(detected.isNotEmpty()) detected.distinct().take(2)
+                        else listOf(fallback)
                     for(line in candidates) {
                         if(!unresolvedReading(tile)) break
                         val focused=DraftNameAtlas.focusDetectedLine(atlas,tile,line)
@@ -761,10 +750,6 @@ object DraftVisionScanner {
                             // Native evidence already reads MEL from the second
                             // unscaled crop. Do not normalize away that evidence.
                             readTitles(focused)
-                            if(unresolvedReading(tile)) {
-                                val normal=DraftNameAtlas.nativeTextSizes(focused,line.height())
-                                readAlternatives(listOf(normal))
-                            }
                         } finally { focused.bitmap.recycle() }
                     }
                 }
@@ -773,7 +758,7 @@ object DraftVisionScanner {
                 // profiles, so color separation is an independent final request.
                 for((tile,bounds) in unresolved) {
                     val reading=(if(tile.ally) targetedAllyReadings else targetedEnemyReadings)[tile.slot]
-                    if(!reading.ambiguous && reading.champion==null && reading.lane==null) {
+                    if(!tile.ally && !reading.ambiguous && reading.champion==null && reading.lane==null) {
                         val color=DraftNameAtlas.focusTitle(atlas,tile,bounds,colorOnly=true)
                         try { readTitles(color) } finally { color.bitmap.recycle() }
                     }

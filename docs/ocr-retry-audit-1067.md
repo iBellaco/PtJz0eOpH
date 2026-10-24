@@ -1,4 +1,4 @@
-# Coach — corrección de reintentos OCR, entrega 1.1.10.351 / 1067
+# Coach — corrección de reintentos OCR, entrega 1.1.10.352 / 1068
 
 ## Evidencia consultada
 
@@ -54,8 +54,22 @@ de entrega. Esto no sustituye las pruebas de integración ni la firma release.
 
 Las secuencias nativas de esta revisión siguen pendientes.
 No se han modificado las barreras de publicación ni los umbrales para obtener un
-verde artificial. Se mantiene la versión de la entrega aún no publicada, 1067.
+verde artificial. La versión de esta corrección es 1.1.10.352 / 1068; el APK
+1067 no se reutiliza porque todavía fallaba en la matriz nativa.
 
 Estas medidas son capturas simuladas, no pruebas físicas de P20 ni Honor X8a.
 Red Magic y POCO conservan únicamente la verificación física previa informada
 por el propietario; no certifica este cambio. No hay S26 conectado.
+
+## Corrección posterior — 1.1.10.352 / 1068
+
+La ejecución `40110730898` confirmó que la pasada multiescala global todavía
+provocaba timeout a 640 × 360 y que Vi seguía faltando a 1920 × 924. Se elimina
+esa pasada. La recuperación ahora agrupa solo la banda enfocada y su alternativa
+sin insignia; después usa como máximo dos cajas OCR distintas y no agrega una
+pasada de color para aliados. Esto limita las solicitudes por fotograma y evita
+que la lectura de un slot bloquee todo el escaneo.
+
+La ejecución también evidenció un timeout inicial a 1920 × 868; queda cubierto
+por el mismo límite de reintentos. El timeout no se convierte en éxito ni se
+eleva artificialmente el límite de 60 segundos.
