@@ -32,6 +32,8 @@ class DraftSequenceMultiDeviceInstalledTest {
     @Test fun firstNineNamesThenOnlyTheTenthPortraitAtEveryPlannedGeometry() = kotlinx.coroutines.runBlocking<Unit> {
         val shard = InstrumentationRegistry.getArguments().getString("sequenceShard")!!.toInt()
         val preflight = InstrumentationRegistry.getArguments().getString("sequencePreflight")=="true"
+        val targetIds = InstrumentationRegistry.getArguments().getString("sequenceTargets")
+            ?.split(',')?.map(String::trim)?.filter(String::isNotEmpty)?.toSet().orEmpty()
         val stages = if(preflight) listOf(0,9) else (0..9).toList()
         val plan = instrumentation.context.assets.open("scanner-sequence-plan.json").bufferedReader().use { JSONObject(it.readText()) }
         val cases = plan.getJSONArray("cases")
@@ -48,6 +50,7 @@ class DraftSequenceMultiDeviceInstalledTest {
             for (index in 0 until cases.length()) {
                 val case = cases.getJSONObject(index)
                 if (if(preflight) !case.getBoolean("preflight") else case.getInt("shard")!=shard) continue
+                if (targetIds.isNotEmpty() && case.getString("id") !in targetIds) continue
                 val result = JSONObject(case.toString()).put("evidenceType", "installed-native-ocr-resized-fixture-not-physical-model")
                     .put("validationMode",if(preflight) "preflight-not-release" else "full")
                 val checks = JSONArray()

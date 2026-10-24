@@ -73,3 +73,12 @@ que la lectura de un slot bloquee todo el escaneo.
 La ejecución también evidenció un timeout inicial a 1920 × 868; queda cubierto
 por el mismo límite de reintentos. El timeout no se convierte en éxito ni se
 eleva artificialmente el límite de 60 segundos.
+
+## Gate rápido de validación
+
+La siguiente ejecución separa un gate previo con los tres casos que bloquearon
+la revisión: `sequence-4-ally-first` (640 × 360), `sequence-56-ally-first`
+(1920 × 924) y `sequence-61-enemy-first` (1920 × 868). Si uno falla, la matriz
+completa no comienza y el informe conserva la captura y el fotograma fallido.
+Si los tres pasan, se ejecutan igualmente todas las secuencias y controles de
+publicación. Este gate no autoriza por sí mismo una release.

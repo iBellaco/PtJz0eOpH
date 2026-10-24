@@ -532,12 +532,13 @@ jobs:
         sudo udevadm control --reload-rules
         sudo udevadm trigger --name-match=kvm
         sudo chmod 666 /dev/kvm || true
-    - name: Recheck compressed and short titles before the full sequence matrix
+    - name: Run the fast gate for the previously failing native cases
       timeout-minutes: 35
       uses: reactivecircus/android-emulator-runner@v2
       env:
         COACH_SEQUENCE_SHARD: '0'
         COACH_SEQUENCE_PREFLIGHT: 'true'
+        COACH_SEQUENCE_TARGETS: 'sequence-4-ally-first,sequence-56-ally-first,sequence-61-enemy-first'
       with:
         api-level: 34
         arch: x86_64

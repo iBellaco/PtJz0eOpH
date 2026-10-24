@@ -29,11 +29,14 @@ def run_instrumentation(command, log_path, timeout):
 def main():
     shard = int(os.environ['COACH_SEQUENCE_SHARD'])
     preflight = os.environ.get('COACH_SEQUENCE_PREFLIGHT')=='true'
+    targets = {value.strip() for value in os.environ.get('COACH_SEQUENCE_TARGETS','').split(',') if value.strip()}
     label = 'preflight' if preflight else str(shard)
     directory = Path('app/build/reports/scanner-sequence-preflight' if preflight else 'app/build/reports/scanner-sequence')
     directory.mkdir(parents=True, exist_ok=True)
     plan = json.loads(Path('app/build/generated/scanner-sequence-assets/scanner-sequence-plan.json').read_text())
-    expected = {case['id'] for case in plan['cases'] if (case['preflight'] if preflight else case['shard']==shard)}
+    expected = {case['id'] for case in plan['cases']
+                if (case['preflight'] if preflight else case['shard']==shard)
+                and (not targets or case['id'] in targets)}
     assert expected, 'La partición no puede estar vacía'
     for apk in ['app/build/outputs/apk/release/app-release.apk',
                 'app/build/outputs/apk/androidTest/release/app-release-androidTest.apk']:
@@ -41,6 +44,7 @@ def main():
     command = ['adb', 'shell', 'am', 'instrument', '-w', '-r', '-e', 'class',
                'com.example.DraftSequenceMultiDeviceInstalledTest', '-e', 'sequenceShard', str(shard),
                '-e','sequencePreflight','true' if preflight else 'false',
+               '-e','sequenceTargets',','.join(sorted(targets)),
                'com.Coach.test/androidx.test.runner.AndroidJUnitRunner']
     code, output = run_instrumentation(command, directory / f'instrumentation-{label}.txt',
                                        1800 if preflight else 3300)
