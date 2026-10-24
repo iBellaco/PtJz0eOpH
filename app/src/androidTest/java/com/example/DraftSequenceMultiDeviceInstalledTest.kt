@@ -117,6 +117,16 @@ class DraftSequenceMultiDeviceInstalledTest {
                                     }
                                     val text = recognizer.process(com.google.mlkit.vision.common.InputImage.fromBitmap(atlas.bitmap, 0)).await()
                                     result.put("diagnosticOcrText", text.text)
+                                    val scene=DraftNameAtlas.sceneTitles(frame,scanner.alignedConfigFlow.value,emptyList())
+                                    try {
+                                        val original=recognizer.process(com.google.mlkit.vision.common.InputImage.fromBitmap(scene.bitmap,0)).await()
+                                        result.put("originalSceneTitleLines",JSONArray(scene.tiles.map { tile ->
+                                            JSONObject().put("ally",tile.ally).put("slot",tile.slot)
+                                                .put("lines",JSONArray(original.textBlocks.flatMap { it.lines }.filter {
+                                                    it.boundingBox?.let { box -> tile.region.contains(box.centerX(),box.centerY()) }==true
+                                                }.map { JSONObject().put("text",it.text).put("bounds",it.boundingBox.toString()) }))
+                                        }))
+                                    } finally { scene.bitmap.recycle() }
                                     val missing=atlas.tiles.filter { tile -> tile.original &&
                                         !actual.containsKey(tile.slot+if(tile.ally) 0 else 5) }
                                     if(missing.isNotEmpty()) {

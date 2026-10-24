@@ -19,6 +19,25 @@ import org.robolectric.annotation.GraphicsMode
 @Config(sdk = [34], application = Application::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class DraftNameAtlasTest {
+    @Test fun sceneRereadingRetainsOriginalSceneButOnlyDecodesTenMaskedTitleBands() {
+        val source=Bitmap.createBitmap(640,360,Bitmap.Config.ARGB_8888).apply { eraseColor(Color.WHITE) }
+        val config=VisionCalibrationConfig()
+        val mask=AdaptiveScreenLayoutEngine.calculateSlotNameRect(640,360,false,4,config)
+        val scene=DraftNameAtlas.sceneTitles(source,config,listOf(mask))
+        try {
+            assertEquals(1920,scene.bitmap.width)
+            assertEquals(1080,scene.bitmap.height)
+            assertEquals(10,scene.tiles.size)
+            for(tile in scene.tiles) {
+                assertEquals(AdaptiveScreenLayoutEngine.calculateSlotNameRect(640,360,tile.ally,tile.slot,config),tile.source)
+                assertFalse("The centre champion's label is not an OCR identity region",tile.region.contains(960,810))
+                assertEquals(tile.region.height(),tile.titleMaxY)
+            }
+            val target=scene.tiles.single { !it.ally && it.slot==4 }
+            for(y in target.region.top until target.region.bottom) for(x in target.region.left until target.region.right)
+                assertEquals("Overlay pixels cannot return in the original-scene retry",Color.BLACK,scene.bitmap.getPixel(x,y))
+        } finally { scene.bitmap.recycle();source.recycle() }
+    }
     @Test fun aDetectorSeeingOnlyTheLastEnemyLetterMustStillRetainTheWholeViTitle() {
         val reference=javaClass.getResourceAsStream("/portraits/draft-ten-selected.jpg").use {
             android.graphics.BitmapFactory.decodeStream(it)!!

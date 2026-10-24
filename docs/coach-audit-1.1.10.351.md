@@ -298,3 +298,19 @@ se reduce a una altura de banda de 72 píxeles para presentar glifos de tamaño
 normal, sin modificar las tres entradas anteriores. El plazo preliminar aumenta
 a 1800 segundos para exigir los 26 casos completos y guardar todos sus resultados;
 el cambio de plazo no convierte ninguna lectura fallida en aprobada.
+
+La fuente cf7fe7d5 completó los 26 casos preliminares: 22 aprobaron y cuatro no.
+Persistieron Vi en POCO/P20/margen derecho y Vi/Volibear en 640 × 360. Los recortes
+de color devolvieron vacío o lecturas incompletas; no se aceptaron como identidades.
+Las 763 pruebas generales, los controles instalados ES/PT y firma/R8 aprobaron,
+pero no se publicó ni fusionó ese APK.
+
+Se añade una relectura de la escena original únicamente si faltan títulos con
+posibles trazos y aún no hay nueve nombres observados. Mantiene el contexto
+original del detector, con tamaño normalizado hasta 1920 de ancho, pero decodifica
+exclusivamente las diez bandas calibradas de títulos. No habilita la búsqueda
+libre de campeones en el centro, nombres de invocador, avatares o textos del visor.
+Las exclusiones se aplican antes y después del escalado; no se altera la geometría
+del visor ni la confirmación de dos fotogramas. La nueva prueba verifica regiones,
+coordenadas originales y máscaras. El informe nativo conservará las líneas reales
+de esas bandas para diagnosticar el resultado. Falta validar esta fuente nueva.

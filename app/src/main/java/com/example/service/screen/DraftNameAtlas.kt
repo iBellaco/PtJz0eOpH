@@ -30,6 +30,31 @@ internal class DraftNameAtlas private constructor(val bitmap: Bitmap, val tiles:
                 (sourceY(box.bottom)-original.source.top)*original.region.height()/original.source.height())
         }
 
+        /** Preserve the original scene for the detector when isolated two-letter
+         * titles remain unreadable. Only calibrated TITLE regions are decoded;
+         * the centre champion, summoner row and overlays cannot supply identities. */
+        fun sceneTitles(source: Bitmap, config: VisionCalibrationConfig, masks: List<Rect>): DraftNameAtlas {
+            val scale=(1920f/source.width).coerceIn(1f,3f)
+            fun low(value:Int)=kotlin.math.floor(value*scale).toInt()
+            fun high(value:Int)=kotlin.math.ceil(value*scale).toInt()
+            val bitmap=Bitmap.createBitmap(high(source.width),high(source.height),Bitmap.Config.ARGB_8888)
+            val input=if(masks.isEmpty()) source else source.copy(Bitmap.Config.ARGB_8888,true)
+            try {
+                val paint=Paint().apply { color=Color.BLACK }
+                if(input!==source) masks.forEach { Canvas(input).drawRect(it,paint) }
+                val canvas=Canvas(bitmap)
+                canvas.drawBitmap(input,null,Rect(0,0,bitmap.width,bitmap.height),Paint(Paint.FILTER_BITMAP_FLAG))
+                masks.forEach { canvas.drawRect(Rect(low(it.left),low(it.top),high(it.right),high(it.bottom)),paint) }
+                val tiles=(0..4).flatMap { slot -> listOf(true,false).map { ally ->
+                    val band=AdaptiveScreenLayoutEngine.calculateSlotNameRect(source.width,source.height,ally,slot,config)
+                    val region=Rect(low(band.left),low(band.top),high(band.right),high(band.bottom))
+                    Tile(ally,slot,band,region,region.height())
+                } }
+                return DraftNameAtlas(bitmap,tiles)
+            } catch(error:Throwable) { bitmap.recycle();throw error }
+            finally { if(input!==source) input.recycle() }
+        }
+
         /** Re-read only unresolved titles at full tile size, avoiding a wide atlas
          * shrinking a two-letter name inside the native text detector. No new text pixels. */
         fun retryUnresolved(atlas: DraftNameAtlas, unresolved: List<Tile>): DraftNameAtlas {

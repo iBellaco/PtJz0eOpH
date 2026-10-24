@@ -730,6 +730,16 @@ object DraftVisionScanner {
                         try { readTitles(color) } finally { color.bitmap.recycle() }
                     }
                 }
+                val observedTitleIds=(targetedAllyReadings.toList()+targetedEnemyReadings.toList())
+                    .mapNotNull { it.champion?.id }.toSet()
+                if(observedTitleIds.size<9 && unresolved.any { (tile,_) ->
+                    (if(tile.ally) targetedAllyReadings else targetedEnemyReadings)[tile.slot].let {
+                        !it.ambiguous && it.champion==null && it.lane==null
+                    }
+                }) {
+                    val scene=DraftNameAtlas.sceneTitles(bitmap,calib,exclusions+listOfNotNull(frameOverlay))
+                    try { readTitles(scene) } finally { scene.bitmap.recycle() }
+                }
                 for (slot in 0..4) {
                     targetedEnemyChampions[slot] = targetedEnemyReadings[slot].let {
                         it.champion.takeUnless { _ -> it.ambiguous }
