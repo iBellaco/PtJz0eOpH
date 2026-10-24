@@ -67,6 +67,23 @@ class DraftNameAtlasTest {
                 assertEquals("Overlay pixels cannot return in the original-scene retry",Color.BLACK,scene.bitmap.getPixel(x,y))
         } finally { scene.bitmap.recycle();source.recycle() }
     }
+    @Test fun alliedBadgeMarginCanBeRemovedWithoutChangingTheTitleSource() {
+        val source=Bitmap.createBitmap(1280,579,Bitmap.Config.ARGB_8888).apply { eraseColor(Color.WHITE) }
+        val config=VisionCalibrationConfig()
+        val atlas=DraftNameAtlas.create(source,config,emptyList())
+        try {
+            val tile=atlas.tiles.single { it.original && it.ally && it.slot==4 }
+            val withoutBadge=DraftNameAtlas.withoutLeadingBadge(atlas,tile)
+            try {
+                assertEquals(1,withoutBadge.tiles.size)
+                val result=withoutBadge.tiles.single()
+                assertTrue(result.source.left>tile.source.left)
+                assertEquals(tile.source.top,result.source.top)
+                assertEquals(tile.source.right,result.source.right)
+                assertEquals(tile.region.height(),result.region.height())
+            } finally { withoutBadge.bitmap.recycle() }
+        } finally { atlas.bitmap.recycle();source.recycle() }
+    }
     @Test fun aDetectorSeeingOnlyTheLastEnemyLetterMustStillRetainTheWholeViTitle() {
         val reference=javaClass.getResourceAsStream("/portraits/draft-ten-selected.jpg").use {
             android.graphics.BitmapFactory.decodeStream(it)!!

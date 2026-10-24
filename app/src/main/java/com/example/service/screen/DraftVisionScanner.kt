@@ -701,6 +701,13 @@ object DraftVisionScanner {
                     if(!reading.ambiguous && reading.champion==null && reading.lane==null) {
                         val focused=DraftNameAtlas.focusTitle(atlas,tile,bounds)
                         try { readTitles(focused) } finally { focused.bitmap.recycle() }
+                        // A mastery badge can touch a short allied title and be
+                        // read as an extra glyph. Remove only that calibrated
+                        // leading margin, then read the original title pixels.
+                        if (tile.ally) {
+                            val withoutBadge=DraftNameAtlas.withoutLeadingBadge(atlas,tile)
+                            try { readTitles(withoutBadge) } finally { withoutBadge.bitmap.recycle() }
+                        }
                     }
                 }
                 for((tile,bounds) in unresolved) {
@@ -711,9 +718,14 @@ object DraftVisionScanner {
                     // First use measured native text boxes. If the detector did
                     // not find a line, also isolate the calibrated title row;
                     // the untouched full band has already been read above.
-                    val candidates=detectedTitleLines[tile.ally to tile.slot].orEmpty().take(3)+
-                        Rect(bounds.left,(tile.region.height()*.30f).toInt(),bounds.right,
-                            minOf(tile.titleMaxY+(tile.region.height()*.12f).toInt(),(tile.region.height()*.90f).toInt()))
+                    val detected=detectedTitleLines[tile.ally to tile.slot].orEmpty().distinct().take(1)
+                    val fallback=Rect(bounds.left,(tile.region.height()*.30f).toInt(),bounds.right,
+                        minOf(tile.titleMaxY+(tile.region.height()*.12f).toInt(),(tile.region.height()*.90f).toInt()))
+                    // One detected line plus the calibrated fallback is enough
+                    // to recover the title. Repeating three near-identical
+                    // crops for every missing slot made narrow 640x360 frames
+                    // spend the whole native OCR timeout on redundant work.
+                    val candidates=(detected+fallback).distinct().take(2)
                     for(line in candidates) {
                         if(!unresolvedReading()) break
                         val focused=DraftNameAtlas.focusDetectedLine(atlas,tile,line)

@@ -224,6 +224,46 @@ internal class DraftNameAtlas private constructor(val bitmap: Bitmap, val tiles:
             } catch(error:Throwable) { bitmap.recycle();throw error }
         }
 
+        /**
+         * Re-read an allied title after removing only the leading mastery badge
+         * area. The badge is part of the captured pixels, but it is not the
+         * champion title and ML Kit can merge its silhouette with short names
+         * such as "Vi". The crop never supplies a name or a portrait; it only
+         * gives OCR the same title pixels with the calibrated badge margin out
+         * of its text line.
+         */
+        fun withoutLeadingBadge(atlas: DraftNameAtlas, tile: Tile): DraftNameAtlas {
+            require(tile.original && tile in atlas.tiles && tile.ally)
+            val trim = (tile.region.width() * .24f).toInt().coerceIn(1, tile.region.width() - 1)
+            val width = tile.region.width() - trim
+            val height = tile.region.height()
+            val bitmap = Bitmap.createBitmap(width + GUTTER * 2, height + GUTTER * 2,
+                Bitmap.Config.ARGB_8888)
+            val canvas = Canvas(bitmap).apply { drawColor(Color.BLACK) }
+            try {
+                val crop = Bitmap.createBitmap(atlas.bitmap, tile.region.left + trim,
+                    tile.region.top, width, height)
+                try {
+                    canvas.drawBitmap(crop, GUTTER.toFloat(), GUTTER.toFloat(), null)
+                } finally { crop.recycle() }
+                val source = Rect(
+                    tile.source.left + trim * tile.source.width() / tile.region.width(),
+                    tile.source.top,
+                    tile.source.right,
+                    tile.source.bottom
+                )
+                return DraftNameAtlas(bitmap, listOf(tile.copy(
+                    source = source,
+                    region = Rect(GUTTER, GUTTER, GUTTER + width, GUTTER + height),
+                    titleMinY = tile.titleMinY,
+                    titleMaxY = tile.titleMaxY
+                )))
+            } catch (error: Throwable) {
+                bitmap.recycle()
+                throw error
+            }
+        }
+
         /** Native OCR expects ordinary text sizes, not enlarged title logos.
          * Resample the same measured line at two character heights, retaining
          * all variants, source rectangles and title-only acceptance bounds. */
