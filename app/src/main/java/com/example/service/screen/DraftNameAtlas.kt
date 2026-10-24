@@ -235,7 +235,9 @@ internal class DraftNameAtlas private constructor(val bitmap: Bitmap, val tiles:
             fun size(value:Int,factor:Float)=kotlin.math.round(value*factor).toInt().coerceAtLeast(1)
             val cellWidth=entries.maxOf { (tile,factor) -> size(tile.region.width(),factor) }+GUTTER*2
             val cellHeight=entries.maxOf { (tile,factor) -> size(tile.region.height(),factor) }+GUTTER*2
-            val columns=compactColumns(entries.size,cellWidth,cellHeight)
+            // Keep each sample on its own row: native line grouping must not
+            // concatenate neighbouring variants into a different full title.
+            val columns=1
             val bitmap=Bitmap.createBitmap(cellWidth*columns,
                 ((entries.size+columns-1)/columns)*cellHeight,Bitmap.Config.ARGB_8888)
             try {

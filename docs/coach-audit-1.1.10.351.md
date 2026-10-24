@@ -332,5 +332,7 @@ texto generado, alias nuevos ni cambios en las identidades esperadas. Se mantien
 las fuentes, máscaras, límites del título y confirmaciones. Una prueba verifica
 los seis recortes resultantes y sus coordenadas. El informe nativo incorpora
 sus respuestas reales y el tiempo/estado de cada captura. Validación pendiente.
+Cada muestra ocupa una fila separada para no concatenar variantes contiguas
+como si fueran un título más largo; la regresión verifica esa separación.
 El propietario eligió esperar a que aprueben todos los controles: no se entregará
 un APK experimental ni se contarán imágenes o emuladores como teléfonos físicos.

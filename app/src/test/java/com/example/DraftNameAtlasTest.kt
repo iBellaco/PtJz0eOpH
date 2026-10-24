@@ -35,6 +35,8 @@ class DraftNameAtlasTest {
                     for((index,part) in normal.tiles.withIndex()) {
                         val original=focused.tiles[index%3]
                         val factor=if(index<3) 24f/40 else 36f/40
+                        assertEquals(32,part.region.left)
+                        if(index>0) assertTrue(part.region.top>normal.tiles[index-1].region.bottom)
                         assertEquals(original.source,part.source)
                         assertEquals(kotlin.math.round(original.region.width()*factor).toInt(),part.region.width())
                         assertEquals(kotlin.math.round(original.titleMaxY*factor).toInt(),part.titleMaxY)
