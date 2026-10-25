@@ -302,7 +302,7 @@ class DraftNameAtlasTest {
                     val raw=focused.tiles.single { it.original }
                     assertTrue(tile.source.contains(raw.source))
                     assertEquals("The focused crop is already title-only",raw.region.height(),raw.titleMaxY)
-                    assertEquals((tile.region.height()*.30f).toInt(),raw.titleMinY)
+                    assertEquals("The focused crop is title-only from its first row",0,raw.titleMinY)
                     assertEquals(tile.region.height(),raw.region.height())
                     for(y in 0 until raw.region.height()) for(x in 0 until raw.region.width())
                         assertEquals(atlas.bitmap.getPixel(tile.region.left+bounds.left+x,tile.region.top+y),

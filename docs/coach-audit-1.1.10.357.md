@@ -102,3 +102,14 @@ slots pendientes se agrupan en páginas acotadas. Se mantienen los mismos
 píxeles, límites de título y reglas de nombre completo, reduciendo llamadas sin
 inyectar identidades. La validación aislada conserva el límite de 60 segundos
 para detectar una regresión de rendimiento real.
+
+# Coach 1.1.10.367 — build 1083
+
+La ejecución aislada confirmó que Xperia ya completaba las capturas reales y
+Jhin, pero seguía omitiendo Vi; Jelly Star todavía agotaba el límite al entrar
+en esas capturas. El recorte enfocado terminaba antes de la fila del invocador,
+pero conservaba un segundo límite que rechazaba el 30 % superior. ML Kit puede
+ubicar allí el centro de títulos pequeños. La recuperación acepta ahora toda la
+altura de esa banda exclusiva de título, manteniendo intactos sus límites
+laterales y sin leer la fila del invocador. Esto permite resolver antes el
+título y evita activar recuperaciones posteriores más costosas.
