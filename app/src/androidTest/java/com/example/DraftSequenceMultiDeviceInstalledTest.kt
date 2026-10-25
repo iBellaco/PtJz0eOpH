@@ -321,13 +321,30 @@ class DraftSequenceMultiDeviceInstalledTest {
                                     if(fixture.tenth!=null && visual?.champion?.id!=fixture.tenth)
                                         errors+="${fixture.file}: tenth expected=${fixture.tenth} actual=${visual?.champion?.id}"
                                 }
-                                realChecks.put(JSONObject().put("file",fixture.file).put("sha256",rawHash)
+                                val realCheck=JSONObject().put("file",fixture.file).put("sha256",rawHash)
                                     .put("expectedTitles",JSONObject(fixture.titles.mapKeys { it.key.toString() }))
                                     .put("recognizedTitles",JSONObject(actual.mapKeys { it.key.toString() }))
                                     .put("frames",2).put("tenthExpected",fixture.tenth?:JSONObject.NULL)
                                     .put("tenthRecognized",visual?.champion?.id?:JSONObject.NULL)
                                     .put("visualCheck",if(fixture.titles.size<9) "blocked-before-nine" else
-                                        if(fixture.tenth!=null) "required" else "not-applicable"))
+                                        if(fixture.tenth!=null) "required" else "not-applicable")
+                                if(actual!=fixture.titles) {
+                                    // Diagnostic evidence only: record what the
+                                    // native recognizer actually saw on the real
+                                    // resized pixels. It never feeds scanner state
+                                    // or substitutes an expected champion.
+                                    val diagnosticRecognizer=com.google.mlkit.vision.text.TextRecognition.getClient(
+                                        com.google.mlkit.vision.text.latin.TextRecognizerOptions.DEFAULT_OPTIONS)
+                                    try {
+                                        val direct=diagnosticRecognizer.process(
+                                            com.google.mlkit.vision.common.InputImage.fromBitmap(realFrame,0)).await()
+                                        realCheck.put("directOcrText",direct.text)
+                                            .put("directOcrLines",JSONArray(direct.textBlocks.flatMap { it.lines }.map { line ->
+                                                JSONObject().put("text",line.text).put("bounds",line.boundingBox.toString())
+                                            }))
+                                    } finally { diagnosticRecognizer.close() }
+                                }
+                                realChecks.put(realCheck)
                             } finally { realFrame.recycle() }
                         }
                         result.put("realCaptures",realChecks)

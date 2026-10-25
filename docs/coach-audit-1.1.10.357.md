@@ -113,3 +113,13 @@ ubicar allí el centro de títulos pequeños. La recuperación acepta ahora toda
 altura de esa banda exclusiva de título, manteniendo intactos sus límites
 laterales y sin leer la fila del invocador. Esto permite resolver antes el
 título y evita activar recuperaciones posteriores más costosas.
+
+# Coach 1.1.10.368 — build 1084
+
+Aceptar toda la altura del título no bastó mientras seguían activas las nuevas
+llamadas de recuperación: Jelly Star y Xperia agotaron 60 segundos en la
+primera captura real. Se retiraron esas llamadas adicionales y se mantuvo solo
+el límite vertical corregido. Cuando una captura real no coincide, la prueba
+aislada registra ahora el texto y las cajas que devuelve directamente ML Kit
+sobre esos píxeles redimensionados. Esa evidencia es exclusivamente
+diagnóstica: no alimenta el estado del escáner ni sustituye nombres esperados.

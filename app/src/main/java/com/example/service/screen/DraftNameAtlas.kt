@@ -51,11 +51,10 @@ internal class DraftNameAtlas private constructor(val bitmap: Bitmap, val tiles:
             } catch (error: Throwable) { pages.forEach { it.bitmap.recycle() }; throw error }
         }
 
-        /** Read the complete calibrated row first. A native box may cover a
-         * badge or only one glyph, so retain up to two distinct measured boxes
-         * as bounded fallbacks, without guesses or generated text. */
+        /** The first native box may cover a badge or only one glyph. Keep two
+         * distinct measured boxes plus the full calibrated row, without guesses. */
         fun retryLineBounds(detected: List<Rect>, fallback: Rect): List<Rect> =
-            (listOf(fallback) + detected.filter { it.width() > 0 && it.height() > 0 }.distinct().take(2))
+            (detected.filter { it.width() > 0 && it.height() > 0 }.distinct().take(2) + fallback)
                 .filter { it.width() > 0 && it.height() > 0 }.distinct()
 
         private fun compactColumns(tiles:Int,cellWidth:Int,cellHeight:Int):Int =

@@ -52,7 +52,7 @@ class DraftNameAtlasTest {
         val first=android.graphics.Rect(200,30,270,80)
         val second=android.graphics.Rect(190,10,280,90)
         val fallback=android.graphics.Rect(0,48,900,144)
-        assertEquals(listOf(fallback,first,second),DraftNameAtlas.retryLineBounds(
+        assertEquals(listOf(first,second,fallback),DraftNameAtlas.retryLineBounds(
             listOf(first,first,second,android.graphics.Rect(210,20,280,90)),fallback))
         assertEquals(listOf(fallback),DraftNameAtlas.retryLineBounds(emptyList(),fallback))
         assertEquals(listOf(fallback),DraftNameAtlas.retryLineBounds(listOf(fallback),fallback))
