@@ -344,11 +344,12 @@ internal class DraftNameAtlas private constructor(val bitmap: Bitmap, val tiles:
                 (prior.region.height() * 2.5f).toInt().coerceAtLeast(1))
             val sourceHeight = prior.region.height()
             val targets = listOf(48, 72, 96)
+            val polarities = 2
             val cellWidth = targets.maxOf { target ->
                 kotlin.math.round(sourceWidth * target.toFloat() / sourceHeight).toInt()
             } + GUTTER * 2
             val cellHeight = targets.max() + GUTTER * 2
-            val bitmap = Bitmap.createBitmap(cellWidth, cellHeight * targets.size,
+            val bitmap = Bitmap.createBitmap(cellWidth, cellHeight * targets.size * polarities,
                 Bitmap.Config.ARGB_8888)
             val canvas = Canvas(bitmap).apply { drawColor(Color.BLACK) }
             try {
@@ -358,21 +359,37 @@ internal class DraftNameAtlas private constructor(val bitmap: Bitmap, val tiles:
                     val isolated = sample.copy(Bitmap.Config.ARGB_8888, true)
                     try {
                         isolateTitleColor(isolated)
+                        val inverted = isolated.copy(Bitmap.Config.ARGB_8888, true)
+                        val invertedPixels = IntArray(inverted.width * inverted.height)
+                        inverted.getPixels(invertedPixels, 0, inverted.width, 0, 0,
+                            inverted.width, inverted.height)
+                        for (i in invertedPixels.indices) {
+                            invertedPixels[i] = if (invertedPixels[i] == Color.BLACK) Color.WHITE else Color.BLACK
+                        }
+                        inverted.setPixels(invertedPixels, 0, inverted.width, 0, 0,
+                            inverted.width, inverted.height)
                         val source = Rect(
                             tile.source.left + inset * tile.source.width() / prior.region.width(),
                             tile.source.top,
                             tile.source.left + (inset + sourceWidth) * tile.source.width() / prior.region.width(),
                             tile.source.bottom
                         )
-                        val tiles = targets.mapIndexed { index, target ->
-                            val width = kotlin.math.round(sourceWidth * target.toFloat() / sourceHeight)
-                                .toInt().coerceAtLeast(1)
-                            val top = index * cellHeight + GUTTER
-                            val region = Rect(GUTTER, top, GUTTER + width, top + target)
-                            canvas.drawBitmap(isolated, null, region, null)
-                            tile.copy(source = source, region = region, original = false,
-                                contrast = true, titleMinY = 0, titleMaxY = target,
-                                badgeRemoved = true, contentInsetLeft = 0)
+                        val tiles = try {
+                            targets.flatMapIndexed { targetIndex, target ->
+                                listOf(isolated, inverted).mapIndexed { polarity, input ->
+                                    val width = kotlin.math.round(sourceWidth * target.toFloat() / sourceHeight)
+                                        .toInt().coerceAtLeast(1)
+                                    val index = targetIndex * polarities + polarity
+                                    val top = index * cellHeight + GUTTER
+                                    val region = Rect(GUTTER, top, GUTTER + width, top + target)
+                                    canvas.drawBitmap(input, null, region, null)
+                                    tile.copy(source = source, region = region, original = false,
+                                        contrast = true, titleMinY = 0, titleMaxY = target,
+                                        badgeRemoved = true, contentInsetLeft = 0)
+                                }
+                            }
+                        } finally {
+                            inverted.recycle()
                         }
                         return DraftNameAtlas(bitmap, tiles)
                     } finally { isolated.recycle() }

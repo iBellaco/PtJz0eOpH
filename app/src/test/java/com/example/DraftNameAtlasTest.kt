@@ -467,7 +467,7 @@ class DraftNameAtlasTest {
                     val alternatives=DraftNameAtlas.shortAlliedTitleAlternatives(atlas,tile)
                         ?: throw AssertionError("$height must produce a compact title retry")
                     try {
-                        assertEquals(listOf(48,72,96),alternatives.tiles.map { it.region.height() })
+                        assertEquals(listOf(48,48,72,72,96,96),alternatives.tiles.map { it.region.height() })
                         assertTrue(alternatives.tiles.all { it.badgeRemoved && tile.source.contains(it.source) })
                         assertTrue("$height retry must retain real dark title strokes on white",
                             alternatives.tiles.any { part ->

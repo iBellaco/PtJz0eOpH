@@ -344,6 +344,22 @@ class DraftSequenceMultiDeviceInstalledTest {
                                             .put("directOcrLines",JSONArray(direct.textBlocks.flatMap { it.lines }.map { line ->
                                                 JSONObject().put("text",line.text).put("bounds",line.boundingBox.toString())
                                             }))
+                                        val atlas=DraftNameAtlas.create(realFrame,scanner.alignedConfigFlow.value,emptyList())
+                                        try {
+                                            val shortDiagnostics=JSONArray()
+                                            for(tile in atlas.tiles.filter { it.original && it.ally }) {
+                                                val alternatives=DraftNameAtlas.shortAlliedTitleAlternatives(atlas,tile) ?: continue
+                                                try {
+                                                    val read=diagnosticRecognizer.process(
+                                                        com.google.mlkit.vision.common.InputImage.fromBitmap(alternatives.bitmap,0)).await()
+                                                    shortDiagnostics.put(JSONObject().put("slot",tile.slot).put("text",read.text)
+                                                        .put("lines",JSONArray(read.textBlocks.flatMap { it.lines }.map { line ->
+                                                            JSONObject().put("text",line.text).put("bounds",line.boundingBox.toString())
+                                                        })))
+                                                } finally { alternatives.bitmap.recycle() }
+                                            }
+                                            realCheck.put("shortTitleDiagnostics",shortDiagnostics)
+                                        } finally { atlas.bitmap.recycle() }
                                     } finally { diagnosticRecognizer.close() }
                                 }
                                 realChecks.put(realCheck)
