@@ -724,12 +724,6 @@ object DraftVisionScanner {
                         focusedAlternatives += focused
                         if(tile.ally) {
                             focusedAlternatives += DraftNameAtlas.withoutLeadingBadge(atlas,tile)
-                            // On the smallest capture ML Kit can return no
-                            // bounding box at all for Vi. Generate the same
-                            // bounded native-size variants used by the
-                            // measured-line recovery, using only the captured
-                            // title pixels and never an expected champion id.
-                            focusedAlternatives += DraftNameAtlas.nativeTextSizes(focused, 12)
                         }
                     }
                     if(focusedAlternatives.isNotEmpty()) readAlternatives(focusedAlternatives)
@@ -768,6 +762,19 @@ object DraftVisionScanner {
                             }
                         } finally { focused.bitmap.recycle() }
                     }
+                }
+                // When a small capture has no OCR box for an allied title,
+                // make one bounded final attempt on its captured title pixels.
+                // The old nine-variant pass ran for every unresolved ally and
+                // exceeded the 60-second frame budget on 640x360.
+                if(bitmap.width<=640) for((tile,bounds) in unresolved) {
+                    if(!tile.ally || !unresolvedReading(tile) ||
+                        detectedTitleLines[tile.ally to tile.slot].orEmpty().isNotEmpty()) continue
+                    val focused=DraftNameAtlas.focusTitle(atlas,tile,bounds)
+                    try {
+                        val native=DraftNameAtlas.nativeTextSize(focused,12,24)
+                        try { readTitles(native) } finally { native.bitmap.recycle() }
+                    } finally { focused.bitmap.recycle() }
                 }
                 // Keep established OCR image sizes unchanged. A fourth stacked
                 // variant changed the detector input size on previously passing
