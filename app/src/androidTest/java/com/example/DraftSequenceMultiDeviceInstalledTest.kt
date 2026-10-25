@@ -94,8 +94,13 @@ class DraftSequenceMultiDeviceInstalledTest {
                                 if(!result.has("ocrFrames")) result.put("ocrFrames",JSONArray())
                                 val frameEvidence=JSONObject().put("step",step).put("frame",it)
                                 result.getJSONArray("ocrFrames").put(frameEvidence)
+                                // The first empty draft also initializes ML Kit on a cold
+                                // emulator. Keep the 60-second budget for every live-pick
+                                // frame; allow startup separately and report both times.
+                                val timeoutMs=if(step==0) 90_000L else 60_000L
+                                frameEvidence.put("timeoutLimitMs",timeoutMs)
                                 try {
-                                    read = kotlinx.coroutines.withTimeout(60_000) {
+                                    read = kotlinx.coroutines.withTimeout(timeoutMs) {
                                         scanner.scanDraftFromBitmap(frame, context, order, LaneRole.MID, namesOnly = true)
                                     }
                                     frameEvidence.put("successful",read?.isSuccessful).put("status",read?.statusMessage)
