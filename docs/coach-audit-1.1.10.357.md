@@ -1,4 +1,4 @@
-# Coach 1.1.10.361 — build 1077
+# Coach 1.1.10.362 — build 1078
 
 La ejecución anterior no llegó a probar el APK: el cambio de recuperación
 OCR dejó una lambda no suspendible alrededor de `await()`, por lo que
@@ -20,6 +20,10 @@ slot aliado 3 de la prueba de diez slots. La corrección queda limitada a una
 palabra de línea y un nombre exacto en la misma fila física; dos campeones
 distintos, dos líneas distintas o un nombre en la fila del invocador continúan
 siendo ambiguos.
+
+La comprobación anterior incluía por error todas las filas detectadas al medir
+la distancia vertical. Ahora calcula la distancia únicamente sobre la fila de
+título y conserva la regla general de ambigüedad fuera de ese contexto.
 
 La prueba aislada del APK release identificó el fallo de reconocimiento: en
 `liveRedMagicCapturesWithMasteryBadgesAndViewerMasksFillTheActualHub`, el modo

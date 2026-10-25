@@ -66,6 +66,10 @@ class AllyDraftNameReaderTest {
         for (text in listOf("XCS Yuumi", "Mi Brand", "Skarner99", "Jugador 3 Brand", "SuperJinx", "Diego (Brand)"))
             assertNull(text, ChampionNameResolver.findChampionInNameBand(text, catalog))
         assertTrue(AllyDraftNameReader.read(listOf("JUNGLA", "YUUMI"), catalog).ambiguous)
+        assertEquals("yuumi", AllyDraftNameReader.readTitleRows(
+            listOf("JUNGLA" to 0, "YUUMI" to 1), 10, catalog).champion?.id)
+        assertTrue(AllyDraftNameReader.readTitleRows(
+            listOf("JUNGLA" to 0, "YUUMI" to 8), 10, catalog).ambiguous)
         assertTrue(AllyDraftNameReader.read(listOf("JINX", "YUUMI"), catalog).ambiguous)
     }
 

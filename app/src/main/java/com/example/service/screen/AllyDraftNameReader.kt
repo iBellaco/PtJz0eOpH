@@ -22,7 +22,8 @@ object AllyDraftNameReader {
         titleMaxCenterY: Int = Int.MAX_VALUE): Reading {
         val titleLines = lines.filter { it.second <= titleMaxCenterY }
         val top = titleLines.minOfOrNull { it.second } ?: return Reading()
-        val title = titleLines.filter { it.second <= top + rowDistance }.map { it.first }
+        val titleRow = titleLines.filter { it.second <= top + rowDistance }
+        val title = titleRow.map { it.first }
         val reading = read(title, catalog)
         if (reading.ambiguous) {
             // OCR can attach a lane token to the same physical baseline as an
@@ -32,7 +33,7 @@ object AllyDraftNameReader {
             val names = title.mapNotNull { ChampionNameResolver.findChampionInNameBand(it, catalog) }
                 .distinctBy { it.id }
             val lanes = title.mapNotNull { laneTitle(it) }.distinct()
-            val sameRow = titleLines.map { it.second }.let { ys ->
+            val sameRow = titleRow.map { it.second }.let { ys ->
                 ys.maxOrNull()?.minus(ys.minOrNull() ?: 0) ?: Int.MAX_VALUE
             } <= rowDistance.coerceAtLeast(1) / 3
             if (sameRow && names.size == 1 && lanes.size == 1) return Reading(champion = names.single())
@@ -55,7 +56,7 @@ object AllyDraftNameReader {
         val names = lines.mapNotNull { ChampionNameResolver.findChampionInNameBand(it, catalog) }.distinctBy { it.id }
         val lanes = (lines + lines.joinToString(" ")).mapNotNull { laneTitle(it) }.distinct()
         return when {
-            names.size > 1 || lanes.size > 1 -> Reading(ambiguous = true)
+            names.size > 1 || lanes.size > 1 || (names.isNotEmpty() && lanes.isNotEmpty()) -> Reading(ambiguous = true)
             names.size == 1 -> Reading(champion = names.single())
             lanes.size == 1 -> Reading(lane = lanes.single())
             else -> Reading()
