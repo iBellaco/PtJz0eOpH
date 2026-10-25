@@ -770,11 +770,14 @@ object DraftVisionScanner {
                 if(bitmap.width<=640) for((tile,bounds) in unresolved) {
                     if(!tile.ally || !unresolvedReading(tile) ||
                         detectedTitleLines[tile.ally to tile.slot].orEmpty().isNotEmpty()) continue
-                    val focused=DraftNameAtlas.focusTitle(atlas,tile,bounds)
+                    val withoutBadge=DraftNameAtlas.withoutLeadingBadge(atlas,tile)
                     try {
-                        val native=DraftNameAtlas.nativeTextSize(focused,12,24)
+                        // Keep the complete short title beside the badge while
+                        // removing the distant scenery that dominates OCR on
+                        // a 640x360 frame. Partial strings remain rejected.
+                        val native=DraftNameAtlas.nativeTextSize(withoutBadge,12,36,.6f)
                         try { readTitles(native) } finally { native.bitmap.recycle() }
-                    } finally { focused.bitmap.recycle() }
+                    } finally { withoutBadge.bitmap.recycle() }
                 }
                 // Keep established OCR image sizes unchanged. A fourth stacked
                 // variant changed the detector input size on previously passing

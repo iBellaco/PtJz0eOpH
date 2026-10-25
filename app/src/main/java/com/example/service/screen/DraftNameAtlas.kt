@@ -343,18 +343,24 @@ internal class DraftNameAtlas private constructor(val bitmap: Bitmap, val tiles:
         }
 
         /** One bounded native-size attempt when the detector found no line box. */
-        fun nativeTextSize(atlas: DraftNameAtlas, measuredTextHeight: Int, targetTextHeight: Int): DraftNameAtlas {
+        fun nativeTextSize(atlas: DraftNameAtlas, measuredTextHeight: Int, targetTextHeight: Int,
+            widthFraction: Float = 1f): DraftNameAtlas {
             require(measuredTextHeight>0 && targetTextHeight>0 && atlas.tiles.isNotEmpty())
+            require(widthFraction in .5f..1f)
             val tile=atlas.tiles.first()
             val factor=(targetTextHeight.toFloat()/measuredTextHeight).coerceIn(1f,4f)
             fun size(value:Int)=kotlin.math.round(value*factor).toInt().coerceAtLeast(1)
-            val width=size(tile.region.width());val height=size(tile.region.height())
+            val sourceWidth=(tile.region.width()*widthFraction).toInt().coerceAtLeast(1)
+            val width=size(sourceWidth);val height=size(tile.region.height())
             val bitmap=Bitmap.createBitmap(width+GUTTER*2,height+GUTTER*2,Bitmap.Config.ARGB_8888)
             try {
                 val canvas=Canvas(bitmap).apply { drawColor(Color.BLACK) }
                 val region=Rect(GUTTER,GUTTER,GUTTER+width,GUTTER+height)
-                canvas.drawBitmap(atlas.bitmap,tile.region,region,Paint(Paint.FILTER_BITMAP_FLAG))
+                val inputRegion=Rect(tile.region.left,tile.region.top,tile.region.left+sourceWidth,tile.region.bottom)
+                canvas.drawBitmap(atlas.bitmap,inputRegion,region,Paint(Paint.FILTER_BITMAP_FLAG))
+                val sourceRight=tile.source.left+(tile.source.width()*widthFraction).toInt().coerceAtLeast(1)
                 return DraftNameAtlas(bitmap,listOf(tile.copy(region=region,
+                    source=Rect(tile.source.left,tile.source.top,sourceRight,tile.source.bottom),
                     titleMinY=size(tile.titleMinY),titleMaxY=size(tile.titleMaxY))))
             } catch(error:Throwable) { bitmap.recycle();throw error }
         }
