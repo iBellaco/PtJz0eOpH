@@ -631,7 +631,11 @@ object DraftVisionScanner {
             // Las etiquetas laterales del diagnóstico se dibujan fuera de la ventana central.
             // Deben excluirse siempre; de lo contrario el OCR puede leer "Pantheon" del propio overlay.
             val exclusions = frameDiagnosticTexts
-            val visionText = if (namesOnly) null else {
+            // Fast mode skips account/role decisions, but it still needs a
+            // whole-screen OCR fallback when an isolated title band is hidden
+            // by the viewer mask. The slot geometry below remains authoritative;
+            // this request only supplies missing text evidence.
+            val visionText = {
                 val ocrBitmap = if (exclusions.isEmpty()) bitmap else bitmap.copy(Bitmap.Config.ARGB_8888, true) ?: bitmap
                 try {
                     if (ocrBitmap !== bitmap) {
