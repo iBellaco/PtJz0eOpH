@@ -720,8 +720,17 @@ object DraftVisionScanner {
                 val focusedAlternatives=mutableListOf<DraftNameAtlas>()
                 try {
                     for((tile,bounds) in unresolved) if(unresolvedReading(tile)) {
-                        focusedAlternatives += DraftNameAtlas.focusTitle(atlas,tile,bounds)
-                        if(tile.ally) focusedAlternatives += DraftNameAtlas.withoutLeadingBadge(atlas,tile)
+                        val focused=DraftNameAtlas.focusTitle(atlas,tile,bounds)
+                        focusedAlternatives += focused
+                        if(tile.ally) {
+                            focusedAlternatives += DraftNameAtlas.withoutLeadingBadge(atlas,tile)
+                            // On the smallest capture ML Kit can return no
+                            // bounding box at all for Vi. Generate the same
+                            // bounded native-size variants used by the
+                            // measured-line recovery, using only the captured
+                            // title pixels and never an expected champion id.
+                            focusedAlternatives += DraftNameAtlas.nativeTextSizes(focused, 12)
+                        }
                     }
                     if(focusedAlternatives.isNotEmpty()) readAlternatives(focusedAlternatives)
                 } catch(error:Throwable) {
