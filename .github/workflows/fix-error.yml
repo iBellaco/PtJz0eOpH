@@ -69,7 +69,11 @@ jobs:
           gradle-version: 9.3.1
 
       - name: Reproducir la prueba exacta que bloqueó el flujo completo
-        run: ./gradlew :app:testDebugUnitTest --rerun --tests com.example.AllyDraftNameReaderTest --max-workers=1 --stacktrace --no-daemon
+        run: |
+          ./gradlew :app:testDebugUnitTest --rerun \
+            --tests com.example.AllyDraftNameReaderTest \
+            --tests com.example.ChampionNameResolverCoverageTest \
+            --max-workers=1 --stacktrace --no-daemon
 
       - name: Preparar el plan de dos perfiles de teléfono
         run: |

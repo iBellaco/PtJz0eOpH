@@ -1,4 +1,4 @@
-# Coach 1.1.10.362 — build 1078
+# Coach 1.1.10.363 — build 1079
 
 La ejecución anterior no llegó a probar el APK: el cambio de recuperación
 OCR dejó una lambda no suspendible alrededor de `await()`, por lo que
@@ -24,6 +24,12 @@ siendo ambiguos.
 La comprobación anterior incluía por error todas las filas detectadas al medir
 la distancia vertical. Ahora calcula la distancia únicamente sobre la fila de
 título y conserva la regla general de ambigüedad fuera de ese contexto.
+
+La regresión release confirmó después que `Malphite` sí estaba en el slot,
+pero faltaba en el mapa por rol. Se restauró la reconciliación de roles: las
+líneas observadas o recordadas no se alteran y solo los huecos sin etiqueta se
+completan de forma determinista. `fix-error` ejecuta además la cobertura exacta
+de los 142 nombres del catálogo.
 
 La prueba aislada del APK release identificó el fallo de reconocimiento: en
 `liveRedMagicCapturesWithMasteryBadgesAndViewerMasksFillTheActualHub`, el modo

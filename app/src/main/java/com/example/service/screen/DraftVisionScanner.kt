@@ -1553,10 +1553,15 @@ object DraftVisionScanner {
 
         try { tenthCrop?.recycle() } catch (_: Throwable) {}
         
-        // The role exposed for an allied slot must come from its observed
-        // title (or that slot's remembered title). Champion affinity cannot
-        // turn a missing OCR lane into a supposedly observed assignment.
-        val resolvedAlliedRoles = allySlotOcrLaneCache.toMap()
+        // Observed or remembered lane titles are authoritative. If a capture
+        // starts after some players already selected, complete only the still
+        // unknown slots deterministically from champion affinity; never move
+        // or overwrite an OCR-observed lane.
+        val resolvedAlliedRoles = AllyDraftReconciler.resolveRoles(
+            allySlots.mapNotNull { slot -> slot.champion?.let { slot.slotIndex to it } }.toMap(),
+            allySlotOcrLaneCache,
+            allySlotRolesCache
+        )
         // 4.1 Aliados: cada slot conserva la línea leída en su propia banda.
         val alliesMap = mutableMapOf<LaneRole, Champion>()
         val allyConfidences = mutableMapOf<LaneRole, Int>()
