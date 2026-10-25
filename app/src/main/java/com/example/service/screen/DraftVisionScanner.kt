@@ -655,19 +655,23 @@ object DraftVisionScanner {
             // Las etiquetas laterales del diagnóstico se dibujan fuera de la ventana central.
             // Deben excluirse siempre; de lo contrario el OCR puede leer "Pantheon" del propio overlay.
             val exclusions = frameDiagnosticTexts
-            // Fast mode skips account/role decisions, but it still needs a
-            // whole-screen OCR fallback when an isolated title band is hidden
-            // by the viewer mask. The slot geometry below remains authoritative;
-            // this request only supplies missing text evidence.
-            val ocrBitmap = if (exclusions.isEmpty()) bitmap else bitmap.copy(Bitmap.Config.ARGB_8888, true) ?: bitmap
-            val visionText = try {
-                if (ocrBitmap !== bitmap) {
-                    val canvas = android.graphics.Canvas(ocrBitmap)
-                    val paint = android.graphics.Paint().apply { color = android.graphics.Color.BLACK }
-                    exclusions.forEach { canvas.drawRect(it, paint) }
-                }
-                recognizer.process(InputImage.fromBitmap(ocrBitmap, 0)).await()
-            } finally { if (ocrBitmap !== bitmap) ocrBitmap.recycle() }
+            // namesOnly is the live draft fast path. All ten title rows are read
+            // below from calibrated title-only atlases, so a second OCR request
+            // over the entire 1920x863 frame is both redundant and extremely
+            // expensive on an emulator/low-end device. Full scans retain the
+            // whole-screen request for banners, account identity and metadata.
+            val visionText: com.google.mlkit.vision.text.Text? = if (namesOnly) null else {
+                val ocrBitmap = if (exclusions.isEmpty()) bitmap else
+                    bitmap.copy(Bitmap.Config.ARGB_8888, true) ?: bitmap
+                try {
+                    if (ocrBitmap !== bitmap) {
+                        val canvas = android.graphics.Canvas(ocrBitmap)
+                        val paint = android.graphics.Paint().apply { color = android.graphics.Color.BLACK }
+                        exclusions.forEach { canvas.drawRect(it, paint) }
+                    }
+                    recognizer.process(InputImage.fromBitmap(ocrBitmap, 0)).await()
+                } finally { if (ocrBitmap !== bitmap) ocrBitmap.recycle() }
+            }
 
             // Read every player title in one request, including the visible portion
             // of a name band partly covered by the central assistant window.
@@ -815,7 +819,7 @@ object DraftVisionScanner {
 
             // Detección proactiva de Clasificatoria Legendaria en pantalla completa
             if (!namesOnly) isLegendaryRanked = DraftValidationLayer.isLegendaryRankedDraft(
-                fullOcrText = visionText.text,
+                fullOcrText = visionText?.text.orEmpty(),
                 hasRealSummonerNames = allySummonerNamesCache.isNotEmpty()
             )
             isLegendaryRankedCache = isLegendaryRanked
@@ -824,7 +828,7 @@ object DraftVisionScanner {
                 allySummonerNamesCache.clear()
             }
 
-            for (block in visionText.textBlocks) {
+            for (block in visionText?.textBlocks.orEmpty()) {
                 for (line in block.lines) {
                     val text = line.text.trim()
                     if (text.isBlank() || text.length < 2) continue
@@ -1021,7 +1025,8 @@ object DraftVisionScanner {
                 val titleLines = entries.filter { (_, box) -> box != null && titleRect.contains(box.centerX(), box.centerY()) }
                     .map { it.first to it.second!!.centerY() }
                 val isolated = targetedAllyReadings[i]
-                val reading = if (isolated.ambiguous || isolated.lane != null || isolated.champion != null) isolated
+                val reading = if (isolated.ambiguous || isolated.lane != null ||
+                    isolated.champion != null || isolated.unpicked) isolated
                     else AllyDraftNameReader.readTitleRows(titleLines, (titleRect.height() * 0.30f).toInt(), allChamps,
                         (height * (calib.allySlotYRatios[i] + 0.005f * calib.nameBandScale)).toInt())
                 detectedRoleInSlot = reading.lane

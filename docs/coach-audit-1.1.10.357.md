@@ -167,3 +167,20 @@ de 60 segundos, además de conservar las pruebas unitarias y la cobertura exacta
 de los 142 nombres. La evidencia sigue siendo un APK instalado en emulador con
 capturas redimensionadas; Xiaomi 14 y Phone (2a) no se registran como pruebas
 físicas.
+
+# Coach 1.1.10.372 — build 1088
+
+La ejecución aislada demostró que la precarga de 32 × 32 no eliminaba el coste
+principal: cada frame de `sequence-42-ally-first` seguía enviando primero la
+captura completa de 1920 × 863 a ML Kit. Los dos frames vacíos tardaron 76,6 s
+y 57,6 s, y el primer pick volvió a agotar 60 s. Ese OCR de pantalla completa
+era redundante en el modo rápido `namesOnly`, porque los diez nombres y líneas
+ya se leen desde el atlas calibrado de títulos.
+
+El modo rápido omite ahora únicamente esa solicitud global y conserva el OCR
+global en los escaneos completos que necesitan banners, identidad y metadatos.
+Los títulos, las dos confirmaciones temporales y las recuperaciones de píxeles
+siguen intactos. También se conserva explícitamente el estado `unpicked` leído
+en el atlas. La prueba aislada mantiene el límite original de 60 segundos para
+comprobar la mejora real; continúa siendo una prueba instalada en emulador con
+capturas redimensionadas, no una prueba física de Xiaomi o Nothing.
