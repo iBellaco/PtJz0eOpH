@@ -118,7 +118,10 @@ jobs:
         with:
           name: fix-error-ocr-evidence
           path: app/build/reports/scanner-sequence-preflight/
-          if-no-files-found: error
+          # The evidence directory is created only after the emulator phase;
+          # a compile failure must remain the primary diagnostic instead of
+          # being replaced by a misleading missing-artifact failure.
+          if-no-files-found: warn
           retention-days: 14
 
   targeted-red-magic-release:

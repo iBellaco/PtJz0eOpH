@@ -635,17 +635,15 @@ object DraftVisionScanner {
             // whole-screen OCR fallback when an isolated title band is hidden
             // by the viewer mask. The slot geometry below remains authoritative;
             // this request only supplies missing text evidence.
-            val visionText = {
-                val ocrBitmap = if (exclusions.isEmpty()) bitmap else bitmap.copy(Bitmap.Config.ARGB_8888, true) ?: bitmap
-                try {
-                    if (ocrBitmap !== bitmap) {
-                        val canvas = android.graphics.Canvas(ocrBitmap)
-                        val paint = android.graphics.Paint().apply { color = android.graphics.Color.BLACK }
-                        exclusions.forEach { canvas.drawRect(it, paint) }
-                    }
-                    recognizer.process(InputImage.fromBitmap(ocrBitmap, 0)).await()
-                } finally { if (ocrBitmap !== bitmap) ocrBitmap.recycle() }
-            }
+            val ocrBitmap = if (exclusions.isEmpty()) bitmap else bitmap.copy(Bitmap.Config.ARGB_8888, true) ?: bitmap
+            val visionText = try {
+                if (ocrBitmap !== bitmap) {
+                    val canvas = android.graphics.Canvas(ocrBitmap)
+                    val paint = android.graphics.Paint().apply { color = android.graphics.Color.BLACK }
+                    exclusions.forEach { canvas.drawRect(it, paint) }
+                }
+                recognizer.process(InputImage.fromBitmap(ocrBitmap, 0)).await()
+            } finally { if (ocrBitmap !== bitmap) ocrBitmap.recycle() }
 
             // Read every player title in one request, including the visible portion
             // of a name band partly covered by the central assistant window.
@@ -796,7 +794,7 @@ object DraftVisionScanner {
 
             // Detección proactiva de Clasificatoria Legendaria en pantalla completa
             if (!namesOnly) isLegendaryRanked = DraftValidationLayer.isLegendaryRankedDraft(
-                fullOcrText = visionText?.text.orEmpty(),
+                fullOcrText = visionText.text,
                 hasRealSummonerNames = allySummonerNamesCache.isNotEmpty()
             )
             isLegendaryRankedCache = isLegendaryRanked
@@ -805,7 +803,7 @@ object DraftVisionScanner {
                 allySummonerNamesCache.clear()
             }
 
-            for (block in visionText?.textBlocks.orEmpty()) {
+            for (block in visionText.textBlocks) {
                 for (line in block.lines) {
                     val text = line.text.trim()
                     if (text.isBlank() || text.length < 2) continue

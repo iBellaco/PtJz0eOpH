@@ -1,4 +1,13 @@
-# Coach 1.1.10.357 — build 1073
+# Coach 1.1.10.358 — build 1074
+
+La ejecución anterior no llegó a probar el APK: el cambio de recuperación
+OCR dejó una lambda no suspendible alrededor de `await()`, por lo que
+`DraftVisionScanner.kt` no compiló. Además, el artefacto diagnóstico con
+`if-no-files-found: error` ocultaba parcialmente ese error con un fallo
+secundario cuando la compilación no generaba la carpeta.
+
+Se corrigió la ejecución suspendible del OCR y el artefacto ahora avisa si no
+existe, conservando como causa principal el error real de compilación.
 
 La prueba aislada del APK release identificó el fallo de reconocimiento: en
 `liveRedMagicCapturesWithMasteryBadgesAndViewerMasksFillTheActualHub`, el modo
