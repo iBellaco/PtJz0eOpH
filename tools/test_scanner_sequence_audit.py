@@ -16,7 +16,7 @@ reporter = module('scanner-sequence-summary')
 
 class SequenceAuditTest(unittest.TestCase):
     def fixture(self):
-        profiles = [dict(profile=name, model=name, display=[2400, 1080], capture=[1920, 864],
+        profiles = [dict(profile=name, model=name, manufacturer='Xiaomi', display=[2400, 1080], capture=[1920, 864],
                          layout='uniform-fit-reference', calibration={'nameBandScale': 1}, specification=None, variant='original')
                     for name in ['red-magic-reference', 'poco-x7-pro', 'redmi', 'xiaomi']]
         return dict(status='PASS', sourceSha256=planner.SOURCE_SHA256, profiles=profiles, resolutionProfiles=4)
@@ -24,7 +24,7 @@ class SequenceAuditTest(unittest.TestCase):
     def reports(self, fixture):
         cases = []
         for case in planner.make_plan(fixture)['cases']:
-            steps = [dict(step=n, frames=1 if n == 0 else 2,
+            steps = [dict(step=n, frames=2,
                           recognized=reporter.expected_names(case['firstPick'], n),
                           expected=reporter.expected_names(case['firstPick'], n), roles=dict(reporter.ROLES)) for n in range(10)]
             last_id = 'teemo'
@@ -44,6 +44,19 @@ class SequenceAuditTest(unittest.TestCase):
         self.assertEqual({'red-magic-reference', 'poco-x7-pro', 'redmi', 'xiaomi'},
                          {profile['profile'] for case in plan['cases'] for profile in case['profiles']})
         self.assertEqual('PASS', reporter.summarize(self.fixture(), self.reports(self.fixture()))['status'])
+
+    def test_generic_geometry_does_not_gate_native_phone_ocr(self):
+        fixture = self.fixture()
+        fixture['profiles'].append(dict(fixture['profiles'][2], profile='generic-640-360',
+                                        manufacturer='generic', model='resolution-simulation',
+                                        display=[640, 360], capture=[640, 360]))
+        fixture['resolutionProfiles'] += 1
+        plan = planner.make_plan(fixture)
+        self.assertEqual(4, plan['modelProfiles'])
+        self.assertEqual(1, plan['geometryOnlyProfiles'])
+        self.assertNotIn('generic-640-360', {row['profile'] for case in plan['cases']
+                                            for row in case['profiles']})
+        self.assertEqual('PASS', reporter.summarize(fixture, self.reports(fixture))['status'])
 
     def test_missing_ocr_steps_wrong_names_tenth_duplicates_and_changes_cannot_pass(self):
         for mutation in ['missing', 'step', 'name', 'forged_expected', 'tenth', 'duplicate', 'geometry', 'source', 'roles', 'wrong_role', 'transport','preflight']:

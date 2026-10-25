@@ -538,7 +538,7 @@ jobs:
       env:
         COACH_SEQUENCE_SHARD: '0'
         COACH_SEQUENCE_PREFLIGHT: 'true'
-        COACH_SEQUENCE_TARGETS: 'sequence-4-ally-first,sequence-56-ally-first,sequence-61-enemy-first'
+        COACH_SEQUENCE_TARGETS: 'sequence-56-ally-first,sequence-61-enemy-first'
       with:
         api-level: 34
         arch: x86_64

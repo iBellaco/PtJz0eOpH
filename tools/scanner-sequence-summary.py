@@ -53,7 +53,7 @@ def summarize(portraits, reports):
             for step in steps:
                 exact = expected_names(planned['firstPick'], step['step'])
                 if (step.get('recognized') != exact or step.get('expected') != exact
-                        or step.get('frames') != (1 if step['step'] == 0 else 2)
+                        or step.get('frames') != 2
                         or step.get('roles') != ROLES):
                     failures.append(f"Lectura de nombre/línea incorrecta: {key} paso {step['step']}")
             tenth = case.get('tenth', {})
@@ -79,6 +79,7 @@ def summarize(portraits, reports):
     failures += ['Falta secuencia: ' + key for key in sorted(set(expected) - seen)]
     return dict(status='FAIL' if failures else 'PASS', sourceSha256=plan['sourceSha256'],
                 modelProfiles=plan['modelProfiles'], sequences=len(results), expectedSequences=len(expected),
+                geometryOnlyProfiles=plan['geometryOnlyProfiles'],
                 nativeOcrFrames=sum(step.get('frames', 0) for case in results for step in case.get('steps', [])),
                 realCaptureChecks=sum(len(case.get('realCaptures', [])) for case in results),
                 physicalDevicesTested=[], cases=results, failures=failures)
@@ -89,7 +90,8 @@ def write_report(directory, summary):
     (directory / 'sequence-summary.json').write_text(json.dumps(summary, ensure_ascii=False, indent=2))
     lines = ['# Coach: secuencia OCR 1–9 y décima selección visual', '',
              f"Resultado: {summary['status']}; {summary['sequences']}/{summary['expectedSequences']} secuencias; "
-             f"{summary['nativeOcrFrames']} lecturas OCR nativas; {summary['modelProfiles']} perfiles asociados.", '',
+             f"{summary['nativeOcrFrames']} lecturas OCR nativas; {summary['modelProfiles']} perfiles de teléfono asociados; "
+             f"{summary['geometryOnlyProfiles']} escenarios geométricos no contados como teléfonos.", '',
              'APK release instalado en emulador Android 34 x86_64. No hay teléfonos físicos conectados. '
              'Se redimensionan los píxeles de la captura del propietario y se simula la aparición sucesiva de los títulos. '
              'Los nombres de campeones seleccionados no se vuelven a dibujar ni se inyectan como resultados OCR. '
