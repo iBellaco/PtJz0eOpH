@@ -62,8 +62,17 @@ jobs:
         with:
           gradle-version: 9.3.1
 
-      - name: Preparar exclusivamente el plan de los tres errores
+      - name: Preparar el plan de dos perfiles de teléfono
         run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          plan = json.loads(Path('app/src/test/resources/scanner/targeted-sequence-plan.json').read_text())
+          profiles = [profile for case in plan['cases'] for profile in case['profiles']]
+          assert len(plan['cases']) == 2 and plan['modelProfiles'] == len(profiles) == 2
+          assert all(profile['model'] != 'resolution-simulation' and profile['specification'] for profile in profiles)
+          assert {case['id'] for case in plan['cases']} == {'sequence-56-ally-first', 'sequence-61-enemy-first'}
+          PY
           mkdir -p app/build/generated/scanner-sequence-assets
           cp app/src/test/resources/scanner/targeted-sequence-plan.json \
             app/build/generated/scanner-sequence-assets/scanner-sequence-plan.json
@@ -81,7 +90,7 @@ jobs:
           sudo udevadm trigger --name-match=kvm
           sudo chmod 666 /dev/kvm || true
 
-      - name: Ejecutar únicamente OCR nativo de los tres casos fallidos
+      - name: Ejecutar OCR nativo de dos perfiles de teléfono
         uses: reactivecircus/android-emulator-runner@v2
         env:
           COACH_SEQUENCE_SHARD: '0'

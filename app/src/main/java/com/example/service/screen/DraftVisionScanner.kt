@@ -763,22 +763,6 @@ object DraftVisionScanner {
                         } finally { focused.bitmap.recycle() }
                     }
                 }
-                // When a small capture has no OCR box for an allied title,
-                // make one bounded final attempt on its captured title pixels.
-                // The old nine-variant pass ran for every unresolved ally and
-                // exceeded the 60-second frame budget on 640x360.
-                if(bitmap.width<=640) for((tile,bounds) in unresolved) {
-                    if(!tile.ally || !unresolvedReading(tile) ||
-                        detectedTitleLines[tile.ally to tile.slot].orEmpty().isNotEmpty()) continue
-                    val withoutBadge=DraftNameAtlas.withoutLeadingBadge(atlas,tile)
-                    try {
-                        // Keep the complete short title beside the badge while
-                        // removing the distant scenery that dominates OCR on
-                        // a 640x360 frame. Partial strings remain rejected.
-                        val native=DraftNameAtlas.nativeTextSize(withoutBadge,12,36,.6f)
-                        try { readTitles(native) } finally { native.bitmap.recycle() }
-                    } finally { withoutBadge.bitmap.recycle() }
-                }
                 // Keep established OCR image sizes unchanged. A fourth stacked
                 // variant changed the detector input size on previously passing
                 // profiles, so color separation is an independent final request.
@@ -791,14 +775,7 @@ object DraftVisionScanner {
                 }
                 val observedTitleIds=(targetedAllyReadings.toList()+targetedEnemyReadings.toList())
                     .mapNotNull { it.champion?.id }.toSet()
-                // The panorama only repeats the 1920-wide source detector. On
-                // tiny frames with no native box for an allied title it did not
-                // produce Vi, while consuming the remaining frame budget.
-                val missingUnboxedAlly = bitmap.width<=640 && unresolved.any { (tile,_) ->
-                    tile.ally && unresolvedReading(tile) &&
-                        detectedTitleLines[tile.ally to tile.slot].orEmpty().isEmpty()
-                }
-                if(!missingUnboxedAlly && observedTitleIds.size<9 && unresolved.any { (tile,_) ->
+                if(observedTitleIds.size<9 && unresolved.any { (tile,_) ->
                     (if(tile.ally) targetedAllyReadings else targetedEnemyReadings)[tile.slot].let {
                         !it.ambiguous && it.champion==null && it.lane==null
                     }

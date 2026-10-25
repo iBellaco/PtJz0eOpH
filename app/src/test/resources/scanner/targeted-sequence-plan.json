@@ -1,29 +1,8 @@
 {
   "sourceSha256": "42661aefae3df52b4f72047c039120f72f4ea351139d7bdb5107351fe8d3342a",
-  "modelProfiles": 3,
+  "modelProfiles": 2,
   "physicalDevicesTested": [],
   "cases": [
-    {
-      "capture": [640, 360],
-      "layout": "uniform-fit-reference",
-      "prior": "default",
-      "calibration": {
-        "nameBandScale": 0.80277777,
-        "allySlotXRatios": [0.0734375, 0.0734375, 0.0734375, 0.0734375, 0.0734375],
-        "enemySlotXRatios": [0.9578125, 0.9578125, 0.9578125, 0.9578125, 0.9578125],
-        "allySlotYRatios": [0.24906832, 0.35787874, 0.465089, 0.5714992, 0.67870945],
-        "enemySlotYRatios": [0.24815832, 0.35733607, 0.46410558, 0.5708749, 0.6768417],
-        "allySlotDiameterRatios": [0.088305555, 0.088305555, 0.088305555, 0.088305555, 0.08429166],
-        "enemySlotDiameterRatios": [0.088305555, 0.088305555, 0.088305555, 0.088305555, 0.088305555]
-      },
-      "safeInsets": [0, 0, 0, 0],
-      "profiles": [{"profile": "generic-640-360", "model": "resolution-simulation", "display": [640, 360], "specification": null}],
-      "id": "sequence-4-ally-first",
-      "firstPick": true,
-      "language": "es",
-      "shard": 0,
-      "preflight": true
-    },
     {
       "capture": [1920, 924],
       "layout": "uniform-fit-reference",
