@@ -125,6 +125,24 @@ class DraftNameAtlasTest {
             } finally { withoutBadge.bitmap.recycle() }
         } finally { atlas.bitmap.recycle();source.recycle() }
     }
+    @Test fun detectedMasteryBadgeProducesACompactPixelOnlyTitleAlternative() {
+        val source=javaClass.getResourceAsStream("/portraits/draft-ten-selected.jpg").use {
+            android.graphics.BitmapFactory.decodeStream(it)!!
+        }
+        val atlas=DraftNameAtlas.create(source,VisionCalibrationConfig(),emptyList())
+        try {
+            val tile=atlas.tiles.single { it.original && it.ally && it.slot==4 }
+            val cleaned=atlas.tiles.single { it.ally && it.slot==4 && !it.original && !it.contrast }
+            assertTrue("The real mastery component must expose its removed margin",cleaned.contentInsetLeft>0)
+            val compact=DraftNameAtlas.withoutLeadingBadge(atlas,tile)
+            try {
+                val result=compact.tiles.single()
+                assertTrue(result.region.width()<tile.region.width())
+                assertTrue(result.source.left>tile.source.left)
+                assertTrue(tile.source.contains(result.source))
+            } finally { compact.bitmap.recycle() }
+        } finally { atlas.bitmap.recycle();source.recycle() }
+    }
     @Test fun aDetectorSeeingOnlyTheLastEnemyLetterMustStillRetainTheWholeViTitle() {
         val reference=javaClass.getResourceAsStream("/portraits/draft-ten-selected.jpg").use {
             android.graphics.BitmapFactory.decodeStream(it)!!

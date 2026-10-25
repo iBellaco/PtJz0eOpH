@@ -10,7 +10,8 @@ import android.graphics.Rect
 internal class DraftNameAtlas private constructor(val bitmap: Bitmap, val tiles: List<Tile>) {
     data class Tile(val ally: Boolean, val slot: Int, val source: Rect, val region: Rect,
                     val titleMaxY: Int, val original: Boolean = true, val contrast: Boolean = false,
-                    val titleMinY: Int = 0, val badgeRemoved: Boolean = false)
+                    val titleMinY: Int = 0, val badgeRemoved: Boolean = false,
+                    val contentInsetLeft: Int = 0)
 
     companion object {
         private const val GUTTER = 32
@@ -290,21 +291,26 @@ internal class DraftNameAtlas private constructor(val bitmap: Bitmap, val tiles:
         fun withoutLeadingBadge(atlas: DraftNameAtlas, tile: Tile): DraftNameAtlas {
             require(tile.original && tile in atlas.tiles && tile.ally)
             val prior = atlas.tiles.single { it.ally && it.slot == tile.slot && !it.original && !it.contrast }
-            val width = tile.region.width()
+            val inset = prior.contentInsetLeft.coerceIn(0,(prior.region.width()-1).coerceAtLeast(0))
+            // Once a real badge was removed, omit its black margin and cap this
+            // alternative to a compact title window. The intact and contrast
+            // variants still retain the full band for long champion names.
+            val width = if(inset>0) minOf(prior.region.width()-inset,(prior.region.height()*2.5f).toInt())
+                else tile.region.width()
             val height = tile.region.height()
             val bitmap = Bitmap.createBitmap(width + GUTTER * 2, height + GUTTER * 2,
                 Bitmap.Config.ARGB_8888)
             val canvas = Canvas(bitmap).apply { drawColor(Color.BLACK) }
             try {
-                val crop = Bitmap.createBitmap(atlas.bitmap, prior.region.left,
+                val crop = Bitmap.createBitmap(atlas.bitmap, prior.region.left+inset,
                     prior.region.top, width, height)
                 try {
                     canvas.drawBitmap(crop, GUTTER.toFloat(), GUTTER.toFloat(), null)
                 } finally { crop.recycle() }
                 val source = Rect(
-                    tile.source.left,
+                    tile.source.left+inset*tile.source.width()/prior.region.width(),
                     tile.source.top,
-                    tile.source.right,
+                    tile.source.left+(inset+width)*tile.source.width()/prior.region.width(),
                     tile.source.bottom
                 )
                 return DraftNameAtlas(bitmap, listOf(tile.copy(
@@ -312,7 +318,8 @@ internal class DraftNameAtlas private constructor(val bitmap: Bitmap, val tiles:
                     region = Rect(GUTTER, GUTTER, GUTTER + width, GUTTER + height),
                     titleMinY = tile.titleMinY,
                     titleMaxY = tile.titleMaxY,
-                    badgeRemoved = true
+                    badgeRemoved = true,
+                    contentInsetLeft = 0
                 )))
             } catch (error: Throwable) {
                 bitmap.recycle()
@@ -415,7 +422,7 @@ internal class DraftNameAtlas private constructor(val bitmap: Bitmap, val tiles:
                             // Keep the established source-resolution alternative.
                             // Enlarged masking regressed Volibear and one known
                             // phone reference; the intact copy always remains.
-                            if(ally && !original) DraftImagePreprocessor.suppressLeadingMasteryBadge(crop)
+                            val badgeRight=if(ally && !original) DraftImagePreprocessor.suppressLeadingMasteryBadge(crop) else 0
                             if(contrast) enhanceTitleContrast(crop)
                             val width=(crop.width*scale).toInt().coerceAtMost(1400)
                             val height=(crop.height*scale).toInt().coerceAtMost(420)
@@ -429,7 +436,8 @@ internal class DraftNameAtlas private constructor(val bitmap: Bitmap, val tiles:
                             }
                             finally { if(scaled!==crop) scaled.recycle() }
                             val y=if(ally) config.allySlotYRatios[slot] else config.enemySlotYRatios[slot]
-                            Tile(ally,slot,band,region,((source.height*(y+.005f*config.nameBandScale)-band.top)*height/band.height()).toInt(),original,contrast)
+                            Tile(ally,slot,band,region,((source.height*(y+.005f*config.nameBandScale)-band.top)*height/band.height()).toInt(),original,contrast,
+                                contentInsetLeft=(badgeRight*width/crop.width).coerceIn(0,width))
                         } finally { crop.recycle() }
                     }
                 }

@@ -20,7 +20,7 @@ object DraftImagePreprocessor {
     private const val TAG = "DraftImagePreprocessor"
 
     /** Remove a gold mastery badge only inside the leading icon zone, leaving the title and player line intact. */
-    internal fun suppressLeadingMasteryBadge(crop: Bitmap) {
+    internal fun suppressLeadingMasteryBadge(crop: Bitmap): Int {
         val iconWidth = (crop.height * 1.35f).toInt().coerceIn(1, crop.width)
         val gold = BooleanArray(iconWidth*crop.height)
         for (y in 0 until crop.height) for (x in 0 until iconWidth) {
@@ -33,6 +33,7 @@ object DraftImagePreprocessor {
         val seen = BooleanArray(gold.size)
         val canvas = android.graphics.Canvas(crop)
         val paint = android.graphics.Paint().apply { color=Color.BLACK }
+        var removedRight = 0
         for(start in gold.indices) if(gold[start] && !seen[start]) {
             val queue=ArrayDeque<Int>().apply { add(start) }
             seen[start]=true
@@ -58,13 +59,16 @@ object DraftImagePreprocessor {
                     for(x in 0 until iconWidth) if(gold[y*iconWidth+x] && kotlin.math.abs(x-centerX)<=h*.7f) {
                         left=minOf(left,x);right=maxOf(right,x)
                     }
+                val eraseRight=(right+1).coerceAtMost(crop.width)
                 canvas.drawRect((left-1).coerceAtLeast(0).toFloat(),(top-1).coerceAtLeast(0).toFloat(),
                     // right is an inclusive component coordinate. An extra
                     // source pixel here erased the left stroke of V at 640px.
                     // Include the badge itself, never pad toward the title.
-                    (right+1).coerceAtMost(crop.width).toFloat(),(bottom+2).coerceAtMost(crop.height).toFloat(),paint)
+                    eraseRight.toFloat(),(bottom+2).coerceAtMost(crop.height).toFloat(),paint)
+                removedRight=maxOf(removedRight,eraseRight)
             }
         }
+        return removedRight
     }
 
     /**

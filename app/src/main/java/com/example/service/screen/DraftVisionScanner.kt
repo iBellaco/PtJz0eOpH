@@ -726,12 +726,6 @@ object DraftVisionScanner {
                         focusedAlternatives += focused
                         if(tile.ally) {
                             focusedAlternatives += DraftNameAtlas.withoutLeadingBadge(atlas,tile)
-                            // Keep the same bounded OCR request: the real Xperia
-                            // pixels contain VI but ML Kit emits no line from
-                            // the regular variants at this scale. Color
-                            // separation supplies those exact title pixels as
-                            // another tile, not another recognizer invocation.
-                            focusedAlternatives += DraftNameAtlas.focusTitle(atlas,tile,bounds,colorOnly=true)
                         }
                     }
                     if(focusedAlternatives.isNotEmpty()) readAlternatives(focusedAlternatives)

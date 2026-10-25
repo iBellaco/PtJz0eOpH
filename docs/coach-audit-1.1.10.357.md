@@ -134,3 +134,13 @@ línea para `VI`. La variante que separa el color del título aliado se incorpor
 ahora como otro recorte de la misma página OCR ya existente, sin una nueva
 invocación, sin retratos y sin ampliar la banda hacia el invocador. Las pruebas
 negativas impiden que `XCS HIN` o `Mi HIN` confirmen un campeón.
+
+# Coach 1.1.10.370 — build 1086
+
+La ejecución confirmó Jelly Star y dejó como único fallo Xperia 1 V: los
+píxeles de `VI` estaban intactos, pero el título ocupaba una porción mínima de
+la alternativa tras borrar el emblema. La supresión devuelve ahora el límite
+real del componente eliminado. Solo la alternativa sin emblema recorta ese
+margen negro y usa una ventana compacta; las variantes intacta y de contraste
+conservan toda la banda para nombres largos. No se añade una solicitud OCR, no
+se usa el retrato y no se infiere la identidad por la posición del slot.
