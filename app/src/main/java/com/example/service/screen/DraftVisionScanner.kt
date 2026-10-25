@@ -788,7 +788,14 @@ object DraftVisionScanner {
                 }
                 val observedTitleIds=(targetedAllyReadings.toList()+targetedEnemyReadings.toList())
                     .mapNotNull { it.champion?.id }.toSet()
-                if(observedTitleIds.size<9 && unresolved.any { (tile,_) ->
+                // The panorama only repeats the 1920-wide source detector. On
+                // tiny frames with no native box for an allied title it did not
+                // produce Vi, while consuming the remaining frame budget.
+                val missingUnboxedAlly = bitmap.width<=640 && unresolved.any { (tile,_) ->
+                    tile.ally && unresolvedReading(tile) &&
+                        detectedTitleLines[tile.ally to tile.slot].orEmpty().isEmpty()
+                }
+                if(!missingUnboxedAlly && observedTitleIds.size<9 && unresolved.any { (tile,_) ->
                     (if(tile.ally) targetedAllyReadings else targetedEnemyReadings)[tile.slot].let {
                         !it.ambiguous && it.champion==null && it.lane==null
                     }
