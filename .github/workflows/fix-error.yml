@@ -90,7 +90,7 @@ jobs:
           assert len(plan['cases']) == 2 and plan['modelProfiles'] == len(profiles) == 2
           assert all(profile['model'] != 'resolution-simulation' for profile in profiles)
           assert {case['id'] for case in plan['cases']} == {
-              'sequence-1-enemy-first', 'sequence-49-enemy-first'}
+              'sequence-49-enemy-first', 'sequence-52-ally-first'}
           PY
           mkdir -p app/build/generated/scanner-sequence-assets
           cp app/src/test/resources/scanner/targeted-sequence-plan.json \
@@ -114,6 +114,7 @@ jobs:
         env:
           COACH_SEQUENCE_SHARD: '0'
           COACH_SEQUENCE_PREFLIGHT: 'true'
+          COACH_SEQUENCE_TARGETS: 'sequence-49-enemy-first,sequence-52-ally-first'
           COACH_SEQUENCE_BUILD_TYPE: debug
         with:
           api-level: 34

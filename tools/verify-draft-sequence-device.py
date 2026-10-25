@@ -64,7 +64,7 @@ def main():
     assert all(case.get('validationMode')==('preflight-not-release' if preflight else 'full') for case in cases)
     required_files = {'draft-swain-eight.jpg', 'draft-kaisa-nine.jpg', 'draft-mel-nine.jpg'}
     for case in cases:
-        if not preflight or any(p['profile'] in {'red-magic-reference','poco-x7-pro'} for p in case['profiles']):
+        if not preflight or targets or any(p['profile'] in {'red-magic-reference','poco-x7-pro'} for p in case['profiles']):
             real = case.get('realCaptures', [])
             assert len(real) == 3 and {r['file'] for r in real} == required_files, 'Faltan capturas reales'
             assert all(r['expectedTitles'] == r['recognizedTitles'] and r['frames'] == 2 for r in real), 'Falló un título real'

@@ -73,3 +73,21 @@ aislado independiente.
 La cobertura exacta de los 142 nombres sigue siendo obligatoria. Toda esta
 evidencia corresponde a imágenes redimensionadas y APK instalado en emulador;
 no se registra como prueba física de POCO, Xperia ni ningún otro modelo.
+
+# Coach 1.1.10.365 — build 1081
+
+La matriz completa encontró dos recuperaciones incompletas en capturas reales
+redimensionadas: `VI` en Xperia 1 V (1920 × 822) y `JHIN` en Jelly Star
+(854 × 480). Cuando ML Kit detectaba una caja parcial, la ruta de recuperación
+probaba únicamente esas cajas y omitía la banda de título completa. Ahora la
+banda calibrada completa se conserva siempre como último intento basado en los
+mismos píxeles. La separación por color también se aplica a cualquier slot no
+resuelto, incluido el título aliado dorado de Jhin.
+
+La prueba aislada tenía además una condición que ejecutaba las tres capturas
+reales solo para Red Magic y POCO durante el modo preflight. Los objetivos
+explícitos de `fix-error` ahora fuerzan esas capturas para Xperia y Jelly Star,
+de modo que el flujo corto reproduce exactamente el fallo que bloquearía la
+validación completa. La cobertura de 142 nombres continúa siendo obligatoria.
+Estas comprobaciones son de APK instalado sobre imágenes redimensionadas en
+emulador; no se declaran como pruebas físicas de esos modelos.

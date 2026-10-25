@@ -744,8 +744,11 @@ object DraftVisionScanner {
                     // The second measured box reads MEL in the native 640x360
                     // evidence; discarding it after the first unreadable box
                     // made recovery impossible. The full row stays available.
-                    val candidates=if(detected.isNotEmpty()) detected.distinct().take(2)
-                        else listOf(fallback)
+                    // A measured box can contain only a mastery badge or one
+                    // glyph. Always retain the complete calibrated row as the
+                    // final pixel-only attempt; otherwise short names such as
+                    // VI and small gold titles such as JHIN can be skipped.
+                    val candidates=DraftNameAtlas.retryLineBounds(detected,fallback)
                     for(line in candidates) {
                         if(!unresolvedReading(tile)) break
                         val focused=DraftNameAtlas.focusDetectedLine(atlas,tile,line)
@@ -770,7 +773,7 @@ object DraftVisionScanner {
                 // profiles, so color separation is an independent final request.
                 for((tile,bounds) in unresolved) {
                     val reading=(if(tile.ally) targetedAllyReadings else targetedEnemyReadings)[tile.slot]
-                    if(!tile.ally && !reading.ambiguous && reading.champion==null && reading.lane==null) {
+                    if(!reading.ambiguous && reading.champion==null && reading.lane==null) {
                         val color=DraftNameAtlas.focusTitle(atlas,tile,bounds,colorOnly=true)
                         try { readTitles(color) } finally { color.bitmap.recycle() }
                     }

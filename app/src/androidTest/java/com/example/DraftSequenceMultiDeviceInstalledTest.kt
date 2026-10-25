@@ -287,7 +287,7 @@ class DraftSequenceMultiDeviceInstalledTest {
                     // lane labels, transplanted names or expected OCR injections.
                     // In preflight retain the two known phone priors; the full
                     // matrix must exercise these three captures at every geometry.
-                    if(!preflight || case.getJSONArray("profiles").toString().let {
+                    if(!preflight || targetIds.isNotEmpty() || case.getJSONArray("profiles").toString().let {
                         it.contains("red-magic-reference") || it.contains("poco-x7-pro") }) {
                         val realChecks=JSONArray()
                         for(fixture in DraftRealCaptureFixtures.captures) {
