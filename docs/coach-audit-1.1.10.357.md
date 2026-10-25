@@ -123,3 +123,14 @@ el límite vertical corregido. Cuando una captura real no coincide, la prueba
 aislada registra ahora el texto y las cajas que devuelve directamente ML Kit
 sobre esos píxeles redimensionados. Esa evidencia es exclusivamente
 diagnóstica: no alimenta el estado del escáner ni sustituye nombres esperados.
+
+# Coach 1.1.10.369 — build 1085
+
+La evidencia directa eliminó la ambigüedad. En 854 × 480 ML Kit devolvió
+`HIN` como toda la fila de Jhin porque el emblema de maestría cubre el trazo de
+la J. Esa lectura observada se admite únicamente en la banda de título; sigue
+rechazada dentro de apodos o frases. En 1920 × 822 ML Kit no produjo ninguna
+línea para `VI`. La variante que separa el color del título aliado se incorpora
+ahora como otro recorte de la misma página OCR ya existente, sin una nueva
+invocación, sin retratos y sin ampliar la banda hacia el invocador. Las pruebas
+negativas impiden que `XCS HIN` o `Mi HIN` confirmen un campeón.

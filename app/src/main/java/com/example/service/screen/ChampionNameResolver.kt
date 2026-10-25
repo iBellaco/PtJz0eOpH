@@ -242,6 +242,10 @@ object ChampionNameResolver {
     // Son lecturas de la línea completa del campeón, no abreviaturas ni
     // extracción de tokens desde un nombre de invocador.
     private val observedFullTitleAliases = mapOf(
+        // On the 854x480 real capture the leading mastery emblem covers the
+        // J stroke and ML Kit returns this complete title row as HIN. This is
+        // accepted only by findChampionInNameBand, never inside a nickname.
+        "hin" to "jhin",
         "olielar" to "volibear",
         "olieea" to "volibear",
         "oliela" to "volibear",
