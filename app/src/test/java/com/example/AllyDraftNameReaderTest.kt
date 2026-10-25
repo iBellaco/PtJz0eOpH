@@ -68,6 +68,8 @@ class AllyDraftNameReaderTest {
         assertEquals("vi",ChampionNameResolver.findChampionInNameBand("FVI",catalog)?.id)
         assertNull(AllyDraftNameReader.readTitleRows(listOf("VI" to 25),10,catalog,20).champion)
         assertNull(AllyDraftNameReader.readTitleRows(listOf("V" to 0,"I" to 25),10,catalog,20).champion)
+        assertEquals("vi",ChampionNameResolver.findChampionInNameBand("VI VI VI",catalog)?.id)
+        assertNull(ChampionNameResolver.findChampionInNameBand("VI VEX VI",catalog))
     }
 
     @Test fun laneTitlesBecomeNamesInTheSameBandInBothLanguages() {

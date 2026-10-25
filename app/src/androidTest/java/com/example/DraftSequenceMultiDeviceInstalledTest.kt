@@ -357,6 +357,17 @@ class DraftSequenceMultiDeviceInstalledTest {
                                                             JSONObject().put("text",line.text).put("bounds",line.boundingBox.toString())
                                                         })))
                                                 } finally { alternatives.bitmap.recycle() }
+                                                val repeated=DraftNameAtlas.repeatedShortAlliedTitleAlternative(atlas,tile)
+                                                    ?: continue
+                                                try {
+                                                    val read=diagnosticRecognizer.process(
+                                                        com.google.mlkit.vision.common.InputImage.fromBitmap(repeated.bitmap,0)).await()
+                                                    shortDiagnostics.put(JSONObject().put("slot",tile.slot)
+                                                        .put("variant","repeated-captured-pixels").put("text",read.text)
+                                                        .put("lines",JSONArray(read.textBlocks.flatMap { it.lines }.map { line ->
+                                                            JSONObject().put("text",line.text).put("bounds",line.boundingBox.toString())
+                                                        })))
+                                                } finally { repeated.bitmap.recycle() }
                                             }
                                             realCheck.put("shortTitleDiagnostics",shortDiagnostics)
                                         } finally { atlas.bitmap.recycle() }

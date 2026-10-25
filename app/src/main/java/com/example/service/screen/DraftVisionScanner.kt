@@ -825,6 +825,17 @@ object DraftVisionScanner {
                     shortAlternatives.forEach { if(!it.bitmap.isRecycled) it.bitmap.recycle() }
                     throw error
                 }
+                val repeatedShortAlternatives=mutableListOf<DraftNameAtlas>()
+                try {
+                    for((tile,_) in unresolved) if(tile.ally && unresolvedReading(tile)) {
+                        DraftNameAtlas.repeatedShortAlliedTitleAlternative(atlas,tile)
+                            ?.let(repeatedShortAlternatives::add)
+                    }
+                    if(repeatedShortAlternatives.isNotEmpty()) readAlternatives(repeatedShortAlternatives)
+                } catch(error:Throwable) {
+                    repeatedShortAlternatives.forEach { if(!it.bitmap.isRecycled) it.bitmap.recycle() }
+                    throw error
+                }
                 val observedTitleIds=(targetedAllyReadings.toList()+targetedEnemyReadings.toList())
                     .mapNotNull { it.champion?.id }.toSet()
                 if(observedTitleIds.size<9 && unresolved.any { (tile,_) ->

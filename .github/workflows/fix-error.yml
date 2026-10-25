@@ -218,7 +218,13 @@ jobs:
           emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
           script: |
             python3 tools/verify-targeted-red-magic.py
-            python3 tools/verify-draft-sequence-device.py
+            overall_status=0
+            for target_case in sequence-49-enemy-first sequence-56-ally-first sequence-63-enemy-first; do
+              if ! COACH_SEQUENCE_TARGETS="$target_case" python3 tools/verify-draft-sequence-device.py; then
+                overall_status=1
+              fi
+            done
+            exit "$overall_status"
       - name: Conservar evidencia release de todos los errores conocidos
         if: always()
         uses: actions/upload-artifact@v5

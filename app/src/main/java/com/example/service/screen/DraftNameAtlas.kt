@@ -344,12 +344,11 @@ internal class DraftNameAtlas private constructor(val bitmap: Bitmap, val tiles:
                 (prior.region.height() * 2.5f).toInt().coerceAtLeast(1))
             val sourceHeight = prior.region.height()
             val targets = listOf(48, 72, 96)
-            val polarities = 2
             val cellWidth = targets.maxOf { target ->
                 kotlin.math.round(sourceWidth * target.toFloat() / sourceHeight).toInt()
             } + GUTTER * 2
             val cellHeight = targets.max() + GUTTER * 2
-            val bitmap = Bitmap.createBitmap(cellWidth, cellHeight * targets.size * polarities,
+            val bitmap = Bitmap.createBitmap(cellWidth, cellHeight * targets.size,
                 Bitmap.Config.ARGB_8888)
             val canvas = Canvas(bitmap).apply { drawColor(Color.BLACK) }
             try {
@@ -359,37 +358,21 @@ internal class DraftNameAtlas private constructor(val bitmap: Bitmap, val tiles:
                     val isolated = sample.copy(Bitmap.Config.ARGB_8888, true)
                     try {
                         isolateTitleColor(isolated)
-                        val inverted = isolated.copy(Bitmap.Config.ARGB_8888, true)
-                        val invertedPixels = IntArray(inverted.width * inverted.height)
-                        inverted.getPixels(invertedPixels, 0, inverted.width, 0, 0,
-                            inverted.width, inverted.height)
-                        for (i in invertedPixels.indices) {
-                            invertedPixels[i] = if (invertedPixels[i] == Color.BLACK) Color.WHITE else Color.BLACK
-                        }
-                        inverted.setPixels(invertedPixels, 0, inverted.width, 0, 0,
-                            inverted.width, inverted.height)
                         val source = Rect(
                             tile.source.left + inset * tile.source.width() / prior.region.width(),
                             tile.source.top,
                             tile.source.left + (inset + sourceWidth) * tile.source.width() / prior.region.width(),
                             tile.source.bottom
                         )
-                        val tiles = try {
-                            targets.flatMapIndexed { targetIndex, target ->
-                                listOf(isolated, inverted).mapIndexed { polarity, input ->
-                                    val width = kotlin.math.round(sourceWidth * target.toFloat() / sourceHeight)
-                                        .toInt().coerceAtLeast(1)
-                                    val index = targetIndex * polarities + polarity
-                                    val top = index * cellHeight + GUTTER
-                                    val region = Rect(GUTTER, top, GUTTER + width, top + target)
-                                    canvas.drawBitmap(input, null, region, null)
-                                    tile.copy(source = source, region = region, original = false,
-                                        contrast = true, titleMinY = 0, titleMaxY = target,
-                                        badgeRemoved = true, contentInsetLeft = 0)
-                                }
-                            }
-                        } finally {
-                            inverted.recycle()
+                        val tiles = targets.mapIndexed { index, target ->
+                            val width = kotlin.math.round(sourceWidth * target.toFloat() / sourceHeight)
+                                .toInt().coerceAtLeast(1)
+                            val top = index * cellHeight + GUTTER
+                            val region = Rect(GUTTER, top, GUTTER + width, top + target)
+                            canvas.drawBitmap(isolated, null, region, null)
+                            tile.copy(source = source, region = region, original = false,
+                                contrast = true, titleMinY = 0, titleMaxY = target,
+                                badgeRemoved = true, contentInsetLeft = 0)
                         }
                         return DraftNameAtlas(bitmap, tiles)
                     } finally { isolated.recycle() }
@@ -398,6 +381,36 @@ internal class DraftNameAtlas private constructor(val bitmap: Bitmap, val tiles:
                 bitmap.recycle()
                 throw error
             }
+        }
+
+        /** Repeat the same captured short-title pixels on one baseline. Native
+         * OCR may reject an isolated two-glyph crop as an icon but accepts the
+         * repeated optical evidence as text. No glyph or expected name is drawn. */
+        fun repeatedShortAlliedTitleAlternative(atlas: DraftNameAtlas, tile: Tile): DraftNameAtlas? {
+            val short = shortAlliedTitleAlternatives(atlas, tile) ?: return null
+            try {
+                val sampleTile = short.tiles.single { it.region.height() == 72 }
+                val repeats = 3
+                val gap = 24
+                val width = sampleTile.region.width() * repeats + gap * (repeats - 1)
+                val height = sampleTile.region.height()
+                val bitmap = Bitmap.createBitmap(width + GUTTER * 2, height + GUTTER * 2,
+                    Bitmap.Config.ARGB_8888)
+                try {
+                    val canvas = Canvas(bitmap).apply { drawColor(Color.WHITE) }
+                    for (index in 0 until repeats) {
+                        val left = GUTTER + index * (sampleTile.region.width() + gap)
+                        canvas.drawBitmap(short.bitmap, sampleTile.region,
+                            Rect(left, GUTTER, left + sampleTile.region.width(), GUTTER + height), null)
+                    }
+                    return DraftNameAtlas(bitmap, listOf(sampleTile.copy(
+                        region = Rect(GUTTER, GUTTER, GUTTER + width, GUTTER + height),
+                        titleMinY = 0, titleMaxY = height)))
+                } catch (error: Throwable) {
+                    bitmap.recycle()
+                    throw error
+                }
+            } finally { short.bitmap.recycle() }
         }
 
         /** Native OCR expects ordinary text sizes, not enlarged title logos.
