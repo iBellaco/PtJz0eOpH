@@ -8,6 +8,30 @@ internal fun OverlayState.syncScannedAllies(result: DraftScanResult): Int {
     val next = com.example.service.screen.AllyDraftReconciler.hudAllies(
         allies.toList(), result.alliesByRole, manualLockedAllySlots.filterValues { it }.keys,
         result.allyRolesBySlot.values.toSet())
+        .toMutableList()
+
+    // The draft rows are authoritative even when only some lane labels were
+    // readable in the same frame. This is common in the release OCR path:
+    // champion titles are visible, while a mastery badge or the viewer mask
+    // can hide one or more lane labels. Do not discard those slot identities
+    // merely because the role map is incomplete. Known roles keep their normal
+    // HUD position; unresolved slots fill the remaining positions in the
+    // stable Wild Rift row order.
+    val usedIds = next.filterNotNull().mapTo(mutableSetOf()) { it.id }
+    val unresolvedSlots = result.alliesBySlot.entries
+        .sortedBy { it.key }
+        .filter { it.value.id !in usedIds }
+    for ((slot, champion) in unresolvedSlots) {
+        val roleIndex = result.allyRolesBySlot[slot]
+            ?.let(com.example.service.screen.AllyDraftReconciler.roles::indexOf)
+            ?.takeIf { it >= 0 }
+        val target = roleIndex?.takeIf { it !in manualLockedAllySlots && next[it] == null }
+            ?: next.indices.firstOrNull { it !in manualLockedAllySlots && next[it] == null }
+        if (target != null) {
+            next[target] = champion
+            usedIds += champion.id
+        }
+    }
     val changes = next.indices.count { allies[it]?.id != next[it]?.id }
     androidx.compose.runtime.snapshots.Snapshot.withMutableSnapshot {
         next.forEachIndexed { index, champion -> allies[index] = champion }

@@ -1,4 +1,4 @@
-# Coach 1.1.10.358 — build 1074
+# Coach 1.1.10.359 — build 1075
 
 La ejecución anterior no llegó a probar el APK: el cambio de recuperación
 OCR dejó una lambda no suspendible alrededor de `await()`, por lo que
@@ -8,6 +8,12 @@ secundario cuando la compilación no generaba la carpeta.
 
 Se corrigió la ejecución suspendible del OCR y el artefacto ahora avisa si no
 existe, conservando como causa principal el error real de compilación.
+
+La compilación posterior pasó, pero la prueba instalada R8 reveló un segundo
+fallo: el escáner devolvía los campeones por slot, mientras el HUD los
+descartaba si faltaba alguna etiqueta de línea. El HUD ahora conserva los
+slots reconocidos y completa solo las posiciones aún vacías; no infiere la
+identidad a partir de retratos ni altera la décima selección visual.
 
 La prueba aislada del APK release identificó el fallo de reconocimiento: en
 `liveRedMagicCapturesWithMasteryBadgesAndViewerMasksFillTheActualHub`, el modo
