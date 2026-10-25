@@ -10,6 +10,7 @@ on:
       - 'app/src/androidTest/java/com/example/DraftRivalNameInstalledTest.kt'
       - 'app/src/test/resources/scanner/targeted-sequence-plan.json'
       - 'tools/verify-draft-sequence-device.py'
+      - 'tools/verify-targeted-red-magic.py'
       - '.github/workflows/fix-error.yml'
   workflow_dispatch:
 
@@ -185,19 +186,4 @@ jobs:
           disable-animations: true
           emulator-boot-timeout: 300
           emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
-          script: |
-            python3 - <<'PY'
-            import subprocess
-            for apk in ('app/build/outputs/apk/release/app-release.apk',
-                        'app/build/outputs/apk/androidTest/release/app-release-androidTest.apk'):
-                subprocess.run(['adb', 'install', '-r', apk], check=True, timeout=120)
-            methods = ('liveRedMagicCapturesWithMasteryBadgesAndViewerMasksFillTheActualHub',
-                       'reportedSlotsDoNotLoseSennaOrMalphiteAndFinishWithVisualRivalPick')
-            for method in methods:
-                result = subprocess.run(['adb', 'shell', 'am', 'instrument', '-w', '-r',
-                    '-e', 'class', 'com.example.DraftRivalNameInstalledTest#' + method,
-                    'com.Coach.test/androidx.test.runner.AndroidJUnitRunner'],
-                    capture_output=True, text=True, timeout=900)
-                print(result.stdout + result.stderr, flush=True)
-                assert result.returncode == 0 and 'OK (1 test)' in result.stdout, method + ' falló'
-            PY
+          script: python3 tools/verify-targeted-red-magic.py
