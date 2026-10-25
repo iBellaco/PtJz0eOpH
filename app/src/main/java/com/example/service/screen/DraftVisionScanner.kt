@@ -770,14 +770,17 @@ object DraftVisionScanner {
                 }
                 // Keep established OCR image sizes unchanged. A fourth stacked
                 // variant changed the detector input size on previously passing
-                // profiles, so color separation is an independent final request.
+                // profiles. Pack every remaining color-separated title into
+                // bounded pages so one frame never makes one native OCR request
+                // per unresolved slot.
+                val colorAlternatives=mutableListOf<DraftNameAtlas>()
                 for((tile,bounds) in unresolved) {
                     val reading=(if(tile.ally) targetedAllyReadings else targetedEnemyReadings)[tile.slot]
                     if(!reading.ambiguous && reading.champion==null && reading.lane==null) {
-                        val color=DraftNameAtlas.focusTitle(atlas,tile,bounds,colorOnly=true)
-                        try { readTitles(color) } finally { color.bitmap.recycle() }
+                        colorAlternatives += DraftNameAtlas.focusTitle(atlas,tile,bounds,colorOnly=true)
                     }
                 }
+                if(colorAlternatives.isNotEmpty()) readAlternatives(colorAlternatives)
                 val observedTitleIds=(targetedAllyReadings.toList()+targetedEnemyReadings.toList())
                     .mapNotNull { it.champion?.id }.toSet()
                 if(observedTitleIds.size<9 && unresolved.any { (tile,_) ->

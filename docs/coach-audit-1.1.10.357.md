@@ -91,3 +91,14 @@ de modo que el flujo corto reproduce exactamente el fallo que bloquearía la
 validación completa. La cobertura de 142 nombres continúa siendo obligatoria.
 Estas comprobaciones son de APK instalado sobre imágenes redimensionadas en
 emulador; no se declaran como pruebas físicas de esos modelos.
+
+# Coach 1.1.10.366 — build 1082
+
+La primera corrección reprodujo ya las capturas reales, pero ambas excedieron
+el límite de 60 segundos durante la recuperación: no fue un falso resultado de
+Jhin o Vi, sino demasiadas solicitudes OCR secuenciales. La banda completa se
+prueba ahora antes que las cajas parciales y las separaciones por color de los
+slots pendientes se agrupan en páginas acotadas. Se mantienen los mismos
+píxeles, límites de título y reglas de nombre completo, reduciendo llamadas sin
+inyectar identidades. La validación aislada conserva el límite de 60 segundos
+para detectar una regresión de rendimiento real.
