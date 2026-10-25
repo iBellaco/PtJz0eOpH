@@ -86,14 +86,18 @@ class DraftRivalNameInstalledTest {
                     val hud = com.example.service.OverlayState()
                     // Automatic selection starts with this path, before a full
                     // screen read can hide failures in the isolated name bands.
+                    var lastFast: com.example.service.screen.DraftScanResult? = null
                     repeat(2) {
                         val result = scanner.scanDraftFromBitmap(bitmap, context, null, com.example.model.LaneRole.MID,
                             namesOnly = true)
+                        lastFast = result
                         assertTrue("Fast Red Magic $name: ${result.statusMessage}", result.isSuccessful)
                         hud.syncScannedAllies(result)
                         hud.syncScannedEnemies(result)
                     }
-                    assertEquals("Fast Red Magic $name allies", setOf("senna", "fizz", "nami", "malphite"),
+                    assertEquals("Fast Red Magic $name allies; slots=${lastFast?.alliesBySlot}; " +
+                        "rivals=${lastFast?.enemiesBySlot}; roles=${lastFast?.allyRolesBySlot}; " +
+                        "status=${lastFast?.statusMessage}", setOf("senna", "fizz", "nami", "malphite"),
                         hud.allies.filterNotNull().map { it.id }.toSet())
                     scanner.resetSlotMemory()
                     scanner.publishScreenDiagnosticText((0 until masks.length()).map { physicalRect(masks.getJSONArray(it)) }, sourceWidth, sourceHeight)
@@ -239,7 +243,9 @@ class DraftRivalNameInstalledTest {
             assertEquals("senna", selected.alliesBySlot[0]?.id)
             assertEquals("fizz", selected.alliesBySlot[1]?.id)
             assertEquals("nami", selected.alliesBySlot[2]?.id)
-            assertEquals("malphite", selected.alliesBySlot[3]?.id)
+            assertEquals("allies=${selected.alliesBySlot}; rivals=${selected.enemiesBySlot}; " +
+                "roles=${selected.allyRolesBySlot}; status=${selected.statusMessage}",
+                "malphite", selected.alliesBySlot[3]?.id)
             assertNull("Lane title must not select the Akshan preview", selected.alliesBySlot[4])
             assertEquals("malphite", selected.alliesByRole[com.example.model.LaneRole.TOP]?.id)
             assertEquals("senna", selected.alliesByRole[com.example.model.LaneRole.ADC]?.id)
