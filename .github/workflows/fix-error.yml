@@ -77,6 +77,7 @@ jobs:
           python3 -m unittest discover -s tools -p 'test_scanner_sequence_audit.py'
           ./gradlew :app:testDebugUnitTest --rerun \
             --tests com.example.AllyDraftNameReaderTest \
+            --tests com.example.DraftNameAtlasTest \
             --tests com.example.ChampionNameResolverCoverageTest \
             --max-workers=1 --stacktrace --no-daemon
 
@@ -87,10 +88,11 @@ jobs:
           from pathlib import Path
           plan = json.loads(Path('app/src/test/resources/scanner/targeted-sequence-plan.json').read_text())
           profiles = [profile for case in plan['cases'] for profile in case['profiles']]
-          assert len(plan['cases']) == 3 and plan['modelProfiles'] == len(profiles) == 4
+          assert len(plan['cases']) == 4 and plan['modelProfiles'] == len(profiles) == 5
           assert all(profile['model'] != 'resolution-simulation' for profile in profiles)
           assert {case['id'] for case in plan['cases']} == {
-              'sequence-42-ally-first', 'sequence-49-enemy-first', 'sequence-52-ally-first'}
+              'sequence-42-ally-first', 'sequence-49-enemy-first',
+              'sequence-52-ally-first', 'sequence-56-ally-first'}
           PY
           mkdir -p app/build/generated/scanner-sequence-assets
           cp app/src/test/resources/scanner/targeted-sequence-plan.json \
@@ -138,7 +140,7 @@ jobs:
           retention-days: 14
 
   targeted-red-magic-release:
-    name: Dos fallos Red Magic en APK release
+    name: Red Magic y P20 en APK release
     runs-on: ubuntu-latest
     timeout-minutes: 40
     steps:
@@ -174,6 +176,11 @@ jobs:
         env:
           COACH_ALLOW_EPHEMERAL_TEST_SIGNING: 'true'
         run: python3 .github/scripts/restore-private-signing.py
+      - name: Preparar el caso P20 que bloqueó la validación completa
+        run: |
+          mkdir -p app/build/generated/scanner-sequence-assets
+          cp app/src/test/resources/scanner/targeted-sequence-plan.json \
+            app/build/generated/scanner-sequence-assets/scanner-sequence-plan.json
       - name: Compilar los dos APK release con R8
         env:
           COACH_ALLOW_EPHEMERAL_TEST_SIGNING: 'true'
@@ -194,8 +201,13 @@ jobs:
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
           sudo chmod 666 /dev/kvm || true
-      - name: Reproducir únicamente las dos pruebas instaladas fallidas
+      - name: Reproducir Red Magic y el título VI de P20 en release
         uses: reactivecircus/android-emulator-runner@v2
+        env:
+          COACH_SEQUENCE_SHARD: '13'
+          COACH_SEQUENCE_PREFLIGHT: 'true'
+          COACH_SEQUENCE_TARGETS: 'sequence-56-ally-first'
+          COACH_SEQUENCE_BUILD_TYPE: release
         with:
           api-level: 34
           arch: x86_64
@@ -203,4 +215,14 @@ jobs:
           disable-animations: true
           emulator-boot-timeout: 300
           emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
-          script: python3 tools/verify-targeted-red-magic.py
+          script: |
+            python3 tools/verify-targeted-red-magic.py
+            python3 tools/verify-draft-sequence-device.py
+      - name: Conservar evidencia release de P20
+        if: always()
+        uses: actions/upload-artifact@v5
+        with:
+          name: fix-error-p20-release-evidence
+          path: app/build/reports/scanner-sequence-preflight/
+          if-no-files-found: warn
+          retention-days: 14

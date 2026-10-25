@@ -793,14 +793,22 @@ object DraftVisionScanner {
                         } finally { focused.bitmap.recycle() }
                     }
                 }
-                // Keep established OCR image sizes unchanged. A fourth stacked
-                // variant changed the detector input size on previously passing
-                // profiles, so color separation is an independent final request.
-                for((tile,bounds) in unresolved) {
-                    if(!tile.ally && unresolvedReading(tile)) {
-                        val color=DraftNameAtlas.focusTitle(atlas,tile,bounds,colorOnly=true)
-                        try { readTitles(color) } finally { color.bitmap.recycle() }
+                // Keep established OCR image sizes unchanged. Color separation is
+                // a final independent request over the same title pixels. It is
+                // also required for short allied titles: on the 1920x924 P20
+                // geometry ML Kit sees neither VI nor a native line box in the
+                // intact band, while the badge-suppressed color crop retains both
+                // glyphs. Pack all unresolved crops so this remains one bounded
+                // request rather than one request per slot.
+                val colorAlternatives=mutableListOf<DraftNameAtlas>()
+                try {
+                    for((tile,bounds) in unresolved) if(unresolvedReading(tile)) {
+                        colorAlternatives += DraftNameAtlas.focusTitle(atlas,tile,bounds,colorOnly=true)
                     }
+                    if(colorAlternatives.isNotEmpty()) readAlternatives(colorAlternatives)
+                } catch(error:Throwable) {
+                    colorAlternatives.forEach { if(!it.bitmap.isRecycled) it.bitmap.recycle() }
+                    throw error
                 }
                 val observedTitleIds=(targetedAllyReadings.toList()+targetedEnemyReadings.toList())
                     .mapNotNull { it.champion?.id }.toSet()

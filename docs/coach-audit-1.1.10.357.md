@@ -184,3 +184,20 @@ siguen intactos. También se conserva explícitamente el estado `unpicked` leíd
 en el atlas. La prueba aislada mantiene el límite original de 60 segundos para
 comprobar la mejora real; continúa siendo una prueba instalada en emulador con
 capturas redimensionadas, no una prueba física de Xiaomi o Nothing.
+
+# Coach 1.1.10.373 — build 1089
+
+El preflight release con R8 encontró un fallo distinto en
+`sequence-56-ally-first`: sobre la geometría 1920 × 924 asociada al perfil P20,
+la captura real `draft-mel-nine.jpg` reconoció ocho títulos pero omitió `VI`.
+Al faltar el noveno nombre, la política correcta bloqueó también el décimo pick
+visual de Teemo. El OCR directo confirmó que ML Kit no devolvía ni el nombre ni
+una caja de texto para esa fila; no fue una asignación a otro campeón.
+
+La recuperación final por color, que ya trabaja exclusivamente con píxeles de
+la banda calibrada, se aplica ahora también a títulos aliados pendientes. Usa la
+alternativa sin emblema de maestría, conserva ambos glifos y agrupa todos los
+pendientes en una sola solicitud acotada. No acepta abreviaturas, retratos ni
+identidades esperadas. El flujo aislado incorpora exactamente P20 1920 × 924 y
+lo ejecuta sobre APK release con R8. La evidencia continúa siendo una captura
+redimensionada instalada en emulador, no una prueba física del P20.
