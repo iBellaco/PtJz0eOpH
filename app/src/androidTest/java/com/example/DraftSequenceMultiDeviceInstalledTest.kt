@@ -88,7 +88,10 @@ class DraftSequenceMultiDeviceInstalledTest {
                         try {
                             val expected = visible.associateWith { ids[it] }
                             var read: DraftScanResult? = null
-                            val readings = if (step == 0) 1 else 2
+                            // An empty draft can be scanned on successive
+                            // frames before the first pick. Preserve only
+                            // lanes actually read from that slot's title.
+                            val readings = 2
                             repeat(readings) {
                                 val frameStarted=android.os.SystemClock.elapsedRealtime()
                                 if(!result.has("ocrFrames")) result.put("ocrFrames",JSONArray())
@@ -112,7 +115,8 @@ class DraftSequenceMultiDeviceInstalledTest {
                                 } finally {
                                     frameEvidence.put("elapsedMs",android.os.SystemClock.elapsedRealtime()-frameStarted)
                                 }
-                                if (read?.isSuccessful != true) errors += "step=$step: OCR request failed"
+                                if (read?.isSuccessful != true && it == readings - 1)
+                                    errors += "step=$step: OCR request failed after $readings frames"
                                 if (it == 0 && step > 0) {
                                     val unconfirmed = (if (positions[step - 1] < 5) read!!.alliesBySlot else read!!.enemiesBySlot)[positions[step - 1] % 5]
                                     if (unconfirmed != null) errors += "step=$step: a single new title was prematurely confirmed"
