@@ -5,6 +5,8 @@ on:
     branches: [fix-error]
     paths:
       - 'app/src/main/java/com/example/service/screen/**'
+      - 'app/src/main/java/com/example/service/ConfirmedLastPickHud.kt'
+      - 'app/build.gradle.kts'
       - 'app/src/test/java/com/example/ChampionNameResolverCoverageTest.kt'
       - 'app/src/test/java/com/example/AllyDraftNameReaderTest.kt'
       - 'app/src/androidTest/java/com/example/DraftSequenceMultiDeviceInstalledTest.kt'
