@@ -44,10 +44,11 @@ class AllyDraftNameReaderTest {
     }
 
     @Test fun shortNamesStillRequireAnExactTitleInsideTheTitleRow() {
-        for(text in listOf("IA","rVI","XCS IA"))
+        for(text in listOf("IA","rVI","XVI","VI7","XCS IA"))
             assertNull(AllyDraftNameReader.readTitleRows(listOf(text to 0),10,catalog,20).champion)
         assertEquals("vi",AllyDraftNameReader.readTitleRows(listOf("VI" to 0),10,catalog,20).champion?.id)
         assertEquals("vi",AllyDraftNameReader.readTitleRows(listOf("FVI" to 0),10,catalog,20).champion?.id)
+        assertEquals("vi",ChampionNameResolver.findChampionInNameBand("FVI",catalog)?.id)
         assertNull(AllyDraftNameReader.readTitleRows(listOf("VI" to 25),10,catalog,20).champion)
         assertNull(AllyDraftNameReader.readTitleRows(listOf("V" to 0,"I" to 25),10,catalog,20).champion)
     }

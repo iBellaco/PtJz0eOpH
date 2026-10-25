@@ -261,6 +261,11 @@ object ChampionNameResolver {
         variants.add(normalized.replace(mastery, ""))
         variants.add(normalized.replace(Regex("^(?:m\\d{1,2}|lvl?\\d{1,2})"), ""))
         val compact = normalizeCompact(title)
+        // A measured mastery glyph can be read as F immediately before the
+        // complete two-letter title VI. Limit this exception to that exact
+        // three-character reading; dropping arbitrary prefixes would accept
+        // nicknames or Roman numerals as a selected champion.
+        if (compact == "fvi") variants.add("vi")
         if (compact.length > 3 && compact.first() in "wvykutxnhodcljfpsza0123456789") variants.add(compact.drop(1))
         for (variant in variants) {
             val key = normalizeCompact(variant)

@@ -5,6 +5,7 @@ on:
     branches: [fix-error]
     paths:
       - 'app/src/main/java/com/example/service/screen/**'
+      - 'app/src/test/java/com/example/AllyDraftNameReaderTest.kt'
       - 'app/src/androidTest/java/com/example/DraftSequenceMultiDeviceInstalledTest.kt'
       - 'app/src/test/resources/scanner/targeted-sequence-plan.json'
       - 'tools/verify-draft-sequence-device.py'
@@ -61,6 +62,9 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: 9.3.1
+
+      - name: Reproducir la prueba exacta que bloqueó el flujo completo
+        run: ./gradlew :app:testDebugUnitTest --rerun --tests com.example.AllyDraftNameReaderTest --max-workers=1 --stacktrace --no-daemon
 
       - name: Preparar el plan de dos perfiles de teléfono
         run: |

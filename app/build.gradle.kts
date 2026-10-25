@@ -24,8 +24,8 @@ android {
     applicationId = "com.Coach"
     minSdk = 24
     targetSdk = 36
-    versionCode = 1069
-    versionName = "1.1.10.353"
+    versionCode = 1070
+    versionName = "1.1.10.354"
     ndk {
       abiFilters.addAll(listOf("armeabi-v7a", "arm64-v8a", "x86_64"))
     }
