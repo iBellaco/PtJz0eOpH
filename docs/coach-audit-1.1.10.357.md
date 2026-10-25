@@ -1,4 +1,4 @@
-# Coach 1.1.10.359 — build 1075
+# Coach 1.1.10.361 — build 1077
 
 La ejecución anterior no llegó a probar el APK: el cambio de recuperación
 OCR dejó una lambda no suspendible alrededor de `await()`, por lo que
@@ -16,10 +16,10 @@ slots reconocidos y completa solo las posiciones aún vacías; no infiere la
 identidad a partir de retratos ni altera la décima selección visual.
 
 La ejecución siguiente confirmó ese caso y dejó pendiente `Malphite` en el
-slot aliado 3 de la prueba de diez slots. El lector ahora prioriza un nombre de
-campeón exacto cuando OCR mezcla ese nombre con una palabra de línea en la
-misma fila; dos campeones distintos o dos líneas distintas continúan siendo
-ambiguos.
+slot aliado 3 de la prueba de diez slots. La corrección queda limitada a una
+palabra de línea y un nombre exacto en la misma fila física; dos campeones
+distintos, dos líneas distintas o un nombre en la fila del invocador continúan
+siendo ambiguos.
 
 La prueba aislada del APK release identificó el fallo de reconocimiento: en
 `liveRedMagicCapturesWithMasteryBadgesAndViewerMasksFillTheActualHub`, el modo

@@ -24,7 +24,21 @@ object AllyDraftNameReader {
         val top = titleLines.minOfOrNull { it.second } ?: return Reading()
         val title = titleLines.filter { it.second <= top + rowDistance }.map { it.first }
         val reading = read(title, catalog)
-        if (reading.ambiguous || reading.lane != null || reading.champion != null) return reading
+        if (reading.ambiguous) {
+            // OCR can attach a lane token to the same physical baseline as an
+            // exact champion title. Only resolve that narrow case when both
+            // pieces are on the same row; a champion on a later player-name
+            // row must remain ambiguous and cannot select the slot.
+            val names = title.mapNotNull { ChampionNameResolver.findChampionInNameBand(it, catalog) }
+                .distinctBy { it.id }
+            val lanes = title.mapNotNull { laneTitle(it) }.distinct()
+            val sameRow = titleLines.map { it.second }.let { ys ->
+                ys.maxOrNull()?.minus(ys.minOrNull() ?: 0) ?: Int.MAX_VALUE
+            } <= rowDistance.coerceAtLeast(1) / 3
+            if (sameRow && names.size == 1 && lanes.size == 1) return Reading(champion = names.single())
+            return reading
+        }
+        if (reading.lane != null || reading.champion != null) return reading
         // Native OCR can split the complete title into neighbouring fragments
         // (V + I, LEE + SIN). Join only this same top row, never the player's row.
         val joined=read(listOf(title.joinToString(" ")),catalog)
@@ -42,10 +56,6 @@ object AllyDraftNameReader {
         val lanes = (lines + lines.joinToString(" ")).mapNotNull { laneTitle(it) }.distinct()
         return when {
             names.size > 1 || lanes.size > 1 -> Reading(ambiguous = true)
-            // A selected title is stronger evidence than a lane word that OCR
-            // may have merged into the same row (for example, a badge or a
-            // wrapped role label). The champion name is exact and must not be
-            // discarded merely because that extra lane token is present.
             names.size == 1 -> Reading(champion = names.single())
             lanes.size == 1 -> Reading(lane = lanes.single())
             else -> Reading()
