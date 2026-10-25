@@ -144,3 +144,26 @@ real del componente eliminado. Solo la alternativa sin emblema recorta ese
 margen negro y usa una ventana compacta; las variantes intacta y de contraste
 conservan toda la banda para nombres largos. No se añade una solicitud OCR, no
 se usa el retrato y no se infiere la identidad por la posición del slot.
+
+# Coach 1.1.10.371 — build 1087
+
+La validación completa confirmó el reconocimiento anterior y encontró una
+regresión de arranque en `sequence-42-ally-first` (captura 1920 × 863,
+perfiles Xiaomi 14 y Nothing Phone 2a). La primera carga del modelo local de
+ML Kit tardó 74 s; el siguiente frame tardó 60 s y el primer pick agotó su
+límite de 60 s antes de devolver un resultado. El servicio precarga ahora el
+reconocedor con una imagen negra de 32 × 32, sin texto del juego, antes de
+recibir el primer frame grande. La prueba instalada ejecuta la misma precarga
+fuera del presupuesto de cada frame y conserva sin cambios el límite de 60 s.
+
+Como prevención adicional, los textos localizados `Jugador`, `Jogador` y
+`Player`, seguidos exactamente de los slots 1–5, se clasifican como puestos
+aún no seleccionados. No son alias de campeones y no pueden confirmar una
+identidad; evitan recuperaciones OCR innecesarias en capturas reales donde el
+juego todavía muestra esos placeholders.
+
+El flujo aislado reproduce los diez pasos de esa geometría con el mismo límite
+de 60 segundos, además de conservar las pruebas unitarias y la cobertura exacta
+de los 142 nombres. La evidencia sigue siendo un APK instalado en emulador con
+capturas redimensionadas; Xiaomi 14 y Phone (2a) no se registran como pruebas
+físicas.

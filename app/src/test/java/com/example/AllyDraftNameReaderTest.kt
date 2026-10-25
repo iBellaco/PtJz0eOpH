@@ -8,6 +8,20 @@ import org.junit.Assert.*
 import org.junit.Test
 
 class AllyDraftNameReaderTest {
+    @Test fun exactLocalizedPlayerPlaceholdersStopUnknownTitleRecovery() {
+        val catalog = listOf(Champion(id = "brand", name = "Brand"))
+        for (text in listOf("Jugador 1", "JUGADOR5", "Jogador 3", "PLAYER 4")) {
+            val reading = AllyDraftNameReader.read(listOf(text), catalog)
+            assertTrue(text, reading.unpicked)
+            assertNull(text, reading.champion)
+            assertNull(text, reading.lane)
+            assertFalse(text, reading.ambiguous)
+        }
+        for (text in listOf("Jugador", "Jugador 6", "Jugador 3 Brand", "SuperPlayer 1"))
+            assertFalse(text, AllyDraftNameReader.read(listOf(text), catalog).unpicked)
+        assertTrue(AllyDraftNameReader.readTitleRows(listOf("Jugador 2" to 20), 10, catalog).unpicked)
+        assertEquals("brand", AllyDraftNameReader.read(listOf("BRAND", "Jugador 2"), catalog).champion?.id)
+    }
     @Test fun compressedWholeTitlesAreCorrectedWithoutAcceptingNicknamesOrAbbreviations() {
         val champs=listOf("jhin","nocturne","volibear").map { Champion(id=it,name=it) }
         assertEquals("jhin",ChampionNameResolver.findChampionInNameBand("HIN",champs)?.id)
@@ -31,6 +45,8 @@ class AllyDraftNameReaderTest {
         assertEquals(original, AllyDraftNameReader.preferOriginal(AllyDraftNameReader.Reading(), original))
         val ambiguous = AllyDraftNameReader.Reading(ambiguous = true)
         assertEquals(ambiguous, AllyDraftNameReader.preferOriginal(ambiguous, altered))
+        val unpicked = AllyDraftNameReader.Reading(unpicked = true)
+        assertEquals(unpicked, AllyDraftNameReader.preferOriginal(unpicked, altered))
     }
     private val catalog = listOf("yuumi", "jinx", "brand", "skarner", "pantheon", "vi", "lee_sin").map {
         Champion(id = it, name = if (it == "lee_sin") "Lee Sin" else it)

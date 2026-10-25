@@ -45,6 +45,8 @@ class DraftSequenceMultiDeviceInstalledTest {
         val failures = mutableListOf<String>()
         val evidence = File(context.getExternalFilesDir(null), if(preflight) "scanner-sequence-preflight" else "scanner-sequence-audit").apply { mkdirs() }
         try {
+            assertTrue("El OCR local no pudo precargarse",
+                kotlinx.coroutines.withTimeout(120_000L) { scanner.warmUpTextRecognizer() })
             scanner.overlayRect = null
             scanner.debugTextRects = emptyList()
             for (index in 0 until cases.length()) {

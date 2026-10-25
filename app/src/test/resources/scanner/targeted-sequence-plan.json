@@ -1,6 +1,6 @@
 {
   "sourceSha256": "42661aefae3df52b4f72047c039120f72f4ea351139d7bdb5107351fe8d3342a",
-  "modelProfiles": 2,
+  "modelProfiles": 4,
   "physicalDevicesTested": [],
   "cases": [
     {
@@ -44,6 +44,30 @@
       "language": "pt",
       "shard": 0,
       "preflight": true
+    },
+    {
+      "capture": [1920, 863],
+      "layout": "uniform-fit-reference",
+      "prior": "default",
+      "calibration": {
+        "nameBandScale": 0.9988412,
+        "allySlotXRatios": [0.07421875, 0.07421875, 0.07421875, 0.07421875, 0.07421875],
+        "enemySlotXRatios": [0.95625, 0.95625, 0.95625, 0.95625, 0.95625],
+        "allySlotYRatios": [0.19304349, 0.3278212, 0.46061695, 0.5924217, 0.7252174],
+        "enemySlotYRatios": [0.19243981, 0.32828224, 0.4611281, 0.593974, 0.7258211],
+        "allySlotDiameterRatios": [0.109872535, 0.109872535, 0.109872535, 0.109872535, 0.10487833],
+        "enemySlotDiameterRatios": [0.109872535, 0.109872535, 0.109872535, 0.109872535, 0.109872535]
+      },
+      "safeInsets": [0, 0, 0, 0],
+      "profiles": [
+        {"profile": "xiaomi-14", "model": "Xiaomi 14", "display": [2670, 1200], "specification": "https://www.mi.com/global/product/xiaomi-14/specs/"},
+        {"profile": "requested-nothing-2a", "model": "Phone (2a) (1084-wide published panel)", "display": [2412, 1084], "specification": "https://ca-en.nothing.tech/pages/phone-2a"}
+      ],
+      "id": "sequence-42-ally-first",
+      "firstPick": true,
+      "language": "es",
+      "shard": 0,
+      "preflight": false
     }
   ]
 }

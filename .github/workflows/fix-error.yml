@@ -80,17 +80,17 @@ jobs:
             --tests com.example.ChampionNameResolverCoverageTest \
             --max-workers=1 --stacktrace --no-daemon
 
-      - name: Preparar el plan de las dos regresiones actuales
+      - name: Preparar el plan de la regresión actual
         run: |
           python3 - <<'PY'
           import json
           from pathlib import Path
           plan = json.loads(Path('app/src/test/resources/scanner/targeted-sequence-plan.json').read_text())
           profiles = [profile for case in plan['cases'] for profile in case['profiles']]
-          assert len(plan['cases']) == 2 and plan['modelProfiles'] == len(profiles) == 2
+          assert len(plan['cases']) == 3 and plan['modelProfiles'] == len(profiles) == 4
           assert all(profile['model'] != 'resolution-simulation' for profile in profiles)
           assert {case['id'] for case in plan['cases']} == {
-              'sequence-49-enemy-first', 'sequence-52-ally-first'}
+              'sequence-42-ally-first', 'sequence-49-enemy-first', 'sequence-52-ally-first'}
           PY
           mkdir -p app/build/generated/scanner-sequence-assets
           cp app/src/test/resources/scanner/targeted-sequence-plan.json \
@@ -109,12 +109,12 @@ jobs:
           sudo udevadm trigger --name-match=kvm
           sudo chmod 666 /dev/kvm || true
 
-      - name: Ejecutar OCR nativo de las dos regresiones actuales
+      - name: Ejecutar la secuencia completa que agotó el tiempo
         uses: reactivecircus/android-emulator-runner@v2
         env:
           COACH_SEQUENCE_SHARD: '0'
-          COACH_SEQUENCE_PREFLIGHT: 'true'
-          COACH_SEQUENCE_TARGETS: 'sequence-49-enemy-first,sequence-52-ally-first'
+          COACH_SEQUENCE_PREFLIGHT: 'false'
+          COACH_SEQUENCE_TARGETS: 'sequence-42-ally-first'
           COACH_SEQUENCE_BUILD_TYPE: debug
         with:
           api-level: 34
@@ -130,7 +130,7 @@ jobs:
         uses: actions/upload-artifact@v5
         with:
           name: fix-error-ocr-evidence
-          path: app/build/reports/scanner-sequence-preflight/
+          path: app/build/reports/scanner-sequence/
           # The evidence directory is created only after the emulator phase;
           # a compile failure must remain the primary diagnostic instead of
           # being replaced by a misleading missing-artifact failure.

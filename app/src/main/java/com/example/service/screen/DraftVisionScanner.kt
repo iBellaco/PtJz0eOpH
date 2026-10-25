@@ -13,6 +13,8 @@ import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import java.util.Locale
 
 enum class DiagnosticStatus {
@@ -451,6 +453,8 @@ object DraftVisionScanner {
     }
 
     private var recognizerInstance: com.google.mlkit.vision.text.TextRecognizer? = null
+    private val recognizerWarmupMutex = Mutex()
+    @Volatile private var recognizerWarmedUp = false
 
     // Memoria persistente de los nombres de invocador aliados (0..4)
     private val allySummonerNamesCache = mutableMapOf<Int, String>()
@@ -567,6 +571,26 @@ object DraftVisionScanner {
             }
         }
         return recognizerInstance
+    }
+
+    /** Load the on-device text model before the first large draft frame. The
+     * warm-up contains no game text and cannot confirm a slot or champion. */
+    suspend fun warmUpTextRecognizer(): Boolean = recognizerWarmupMutex.withLock {
+        if (recognizerWarmedUp) return@withLock true
+        val recognizer = getRecognizer() ?: return@withLock false
+        val sample = Bitmap.createBitmap(32, 32, Bitmap.Config.ARGB_8888).apply {
+            eraseColor(android.graphics.Color.BLACK)
+        }
+        try {
+            recognizer.process(InputImage.fromBitmap(sample, 0)).await()
+            recognizerWarmedUp = true
+            true
+        } catch (error: Throwable) {
+            AppLogger.w(TAG, "No se pudo precargar OCR local: ${error.message}")
+            false
+        } finally {
+            sample.recycle()
+        }
     }
 
     suspend fun scanDraftFromBitmap(
@@ -691,7 +715,7 @@ object DraftVisionScanner {
                 }
                 fun unresolvedReading(tile: DraftNameAtlas.Tile) =
                     (if(tile.ally) targetedAllyReadings else targetedEnemyReadings)[tile.slot].let {
-                        !it.ambiguous && it.champion==null && it.lane==null
+                        !it.ambiguous && it.champion==null && it.lane==null && !it.unpicked
                     }
                 suspend fun readAlternatives(inputs: List<DraftNameAtlas>) {
                     try {
@@ -708,7 +732,7 @@ object DraftVisionScanner {
                 readTitles(atlas)
                 val unresolved = atlas.tiles.filter { tile -> tile.original &&
                     (if(tile.ally) targetedAllyReadings else targetedEnemyReadings)[tile.slot].let {
-                        !it.ambiguous && it.champion==null && it.lane==null
+                        !it.ambiguous && it.champion==null && it.lane==null && !it.unpicked
                     }
                 }.mapNotNull { tile -> DraftNameAtlas.titleFocusBounds(atlas,tile)?.let { tile to it } }
                 if (unresolved.isNotEmpty()) {
@@ -769,8 +793,7 @@ object DraftVisionScanner {
                 // variant changed the detector input size on previously passing
                 // profiles, so color separation is an independent final request.
                 for((tile,bounds) in unresolved) {
-                    val reading=(if(tile.ally) targetedAllyReadings else targetedEnemyReadings)[tile.slot]
-                    if(!tile.ally && !reading.ambiguous && reading.champion==null && reading.lane==null) {
+                    if(!tile.ally && unresolvedReading(tile)) {
                         val color=DraftNameAtlas.focusTitle(atlas,tile,bounds,colorOnly=true)
                         try { readTitles(color) } finally { color.bitmap.recycle() }
                     }
@@ -778,9 +801,7 @@ object DraftVisionScanner {
                 val observedTitleIds=(targetedAllyReadings.toList()+targetedEnemyReadings.toList())
                     .mapNotNull { it.champion?.id }.toSet()
                 if(observedTitleIds.size<9 && unresolved.any { (tile,_) ->
-                    (if(tile.ally) targetedAllyReadings else targetedEnemyReadings)[tile.slot].let {
-                        !it.ambiguous && it.champion==null && it.lane==null
-                    }
+                    unresolvedReading(tile)
                 }) {
                     val scene=DraftNameAtlas.sceneTitles(bitmap,calib,exclusions+listOfNotNull(frameOverlay))
                     try { readTitles(scene) } finally { scene.bitmap.recycle() }
