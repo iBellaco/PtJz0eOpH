@@ -327,6 +327,62 @@ internal class DraftNameAtlas private constructor(val bitmap: Bitmap, val tiles:
             }
         }
 
+        /**
+         * Present a genuinely short allied title to the native recognizer without
+         * the mastery badge or the empty margin that makes two glyphs look like an
+         * icon.  The samples contain only captured pixels: no champion name,
+         * expected value or rendered glyph is introduced.
+         */
+        fun shortAlliedTitleAlternatives(atlas: DraftNameAtlas, tile: Tile): DraftNameAtlas? {
+            require(tile.original && tile in atlas.tiles && tile.ally)
+            val prior = atlas.tiles.single {
+                it.ally && it.slot == tile.slot && !it.original && !it.contrast
+            }
+            val inset = prior.contentInsetLeft.coerceIn(0, (prior.region.width() - 1).coerceAtLeast(0))
+            if (inset == 0) return null
+            val sourceWidth = minOf(prior.region.width() - inset,
+                (prior.region.height() * 2.5f).toInt().coerceAtLeast(1))
+            val sourceHeight = prior.region.height()
+            val targets = listOf(48, 72, 96)
+            val cellWidth = targets.maxOf { target ->
+                kotlin.math.round(sourceWidth * target.toFloat() / sourceHeight).toInt()
+            } + GUTTER * 2
+            val cellHeight = targets.max() + GUTTER * 2
+            val bitmap = Bitmap.createBitmap(cellWidth, cellHeight * targets.size,
+                Bitmap.Config.ARGB_8888)
+            val canvas = Canvas(bitmap).apply { drawColor(Color.BLACK) }
+            try {
+                val sample = Bitmap.createBitmap(atlas.bitmap, prior.region.left + inset,
+                    prior.region.top, sourceWidth, sourceHeight)
+                try {
+                    val isolated = sample.copy(Bitmap.Config.ARGB_8888, true)
+                    try {
+                        isolateTitleColor(isolated)
+                        val source = Rect(
+                            tile.source.left + inset * tile.source.width() / prior.region.width(),
+                            tile.source.top,
+                            tile.source.left + (inset + sourceWidth) * tile.source.width() / prior.region.width(),
+                            tile.source.bottom
+                        )
+                        val tiles = targets.mapIndexed { index, target ->
+                            val width = kotlin.math.round(sourceWidth * target.toFloat() / sourceHeight)
+                                .toInt().coerceAtLeast(1)
+                            val top = index * cellHeight + GUTTER
+                            val region = Rect(GUTTER, top, GUTTER + width, top + target)
+                            canvas.drawBitmap(isolated, null, region, null)
+                            tile.copy(source = source, region = region, original = false,
+                                contrast = true, titleMinY = 0, titleMaxY = target,
+                                badgeRemoved = true, contentInsetLeft = 0)
+                        }
+                        return DraftNameAtlas(bitmap, tiles)
+                    } finally { isolated.recycle() }
+                } finally { sample.recycle() }
+            } catch (error: Throwable) {
+                bitmap.recycle()
+                throw error
+            }
+        }
+
         /** Native OCR expects ordinary text sizes, not enlarged title logos.
          * Resample the same measured line at three character heights, retaining
          * all variants, source rectangles and title-only acceptance bounds. */

@@ -810,6 +810,21 @@ object DraftVisionScanner {
                     colorAlternatives.forEach { if(!it.bitmap.isRecycled) it.bitmap.recycle() }
                     throw error
                 }
+                // ML Kit can reject a real two-letter title as an icon when a
+                // mastery badge and its wide empty margin share the same crop.
+                // Retry only still-unresolved allied rows with the badge-cleared
+                // captured pixels at ordinary OCR sizes. No expected title or
+                // portrait result participates in this recovery.
+                val shortAlternatives=mutableListOf<DraftNameAtlas>()
+                try {
+                    for((tile,_) in unresolved) if(tile.ally && unresolvedReading(tile)) {
+                        DraftNameAtlas.shortAlliedTitleAlternatives(atlas,tile)?.let(shortAlternatives::add)
+                    }
+                    if(shortAlternatives.isNotEmpty()) readAlternatives(shortAlternatives)
+                } catch(error:Throwable) {
+                    shortAlternatives.forEach { if(!it.bitmap.isRecycled) it.bitmap.recycle() }
+                    throw error
+                }
                 val observedTitleIds=(targetedAllyReadings.toList()+targetedEnemyReadings.toList())
                     .mapNotNull { it.champion?.id }.toSet()
                 if(observedTitleIds.size<9 && unresolved.any { (tile,_) ->

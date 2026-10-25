@@ -432,6 +432,45 @@ class DraftNameAtlasTest {
                 assertEquals("Real VI pixels must remain unchanged",original.getPixel(x,y),cleaned.getPixel(x,y))
         } finally { cleaned.recycle();original.recycle();source.recycle() }
     }
+
+    @Test fun realMelCaptureOffersBadgeFreeShortTitlePixelsAtNativeOcrSizes() {
+        val raw=javaClass.getResourceAsStream("/portraits/draft-mel-nine.jpg").use {
+            android.graphics.BitmapFactory.decodeStream(it)!!
+        }
+        val frame=Bitmap.createBitmap(1920,924,Bitmap.Config.ARGB_8888)
+        try {
+            Canvas(frame).apply {
+                drawColor(Color.BLACK)
+                drawBitmap(raw,null,android.graphics.Rect(0,28,1920,896),Paint(Paint.FILTER_BITMAP_FLAG))
+            }
+            val measured=VisionCalibrationConfig(nameBandScale=.93939394f,
+                allySlotXRatios=List(5){.0703125f},enemySlotXRatios=List(5){.9578125f},
+                allySlotYRatios=listOf(.21428572f,.340504f,.4648661f,.5883001f,.7126623f),
+                enemySlotYRatios=listOf(.21266234f,.33917627f,.4628995f,.5866226f,.70941556f),
+                allySlotDiameterRatios=listOf(.10333333f,.10333333f,.10333333f,.10333333f,.09863636f),
+                enemySlotDiameterRatios=List(5){.10333333f})
+            val config=com.example.service.screen.DraftFrameGeometry.forViewport(measured,
+                android.graphics.Rect(0,28,1920,896),1920,924)
+            val atlas=DraftNameAtlas.create(frame,config,emptyList())
+            try {
+                val tile=atlas.tiles.single { it.original && it.ally && it.slot==4 }
+                val alternatives=DraftNameAtlas.shortAlliedTitleAlternatives(atlas,tile)
+                    ?: throw AssertionError("The measured mastery badge must produce a compact title retry")
+                try {
+                    assertEquals(listOf(48,72,96),alternatives.tiles.map { it.region.height() })
+                    assertTrue(alternatives.tiles.all { it.badgeRemoved && tile.source.contains(it.source) })
+                    assertTrue("The retry must retain real dark title strokes on white",
+                        alternatives.tiles.any { part ->
+                            (part.region.top until part.region.bottom).any { y ->
+                                (part.region.left until part.region.right).any { x ->
+                                    alternatives.bitmap.getPixel(x,y)==Color.BLACK
+                                }
+                            }
+                        })
+                } finally { alternatives.bitmap.recycle() }
+            } finally { atlas.bitmap.recycle() }
+        } finally { frame.recycle();raw.recycle() }
+    }
     @Test fun retryKeepsExactMaskedPixelsAndTitleBoundsButOnlyTheUnresolvedSlots() {
         val source = Bitmap.createBitmap(1280,579,Bitmap.Config.ARGB_8888)
         Canvas(source).drawColor(Color.rgb(40,60,90))
