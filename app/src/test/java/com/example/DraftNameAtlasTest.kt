@@ -433,43 +433,54 @@ class DraftNameAtlasTest {
         } finally { cleaned.recycle();original.recycle();source.recycle() }
     }
 
-    @Test fun realMelCaptureOffersBadgeFreeShortTitlePixelsAtNativeOcrSizes() {
+    @Test fun realMelCaptureOffersBadgeFreeShortTitlePixelsAtEveryKnownFailingSize() {
         val raw=javaClass.getResourceAsStream("/portraits/draft-mel-nine.jpg").use {
             android.graphics.BitmapFactory.decodeStream(it)!!
         }
-        val frame=Bitmap.createBitmap(1920,924,Bitmap.Config.ARGB_8888)
-        try {
-            Canvas(frame).apply {
-                drawColor(Color.BLACK)
-                drawBitmap(raw,null,android.graphics.Rect(0,28,1920,896),Paint(Paint.FILTER_BITMAP_FLAG))
-            }
-            val measured=VisionCalibrationConfig(nameBandScale=.93939394f,
-                allySlotXRatios=List(5){.0703125f},enemySlotXRatios=List(5){.9578125f},
-                allySlotYRatios=listOf(.21428572f,.340504f,.4648661f,.5883001f,.7126623f),
+        try { for((height,measured) in listOf(
+            822 to VisionCalibrationConfig(nameBandScale=1f,allySlotXRatios=List(5){.09453125f},
+                enemySlotXRatios=List(5){.934375f},allySlotYRatios=listOf(.19343066f,.32791665f,.4604249f,.5919443f,.72445256f),
+                enemySlotYRatios=listOf(.19102918f,.3270292f,.46002918f,.59302914f,.72502923f),
+                allySlotDiameterRatios=listOf(.11f,.11f,.11f,.11f,.105f),enemySlotDiameterRatios=List(5){.11f}),
+            889 to VisionCalibrationConfig(nameBandScale=.97637796f,allySlotXRatios=List(5){.07109375f},
+                enemySlotXRatios=List(5){.9585937f},allySlotYRatios=listOf(.1989882f,.33052906f,.4601355f,.58877474f,.7183811f),
+                enemySlotYRatios=listOf(.19883494f,.33162236f,.4614806f,.5913389f,.7202207f),
+                allySlotDiameterRatios=List(5){.10740157f},enemySlotDiameterRatios=List(5){.10740157f}),
+            924 to VisionCalibrationConfig(nameBandScale=.93939394f,allySlotXRatios=List(5){.0703125f},
+                enemySlotXRatios=List(5){.9578125f},allySlotYRatios=listOf(.21428572f,.340504f,.4648661f,.5883001f,.7126623f),
                 enemySlotYRatios=listOf(.21266234f,.33917627f,.4628995f,.5866226f,.70941556f),
                 allySlotDiameterRatios=listOf(.10333333f,.10333333f,.10333333f,.10333333f,.09863636f),
                 enemySlotDiameterRatios=List(5){.10333333f})
-            val config=com.example.service.screen.DraftFrameGeometry.forViewport(measured,
-                android.graphics.Rect(0,28,1920,896),1920,924)
-            val atlas=DraftNameAtlas.create(frame,config,emptyList())
+        )) {
+            val frame=Bitmap.createBitmap(1920,height,Bitmap.Config.ARGB_8888)
             try {
-                val tile=atlas.tiles.single { it.original && it.ally && it.slot==4 }
-                val alternatives=DraftNameAtlas.shortAlliedTitleAlternatives(atlas,tile)
-                    ?: throw AssertionError("The measured mastery badge must produce a compact title retry")
+                val scale=minOf(1920f/raw.width,height.toFloat()/raw.height)
+                val width=(raw.width*scale).toInt();val renderedHeight=(raw.height*scale).toInt()
+                val viewport=android.graphics.Rect((1920-width)/2,(height-renderedHeight)/2,
+                    (1920-width)/2+width,(height-renderedHeight)/2+renderedHeight)
+                Canvas(frame).apply { drawColor(Color.BLACK);drawBitmap(raw,null,viewport,Paint(Paint.FILTER_BITMAP_FLAG)) }
+                // These are measured/manual frame-relative profiles. Production
+                // deliberately does not normalize them through the black bars.
+                val atlas=DraftNameAtlas.create(frame,measured,emptyList())
                 try {
-                    assertEquals(listOf(48,72,96),alternatives.tiles.map { it.region.height() })
-                    assertTrue(alternatives.tiles.all { it.badgeRemoved && tile.source.contains(it.source) })
-                    assertTrue("The retry must retain real dark title strokes on white",
-                        alternatives.tiles.any { part ->
-                            (part.region.top until part.region.bottom).any { y ->
-                                (part.region.left until part.region.right).any { x ->
-                                    alternatives.bitmap.getPixel(x,y)==Color.BLACK
+                    val tile=atlas.tiles.single { it.original && it.ally && it.slot==4 }
+                    val alternatives=DraftNameAtlas.shortAlliedTitleAlternatives(atlas,tile)
+                        ?: throw AssertionError("$height must produce a compact title retry")
+                    try {
+                        assertEquals(listOf(48,72,96),alternatives.tiles.map { it.region.height() })
+                        assertTrue(alternatives.tiles.all { it.badgeRemoved && tile.source.contains(it.source) })
+                        assertTrue("$height retry must retain real dark title strokes on white",
+                            alternatives.tiles.any { part ->
+                                (part.region.top until part.region.bottom).any { y ->
+                                    (part.region.left until part.region.right).any { x ->
+                                        alternatives.bitmap.getPixel(x,y)==Color.BLACK
+                                    }
                                 }
-                            }
-                        })
-                } finally { alternatives.bitmap.recycle() }
-            } finally { atlas.bitmap.recycle() }
-        } finally { frame.recycle();raw.recycle() }
+                            })
+                    } finally { alternatives.bitmap.recycle() }
+                } finally { atlas.bitmap.recycle() }
+            } finally { frame.recycle() }
+        } } finally { raw.recycle() }
     }
     @Test fun retryKeepsExactMaskedPixelsAndTitleBoundsButOnlyTheUnresolvedSlots() {
         val source = Bitmap.createBitmap(1280,579,Bitmap.Config.ARGB_8888)

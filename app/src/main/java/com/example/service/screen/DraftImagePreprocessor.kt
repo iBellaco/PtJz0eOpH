@@ -68,6 +68,41 @@ object DraftImagePreprocessor {
                 removedRight=maxOf(removedRight,eraseRight)
             }
         }
+        if (removedRight == 0) {
+            // At some ultrawide resize factors the anti-aliased mastery crest is
+            // split into several components, so no individual component reaches
+            // the badge thresholds above.  Locate the first group of vertically
+            // tall gold columns instead. Champion title glyphs are shorter than
+            // this crest; this only reports a measured crop boundary and never
+            // supplies a champion identity.
+            val tall = BooleanArray(iconWidth)
+            for (x in 0 until iconWidth) {
+                var top = crop.height
+                var bottom = -1
+                var count = 0
+                for (y in 0 until crop.height) if (gold[y * iconWidth + x]) {
+                    top = minOf(top, y)
+                    bottom = maxOf(bottom, y)
+                    count++
+                }
+                tall[x] = bottom >= top && bottom - top + 1 >= crop.height * .40f &&
+                    count >= maxOf(2, crop.height / 10)
+            }
+            var start = 0
+            while (start < iconWidth && !tall[start]) start++
+            if (start < iconWidth) {
+                var right = start
+                var gap = 0
+                var x = start + 1
+                while (x < iconWidth && gap <= 2) {
+                    if (tall[x]) { right = x; gap = 0 } else gap++
+                    x++
+                }
+                if (right - start + 1 >= maxOf(2, (crop.height * .08f).toInt())) {
+                    removedRight = right + 1
+                }
+            }
+        }
         return removedRight
     }
 

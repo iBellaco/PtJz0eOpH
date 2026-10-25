@@ -1,6 +1,6 @@
 {
   "sourceSha256": "42661aefae3df52b4f72047c039120f72f4ea351139d7bdb5107351fe8d3342a",
-  "modelProfiles": 5,
+  "modelProfiles": 6,
   "physicalDevicesTested": [],
   "cases": [
     {
@@ -88,6 +88,27 @@
       "firstPick": true,
       "language": "es",
       "shard": 13,
+      "preflight": true
+    },
+    {
+      "capture": [1920, 889],
+      "layout": "uniform-fit-reference",
+      "prior": "default",
+      "calibration": {
+        "nameBandScale": 0.97637796,
+        "allySlotXRatios": [0.07109375, 0.07109375, 0.07109375, 0.07109375, 0.07109375],
+        "enemySlotXRatios": [0.9585937, 0.9585937, 0.9585937, 0.9585937, 0.9585937],
+        "allySlotYRatios": [0.1989882, 0.33052906, 0.4601355, 0.58877474, 0.7183811],
+        "enemySlotYRatios": [0.19883494, 0.33162236, 0.4614806, 0.5913389, 0.7202207],
+        "allySlotDiameterRatios": [0.10740157, 0.10740157, 0.10740157, 0.10740157, 0.10251968],
+        "enemySlotDiameterRatios": [0.10740157, 0.10740157, 0.10740157, 0.10740157, 0.10740157]
+      },
+      "safeInsets": [0, 0, 0, 0],
+      "profiles": [{"profile": "requested-mate60pro-display", "model": "Mate 60 Pro (solo pantalla)", "display": [2720, 1260], "specification": "https://www.dxomark.com/v2-huawei-mate-60-pro-display-test/"}],
+      "id": "sequence-63-enemy-first",
+      "firstPick": false,
+      "language": "pt",
+      "shard": 0,
       "preflight": true
     }
   ]

@@ -88,11 +88,12 @@ jobs:
           from pathlib import Path
           plan = json.loads(Path('app/src/test/resources/scanner/targeted-sequence-plan.json').read_text())
           profiles = [profile for case in plan['cases'] for profile in case['profiles']]
-          assert len(plan['cases']) == 4 and plan['modelProfiles'] == len(profiles) == 5
+          assert len(plan['cases']) == 5 and plan['modelProfiles'] == len(profiles) == 6
           assert all(profile['model'] != 'resolution-simulation' for profile in profiles)
           assert {case['id'] for case in plan['cases']} == {
               'sequence-42-ally-first', 'sequence-49-enemy-first',
-              'sequence-52-ally-first', 'sequence-56-ally-first'}
+              'sequence-52-ally-first', 'sequence-56-ally-first',
+              'sequence-63-enemy-first'}
           PY
           mkdir -p app/build/generated/scanner-sequence-assets
           cp app/src/test/resources/scanner/targeted-sequence-plan.json \
@@ -116,7 +117,7 @@ jobs:
         env:
           COACH_SEQUENCE_SHARD: '0'
           COACH_SEQUENCE_PREFLIGHT: 'false'
-          COACH_SEQUENCE_TARGETS: 'sequence-42-ally-first'
+          COACH_SEQUENCE_TARGETS: 'sequence-42-ally-first,sequence-52-ally-first'
           COACH_SEQUENCE_BUILD_TYPE: debug
         with:
           api-level: 34
@@ -140,7 +141,7 @@ jobs:
           retention-days: 14
 
   targeted-red-magic-release:
-    name: Red Magic y P20 en APK release
+    name: Todos los errores conocidos en APK release
     runs-on: ubuntu-latest
     timeout-minutes: 40
     steps:
@@ -176,7 +177,7 @@ jobs:
         env:
           COACH_ALLOW_EPHEMERAL_TEST_SIGNING: 'true'
         run: python3 .github/scripts/restore-private-signing.py
-      - name: Preparar el caso P20 que bloqueó la validación completa
+      - name: Preparar todos los casos que bloquearon la validación completa
         run: |
           mkdir -p app/build/generated/scanner-sequence-assets
           cp app/src/test/resources/scanner/targeted-sequence-plan.json \
@@ -201,12 +202,12 @@ jobs:
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
           sudo chmod 666 /dev/kvm || true
-      - name: Reproducir Red Magic y el título VI de P20 en release
+      - name: Reproducir Red Magic y todos los errores OCR conocidos en release
         uses: reactivecircus/android-emulator-runner@v2
         env:
           COACH_SEQUENCE_SHARD: '13'
           COACH_SEQUENCE_PREFLIGHT: 'true'
-          COACH_SEQUENCE_TARGETS: 'sequence-56-ally-first'
+          COACH_SEQUENCE_TARGETS: 'sequence-49-enemy-first,sequence-56-ally-first,sequence-63-enemy-first'
           COACH_SEQUENCE_BUILD_TYPE: release
         with:
           api-level: 34
@@ -218,11 +219,11 @@ jobs:
           script: |
             python3 tools/verify-targeted-red-magic.py
             python3 tools/verify-draft-sequence-device.py
-      - name: Conservar evidencia release de P20
+      - name: Conservar evidencia release de todos los errores conocidos
         if: always()
         uses: actions/upload-artifact@v5
         with:
-          name: fix-error-p20-release-evidence
+          name: fix-error-known-release-evidence
           path: app/build/reports/scanner-sequence-preflight/
           if-no-files-found: warn
           retention-days: 14
