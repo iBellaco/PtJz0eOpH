@@ -128,7 +128,7 @@ if __name__ == '__main__':
     parser.add_argument('reports', type=Path)
     parser.add_argument('--execution-result', required=True)
     args = parser.parse_args()
-    reports = [json.loads(path.read_text()) for path in sorted(args.reports.glob('**/sequence-[0-3].json'))]
+    reports = [json.loads(path.read_text()) for path in sorted(args.reports.glob('**/sequence-[0-9]*.json'))]
     summary = summarize(json.loads(args.portraits.read_text()), reports)
     if args.execution_result != 'success':
         summary['status'] = 'FAIL'

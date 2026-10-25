@@ -58,6 +58,33 @@ class SequenceAuditTest(unittest.TestCase):
                                             for row in case['profiles']})
         self.assertEqual('PASS', reporter.summarize(fixture, self.reports(fixture))['status'])
 
+    def test_non_android_and_tablet_profiles_do_not_gate_the_overlay_release(self):
+        fixture = self.fixture()
+        template = fixture['profiles'][2]
+        fixture['profiles'] += [
+            dict(template, profile='iphone-14', manufacturer='Apple', model='iPhone 14'),
+            dict(template, profile='xiaomi-pad-6', manufacturer='Xiaomi', model='Xiaomi Pad 6'),
+            dict(template, profile='android-tablet', manufacturer='Samsung', model='Android Tablet'),
+        ]
+        fixture['resolutionProfiles'] += 3
+        plan = planner.make_plan(fixture)
+        selected = {row['profile'] for case in plan['cases'] for row in case['profiles']}
+        self.assertEqual({'red-magic-reference', 'poco-x7-pro', 'redmi', 'xiaomi'}, selected)
+        self.assertEqual(4, plan['modelProfiles'])
+        self.assertEqual(3, plan['geometryOnlyProfiles'])
+
+    def test_native_phone_matrix_is_split_into_bounded_shards(self):
+        fixture = self.fixture()
+        template = fixture['profiles'][2]
+        fixture['profiles'] = [dict(template, profile=f'phone-{index}', capture=[1920, 700 + index],
+                                    display=[2400, 900 + index])
+                               for index in range(planner.SHARD_COUNT * 2)]
+        fixture['resolutionProfiles'] = len(fixture['profiles'])
+        plan = planner.make_plan(fixture)
+        self.assertEqual(set(range(planner.SHARD_COUNT)), {case['shard'] for case in plan['cases']})
+        self.assertLessEqual(max(sum(case['shard'] == shard for case in plan['cases'])
+                                 for shard in range(planner.SHARD_COUNT)), 2)
+
     def test_missing_ocr_steps_wrong_names_tenth_duplicates_and_changes_cannot_pass(self):
         for mutation in ['missing', 'step', 'name', 'forged_expected', 'tenth', 'duplicate', 'geometry', 'source', 'roles', 'wrong_role', 'transport','preflight']:
             with self.subTest(mutation=mutation):

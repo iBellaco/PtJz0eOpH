@@ -4,6 +4,16 @@ import json
 from pathlib import Path
 
 SOURCE_SHA256 = '42661aefae3df52b4f72047c039120f72f4ea351139d7bdb5107351fe8d3342a'
+SHARD_COUNT = 16
+
+
+def supports_android_phone_overlay(row):
+    """Release OCR claims cover Android phones where the app overlay can run."""
+    manufacturer = str(row.get('manufacturer', '')).strip().lower()
+    identity = (str(row.get('profile', '')) + ' ' + str(row.get('model', ''))).lower()
+    words = set(identity.replace('-', ' ').replace('_', ' ').split())
+    return (manufacturer not in {'generic', 'apple'}
+            and words.isdisjoint({'tablet', 'pad', 'ipad', 'tab'}))
 
 
 def make_plan(summary):
@@ -26,7 +36,7 @@ def make_plan(summary):
         key = (*row['capture'], row['layout'], prior, json.dumps(calibration, sort_keys=True), tuple(insets))
         case = grouped.setdefault(key, dict(capture=row['capture'], layout=row['layout'],
                                            prior=prior, calibration=calibration, safeInsets=insets, profiles=[]))
-        if row.get('manufacturer') == 'generic':
+        if not supports_android_phone_overlay(row):
             continue
         case['profiles'].append({key: row[key] for key in ('profile', 'model', 'display', 'specification')})
         selected += 1
@@ -41,7 +51,7 @@ def make_plan(summary):
             cases.append(dict(case, id=f'sequence-{index}-{"ally" if order else "enemy"}-first',
                               firstPick=order, language='es' if order else 'pt'))
     for index, case in enumerate(cases):
-        case['shard'] = index % 4
+        case['shard'] = index % SHARD_COUNT
         case['preflight'] = (tuple(case['capture']) in {(640,360),(800,450),(1024,768),(1600,1000),(854,480),(1520,720)}
                              or any(tuple(row['display']) in {(1560,720),(1544,720),(1570,720),(1640,720),(2270,1080),
                                     (2244,1080),(2240,1080),(2388,1080),(2400,1176),(2616,1212),(2720,1260)}

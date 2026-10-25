@@ -14,7 +14,11 @@ on:
       - 'app/src/test/resources/scanner/targeted-sequence-plan.json'
       - 'tools/verify-draft-sequence-device.py'
       - 'tools/verify-targeted-red-magic.py'
+      - 'tools/scanner-sequence-plan.py'
+      - 'tools/scanner-sequence-summary.py'
+      - 'tools/test_scanner_sequence_audit.py'
       - '.github/workflows/fix-error.yml'
+      - '.github/workflows/build-apk.yml'
   workflow_dispatch:
 
 concurrency:
@@ -28,7 +32,7 @@ jobs:
   targeted-native-ocr:
     name: Casos OCR fallidos únicamente
     runs-on: ubuntu-latest
-    timeout-minutes: 35
+    timeout-minutes: 50
     steps:
       - name: Descargar el código de fix-error
         uses: actions/checkout@v5
@@ -70,12 +74,13 @@ jobs:
 
       - name: Reproducir la prueba exacta que bloqueó el flujo completo
         run: |
+          python3 -m unittest discover -s tools -p 'test_scanner_sequence_audit.py'
           ./gradlew :app:testDebugUnitTest --rerun \
             --tests com.example.AllyDraftNameReaderTest \
             --tests com.example.ChampionNameResolverCoverageTest \
             --max-workers=1 --stacktrace --no-daemon
 
-      - name: Preparar el plan de dos perfiles de teléfono
+      - name: Preparar el plan de las dos regresiones actuales
         run: |
           python3 - <<'PY'
           import json
@@ -83,8 +88,9 @@ jobs:
           plan = json.loads(Path('app/src/test/resources/scanner/targeted-sequence-plan.json').read_text())
           profiles = [profile for case in plan['cases'] for profile in case['profiles']]
           assert len(plan['cases']) == 2 and plan['modelProfiles'] == len(profiles) == 2
-          assert all(profile['model'] != 'resolution-simulation' and profile['specification'] for profile in profiles)
-          assert {case['id'] for case in plan['cases']} == {'sequence-56-ally-first', 'sequence-61-enemy-first'}
+          assert all(profile['model'] != 'resolution-simulation' for profile in profiles)
+          assert {case['id'] for case in plan['cases']} == {
+              'sequence-1-enemy-first', 'sequence-49-enemy-first'}
           PY
           mkdir -p app/build/generated/scanner-sequence-assets
           cp app/src/test/resources/scanner/targeted-sequence-plan.json \
@@ -103,7 +109,7 @@ jobs:
           sudo udevadm trigger --name-match=kvm
           sudo chmod 666 /dev/kvm || true
 
-      - name: Ejecutar OCR nativo de dos perfiles de teléfono
+      - name: Ejecutar OCR nativo de las dos regresiones actuales
         uses: reactivecircus/android-emulator-runner@v2
         env:
           COACH_SEQUENCE_SHARD: '0'

@@ -301,7 +301,7 @@ class DraftNameAtlasTest {
                     } finally { color.bitmap.recycle() }
                     val raw=focused.tiles.single { it.original }
                     assertTrue(tile.source.contains(raw.source))
-                    assertEquals(minOf(tile.titleMaxY,(tile.region.height()*.85f).toInt()),raw.titleMaxY)
+                    assertEquals("The focused crop is already title-only",raw.region.height(),raw.titleMaxY)
                     assertEquals((tile.region.height()*.30f).toInt(),raw.titleMinY)
                     assertEquals(tile.region.height(),raw.region.height())
                     for(y in 0 until raw.region.height()) for(x in 0 until raw.region.width())

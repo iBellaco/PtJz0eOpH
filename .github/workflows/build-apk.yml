@@ -562,7 +562,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        shard: [0, 1, 2, 3]
+        # Native ML Kit OCR is intentionally real and can take 6-16 minutes per
+        # geometry on a cold emulator. Keep at most three phone geometries in a
+        # runner so no valid sequence is truncated by the job deadline.
+        shard: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
     steps:
     - *id001
     - *id002

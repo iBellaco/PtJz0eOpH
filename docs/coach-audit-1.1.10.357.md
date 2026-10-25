@@ -46,3 +46,30 @@ de invocador ni afinidad de campeón para inventar selecciones.
 La cobertura de los 142 títulos del catálogo permanece en
 `ChampionNameResolverCoverageTest`. Las pruebas de imágenes/emulador siguen
 separadas de la evidencia física de Red Magic y POCO.
+
+# Coach 1.1.10.364 — build 1080
+
+La validación completa anterior completó 20 de 38 secuencias antes del límite
+de ejecución. Sus cuatro particiones eran demasiado grandes para el OCR nativo
+de ML Kit: los casos terminados tardaron entre seis y dieciséis minutos por
+geometría. La matriz de teléfonos se distribuye ahora en dieciséis particiones,
+con un máximo acotado de geometrías por emulador.
+
+El caso Xiaomi Pad 6 agotó el límite de un frame. Esa tableta no pertenece al
+alcance publicable del visor: el plan nativo ahora incluye exclusivamente
+teléfonos Android donde puede ejecutarse el overlay, y excluye perfiles
+genéricos, Apple y tabletas. Las transformaciones geométricas continúan en las
+pruebas unitarias, sin presentarlas como certificaciones de teléfonos.
+
+En POCO X7 Pro (captura 1920 × 864) y Xperia 1 V (captura 1920 × 822), la
+evidencia diagnóstica leía el título completo `VI`, pero el recorte de
+recuperación conservaba un límite vertical expresado en el atlas anterior y
+rechazaba esa misma línea después de reempaquetarla. El recorte enfocado ya es
+una banda exclusiva de título, por lo que ahora acepta toda su altura sin
+invadir la fila del invocador. Ambos perfiles se añadieron al flujo aislado
+`fix-error`; las regresiones release de Red Magic permanecen en su trabajo
+aislado independiente.
+
+La cobertura exacta de los 142 nombres sigue siendo obligatoria. Toda esta
+evidencia corresponde a imágenes redimensionadas y APK instalado en emulador;
+no se registra como prueba física de POCO, Xperia ni ningún otro modelo.

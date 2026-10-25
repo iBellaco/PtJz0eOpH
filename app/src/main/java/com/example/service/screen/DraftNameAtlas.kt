@@ -197,7 +197,12 @@ internal class DraftNameAtlas private constructor(val bitmap: Bitmap, val tiles:
                             tile.source.top,tile.source.left+(bounds.right*tile.source.width()+tile.region.width()-1)/tile.region.width(),tile.source.bottom)
                         tiles+=tile.copy(source=source,region=Rect(GUTTER,top,GUTTER+width,top+height),
                             original=variant==0,contrast=variant!=0,
-                            titleMinY=(height*.30f).toInt(),titleMaxY=minOf(tile.titleMaxY,(height*.85f).toInt()))
+                            titleMinY=(height*.30f).toInt(),
+                            // This crop contains only the calibrated title band:
+                            // calculateSlotNameRect already ends before the summoner row.
+                            // Reusing the atlas-relative cutoff here rejected a real VI
+                            // line near the bottom after the focused crop was repacked.
+                            titleMaxY=height)
                     } finally { crop.recycle() }
                 }
                 if(colorOnly) {
