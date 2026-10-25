@@ -41,7 +41,11 @@ object AllyDraftNameReader {
         val names = lines.mapNotNull { ChampionNameResolver.findChampionInNameBand(it, catalog) }.distinctBy { it.id }
         val lanes = (lines + lines.joinToString(" ")).mapNotNull { laneTitle(it) }.distinct()
         return when {
-            names.size > 1 || lanes.size > 1 || (names.isNotEmpty() && lanes.isNotEmpty()) -> Reading(ambiguous = true)
+            names.size > 1 || lanes.size > 1 -> Reading(ambiguous = true)
+            // A selected title is stronger evidence than a lane word that OCR
+            // may have merged into the same row (for example, a badge or a
+            // wrapped role label). The champion name is exact and must not be
+            // discarded merely because that extra lane token is present.
             names.size == 1 -> Reading(champion = names.single())
             lanes.size == 1 -> Reading(lane = lanes.single())
             else -> Reading()

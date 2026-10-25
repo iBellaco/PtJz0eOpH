@@ -15,6 +15,12 @@ descartaba si faltaba alguna etiqueta de línea. El HUD ahora conserva los
 slots reconocidos y completa solo las posiciones aún vacías; no infiere la
 identidad a partir de retratos ni altera la décima selección visual.
 
+La ejecución siguiente confirmó ese caso y dejó pendiente `Malphite` en el
+slot aliado 3 de la prueba de diez slots. El lector ahora prioriza un nombre de
+campeón exacto cuando OCR mezcla ese nombre con una palabra de línea en la
+misma fila; dos campeones distintos o dos líneas distintas continúan siendo
+ambiguos.
+
 La prueba aislada del APK release identificó el fallo de reconocimiento: en
 `liveRedMagicCapturesWithMasteryBadgesAndViewerMasksFillTheActualHub`, el modo
 rápido devolvía solo el slot aliado 0 (`Senna`) y omitía `Fizz`, `Nami` y
