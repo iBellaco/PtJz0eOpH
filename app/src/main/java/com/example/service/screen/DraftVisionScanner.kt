@@ -820,6 +820,7 @@ object DraftVisionScanner {
                     for((tile,_) in unresolved) if(tile.ally && unresolvedReading(tile)) {
                         DraftNameAtlas.shortAlliedTitleAlternatives(atlas,tile)?.let(shortAlternatives::add)
                         DraftNameAtlas.shortAlliedTitleAlternatives(atlas,tile,binary=false)?.let(shortAlternatives::add)
+                        DraftNameAtlas.shortAlliedTitleAlternatives(atlas,tile,neutralOnly=true)?.let(shortAlternatives::add)
                     }
                     if(shortAlternatives.isNotEmpty()) readAlternatives(shortAlternatives)
                 } catch(error:Throwable) {

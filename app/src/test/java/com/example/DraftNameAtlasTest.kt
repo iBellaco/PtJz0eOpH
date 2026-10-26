@@ -501,6 +501,18 @@ class DraftNameAtlasTest {
                         assertEquals(1,repeated.tiles.size)
                         assertTrue(repeated.tiles.single().region.width()>repeated.tiles.single().region.height()*3)
                     } finally { repeated.bitmap.recycle() }
+                    val neutral = DraftNameAtlas.shortAlliedTitleAlternatives(atlas,tile,neutralOnly=true)
+                        ?: throw AssertionError("$height must retain neutral title strokes")
+                    try {
+                        assertTrue(neutral.tiles.all { tile.source.contains(it.source) })
+                        assertTrue(neutral.tiles.any { part ->
+                            (part.region.top until part.region.bottom).any { y ->
+                                (part.region.left until part.region.right).any { x ->
+                                    neutral.bitmap.getPixel(x,y) == Color.BLACK
+                                }
+                            }
+                        })
+                    } finally { neutral.bitmap.recycle() }
                 } finally { atlas.bitmap.recycle() }
             } finally { frame.recycle() }
         } } finally { raw.recycle() }

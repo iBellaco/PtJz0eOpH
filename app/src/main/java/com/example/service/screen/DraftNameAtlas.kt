@@ -333,7 +333,8 @@ internal class DraftNameAtlas private constructor(val bitmap: Bitmap, val tiles:
          * icon.  The samples contain only captured pixels: no champion name,
          * expected value or rendered glyph is introduced.
          */
-        fun shortAlliedTitleAlternatives(atlas: DraftNameAtlas, tile: Tile, binary: Boolean = true): DraftNameAtlas? {
+        fun shortAlliedTitleAlternatives(atlas: DraftNameAtlas, tile: Tile, binary: Boolean = true,
+            neutralOnly: Boolean = false): DraftNameAtlas? {
             require(tile.original && tile in atlas.tiles && tile.ally)
             val prior = atlas.tiles.single {
                 it.ally && it.slot == tile.slot && !it.original && !it.contrast
@@ -360,12 +361,25 @@ internal class DraftNameAtlas private constructor(val bitmap: Bitmap, val tiles:
                     // Measure ink on the badge-suppressed pixels. Measuring the
                     // original sample reintroduced a pale crest wing touching V
                     // and made ML Kit read NI instead of the complete VI title.
-                    val masked = Bitmap.createBitmap(atlas.bitmap, prior.region.left + inset,
-                        prior.region.top, sourceWidth, sourceHeight)
+                    val measuredTile = if (neutralOnly) tile else prior
+                    val masked = Bitmap.createBitmap(atlas.bitmap, measuredTile.region.left + inset,
+                        measuredTile.region.top, sourceWidth, sourceHeight)
                     val isolated = try { masked.copy(Bitmap.Config.ARGB_8888, true) }
                         finally { if (masked !== atlas.bitmap) masked.recycle() }
                     try {
                         isolateTitleColor(isolated)
+                        if (neutralOnly) {
+                            // Independent white-title alternative: the warm gold
+                            // wing can remain connected to a neutral V after the
+                            // general white/gold projection. Preserve the normal
+                            // alternatives for golden titles such as Jhin.
+                            for (y in 0 until sourceHeight) for (x in 0 until sourceWidth) {
+                                val c = sample.getPixel(x, y)
+                                val r = Color.red(c); val g = Color.green(c); val b = Color.blue(c)
+                                if (maxOf(r,g,b) - minOf(r,g,b) > 40 || minOf(r,g,b) < 90)
+                                    isolated.setPixel(x, y, Color.WHITE)
+                            }
+                        }
                         // Scale the actual ink, not the empty calibrated band.
                         // Otherwise a 72px row can still contain a 10px VI and
                         // repeating that row only repeats the same empty margin.
