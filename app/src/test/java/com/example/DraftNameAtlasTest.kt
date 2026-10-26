@@ -19,6 +19,22 @@ import org.robolectric.annotation.GraphicsMode
 @Config(sdk = [34], application = Application::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class DraftNameAtlasTest {
+    @Test fun paleConnectedCrestEdgeIsRemovedButSeparateTitleStrokesRemain() {
+        val crop = Bitmap.createBitmap(100,40,Bitmap.Config.ARGB_8888)
+        try {
+            val canvas = Canvas(crop).apply { drawColor(Color.rgb(20,30,70)) }
+            val paint = Paint().apply { color = Color.rgb(220,170,60) }
+            canvas.drawRect(4f,5f,20f,32f,paint)
+            paint.color = Color.rgb(210,210,210)
+            canvas.drawRect(20f,12f,25f,24f,paint)
+            canvas.drawRect(29f,15f,32f,24f,paint)
+            canvas.drawRect(36f,15f,39f,24f,paint)
+            com.example.service.screen.DraftImagePreprocessor.suppressLeadingMasteryBadge(crop)
+            assertEquals("Connected pale wing must not become an OCR letter",Color.BLACK,crop.getPixel(23,18))
+            assertEquals("Separate title stroke must remain",Color.rgb(210,210,210),crop.getPixel(30,18))
+            assertEquals(Color.rgb(210,210,210),crop.getPixel(37,18))
+        } finally { crop.recycle() }
+    }
     @Test fun normalTextSizesKeepBothOriginalSourcesAndTitleBoundsWithoutRestoringMasks() {
         val source=Bitmap.createBitmap(1280,579,Bitmap.Config.ARGB_8888).apply { eraseColor(Color.WHITE) }
         val config=VisionCalibrationConfig()

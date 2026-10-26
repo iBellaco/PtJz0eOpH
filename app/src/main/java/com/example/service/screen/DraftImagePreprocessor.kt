@@ -28,7 +28,11 @@ object DraftImagePreprocessor {
             val red = Color.red(pixel); val green = Color.green(pixel); val blue = Color.blue(pixel)
             // Resizing blends the pale wings with the blue background. Requiring
             // strongly saturated gold left those wings attached to short titles.
-            gold[y*iconWidth+x] = red>95 && green>65 && red>green*.95f && green>blue*1.05f
+            val warm = red>95 && green>65 && red>green*.95f && green>blue*1.05f
+            val pale = minOf(red,green,blue)>100 && maxOf(red,green,blue)-minOf(red,green,blue)<45
+            // The pale edge belongs to the same connected crest as its gold
+            // core. Gold-only connectivity left that edge as a fake letter.
+            gold[y*iconWidth+x] = warm || pale
         }
         val seen = BooleanArray(gold.size)
         val canvas = android.graphics.Canvas(crop)
@@ -54,11 +58,8 @@ object DraftImagePreprocessor {
             if(count>=maxOf(6,crop.height/4) && h>=crop.height*.38f && w>=h*.55f && w<=h*2.4f) {
                 // Include detached gold wing pixels around the tall core, but do
                 // not extend a fixed rectangle into the following title glyphs.
-                val centerX=(left+right)/2f
-                for(y in (top-1).coerceAtLeast(0)..(bottom+1).coerceAtMost(crop.height-1))
-                    for(x in 0 until iconWidth) if(gold[y*iconWidth+x] && kotlin.math.abs(x-centerX)<=h*.7f) {
-                        left=minOf(left,x);right=maxOf(right,x)
-                    }
+                // All connected pale wings are already in this component.
+                // Do not absorb disconnected title letters by radial proximity.
                 val eraseRight=(right+1).coerceAtMost(crop.width)
                 canvas.drawRect((left-1).coerceAtLeast(0).toFloat(),(top-1).coerceAtLeast(0).toFloat(),
                     // right is an inclusive component coordinate. An extra
