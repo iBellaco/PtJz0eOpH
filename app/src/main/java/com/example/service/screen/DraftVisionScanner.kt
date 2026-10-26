@@ -12,6 +12,9 @@ import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
 import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import java.util.Locale
 
 enum class DiagnosticStatus {
@@ -107,7 +110,9 @@ data class DraftScanResult(
     val hasDraftActivity: Boolean = false,
     val isSuccessful: Boolean,
     val statusMessage: String,
-    val allyRolesBySlot: Map<Int, LaneRole> = emptyMap()
+    val allyRolesBySlot: Map<Int, LaneRole> = emptyMap(),
+    val observedTitleIds: Map<Int, String> = emptyMap(),
+    val ocrFailure: String? = null
 )
 
 object DraftVisionScanner {
@@ -450,6 +455,8 @@ object DraftVisionScanner {
     }
 
     private var recognizerInstance: com.google.mlkit.vision.text.TextRecognizer? = null
+    private val recognizerWarmupMutex = Mutex()
+    @Volatile private var recognizerWarmedUp = false
 
     // Memoria persistente de los nombres de invocador aliados (0..4)
     private val allySummonerNamesCache = mutableMapOf<Int, String>()
@@ -568,6 +575,26 @@ object DraftVisionScanner {
         return recognizerInstance
     }
 
+    /** Load the on-device text model before the first large draft frame. The
+     * warm-up contains no game text and cannot confirm a slot or champion. */
+    suspend fun warmUpTextRecognizer(): Boolean = recognizerWarmupMutex.withLock {
+        if (recognizerWarmedUp) return@withLock true
+        val recognizer = getRecognizer() ?: return@withLock false
+        val sample = Bitmap.createBitmap(32, 32, Bitmap.Config.ARGB_8888).apply {
+            eraseColor(android.graphics.Color.BLACK)
+        }
+        try {
+            recognizer.process(InputImage.fromBitmap(sample, 0)).await()
+            recognizerWarmedUp = true
+            true
+        } catch (error: Throwable) {
+            AppLogger.w(TAG, "No se pudo precargar OCR local: ${error.message}")
+            false
+        } finally {
+            sample.recycle()
+        }
+    }
+
     suspend fun scanDraftFromBitmap(
         bitmap: Bitmap,
         context: android.content.Context? = null,
@@ -591,7 +618,8 @@ object DraftVisionScanner {
         if (context != null) {
             TenthPickDiagnosticManager.init(context)
         }
-        val allChamps = WildRiftRepository.champions
+        val allChamps = WildRiftRepository.championSnapshot()
+        var ocrFailure: String? = null
         val auditList = mutableListOf<String>()
         val defaultRolesList = listOf(LaneRole.TOP, LaneRole.JUNGLE, LaneRole.MID, LaneRole.ADC, LaneRole.SUPPORT)
         val currentScanFrameOcrLanes = mutableMapOf<Int, LaneRole>()
@@ -615,7 +643,7 @@ object DraftVisionScanner {
         val enemyOcrChampions = Array<Champion?>(5) { null }
         val textDiagnosticsList = mutableListOf<TextBlockDiagnostic>()
         val targetedAllyReadings = Array(5) { AllyDraftNameReader.Reading() }
-        val badgeSuppressedAllyReadings = Array(5) { AllyDraftNameReader.Reading() }
+        val targetedEnemyReadings = Array(5) { AllyDraftNameReader.Reading() }
         val targetedEnemyChampions = Array<Champion?>(5) { null }
 
         // -----------------------------------------------------------------------------------------
@@ -630,8 +658,14 @@ object DraftVisionScanner {
             // Las etiquetas laterales del diagnóstico se dibujan fuera de la ventana central.
             // Deben excluirse siempre; de lo contrario el OCR puede leer "Pantheon" del propio overlay.
             val exclusions = frameDiagnosticTexts
-            val visionText = if (namesOnly) null else {
-                val ocrBitmap = if (exclusions.isEmpty()) bitmap else bitmap.copy(Bitmap.Config.ARGB_8888, true) ?: bitmap
+            // namesOnly is the live draft fast path. All ten title rows are read
+            // below from calibrated title-only atlases, so a second OCR request
+            // over the entire 1920x863 frame is both redundant and extremely
+            // expensive on an emulator/low-end device. Full scans retain the
+            // whole-screen request for banners, account identity and metadata.
+            val visionText: com.google.mlkit.vision.text.Text? = if (namesOnly) null else {
+                val ocrBitmap = if (exclusions.isEmpty()) bitmap else
+                    bitmap.copy(Bitmap.Config.ARGB_8888, true) ?: bitmap
                 try {
                     if (ocrBitmap !== bitmap) {
                         val canvas = android.graphics.Canvas(ocrBitmap)
@@ -646,29 +680,230 @@ object DraftVisionScanner {
             // of a name band partly covered by the central assistant window.
             val atlas = DraftNameAtlas.create(bitmap,calib,exclusions+listOfNotNull(frameOverlay))
             try {
-                val text = recognizer.process(InputImage.fromBitmap(atlas.bitmap,0)).await()
+                val detectedTitleLines=mutableMapOf<Pair<Boolean,Int>,MutableList<Rect>>()
+                val contextDonors=mutableMapOf<Pair<Boolean,Int>,Rect>()
+                suspend fun readTitles(input: DraftNameAtlas): com.google.mlkit.vision.text.Text {
+                val text = recognizer.process(InputImage.fromBitmap(input.bitmap,0)).await()
                 val lines = text.textBlocks.flatMap { it.lines }
-                for (tile in atlas.tiles) {
-                    val selected = lines.filter { line ->
-                        line.boundingBox?.let { tile.region.contains(it.centerX(),it.centerY()) } == true
+                for (tile in input.tiles) {
+                    if (tile.contextual) {
+                        val pairs = lines.mapNotNull { line ->
+                            val words = line.elements.filter { element ->
+                                element.boundingBox?.let { tile.region.contains(it) } == true
+                            }.sortedBy { it.boundingBox!!.left }
+                            if (words.isEmpty()) null else words.joinToString(" ") { it.text } to
+                                (words.first().boundingBox!!.centerY()-tile.region.top)
+                        }
+                        val reading = AllyDraftNameReader.readTitleRows(pairs,0,allChamps,tile.titleMaxY)
+                        val readings = if(tile.ally) targetedAllyReadings else targetedEnemyReadings
+                        readings[tile.slot] = AllyDraftNameReader.preferOriginal(readings[tile.slot],reading)
+                        continue
                     }
-                    val titleLines = if (tile.ally) selected.filterNot { line ->
+                    val selected = lines.filter { line ->
+                        line.boundingBox?.let { tile.region.contains(it.centerX(),it.centerY()) &&
+                            it.centerY()-tile.region.top>=tile.titleMinY } == true
+                    }
+                    // In a focused recovery crop the title legitimately starts
+                    // at the left edge. Do not discard it as if it were the
+                    // mastery badge; the title reader still requires a whole
+                    // champion name or a complete lane title.
+                    val titleLines = selected
+                    // Keep unknown native line boxes for a tighter pixel-only
+                    // re-read. Never accept their partial text as a champion.
+                    val original=atlas.tiles.single { it.original && it.ally==tile.ally && it.slot==tile.slot }
+                    for(line in titleLines) {
                         val box=line.boundingBox!!
-                        box.right-tile.region.left < tile.region.width()*.12f &&
-                            AllyDraftNameReader.read(listOf(line.text),allChamps).let {
-                                it.champion==null && it.lane==null && !it.ambiguous
-                            }
-                    } else selected
-                    val reading = AllyDraftNameReader.readTitleRows(titleLines.map {
+                        val y=box.centerY()-tile.region.top
+                        if(y>minOf(tile.titleMaxY,(tile.region.height()*.85f).toInt())) continue
+                        if(AllyDraftNameReader.read(listOf(line.text),allChamps).let {
+                            it.champion!=null || it.lane!=null || it.ambiguous }) continue
+                        val mapped=DraftNameAtlas.mapDetectedLine(original,tile,box)
+                        if(mapped.width()>0 && mapped.height()>0) {
+                            val candidates=detectedTitleLines.getOrPut(tile.ally to tile.slot) { mutableListOf() }
+                            if(mapped !in candidates) candidates+=mapped
+                        }
+                    }
+                    val titlePairs = titleLines.sortedBy { it.boundingBox!!.left }.map {
                         it.text to (it.boundingBox!!.centerY()-tile.region.top)
-                    },(tile.region.height()*.30f).toInt(),allChamps,tile.titleMaxY)
-                    if (tile.ally && tile.original) targetedAllyReadings[tile.slot]=reading
-                    else if (tile.ally) badgeSuppressedAllyReadings[tile.slot]=reading
-                    else targetedEnemyChampions[tile.slot]=reading.champion.takeUnless { reading.ambiguous }
+                    }
+                    val reading = AllyDraftNameReader.readTitleRows(titlePairs,
+                        (tile.region.height()*.30f).toInt(),allChamps,tile.titleMaxY)
+                    val readings = if(tile.ally) targetedAllyReadings else targetedEnemyReadings
+                    // Every alternative obeys the same title-row bounds. A
+                    // short nickname below the title is never a fallback.
+                    readings[tile.slot]=AllyDraftNameReader.preferOriginal(readings[tile.slot],reading)
+                    if (reading.champion != null && !reading.ambiguous) {
+                        titleLines.firstOrNull { line ->
+                            AllyDraftNameReader.read(listOf(line.text),allChamps).champion?.id == reading.champion.id
+                        }?.boundingBox?.let { box ->
+                            val mapped = DraftNameAtlas.mapDetectedLine(original,tile,box)
+                            if(mapped.width()>0 && mapped.height()>0) contextDonors[tile.ally to tile.slot] = mapped
+                        }
+                    }
+                }
+                return text
+                }
+                fun unresolvedReading(tile: DraftNameAtlas.Tile) =
+                    (if(tile.ally) targetedAllyReadings else targetedEnemyReadings)[tile.slot].let {
+                        !it.ambiguous && it.champion==null && it.lane==null && !it.unpicked
+                    }
+                suspend fun readAlternatives(inputs: List<DraftNameAtlas>) {
+                    try {
+                        val pages=DraftNameAtlas.packAlternatives(inputs)
+                        try {
+                            for(page in pages) {
+                                // Do not spend another native request on slots
+                                // already resolved by an earlier page.
+                                if(page.tiles.any(::unresolvedReading)) readTitles(page)
+                            }
+                        } finally { pages.forEach { it.bitmap.recycle() } }
+                    } finally { inputs.forEach { it.bitmap.recycle() } }
+                }
+                readTitles(atlas)
+                val unresolved = atlas.tiles.filter { tile -> tile.original &&
+                    (if(tile.ally) targetedAllyReadings else targetedEnemyReadings)[tile.slot].let {
+                        !it.ambiguous && it.champion==null && it.lane==null && !it.unpicked
+                    }
+                }.mapNotNull { tile -> DraftNameAtlas.titleFocusBounds(atlas,tile)?.let { tile to it } }
+                if (unresolved.isNotEmpty()) {
+                    val retry = DraftNameAtlas.retryUnresolved(atlas,unresolved.map { it.first })
+                    try { readTitles(retry) } finally { retry.bitmap.recycle() }
+                }
+                // Keep the recovery bounded: the previous global multiscale pass
+                // created several large OCR requests per unresolved slot and made
+                // 640x360 hit the 60-second frame deadline. One shared page now
+                // contains only the focused row and its badge-suppressed sibling.
+                val focusedAlternatives=mutableListOf<DraftNameAtlas>()
+                try {
+                    for((tile,bounds) in unresolved) if(unresolvedReading(tile)) {
+                        val focused=DraftNameAtlas.focusTitle(atlas,tile,bounds)
+                        focusedAlternatives += focused
+                        if(tile.ally) {
+                            focusedAlternatives += DraftNameAtlas.withoutLeadingBadge(atlas,tile)
+                        }
+                    }
+                    if(focusedAlternatives.isNotEmpty()) readAlternatives(focusedAlternatives)
+                } catch(error:Throwable) {
+                    focusedAlternatives.forEach { if(!it.bitmap.isRecycled) it.bitmap.recycle() }
+                    throw error
+                }
+                for((tile,bounds) in unresolved) {
+                    if(!unresolvedReading(tile)) continue
+                    // First use measured native text boxes. If the detector did
+                    // not find a line, also isolate the calibrated title row;
+                    // the untouched full band has already been read above.
+                    val detected=detectedTitleLines[tile.ally to tile.slot].orEmpty()
+                    val fallback=Rect(bounds.left,(tile.region.height()*.30f).toInt(),bounds.right,
+                        minOf(tile.titleMaxY+(tile.region.height()*.12f).toInt(),(tile.region.height()*.90f).toInt()))
+                    // The second measured box reads MEL in the native 640x360
+                    // evidence; discarding it after the first unreadable box
+                    // made recovery impossible. The full row stays available.
+                    val candidates=if(detected.isNotEmpty()) detected.distinct().take(2)
+                        else listOf(fallback)
+                    for(line in candidates) {
+                        if(!unresolvedReading(tile)) break
+                        val focused=DraftNameAtlas.focusDetectedLine(atlas,tile,line)
+                        try {
+                            // Native evidence already reads MEL from the second
+                            // unscaled crop. Do not normalize away that evidence.
+                            readTitles(focused)
+                            // Short titles such as Vi can disappear at the
+                            // source crop size. The diagnostic path proved that
+                            // these same pixels become readable at native text
+                            // sizes; use that bounded recovery in production as
+                            // well, without inventing a champion identity.
+                            if (unresolvedReading(tile)) {
+                                val native = DraftNameAtlas.nativeTextSizes(focused, line.height())
+                                try { readTitles(native) } finally { native.bitmap.recycle() }
+                            }
+                        } finally { focused.bitmap.recycle() }
+                    }
+                }
+                // Keep established OCR image sizes unchanged. Color separation is
+                // a final independent request over the same title pixels. It is
+                // also required for short allied titles: on the 1920x924 P20
+                // geometry ML Kit sees neither VI nor a native line box in the
+                // intact band, while the badge-suppressed color crop retains both
+                // glyphs. Pack all unresolved crops so this remains one bounded
+                // request rather than one request per slot.
+                val colorAlternatives=mutableListOf<DraftNameAtlas>()
+                try {
+                    for((tile,bounds) in unresolved) if(unresolvedReading(tile)) {
+                        colorAlternatives += DraftNameAtlas.focusTitle(atlas,tile,bounds,colorOnly=true)
+                    }
+                    if(colorAlternatives.isNotEmpty()) readAlternatives(colorAlternatives)
+                } catch(error:Throwable) {
+                    colorAlternatives.forEach { if(!it.bitmap.isRecycled) it.bitmap.recycle() }
+                    throw error
+                }
+                // ML Kit can reject a real two-letter title as an icon when a
+                // mastery badge and its wide empty margin share the same crop.
+                // Retry only still-unresolved allied rows with the badge-cleared
+                // captured pixels at ordinary OCR sizes. No expected title or
+                // portrait result participates in this recovery.
+                val shortAlternatives=mutableListOf<DraftNameAtlas>()
+                try {
+                    for((tile,_) in unresolved) if(tile.ally && unresolvedReading(tile)) {
+                        DraftNameAtlas.shortAlliedTitleAlternatives(atlas,tile)?.let(shortAlternatives::add)
+                        DraftNameAtlas.shortAlliedTitleAlternatives(atlas,tile,binary=false)?.let(shortAlternatives::add)
+                        DraftNameAtlas.shortAlliedTitleAlternatives(atlas,tile,neutralOnly=true)?.let(shortAlternatives::add)
+                    }
+                    if(shortAlternatives.isNotEmpty()) readAlternatives(shortAlternatives)
+                } catch(error:Throwable) {
+                    shortAlternatives.forEach { if(!it.bitmap.isRecycled) it.bitmap.recycle() }
+                    throw error
+                }
+                val repeatedShortAlternatives=mutableListOf<DraftNameAtlas>()
+                try {
+                    for((tile,_) in unresolved) if(tile.ally && unresolvedReading(tile)) {
+                        DraftNameAtlas.repeatedShortAlliedTitleAlternative(atlas,tile)
+                            ?.let(repeatedShortAlternatives::add)
+                        DraftNameAtlas.repeatedShortAlliedTitleAlternative(atlas,tile,neutralOnly=true)
+                            ?.let(repeatedShortAlternatives::add)
+                        DraftNameAtlas.repeatedShortAlliedTitleAlternative(atlas,tile,neutralOnly=true,binary=false)
+                            ?.let(repeatedShortAlternatives::add)
+                    }
+                    if(repeatedShortAlternatives.isNotEmpty()) readAlternatives(repeatedShortAlternatives)
+                } catch(error:Throwable) {
+                    repeatedShortAlternatives.forEach { if(!it.bitmap.isRecycled) it.bitmap.recycle() }
+                    throw error
+                }
+                for ((tile,_) in unresolved) if (tile.ally && unresolvedReading(tile)) {
+                    val donorEntry = contextDonors.entries.filter { it.key != (tile.ally to tile.slot) }
+                        .maxByOrNull { it.value.width().toFloat()/it.value.height() } ?: continue
+                    val donor = atlas.tiles.single { it.original && it.ally == donorEntry.key.first && it.slot == donorEntry.key.second }
+                    val contextual = DraftNameAtlas.contextualTitle(atlas,tile,donor,donorEntry.value) ?: continue
+                    try { readTitles(contextual) } finally { contextual.bitmap.recycle() }
+                }
+                val observedTitleIds=(targetedAllyReadings.toList()+targetedEnemyReadings.toList())
+                    .mapNotNull { it.champion?.id }.toSet()
+                if(observedTitleIds.size<9 && unresolved.any { (tile,_) ->
+                    unresolvedReading(tile)
+                }) {
+                    val scene=DraftNameAtlas.sceneTitles(bitmap,calib,exclusions+listOfNotNull(frameOverlay))
+                    try {
+                        val sceneText = readTitles(scene)
+                        // The 1920x889 native evidence reads VI with a scene
+                        // donor but not with the widest enhanced-atlas donor.
+                        // Use those actual scene boxes after the ordinary scene
+                        // pass, keeping the successful earlier recovery intact.
+                        val titleBoxes = sceneText.textBlocks.flatMap { it.lines }.mapNotNull { line ->
+                            val reading = AllyDraftNameReader.read(listOf(line.text), allChamps)
+                            line.boundingBox?.takeIf { reading.champion != null && !reading.ambiguous }
+                        }
+                        for ((tile, _) in unresolved) if (tile.ally && unresolvedReading(tile)) {
+                            for ((donor, bounds) in DraftNameAtlas.sceneContextSources(atlas, scene, titleBoxes, tile)) {
+                                if (!unresolvedReading(tile)) break
+                                val contextual = DraftNameAtlas.contextualTitle(atlas, tile, donor, bounds) ?: continue
+                                try { readTitles(contextual) } finally { contextual.bitmap.recycle() }
+                            }
+                        }
+                    } finally { scene.bitmap.recycle() }
                 }
                 for (slot in 0..4) {
-                    targetedAllyReadings[slot] = AllyDraftNameReader.preferOriginal(
-                        targetedAllyReadings[slot], badgeSuppressedAllyReadings[slot])
+                    targetedEnemyChampions[slot] = targetedEnemyReadings[slot].let {
+                        it.champion.takeUnless { _ -> it.ambiguous }
+                    }
                 }
             } finally { atlas.bitmap.recycle() }
 
@@ -880,9 +1115,10 @@ object DraftVisionScanner {
                 val titleLines = entries.filter { (_, box) -> box != null && titleRect.contains(box.centerX(), box.centerY()) }
                     .map { it.first to it.second!!.centerY() }
                 val isolated = targetedAllyReadings[i]
-                val reading = if (isolated.ambiguous || isolated.lane != null || isolated.champion != null) isolated
+                val reading = if (isolated.ambiguous || isolated.lane != null ||
+                    isolated.champion != null || isolated.unpicked) isolated
                     else AllyDraftNameReader.readTitleRows(titleLines, (titleRect.height() * 0.30f).toInt(), allChamps,
-                        (height * (calib.allySlotYRatios[i] + 0.005f)).toInt())
+                        (height * (calib.allySlotYRatios[i] + 0.005f * calib.nameBandScale)).toInt())
                 detectedRoleInSlot = reading.lane
                 val stableTitle = titleConfirmation.observe(true, i,
                     reading.champion?.id ?: reading.lane?.let { "lane:${it.name}" })
@@ -912,7 +1148,7 @@ object DraftVisionScanner {
                             lineNorm.contains("winrate")
 
                         val selfMarker = AllyDraftNameReader.identifiesUser(line, emptyList())
-                        val isPlayerNameLine = box != null && box.centerY() > height * (calib.allySlotYRatios[i] + 0.005f)
+                        val isPlayerNameLine = box != null && box.centerY() > height * (calib.allySlotYRatios[i] + 0.005f * calib.nameBandScale)
                         val isUserTag = !isLegendaryRanked && (selfMarker ||
                             (isPlayerNameLine && AllyDraftNameReader.identifiesUser(line, currentUserNameClean)))
 
@@ -1135,8 +1371,11 @@ object DraftVisionScanner {
                     enemySlotFilters[i].reset()
                 }
             }
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             AppLogger.e(TAG, "Error durante el análisis OCR", e)
+            ocrFailure = e.stackTraceToString()
         }
 
         // -----------------------------------------------------------------------------------------
@@ -1431,10 +1670,16 @@ object DraftVisionScanner {
 
         try { tenthCrop?.recycle() } catch (_: Throwable) {}
         
+        // Observed or remembered lane titles are authoritative. If a capture
+        // starts after some players already selected, complete only the still
+        // unknown slots deterministically from champion affinity; never move
+        // or overwrite an OCR-observed lane.
         val resolvedAlliedRoles = AllyDraftReconciler.resolveRoles(
             allySlots.mapNotNull { slot -> slot.champion?.let { slot.slotIndex to it } }.toMap(),
-            allySlotOcrLaneCache, allySlotRolesCache)
-        // 4.1 Aliados: Cada slot aliado (0..4) mapea determinísticamente a su carril (allySlotRolesCache)
+            allySlotOcrLaneCache,
+            allySlotRolesCache
+        )
+        // 4.1 Aliados: cada slot conserva la línea leída en su propia banda.
         val alliesMap = mutableMapOf<LaneRole, Champion>()
         val allyConfidences = mutableMapOf<LaneRole, Int>()
 
@@ -1566,12 +1811,21 @@ object DraftVisionScanner {
             isLegendaryRanked = isLegendaryRanked,
             isPreparationPhase = isPreparationPhase,
             hasDraftActivity = hasDraftActivity,
-            isSuccessful = hasDraftActivity || isTenthConfirmed,
-            statusMessage = statusMsg
+            isSuccessful = ocrFailure == null && (hasDraftActivity || isTenthConfirmed),
+            statusMessage = statusMsg,
+            observedTitleIds = (targetedAllyReadings.mapIndexedNotNull { i, reading ->
+                reading.champion?.takeUnless { reading.ambiguous }?.let { i to it.id }
+            } + targetedEnemyReadings.mapIndexedNotNull { i, reading ->
+                reading.champion?.takeUnless { reading.ambiguous }?.let { (i + 5) to it.id }
+            }).toMap(),
+            ocrFailure = ocrFailure
         )
+        } catch (t: CancellationException) {
+            throw t
         } catch (t: Throwable) {
             AppLogger.e(TAG, "Excepción no controlada en scanDraftFromBitmap prevenida", t)
-            DraftScanResult(emptyList(), emptyList(), isSuccessful = false, statusMessage = "Error en escaneo")
+            DraftScanResult(emptyList(), emptyList(), isSuccessful = false, statusMessage = "Error en escaneo",
+                ocrFailure = t.stackTraceToString())
         }
     }
 }

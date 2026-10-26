@@ -55,8 +55,7 @@ object LiteRTVisionClassifier {
     const val REQUIRED_STABLE_FRAMES = 2
 
     // Variables de seguimiento de estabilidad temporal entre fotogramas
-    private var lastCandidateId: String? = null
-    private var stableFramesCounter: Int = 0
+    private val frameStability = CompletedFrameStability(REQUIRED_STABLE_FRAMES,1200L)
     private var lastVisibleSelection: LiteRTInferenceReport? = null
 
     /** The last unambiguous visible portrait is authoritative at draft departure. */
@@ -69,8 +68,7 @@ object LiteRTVisionClassifier {
     }
 
     fun resetStabilityTracker() {
-        lastCandidateId = null
-        stableFramesCounter = 0
+        frameStability.reset()
     }
 
     enum class EngineStatus {
@@ -114,14 +112,12 @@ object LiteRTVisionClassifier {
     private val allyEmbeddingCache = ConcurrentHashMap<String, List<FloatArray>>()
     private val portraitAssetPaths = ConcurrentHashMap<String,String>()
     private var indexedIds: Set<String> = emptySet()
-    private var lastValidFrameAt = 0L
     private var targetKey: String? = null
     private var manuallyConfirmedChampion: Champion? = null
 
     @Synchronized
-    fun ensureIndexed(context: Context? = null) {
+    fun ensureIndexed(context: Context? = null, champs: List<Champion> = WildRiftRepository.championSnapshot()) {
         val ctx = context ?: WildRiftApp.instance ?: return
-        val champs = WildRiftRepository.champions
         if (indexedIds == champs.map { it.id }.toSet()) return
         val assets = ctx.assets.list("champions")?.filter { it.endsWith(".png") }.orEmpty()
         fun canonical(id: String) = id.lowercase().filter { it.isLetterOrDigit() }
@@ -149,12 +145,13 @@ object LiteRTVisionClassifier {
     private var emptyBanReferenceCache: List<FloatArray>? = null
     /** Shared by production inference and real-frame regression. Thresholds are unchanged. */
     internal fun rankSlotPortrait(crop: Bitmap, isAlly: Boolean, context: Context?, excludedIds: Set<String> = emptySet()): List<Pair<Champion, Float>> {
-        ensureIndexed(context)
+        val catalog = WildRiftRepository.championSnapshot()
+        ensureIndexed(context, catalog)
         val pixels = IntArray(crop.width * crop.height)
         crop.getPixels(pixels, 0, crop.width, 0, 0, crop.width, crop.height)
         val input = PortraitMatcher.descriptor(pixels, crop.width, crop.height, excludeBottomBadge = isAlly)
         val cache = if (isAlly) allyEmbeddingCache else championEmbeddingCache
-        val ranked = WildRiftRepository.champions.filter { it.id !in excludedIds }.mapNotNull { champion ->
+        val ranked = catalog.filter { it.id !in excludedIds }.mapNotNull { champion ->
             cache[champion.id]?.let { champion to PortraitMatcher.similarity(input, it) }
         }.sortedByDescending { it.second }
         if (ranked.size < 2 || PortraitMatcher.accepts(ranked[0].second, ranked[1].second, getEffectiveThreshold(context))) return ranked
@@ -219,7 +216,7 @@ object LiteRTVisionClassifier {
             } finally { resized.recycle() }
         }
         ensureIndexed(context)
-        val catalog = WildRiftRepository.champions.distinctBy { it.id }
+        val catalog = WildRiftRepository.championSnapshot().distinctBy { it.id }
             .filter { championEmbeddingCache.containsKey(it.id) }
         if (catalog.isEmpty()) return emptyList()
         val height = bitmap.height
@@ -512,14 +509,14 @@ object LiteRTVisionClassifier {
                 return@withContext previous.pickedChampion to previous.confidencePercent
             }
             // A recent stable portrait can survive the slot disappearing at loading.
-            if (now - lastValidFrameAt <= 1200L && stableFramesCounter >= REQUIRED_STABLE_FRAMES &&
+            if (frameStability.isRecent(now) && frameStability.count >= REQUIRED_STABLE_FRAMES &&
                 confirmedPicksCount >= 9 && previous.pickedChampion != null) {
                 _reportFlow.value = previous.copy(status = EngineStatus.COMPLETED, isConfirmed = true,
                     evaluatedPicksCount = confirmedPicksCount,
                     decisionReason = "Retrato estable conservado al desaparecer el slot.")
                 return@withContext previous.pickedChampion to previous.confidencePercent
             }
-            if (now - lastValidFrameAt > 1200L) resetStabilityTracker()
+            if (!frameStability.isRecent(now)) resetStabilityTracker()
             return@withContext null
         }
         if (isSlotWaitingIcon(cropBitmap, isAlly)) {
@@ -533,14 +530,10 @@ object LiteRTVisionClassifier {
         val best = ranked.firstOrNull() ?: return@withContext null
         val second = ranked.getOrNull(1)?.second ?: 0f
         val accepted = PortraitMatcher.accepts(best.second, second, threshold)
-        if (now - lastValidFrameAt > 1200L) resetStabilityTracker()
         if (accepted && confirmedPicksCount >= 7) {
-            stableFramesCounter = if (lastCandidateId == best.first.id) stableFramesCounter + 1 else 1
-            lastCandidateId = best.first.id
-            lastValidFrameAt = now
+            frameStability.record(best.first.id,now,android.os.SystemClock.elapsedRealtime())
         } else resetStabilityTracker()
-        stableFramesCounter = stableFramesCounter.coerceAtMost(REQUIRED_STABLE_FRAMES)
-        val confirmed = accepted && stableFramesCounter >= REQUIRED_STABLE_FRAMES && confirmedPicksCount >= 9
+        val confirmed = accepted && frameStability.count >= REQUIRED_STABLE_FRAMES && confirmedPicksCount >= 9
         val weights = ranked.map { exp((it.second - best.second) / 0.08f) }
         val total = weights.sum().coerceAtLeast(1e-6f)
         val candidates = ranked.take(5).mapIndexed { i, (champ, score) ->
@@ -550,7 +543,7 @@ object LiteRTVisionClassifier {
         val reason = when {
             confirmed -> "Retrato confirmado por coincidencia espacial y margen entre candidatos."
             !accepted -> "Coincidencia insuficiente o ambigua; no se confirma."
-            else -> "Retrato en observación: $stableFramesCounter/$REQUIRED_STABLE_FRAMES frames; $confirmedPicksCount/9 selecciones previas."
+            else -> "Retrato en observación: ${frameStability.count}/$REQUIRED_STABLE_FRAMES frames; $confirmedPicksCount/9 selecciones previas."
         }
         _reportFlow.value = LiteRTInferenceReport(
             status = if (confirmed) EngineStatus.COMPLETED else EngineStatus.RUNNING_INFERENCE,
@@ -558,7 +551,7 @@ object LiteRTVisionClassifier {
             inferenceTimeMs = android.os.SystemClock.elapsedRealtime() - now,
             topCandidates = candidates, cropBitmap = cropCopy, decisionReason = reason,
             slotDescription = slotDesc, evaluatedPicksCount = confirmedPicksCount,
-            isConfirmed = confirmed, stableFramesCount = stableFramesCounter,
+            isConfirmed = confirmed, stableFramesCount = frameStability.count,
             minConfidenceThreshold = threshold
         )
         if (accepted && confirmedPicksCount >= 9) lastVisibleSelection = _reportFlow.value
@@ -637,7 +630,6 @@ object LiteRTVisionClassifier {
         resetStabilityTracker()
         targetKey = null
         manuallyConfirmedChampion = null
-        lastValidFrameAt = 0L
         _reportFlow.value = LiteRTInferenceReport()
     }
 }

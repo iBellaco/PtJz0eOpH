@@ -5,7 +5,8 @@ import json
 from pathlib import Path
 
 GROUPS = {'device-profiles': 6, 'phone-resolutions': 20, 'tablet-resolutions': 4,
-          'foldable-resolutions': 4, 'edge-anchored-resolutions': 10, 'documented-android-displays': 10}
+          'foldable-resolutions': 4, 'edge-anchored-resolutions': 10, 'documented-android-displays': 10,
+          'xiaomi-redmi-poco-displays': 9, 'requested-brand-displays': 93, 'cutout-safe-area-scenarios': 8}
 VARIANTS = {'original', 'changed-background', 'changed-portraits-and-bans'}
 SOURCE_SHA256 = '42661aefae3df52b4f72047c039120f72f4ea351139d7bdb5107351fe8d3342a'
 
@@ -53,7 +54,7 @@ def summarize(directory):
             if any(not 0 <= error <= 6 for error in errors):
                 failures.append('Centro fuera de tolerancia: ' + name)
             row = {key: profile.get(key) for key in ['profile', 'case', 'variant', 'manufacturer',
-                   'model', 'specification', 'display', 'capture', 'viewport', 'layout', 'evidenceType', 'status']}
+                   'model', 'specification', 'display', 'capture', 'viewport', 'layout', 'safeInsets', 'calibration', 'evidenceType', 'status']}
             row.update(checks=len(checks), pickChecks=len(picks), banChecks=len(bans),
                        maxCenterErrorReferencePixels=max(errors, default=None),
                        minimumPortraitScore=min((check.get('score', 0) for check in picks), default=None))
@@ -81,7 +82,7 @@ def summarize(directory):
 
 def write_reports(directory, summary):
     (directory / 'audit-summary.json').write_text(json.dumps(summary, ensure_ascii=False, indent=2))
-    columns = ['profile', 'model', 'display', 'capture', 'viewport', 'variant', 'layout',
+    columns = ['profile', 'model', 'display', 'capture', 'viewport', 'safeInsets', 'variant', 'layout',
                'pickChecks', 'banChecks', 'minimumPortraitScore', 'maxCenterErrorReferencePixels', 'status', 'specification']
     with (directory / 'audit-measurements.csv').open('w', newline='') as target:
         writer = csv.DictWriter(target, fieldnames=columns, extrasaction='ignore')
@@ -97,7 +98,8 @@ def write_reports(directory, summary):
              'Se ejercitan dos frames de confirmación por slot y dos escaneos por baneo. '
              'No mide latencia real ni certifica teléfonos físicos, densidades, versiones de Android o todas las skins.', '',
              'Red Magic y Poco tienen confirmación previa del propietario, no una prueba física nueva. '
-             'Los S26 son escenarios de resolución: no se afirma que esas sean sus pantallas oficiales. '
+             'Los perfiles S26-simulated siguen siendo escenarios, no teléfonos físicos; '
+             'los perfiles requested-samsung-s26 usan por separado las medidas oficiales enlazadas. '
              'Los perfiles genéricos no se atribuyen a un modelo inventado.', '',
              'Adicionalmente se verifican 5133 transformaciones geométricas: anchos 640–3840 '
              'en pasos de 37 y altos 360–2160 en pasos de 31. No son 5133 imágenes reconocidas.', '',

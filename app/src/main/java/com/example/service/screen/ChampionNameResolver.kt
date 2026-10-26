@@ -122,6 +122,7 @@ object ChampionNameResolver {
         "nautilus" to "nautilus",
         "nilah" to "nilah",
         "nocturne" to "nocturne",
+        "ndcturne" to "nocturne", // Complete title: compressed O read as D; never substring/fuzzy matching.
         "nunu & willump" to "nunu_willump",
         "nunu y willump" to "nunu_willump",
         "nunu" to "nunu_willump",
@@ -191,6 +192,8 @@ object ChampionNameResolver {
         "viktor" to "viktor",
         "vladimir" to "vladimir",
         "volibear" to "volibear",
+        "volirear" to "volibear",
+        "voliear" to "volibear",
         "voliber" to "volibear",
         "volibea" to "volibear",
         "volbear" to "volibear",
@@ -235,20 +238,45 @@ object ChampionNameResolver {
             .lowercase(Locale.ROOT)
     }
 
+    // OCR óptico observado en capturas comprimidas de la ranura de Volibear.
+    // Son lecturas de la línea completa del campeón, no abreviaturas ni
+    // extracción de tokens desde un nombre de invocador.
+    private val observedFullTitleAliases = mapOf(
+        // On the 854x480 real capture the leading mastery emblem covers the
+        // J stroke and ML Kit returns this complete title row as HIN. This is
+        // accepted only by findChampionInNameBand, never inside a nickname.
+        "hin" to "jhin",
+        "olielar" to "volibear",
+        "olieea" to "volibear",
+        "oliela" to "volibear",
+        "wourear" to "volibear"
+    )
+
     // Encuentra el campeón correspondiente a una línea de texto OCR con validación anti-falsos positivos estricta
     /** Whole title only: never extract a champion token from a player's nickname. */
     fun findChampionInNameBand(text: String, allChampions: List<Champion>): Champion? {
         val title = text.replace(Regex("\\s*\\((?:tu|tú|you|você|voce)\\)\\s*$", RegexOption.IGNORE_CASE), "")
         val normalized = normalize(title).trim()
         val variants = linkedSetOf(normalized)
+        val repeatedWords = normalized.split(Regex("\\s+")).filter(String::isNotBlank)
+        if (repeatedWords.size >= 2 && repeatedWords.distinct().size == 1)
+            variants.add(repeatedWords.first())
+        // Optical 0/O confusion within a complete title; no edit distance,
+        // missing-letter completion or champion token extraction from nicknames.
+        if('0' in normalized) variants.add(normalized.replace('0','o'))
         val mastery = Regex("^(?:m\\d{1,2}|lvl?\\d{1,2}|(?:maestria|mastery|nivel|level)\\s*\\d{1,2}|i{1,3}|iv|vi{0,3}|ix|x|[wvykutxnhodcljfpsza0-9])\\s+")
         variants.add(normalized.replace(mastery, ""))
         variants.add(normalized.replace(Regex("^(?:m\\d{1,2}|lvl?\\d{1,2})"), ""))
         val compact = normalizeCompact(title)
+        // A measured mastery glyph can be read as F immediately before the
+        // complete two-letter title VI. Limit this exception to that exact
+        // three-character reading; dropping arbitrary prefixes would accept
+        // nicknames or Roman numerals as a selected champion.
+        if (compact == "fvi") variants.add("vi")
         if (compact.length > 3 && compact.first() in "wvykutxnhodcljfpsza0123456789") variants.add(compact.drop(1))
         for (variant in variants) {
             val key = normalizeCompact(variant)
-            val id = if (key in setOf("vl", "v1")) "vi" else
+            val id = observedFullTitleAliases[key] ?: if (key in setOf("vl", "v1")) "vi" else
                 KNOWN_CHAMPIONS_MAP[variant] ?: KNOWN_CHAMPIONS_MAP[key]
             allChampions.firstOrNull { champion ->
                 (id != null && champion.id == id) || key == normalizeCompact(champion.name) || key == normalizeCompact(champion.id)

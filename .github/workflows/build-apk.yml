@@ -48,13 +48,18 @@ jobs:
         python3 -m unittest discover -s tools -p test_draft_audit_retry.py
         python3 -m unittest discover -s tools -p test_scanner_device_report.py
         python3 -m unittest discover -s tools -p test_scanner_audit_summary.py
+        python3 -m unittest discover -s tools -p test_scanner_sequence_audit.py
+        python3 -m unittest discover -s tools -p test_scanner_sequence_stream.py
+        python3 -m unittest discover -s tools -p test_scanner_request_coverage.py
         python3 -m unittest discover -s tools -p test_junit_failure_report.py
         python3 tools/generate-component-items.py --check
         python3 tools/import-component-icons.py --check
         python3 tools/update-champion-builds.py --check
         bash tools/audit-portuguese.sh
   build-apk:
-    needs: [find-validated-apk, catalog-validation, security-auth-tests, scanner-tests, core-and-rendered]
+    # Build on a separate runner while the full regression suite continues.
+    # Publication below still requires the suite and every installed APK audit.
+    needs: [find-validated-apk, catalog-validation, security-auth-tests, scanner-tests]
     if: needs.find-validated-apk.outputs.run_id == ''
     runs-on: ubuntu-latest
     timeout-minutes: 30
@@ -135,6 +140,13 @@ jobs:
       run: |
         python3 -m unittest discover -s .github/scripts -p test_google_services.py
         python3 .github/scripts/restore-google-services.py
+    - name: Download the measured scanner matrix for native sequence tests
+      uses: actions/download-artifact@v4
+      with:
+        name: scanner-multidevice-audit
+        path: app/build/
+    - name: Prepare the complete native OCR sequence plan
+      run: python3 tools/scanner-sequence-plan.py app/build/reports/scanner-multidevice/audit-summary.json app/build/generated/scanner-sequence-assets/scanner-sequence-plan.json
     - name: Build obfuscated release APK
       env:
         CI: 'true'
@@ -274,7 +286,7 @@ jobs:
     - name: Inspect rendered Portuguese screens
       env:
         CI: 'true'
-      run: ./gradlew :app:testDebugUnitTest --tests com.example.PortugueseRenderedAuditTest --tests com.example.PortugueseGeneratedSurfaceTest --tests
+      run: ./gradlew :app:testDebugUnitTest --rerun --tests com.example.PortugueseRenderedAuditTest --tests com.example.PortugueseGeneratedSurfaceTest --tests
         com.example.HubChampionNavigationTest --tests com.example.HistoryConsistencyRenderedTest --tests com.example.BuildCoachingRenderedTest --tests com.example.SpellCatalogRenderedTest --tests com.example.SupportReportDecoderTest --tests com.example.OfflinePortugueseAuditTest --tests
         com.example.RuntimeBehaviorTest --tests com.example.RuntimeVisibilityTest --tests com.example.DraftChampionSelectionTest --tests com.example.RequiredItemCorrectionsTest --tests com.example.ComponentItemsCatalogTest --tests com.example.AccountDeletionRenderedTest
         -Proborazzi.test.record=true --stacktrace --no-daemon
@@ -385,7 +397,7 @@ jobs:
     - name: Recheck formerly drifting portrait centers first
       env:
         CI: 'true'
-      run: ./gradlew :app:testDebugUnitTest --tests com.example.DraftMultiDeviceAuditTest.formerlyFailingCentersStayAlignedWhenPortraitsChange --max-workers=1 --stacktrace --no-daemon
+      run: ./gradlew :app:testDebugUnitTest --rerun --tests com.example.DraftMultiDeviceAuditTest.formerlyFailingCentersStayAlignedWhenPortraitsChange --tests com.example.DraftNameAtlasTest --tests com.example.AllyDraftNameReaderTest --tests com.example.CompletedFrameStabilityTest --max-workers=1 --stacktrace --no-daemon
     - name: Test scanner and matchup rules with offline fixtures
       env:
         CI: 'true'
@@ -395,9 +407,11 @@ jobs:
     - name: Audit real reference slots and bans across capture profiles
       env:
         CI: 'true'
-      run: ./gradlew :app:testDebugUnitTest --tests com.example.DraftMultiDeviceAuditTest --tests com.example.DraftReferenceFrameTest --tests com.example.DraftRingAlignmentTest --tests com.example.CaptureCoordinateSpaceTest --tests com.example.BannedPortraitScannerTest --max-workers=1 --stacktrace --no-daemon
+      run: ./gradlew :app:testDebugUnitTest --rerun --tests com.example.DraftMultiDeviceAuditTest --tests com.example.DraftReferenceFrameTest --tests com.example.DraftRingAlignmentTest --tests com.example.CaptureCoordinateSpaceTest --tests com.example.BannedPortraitScannerTest --max-workers=1 --stacktrace --no-daemon
     - name: Distinguish simulated scanner results from physical device verification
-      run: python3 tools/scanner-audit-summary.py app/build/reports/scanner-multidevice
+      run: |
+        python3 tools/scanner-audit-summary.py app/build/reports/scanner-multidevice
+        python3 tools/scanner-request-coverage.py app/build/reports/scanner-multidevice
     - name: Retain measured scanner coordinates and visual evidence
       if: always()
       uses: actions/upload-artifact@v5
@@ -492,6 +506,136 @@ jobs:
         name: spanish-device-audit
         path: app/build/reports/spanish-device/
         retention-days: 14
+  native-title-preflight:
+    needs: build-apk
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+    - *id001
+    - *id002
+    - *id006
+    - name: Download the release APKs for targeted native title verification
+      uses: actions/download-artifact@v4
+      with:
+        name: installed-audit-apks
+        path: app/build/outputs/apk/
+    - name: Download the measured matrix for title verification
+      uses: actions/download-artifact@v4
+      with:
+        name: scanner-multidevice-audit
+        path: app/build/
+    - name: Reconstruct the same complete native sequence plan
+      run: python3 tools/scanner-sequence-plan.py app/build/reports/scanner-multidevice/audit-summary.json app/build/generated/scanner-sequence-assets/scanner-sequence-plan.json
+    - name: Enable Android virtual device acceleration
+      run: |
+        echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+        sudo udevadm control --reload-rules
+        sudo udevadm trigger --name-match=kvm
+        sudo chmod 666 /dev/kvm || true
+    - name: Run the fast gate for the previously failing native cases
+      timeout-minutes: 35
+      uses: reactivecircus/android-emulator-runner@v2
+      env:
+        COACH_SEQUENCE_SHARD: '0'
+        COACH_SEQUENCE_PREFLIGHT: 'true'
+        COACH_SEQUENCE_TARGETS: 'sequence-56-ally-first,sequence-61-enemy-first'
+      with:
+        api-level: 34
+        arch: x86_64
+        target: google_apis
+        disable-animations: true
+        emulator-boot-timeout: 300
+        emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
+        script: python3 tools/verify-draft-sequence-device.py
+    - name: Preserve the targeted native title evidence without treating it as a full sequence
+      if: always()
+      uses: actions/upload-artifact@v5
+      with:
+        name: scanner-title-preflight
+        path: app/build/reports/scanner-sequence-preflight/
+        if-no-files-found: error
+        retention-days: 14
+  native-name-sequence:
+    needs: [build-apk,native-title-preflight]
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        # Native ML Kit OCR is intentionally real and can take 6-16 minutes per
+        # geometry on a cold emulator. Keep at most three phone geometries in a
+        # runner so no valid sequence is truncated by the job deadline.
+        shard: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+    steps:
+    - *id001
+    - *id002
+    - *id006
+    - name: Download installed release and instrumentation APKs
+      uses: actions/download-artifact@v4
+      with:
+        name: installed-audit-apks
+        path: app/build/outputs/apk/
+    - name: Download complete scanner measurements
+      uses: actions/download-artifact@v4
+      with:
+        name: scanner-multidevice-audit
+        path: app/build/
+    - name: Reconstruct the exact native OCR plan
+      run: python3 tools/scanner-sequence-plan.py app/build/reports/scanner-multidevice/audit-summary.json app/build/generated/scanner-sequence-assets/scanner-sequence-plan.json
+    - name: Enable Android virtual device acceleration
+      run: |
+        echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+        sudo udevadm control --reload-rules
+        sudo udevadm trigger --name-match=kvm
+        sudo chmod 666 /dev/kvm || true
+    - name: Exercise sequential name OCR and tenth portrait on installed release
+      uses: reactivecircus/android-emulator-runner@v2
+      env:
+        COACH_SEQUENCE_SHARD: ${{ matrix.shard }}
+      with:
+        api-level: 34
+        arch: x86_64
+        target: google_apis
+        disable-animations: true
+        emulator-boot-timeout: 300
+        emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
+        script: python3 tools/verify-draft-sequence-device.py
+    - name: Preserve every native name sequence and screenshot
+      if: always()
+      uses: actions/upload-artifact@v5
+      with:
+        name: scanner-native-sequence-${{ matrix.shard }}
+        path: app/build/reports/scanner-sequence/
+        if-no-files-found: error
+        retention-days: 14
+  scanner-sequence-audit:
+    needs: native-name-sequence
+    if: always() && needs.native-name-sequence.result != 'skipped'
+    runs-on: ubuntu-latest
+    steps:
+    - *id001
+    - name: Download all native sequence evidence
+      uses: actions/download-artifact@v4
+      with:
+        pattern: scanner-native-sequence-*
+        path: app/build/reports/scanner-sequence/
+    - name: Download the complete source matrix
+      uses: actions/download-artifact@v4
+      with:
+        name: scanner-multidevice-audit
+        path: app/build/
+    - name: Require every planned resolution and every OCR step
+      env:
+        COACH_NATIVE_SEQUENCE_RESULT: ${{ needs.native-name-sequence.result }}
+      run: python3 tools/scanner-sequence-summary.py app/build/reports/scanner-multidevice/audit-summary.json app/build/reports/scanner-sequence/ --execution-result "$COACH_NATIVE_SEQUENCE_RESULT"
+    - name: Publish the complete native sequence audit
+      if: always()
+      uses: actions/upload-artifact@v5
+      with:
+        name: scanner-sequence-complete-audit
+        path: app/build/reports/scanner-sequence/
+        if-no-files-found: error
+        retention-days: 14
   build-and-release:
     if: always()
     needs:
@@ -502,6 +646,8 @@ jobs:
     - core-and-rendered
     - installed-audit
     - installed-spanish
+    - native-title-preflight
+    - scanner-sequence-audit
     runs-on: ubuntu-latest
     steps:
     - name: Require all validations to pass
@@ -512,12 +658,14 @@ jobs:
         RENDERED_RESULT: ${{ needs.core-and-rendered.result }}
         DEVICE_RESULT: ${{ needs.installed-audit.result }}
         SPANISH_RESULT: ${{ needs.installed-spanish.result }}
+        SEQUENCE_RESULT: ${{ needs.scanner-sequence-audit.result }}
+        PREFLIGHT_RESULT: ${{ needs.native-title-preflight.result }}
         REUSE_RUN: ${{ needs.find-validated-apk.outputs.run_id }}
         REUSE_RESULT: ${{ needs.find-validated-apk.result }}
       run: |
         python3 - <<'PYRESULT'
         import os
-        results = {key: os.environ[key] for key in ('DATA_RESULT', 'SCANNER_RESULT', 'BUILD_RESULT', 'RENDERED_RESULT', 'DEVICE_RESULT', 'SPANISH_RESULT')}
+        results = {key: os.environ[key] for key in ('DATA_RESULT', 'SCANNER_RESULT', 'BUILD_RESULT', 'RENDERED_RESULT', 'DEVICE_RESULT', 'SPANISH_RESULT', 'SEQUENCE_RESULT','PREFLIGHT_RESULT')}
         print(results)
         expected = 'skipped' if os.environ.get('REUSE_RUN') and os.environ.get('REUSE_RESULT') == 'success' else 'success'
         if any(value != expected for value in results.values()):
@@ -642,6 +790,8 @@ jobs:
     - core-and-rendered
     - installed-audit
     - installed-spanish
+    - native-title-preflight
+    - scanner-sequence-audit
     - build-and-release
     runs-on: ubuntu-latest
     permissions:

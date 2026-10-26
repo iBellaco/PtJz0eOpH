@@ -50,7 +50,10 @@ class ValidatedApkTest(unittest.TestCase):
 
     def test_build_inputs_and_renamed_source_cannot_be_excluded(self):
         for filename in ['app/build.gradle.kts', '.github/workflows/build-apk.yml',
-                         'gradle/libs.versions.toml', 'AGENTS.md']:
+                         'gradle/libs.versions.toml', 'AGENTS.md',
+                         'docs/draft-recognition-contract.md',
+                         'app/src/test/resources/scanner/requested-displays.csv',
+                         'app/src/test/resources/portraits/draft-kaisa-nine.jpg']:
             self.assertEqual(('', ''), self.invoke(changed_tree=True, files=[{'filename': filename}]))
         self.assertEqual(('', ''), self.invoke(changed_tree=True, files=[{
             'filename': '.github/scripts/cleanup-completed-runs.cjs',
@@ -72,6 +75,26 @@ class ValidatedApkTest(unittest.TestCase):
 
     def test_failed_spanish_overlay_audit_prevents_reuse(self):
         self.assertEqual(('', ''), self.invoke(failed_job='installed-spanish'))
+
+    def test_missing_or_failed_native_sequence_matrix_prevents_reuse(self):
+        self.assertEqual(('', ''), self.invoke(failed_job='scanner-sequence-audit'))
+        self.assertEqual(('', ''), self.invoke(missing_job='scanner-sequence-audit'))
+        self.assertEqual(('', ''), self.invoke(failed_job='native-title-preflight'))
+        self.assertEqual(('', ''), self.invoke(missing_job='native-title-preflight'))
+
+    def test_parallel_build_cannot_publish_before_full_and_native_regressions(self):
+        release = self.workflow.split('  build-and-release:', 1)[1].split('  cleanup-history:', 1)[0]
+        for dependency in ['core-and-rendered', 'installed-audit', 'installed-spanish', 'scanner-sequence-audit','native-title-preflight']:
+            self.assertIn('    - ' + dependency + '\n', release)
+        self.assertIn("'RENDERED_RESULT', 'DEVICE_RESULT', 'SPANISH_RESULT', 'SEQUENCE_RESULT'", release)
+        self.assertIn('if any(value != expected for value in results.values())', release)
+
+    def test_picture_evidence_is_regenerated_even_when_test_results_are_cached(self):
+        for marker in ['com.example.PortugueseRenderedAuditTest',
+                       'com.example.DraftMultiDeviceAuditTest.formerlyFailingCentersStayAlignedWhenPortraitsChange',
+                       'com.example.DraftMultiDeviceAuditTest --tests']:
+            command = next(line for line in self.workflow.splitlines() if 'run: ./gradlew' in line and marker in line)
+            self.assertIn(':app:testDebugUnitTest --rerun ', command)
 
     def test_expired_artifact_prevents_reuse(self):
         self.assertEqual(('', ''), self.invoke(expired=True))

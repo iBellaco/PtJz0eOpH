@@ -5,19 +5,46 @@ import com.example.model.LaneRole
 
 /** Reads the same player title before and after selection, independently of champion affinity. */
 object AllyDraftNameReader {
-    data class Reading(val lane: LaneRole? = null, val champion: Champion? = null, val ambiguous: Boolean = false)
+    data class Reading(val lane: LaneRole? = null, val champion: Champion? = null,
+        val ambiguous: Boolean = false, val unpicked: Boolean = false)
+    // Full-title OCR readings observed in compressed captures, not fuzzy substrings.
+    private val observedLaneTitles=mapOf("calle del daagon" to LaneRole.ADC,"calle del daagcn" to LaneRole.ADC,
+        "calle del damgon" to LaneRole.ADC,"calle del barcn" to LaneRole.TOP,
+        "calle del bardn" to LaneRole.TOP,"cale cntral" to LaneRole.MID,
+        "cmle cntral" to LaneRole.MID,"cale (ntral" to LaneRole.MID,
+        "jnala" to LaneRole.JUNGLE,"jmala" to LaneRole.JUNGLE,
+        "ajoyo" to LaneRole.SUPPORT,"aporo" to LaneRole.SUPPORT)
 
     /** An exact intact title takes precedence over a destructively processed alternative. */
     internal fun preferOriginal(original: Reading, withoutBadge: Reading): Reading =
-        if (original.ambiguous || original.champion != null || original.lane != null) original else withoutBadge
+        if (original.ambiguous || original.champion != null || original.lane != null || original.unpicked) original else withoutBadge
 
     fun readTitleRows(lines: List<Pair<String, Int>>, rowDistance: Int, catalog: List<Champion>,
         titleMaxCenterY: Int = Int.MAX_VALUE): Reading {
         val titleLines = lines.filter { it.second <= titleMaxCenterY }
         val top = titleLines.minOfOrNull { it.second } ?: return Reading()
-        val title = titleLines.filter { it.second <= top + rowDistance }.map { it.first }
+        val titleRow = titleLines.filter { it.second <= top + rowDistance }
+        val title = titleRow.map { it.first }
         val reading = read(title, catalog)
-        if (reading.ambiguous || reading.lane != null || reading.champion != null) return reading
+        if (reading.ambiguous) {
+            // OCR can attach a lane token to the same physical baseline as an
+            // exact champion title. Only resolve that narrow case when both
+            // pieces are on the same row; a champion on a later player-name
+            // row must remain ambiguous and cannot select the slot.
+            val names = title.mapNotNull { ChampionNameResolver.findChampionInNameBand(it, catalog) }
+                .distinctBy { it.id }
+            val lanes = title.mapNotNull { laneTitle(it) }.distinct()
+            val sameRow = titleRow.map { it.second }.let { ys ->
+                ys.maxOrNull()?.minus(ys.minOrNull() ?: 0) ?: Int.MAX_VALUE
+            } <= rowDistance.coerceAtLeast(1) / 3
+            if (sameRow && names.size == 1 && lanes.size == 1) return Reading(champion = names.single())
+            return reading
+        }
+        if (reading.lane != null || reading.champion != null || reading.unpicked) return reading
+        // Native OCR can split the complete title into neighbouring fragments
+        // (V + I, LEE + SIN). Join only this same top row, never the player's row.
+        val joined=read(listOf(title.joinToString(" ")),catalog)
+        if(joined.ambiguous || joined.lane!=null || joined.champion!=null) return joined
         // A long lane title may wrap. A player's second-line name cannot become
         // the selected champion when the first line was unreadable.
         if (title.any { Regex("\\b(calle|carril|linea|rota|lane)\\b").containsMatchIn(DraftValidationLayer.normalize(it)) }) {
@@ -29,15 +56,27 @@ object AllyDraftNameReader {
     fun read(lines: List<String>, catalog: List<Champion>): Reading {
         val names = lines.mapNotNull { ChampionNameResolver.findChampionInNameBand(it, catalog) }.distinctBy { it.id }
         val lanes = (lines + lines.joinToString(" ")).mapNotNull { laneTitle(it) }.distinct()
+        val unpicked = names.isEmpty() && lanes.isEmpty() && lines.any(::isUnpickedTitle)
         return when {
             names.size > 1 || lanes.size > 1 || (names.isNotEmpty() && lanes.isNotEmpty()) -> Reading(ambiguous = true)
             names.size == 1 -> Reading(champion = names.single())
             lanes.size == 1 -> Reading(lane = lanes.single())
+            unpicked -> Reading(unpicked = true)
             else -> Reading()
         }
     }
 
+    /** Wild Rift keeps this exact localized placeholder in an enemy title row
+     * until that slot selects a champion. It is evidence that no title recovery
+     * is needed, never a champion-name alias. */
+    private fun isUnpickedTitle(text: String): Boolean =
+        Regex("^(?:jugador|jogador|player)\\s*[1-5]$", RegexOption.IGNORE_CASE)
+            .matches(DraftValidationLayer.normalize(text))
+
     private fun laneTitle(text: String): LaneRole? {
+        // Match the whole raw title before legacy badge stripping, so a player
+        // nickname such as XCS JNALA cannot turn into a compressed lane alias.
+        observedLaneTitles[DraftValidationLayer.normalize(text)]?.let { return it }
         val clean = DraftValidationLayer.normalize(DraftValidationLayer.stripLeadingMasteryOrRoleIcon(text))
         val vocabulary = setOf("calle", "carril", "linea", "rota", "lane", "del", "de", "do", "da", "d", "el", "la",
             "baron", "barao", "dragon", "dragao", "central", "medio", "meio", "jungla", "jungle", "selva",
