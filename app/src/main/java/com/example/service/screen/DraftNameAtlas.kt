@@ -333,7 +333,7 @@ internal class DraftNameAtlas private constructor(val bitmap: Bitmap, val tiles:
          * icon.  The samples contain only captured pixels: no champion name,
          * expected value or rendered glyph is introduced.
          */
-        fun shortAlliedTitleAlternatives(atlas: DraftNameAtlas, tile: Tile): DraftNameAtlas? {
+        fun shortAlliedTitleAlternatives(atlas: DraftNameAtlas, tile: Tile, binary: Boolean = true): DraftNameAtlas? {
             require(tile.original && tile in atlas.tiles && tile.ally)
             val prior = atlas.tiles.single {
                 it.ally && it.slot == tile.slot && !it.original && !it.contrast
@@ -343,7 +343,7 @@ internal class DraftNameAtlas private constructor(val bitmap: Bitmap, val tiles:
             val sourceWidth = minOf(prior.region.width() - inset,
                 (prior.region.height() * 2.5f).toInt().coerceAtLeast(1))
             val sourceHeight = prior.region.height()
-            val targets = listOf(48, 72, 96)
+            val targets = listOf(32, 48, 72, 96)
             val cellWidth = targets.maxOf { target ->
                 kotlin.math.round(sourceWidth * target.toFloat() / sourceHeight).toInt()
             } + GUTTER * 2
@@ -352,8 +352,10 @@ internal class DraftNameAtlas private constructor(val bitmap: Bitmap, val tiles:
                 Bitmap.Config.ARGB_8888)
             val canvas = Canvas(bitmap).apply { drawColor(Color.BLACK) }
             try {
-                val sample = Bitmap.createBitmap(atlas.bitmap, prior.region.left + inset,
-                    prior.region.top, sourceWidth, sourceHeight)
+                // Preserve an independent original-color sample. Thresholding
+                // and badge erasure can damage a faint two-letter title.
+                val sample = Bitmap.createBitmap(atlas.bitmap, tile.region.left + inset,
+                    tile.region.top, sourceWidth, sourceHeight)
                 try {
                     val isolated = sample.copy(Bitmap.Config.ARGB_8888, true)
                     try {
@@ -390,7 +392,7 @@ internal class DraftNameAtlas private constructor(val bitmap: Bitmap, val tiles:
                             val region = Rect(GUTTER, top, GUTTER + width, top + target)
                             canvas.drawRect(region, Paint().apply { color = Color.WHITE })
                             val textRegion = Rect(region).apply { inset(padding, padding) }
-                            canvas.drawBitmap(isolated, inkBounds, textRegion, Paint(Paint.FILTER_BITMAP_FLAG))
+                            canvas.drawBitmap(if (binary) isolated else sample, inkBounds, textRegion, Paint(Paint.FILTER_BITMAP_FLAG))
                             tile.copy(source = source, region = region, original = false,
                                 contrast = true, titleMinY = 0, titleMaxY = target,
                                 badgeRemoved = true, contentInsetLeft = 0)

@@ -350,6 +350,8 @@ class DraftSequenceMultiDeviceInstalledTest {
                                             for(tile in atlas.tiles.filter { it.original && it.ally }) {
                                                 val alternatives=DraftNameAtlas.shortAlliedTitleAlternatives(atlas,tile) ?: continue
                                                 try {
+                                                    File(evidence,"${case.getString("id")}-${fixture.file}-short-${tile.slot}.png")
+                                                        .outputStream().use { alternatives.bitmap.compress(Bitmap.CompressFormat.PNG,100,it) }
                                                     val read=diagnosticRecognizer.process(
                                                         com.google.mlkit.vision.common.InputImage.fromBitmap(alternatives.bitmap,0)).await()
                                                     shortDiagnostics.put(JSONObject().put("slot",tile.slot).put("text",read.text)

@@ -467,7 +467,7 @@ class DraftNameAtlasTest {
                     val alternatives=DraftNameAtlas.shortAlliedTitleAlternatives(atlas,tile)
                         ?: throw AssertionError("$height must produce a compact title retry")
                     try {
-                        assertEquals(listOf(48,72,96),alternatives.tiles.map { it.region.height() })
+                        assertEquals(listOf(32,48,72,96),alternatives.tiles.map { it.region.height() })
                         val packed = DraftNameAtlas.packAlternatives(listOf(alternatives))
                         try {
                             for (page in packed) for (part in page.tiles) {
