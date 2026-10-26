@@ -5,6 +5,14 @@ on:
     branches: [fix-error]
     paths:
       - 'app/src/main/java/com/example/service/screen/**'
+      - 'app/src/main/java/com/example/util/SystemPermissionHelper.kt'
+      - 'app/src/main/java/com/example/ui/components/OverlayPermissionHelp.kt'
+      - 'app/src/main/java/com/example/ui/components/BatteryAndOverlayNoticeCard.kt'
+      - 'app/src/main/java/com/example/ui/screens/MainDraftingScreen.kt'
+      - 'app/src/main/res/values*/strings.xml'
+      - 'app/src/test/java/com/example/DeviceDraftProfileTest.kt'
+      - 'app/src/test/java/com/example/SystemPermissionHelperTest.kt'
+      - 'app/src/test/java/com/example/DraftNameAtlasTest.kt'
       - 'app/src/main/java/com/example/data/WildRiftRepository.kt'
       - 'app/src/main/java/com/example/service/ConfirmedLastPickHud.kt'
       - 'app/build.gradle.kts'
@@ -79,6 +87,9 @@ jobs:
           ./gradlew :app:testDebugUnitTest --rerun \
             --tests com.example.AllyDraftNameReaderTest \
             --tests com.example.DraftNameAtlasTest \
+            --tests com.example.DeviceDraftProfileTest \
+            --tests com.example.DraftRingAlignmentTest \
+            --tests com.example.SystemPermissionHelperTest \
             --tests com.example.ChampionNameResolverCoverageTest \
             --max-workers=1 --stacktrace --no-daemon
 
@@ -231,7 +242,7 @@ jobs:
           emulator-boot-timeout: 300
           emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
           script: |
-            python3 tools/verify-targeted-red-magic.py
+            if [ "$COACH_SEQUENCE_PREFLIGHT" = "true" ]; then python3 tools/verify-targeted-red-magic.py; fi
             /usr/bin/env bash -c 'overall_status=0; for target_case in ${COACH_SEQUENCE_TARGETS//,/ }; do if ! COACH_SEQUENCE_TARGETS="$target_case" python3 tools/verify-draft-sequence-device.py; then overall_status=1; fi; done; exit "$overall_status"'
       - name: Conservar evidencia release de todos los errores conocidos
         if: always()

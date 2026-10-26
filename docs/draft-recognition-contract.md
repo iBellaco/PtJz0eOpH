@@ -10,6 +10,21 @@ La migración se realiza una sola vez al actualizar; no elimina las capturas ni
 los ajustes manuales nuevos que guarde después. El propietario puede realizar
 las pruebas físicas de la nueva versión; todavía no se cuentan como realizadas.
 
+Actualización 26 de octubre de 2026 (1.1.10.392): el propietario confirma que
+1.1.10.391 funciona físicamente en Red Magic, pero la actualización del Hub es
+lenta. Solicita retirar también el preset de POCO X7 Pro. Ninguna marca selecciona
+coordenadas especiales: todos parten de la geometría normalizada compartida y
+ajustan ventana/anillos visibles. Al actualizar POCO se descarta una vez su
+calibración antigua; se conservan futuras correcciones manuales voluntarias.
+No eliminar fixtures ni posiciones esperadas de las pruebas: son evidencia, no
+presets productivos. La nueva versión requiere otra comprobación física.
+
+Los reintentos OCR de cajas medidas se agrupan por etapa, sin cambiar los píxeles
+de cada recorte ni la confirmación de dos fotogramas. Registrar solicitudes y
+tiempos por fotograma; menos solicitudes no demuestra por sí solo menor latencia
+en un teléfono. Android puede bloquear el permiso de overlay mediante ajustes
+restringidos: Coach orienta al propietario, nunca elude esa protección.
+
 ## Información que se observa
 
 Los cinco slots aliados, cinco rivales y cinco baneos de cada lado conservan

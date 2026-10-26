@@ -58,19 +58,24 @@ class DeviceDraftProfileTest {
             assertEquals(manual,VisionCalibrationConfig.loadProfileFromPrefs(context,key))
         } finally {prefs.edit().clear().commit();ShadowBuild.reset()}
     }
-    @Test fun pocoMeasuredCoordinatesAreLoadedAndManualControlsSurviveReload() {
+    @Test fun pocoOldCoordinatesAreMigratedAndNewManualControlsSurviveReload() {
         val context = RuntimeEnvironment.getApplication()
         val prefs = context.getSharedPreferences("vision_calibration_prefs", 0)
         prefs.edit().clear().commit()
         ShadowBuild.setManufacturer("Xiaomi")
         ShadowBuild.setModel("2412DPC0AG")
         try {
+            val key=VisionCalibrationConfig.captureProfileKey(2712,1220)
+            prefs.edit().putString("calibration_device_model","xiaomi:2412dpc0ag")
+                .putFloat("ally_slot_x_0",.12f).putFloat("avatarDiameterRatio",.11f)
+                .putFloat("profile_xiaomi:2412dpc0ag_${key}_ally_slot_x_0",.12f)
+                .putFloat("profile_${key}_ally_slot_x_0",.12f)
+                .putString("unrelated_setting","keep").commit()
+            assertNull(VisionCalibrationConfig.loadProfileFromPrefs(context,key))
+            assertEquals("keep",prefs.getString("unrelated_setting",null))
             com.example.service.screen.DraftVisionScanner.initCalibration(context)
             val preset = com.example.service.screen.DraftVisionScanner.calibrationConfig
-            assertEquals(.120f, preset.getAllySlotX(0), .00001f)
-            assertEquals(.911f, preset.getEnemySlotX(0), .00001f)
-            assertEquals(listOf(.184f, .320f, .454f, .592f, .728f), preset.allySlotYRatios)
-            assertEquals(listOf(.179f, .315f, .449f, .587f, .723f), preset.enemySlotYRatios)
+            assertEquals(VisionCalibrationConfig(),preset)
             val manual = preset.copy(nameBandScale = .7f).adjustDraftSlot(true, 0, deltaX = .005f, deltaY = -.005f)
             manual.saveToPrefs(context)
             com.example.service.screen.DraftVisionScanner.initCalibration(context)
@@ -81,6 +86,13 @@ class DeviceDraftProfileTest {
             com.example.service.screen.DraftVisionScanner.initCalibration(context)
             assertEquals(VisionCalibrationConfig(), com.example.service.screen.DraftVisionScanner.calibrationConfig)
         } finally { prefs.edit().clear().commit(); ShadowBuild.reset() }
+    }
+    @Test fun everyBrandUsesTheSameAdaptiveStartingGeometry() {
+        for ((brand,model) in listOf("nubia" to "NX789J", "Xiaomi" to "2412DPC0AG",
+            "POCO" to "POCO X7 Pro", "Xiaomi" to "2412DPC0AI", "Honor" to "Magic V2",
+            "Samsung" to "S26", "Google" to "Pixel", "unknown" to "unknown")) {
+            assertEquals("$brand/$model",VisionCalibrationConfig(),VisionCalibrationConfig.defaultsForDevice(brand,model))
+        }
     }
     @Test fun nineConfirmedTitlesIdentifyTheSideRegardlessOfAnEarlierWrongPrefix() {
         val all = List(5) { true }

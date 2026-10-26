@@ -30,13 +30,30 @@ object SystemPermissionHelper {
         ).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK
         }
-        try {
-            context.startActivity(intent)
-        } catch (_: Exception) {
-            val fallbackIntent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION).apply {
-                flags = Intent.FLAG_ACTIVITY_NEW_TASK
+        openFirstAvailable(context, listOf(intent,
+            Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION),
+            applicationDetailsIntent(context), Intent(Settings.ACTION_SETTINGS)))
+    }
+
+    /** Android restricted settings require an explicit action by the owner.
+     * Opening this screen never grants a permission or bypasses a device policy. */
+    fun openApplicationDetails(context: Context) {
+        openFirstAvailable(context,listOf(applicationDetailsIntent(context),Intent(Settings.ACTION_SETTINGS)))
+    }
+
+    private fun applicationDetailsIntent(context: Context) = Intent(
+        Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:${context.packageName}"))
+
+    private fun openFirstAvailable(context: Context, intents: List<Intent>) {
+        for(intent in intents) {
+            try {
+                context.startActivity(intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+                return
+            } catch (_: android.content.ActivityNotFoundException) {
+                // OEMs may omit the package-specific or global settings screen.
+            } catch (_: SecurityException) {
+                // Managed-device policy can disallow this destination.
             }
-            context.startActivity(fallbackIntent)
         }
     }
 

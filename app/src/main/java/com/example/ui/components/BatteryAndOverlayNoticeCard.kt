@@ -209,6 +209,8 @@ fun BatteryAndOverlayNoticeCard(
 
             Spacer(modifier = Modifier.height(8.dp))
 
+            if (!hasOverlayPermission) OverlayPermissionHelp()
+
             // 2. Battery Optimization Status Row
             Row(
                 modifier = Modifier

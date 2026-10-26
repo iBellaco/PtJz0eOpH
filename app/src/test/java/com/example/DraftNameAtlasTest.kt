@@ -149,6 +149,41 @@ class DraftNameAtlasTest {
             assertTrue(DraftNameAtlas.packAlternatives(emptyList()).isEmpty())
         } finally { atlas.bitmap.recycle();source.recycle() }
     }
+    @Test fun measuredRetryBatchPreservesAllTenSlotsAndTheirNativeSizePixels() {
+        val source=Bitmap.createBitmap(1280,579,Bitmap.Config.ARGB_8888).apply { eraseColor(Color.BLUE) }
+        val atlas=DraftNameAtlas.create(source,VisionCalibrationConfig(),emptyList())
+        try {
+            for(nativeSize in listOf(false,true)) {
+                val inputs=atlas.tiles.filter { it.original }.map { tile ->
+                    val focused=DraftNameAtlas.focusDetectedLine(atlas,tile,android.graphics.Rect(20,30,100,50))
+                    if(!nativeSize) focused else try { DraftNameAtlas.nativeTextSizes(focused,20) }
+                        finally { focused.bitmap.recycle() }
+                }
+                try {
+                    val pages=DraftNameAtlas.packAlternatives(inputs)
+                    try {
+                        assertTrue("Batch must reduce requests for ten unresolved slots",pages.size<inputs.size)
+                        val expected=inputs.flatMap { input -> input.tiles.map { input to it } }
+                        val actual=pages.flatMap { page -> page.tiles.map { page to it } }
+                        assertEquals(expected.size,actual.size)
+                        assertEquals(10,actual.map { it.second.ally to it.second.slot }.toSet().size)
+                        expected.zip(actual).forEach { (before,after) ->
+                            val (original,tile)=before
+                            val (page,packed)=after
+                            assertEquals(tile.copy(region=packed.region),packed)
+                            val pixels=IntArray(tile.region.width()*tile.region.height())
+                            val batchPixels=IntArray(pixels.size)
+                            original.bitmap.getPixels(pixels,0,tile.region.width(),tile.region.left,tile.region.top,
+                                tile.region.width(),tile.region.height())
+                            page.bitmap.getPixels(batchPixels,0,packed.region.width(),packed.region.left,packed.region.top,
+                                packed.region.width(),packed.region.height())
+                            assertArrayEquals(pixels,batchPixels)
+                        }
+                    } finally { pages.forEach { it.bitmap.recycle() } }
+                } finally { inputs.forEach { it.bitmap.recycle() } }
+            }
+        } finally { atlas.bitmap.recycle();source.recycle() }
+    }
     @Test fun sceneRereadingRetainsOriginalSceneButOnlyDecodesTenMaskedTitleBands() {
         val source=Bitmap.createBitmap(640,360,Bitmap.Config.ARGB_8888).apply { eraseColor(Color.WHITE) }
         val config=VisionCalibrationConfig()

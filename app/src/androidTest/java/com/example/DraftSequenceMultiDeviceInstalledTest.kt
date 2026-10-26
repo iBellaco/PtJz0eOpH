@@ -111,6 +111,7 @@ class DraftSequenceMultiDeviceInstalledTest {
                                     frameEvidence.put("successful",read?.isSuccessful).put("status",read?.statusMessage)
                                         .put("observedTitleIds",JSONObject(read!!.observedTitleIds.mapKeys { entry -> entry.key.toString() }))
                                         .put("ocrFailure",read?.ocrFailure ?: JSONObject.NULL)
+                                        .put("ocrRequestCount",read?.ocrRequestCount)
                                     read?.ocrFailure?.let { failure -> errors += "step=$step: $failure" }
                                 } catch(error:Exception) {
                                     frameEvidence.put("successful",false).put("error",error.javaClass.simpleName)
