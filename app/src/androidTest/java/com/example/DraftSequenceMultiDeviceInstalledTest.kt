@@ -109,6 +109,9 @@ class DraftSequenceMultiDeviceInstalledTest {
                                         scanner.scanDraftFromBitmap(frame, context, order, LaneRole.MID, namesOnly = true)
                                     }
                                     frameEvidence.put("successful",read?.isSuccessful).put("status",read?.statusMessage)
+                                        .put("observedTitleIds",JSONObject(read!!.observedTitleIds.mapKeys { entry -> entry.key.toString() }))
+                                        .put("ocrFailure",read?.ocrFailure ?: JSONObject.NULL)
+                                    read?.ocrFailure?.let { failure -> errors += "step=$step: $failure" }
                                 } catch(error:Exception) {
                                     frameEvidence.put("successful",false).put("error",error.javaClass.simpleName)
                                     File(evidence,"${case.getString("id")}-failed-step-$step-frame-$it.png")
@@ -428,6 +431,7 @@ class DraftSequenceMultiDeviceInstalledTest {
                     } finally { sequenceSource.recycle() }
                 } catch (failure: Exception) {
                     errors += "${failure.javaClass.simpleName}: ${failure.message}"
+                    result.put("exceptionStackTrace",failure.stackTraceToString())
                 } finally {
                     result.put("steps", checks).put("failures", JSONArray(errors))
                         .put("status", if (errors.isEmpty() && checks.length() == stages.size) "PASS" else "FAIL")

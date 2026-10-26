@@ -26,11 +26,18 @@ def run_instrumentation(command, log_path, timeout):
     return code, log_path.read_text()
 
 
+def evidence_label(preflight, shard, targets):
+    label = 'preflight' if preflight else str(shard)
+    if targets:
+        label += '-' + '-'.join(re.sub(r'[^A-Za-z0-9_-]', '_', target) for target in sorted(targets))
+    return label
+
+
 def main():
     shard = int(os.environ['COACH_SEQUENCE_SHARD'])
     preflight = os.environ.get('COACH_SEQUENCE_PREFLIGHT')=='true'
     targets = {value.strip() for value in os.environ.get('COACH_SEQUENCE_TARGETS','').split(',') if value.strip()}
-    label = 'preflight' if preflight else str(shard)
+    label = evidence_label(preflight, shard, targets)
     directory = Path('app/build/reports/scanner-sequence-preflight' if preflight else 'app/build/reports/scanner-sequence')
     directory.mkdir(parents=True, exist_ok=True)
     plan = json.loads(Path('app/build/generated/scanner-sequence-assets/scanner-sequence-plan.json').read_text())
