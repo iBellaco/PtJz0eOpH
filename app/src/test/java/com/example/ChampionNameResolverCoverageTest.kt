@@ -15,6 +15,33 @@ import org.robolectric.annotation.Config
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [34], application = Application::class)
 class ChampionNameResolverCoverageTest {
+    @Test fun scannerSnapshotSurvivesCatalogReplacementDuringIteration() {
+        WildRiftRepository.initChampions(RuntimeEnvironment.getApplication(), forceReload = true)
+        val snapshot = WildRiftRepository.championSnapshot()
+        val ids = snapshot.map { it.id }
+        assertEquals(142, ids.size)
+        val iterator = snapshot.iterator()
+        val first = iterator.next()
+        // Deterministically interrupt iteration with the same replacement that
+        // background regional metadata performs. A live StateList iterator fails.
+        androidx.compose.runtime.snapshots.Snapshot.withMutableSnapshot {
+            WildRiftRepository.champions.clear()
+            WildRiftRepository.champions.addAll(snapshot.reversed())
+        }
+        try {
+            assertEquals(ids, listOf(first.id) + iterator.asSequence().map { it.id }.toList())
+            assertEquals("vex", ChampionNameResolver.findChampionInNameBand("VEX",snapshot)?.id)
+            assertEquals(ids.reversed(),WildRiftRepository.championSnapshot().map { it.id })
+            snapshot.forEach { champion ->
+                assertEquals(champion.id,ChampionNameResolver.findChampionInNameBand(champion.name,snapshot)?.id)
+            }
+        } finally {
+            androidx.compose.runtime.snapshots.Snapshot.withMutableSnapshot {
+                WildRiftRepository.champions.clear()
+                WildRiftRepository.champions.addAll(snapshot)
+            }
+        }
+    }
     @Test fun everyBundledChampionHasAnExactTitleResolution() {
         WildRiftRepository.initChampions(RuntimeEnvironment.getApplication(), forceReload = true)
         val champions = WildRiftRepository.baseChampionsList

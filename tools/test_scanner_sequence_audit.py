@@ -15,6 +15,19 @@ reporter = module('scanner-sequence-summary')
 
 
 class SequenceAuditTest(unittest.TestCase):
+    def test_known_full_release_failures_are_in_the_isolated_plan(self):
+        import json
+        root = Path(__file__).resolve().parents[1]
+        plan = json.loads((root / 'app/src/test/resources/scanner/targeted-sequence-plan.json').read_text())
+        cases = {case['id']: case for case in plan['cases']}
+        for name, dimensions in [('sequence-0-enemy-first', [1920, 869]),
+                                 ('sequence-42-ally-first', [1920, 863])]:
+            self.assertEqual(dimensions, cases[name]['capture'])
+            self.assertEqual(0, cases[name]['shard'])
+        workflow = (root / '.github/workflows/fix-error.yml').read_text()
+        for name in ['sequence-0-enemy-first', 'sequence-42-ally-first']:
+            self.assertIn("preflight: 'false'\n            targets: '" + name + "'", workflow)
+
     def fixture(self):
         profiles = [dict(profile=name, model=name, manufacturer='Xiaomi', display=[2400, 1080], capture=[1920, 864],
                          layout='uniform-fit-reference', calibration={'nameBandScale': 1}, specification=None, variant='original')

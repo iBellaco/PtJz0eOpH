@@ -5,6 +5,7 @@ on:
     branches: [fix-error]
     paths:
       - 'app/src/main/java/com/example/service/screen/**'
+      - 'app/src/main/java/com/example/data/WildRiftRepository.kt'
       - 'app/src/main/java/com/example/service/ConfirmedLastPickHud.kt'
       - 'app/build.gradle.kts'
       - 'app/src/test/java/com/example/ChampionNameResolverCoverageTest.kt'
@@ -88,12 +89,12 @@ jobs:
           from pathlib import Path
           plan = json.loads(Path('app/src/test/resources/scanner/targeted-sequence-plan.json').read_text())
           profiles = [profile for case in plan['cases'] for profile in case['profiles']]
-          assert len(plan['cases']) == 5 and plan['modelProfiles'] == len(profiles) == 6
+          assert len(plan['cases']) == 6 and plan['modelProfiles'] == len(profiles) == 7
           assert all(profile['model'] != 'resolution-simulation' for profile in profiles)
           assert {case['id'] for case in plan['cases']} == {
               'sequence-42-ally-first', 'sequence-49-enemy-first',
               'sequence-52-ally-first', 'sequence-56-ally-first',
-              'sequence-63-enemy-first'}
+              'sequence-63-enemy-first', 'sequence-0-enemy-first'}
           PY
           mkdir -p app/build/generated/scanner-sequence-assets
           cp app/src/test/resources/scanner/targeted-sequence-plan.json \
@@ -141,9 +142,22 @@ jobs:
           retention-days: 14
 
   targeted-red-magic-release:
-    name: Todos los errores conocidos en APK release
+    name: Errores conocidos en release (${{ matrix.suite }})
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    timeout-minutes: 50
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - suite: titulos-cortos
+            preflight: 'true'
+            targets: 'sequence-49-enemy-first,sequence-56-ally-first,sequence-63-enemy-first'
+          - suite: redmagic-secuencia-completa
+            preflight: 'false'
+            targets: 'sequence-0-enemy-first'
+          - suite: xiaomi-secuencia-completa
+            preflight: 'false'
+            targets: 'sequence-42-ally-first'
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-java@v5
@@ -205,9 +219,9 @@ jobs:
       - name: Reproducir Red Magic y todos los errores OCR conocidos en release
         uses: reactivecircus/android-emulator-runner@v2
         env:
-          COACH_SEQUENCE_SHARD: '13'
-          COACH_SEQUENCE_PREFLIGHT: 'true'
-          COACH_SEQUENCE_TARGETS: 'sequence-49-enemy-first,sequence-56-ally-first,sequence-63-enemy-first'
+          COACH_SEQUENCE_SHARD: '0'
+          COACH_SEQUENCE_PREFLIGHT: ${{ matrix.preflight }}
+          COACH_SEQUENCE_TARGETS: ${{ matrix.targets }}
           COACH_SEQUENCE_BUILD_TYPE: release
         with:
           api-level: 34
@@ -218,12 +232,14 @@ jobs:
           emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
           script: |
             python3 tools/verify-targeted-red-magic.py
-            /usr/bin/env bash -c 'overall_status=0; for target_case in sequence-49-enemy-first sequence-56-ally-first sequence-63-enemy-first; do if ! COACH_SEQUENCE_TARGETS="$target_case" python3 tools/verify-draft-sequence-device.py; then overall_status=1; fi; done; exit "$overall_status"'
+            /usr/bin/env bash -c 'overall_status=0; for target_case in ${COACH_SEQUENCE_TARGETS//,/ }; do if ! COACH_SEQUENCE_TARGETS="$target_case" python3 tools/verify-draft-sequence-device.py; then overall_status=1; fi; done; exit "$overall_status"'
       - name: Conservar evidencia release de todos los errores conocidos
         if: always()
         uses: actions/upload-artifact@v5
         with:
-          name: fix-error-known-release-evidence
-          path: app/build/reports/scanner-sequence-preflight/
+          name: fix-error-known-release-evidence-${{ matrix.suite }}
+          path: |
+            app/build/reports/scanner-sequence-preflight/
+            app/build/reports/scanner-sequence/
           if-no-files-found: warn
           retention-days: 14

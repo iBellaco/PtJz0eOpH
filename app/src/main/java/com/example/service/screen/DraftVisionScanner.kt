@@ -110,7 +110,9 @@ data class DraftScanResult(
     val hasDraftActivity: Boolean = false,
     val isSuccessful: Boolean,
     val statusMessage: String,
-    val allyRolesBySlot: Map<Int, LaneRole> = emptyMap()
+    val allyRolesBySlot: Map<Int, LaneRole> = emptyMap(),
+    val observedTitleIds: Map<Int, String> = emptyMap(),
+    val ocrFailure: String? = null
 )
 
 object DraftVisionScanner {
@@ -616,7 +618,8 @@ object DraftVisionScanner {
         if (context != null) {
             TenthPickDiagnosticManager.init(context)
         }
-        val allChamps = WildRiftRepository.champions
+        val allChamps = WildRiftRepository.championSnapshot()
+        var ocrFailure: String? = null
         val auditList = mutableListOf<String>()
         val defaultRolesList = listOf(LaneRole.TOP, LaneRole.JUNGLE, LaneRole.MID, LaneRole.ADC, LaneRole.SUPPORT)
         val currentScanFrameOcrLanes = mutableMapOf<Int, LaneRole>()
@@ -1372,6 +1375,7 @@ object DraftVisionScanner {
             throw e
         } catch (e: Exception) {
             AppLogger.e(TAG, "Error durante el análisis OCR", e)
+            ocrFailure = e.stackTraceToString()
         }
 
         // -----------------------------------------------------------------------------------------
@@ -1807,14 +1811,21 @@ object DraftVisionScanner {
             isLegendaryRanked = isLegendaryRanked,
             isPreparationPhase = isPreparationPhase,
             hasDraftActivity = hasDraftActivity,
-            isSuccessful = hasDraftActivity || isTenthConfirmed,
-            statusMessage = statusMsg
+            isSuccessful = ocrFailure == null && (hasDraftActivity || isTenthConfirmed),
+            statusMessage = statusMsg,
+            observedTitleIds = (targetedAllyReadings.mapIndexedNotNull { i, reading ->
+                reading.champion?.takeUnless { reading.ambiguous }?.let { i to it.id }
+            } + targetedEnemyReadings.mapIndexedNotNull { i, reading ->
+                reading.champion?.takeUnless { reading.ambiguous }?.let { (i + 5) to it.id }
+            }).toMap(),
+            ocrFailure = ocrFailure
         )
         } catch (t: CancellationException) {
             throw t
         } catch (t: Throwable) {
             AppLogger.e(TAG, "Excepción no controlada en scanDraftFromBitmap prevenida", t)
-            DraftScanResult(emptyList(), emptyList(), isSuccessful = false, statusMessage = "Error en escaneo")
+            DraftScanResult(emptyList(), emptyList(), isSuccessful = false, statusMessage = "Error en escaneo",
+                ocrFailure = t.stackTraceToString())
         }
     }
 }

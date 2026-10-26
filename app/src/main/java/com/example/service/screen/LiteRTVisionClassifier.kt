@@ -116,9 +116,8 @@ object LiteRTVisionClassifier {
     private var manuallyConfirmedChampion: Champion? = null
 
     @Synchronized
-    fun ensureIndexed(context: Context? = null) {
+    fun ensureIndexed(context: Context? = null, champs: List<Champion> = WildRiftRepository.championSnapshot()) {
         val ctx = context ?: WildRiftApp.instance ?: return
-        val champs = WildRiftRepository.champions
         if (indexedIds == champs.map { it.id }.toSet()) return
         val assets = ctx.assets.list("champions")?.filter { it.endsWith(".png") }.orEmpty()
         fun canonical(id: String) = id.lowercase().filter { it.isLetterOrDigit() }
@@ -146,12 +145,13 @@ object LiteRTVisionClassifier {
     private var emptyBanReferenceCache: List<FloatArray>? = null
     /** Shared by production inference and real-frame regression. Thresholds are unchanged. */
     internal fun rankSlotPortrait(crop: Bitmap, isAlly: Boolean, context: Context?, excludedIds: Set<String> = emptySet()): List<Pair<Champion, Float>> {
-        ensureIndexed(context)
+        val catalog = WildRiftRepository.championSnapshot()
+        ensureIndexed(context, catalog)
         val pixels = IntArray(crop.width * crop.height)
         crop.getPixels(pixels, 0, crop.width, 0, 0, crop.width, crop.height)
         val input = PortraitMatcher.descriptor(pixels, crop.width, crop.height, excludeBottomBadge = isAlly)
         val cache = if (isAlly) allyEmbeddingCache else championEmbeddingCache
-        val ranked = WildRiftRepository.champions.filter { it.id !in excludedIds }.mapNotNull { champion ->
+        val ranked = catalog.filter { it.id !in excludedIds }.mapNotNull { champion ->
             cache[champion.id]?.let { champion to PortraitMatcher.similarity(input, it) }
         }.sortedByDescending { it.second }
         if (ranked.size < 2 || PortraitMatcher.accepts(ranked[0].second, ranked[1].second, getEffectiveThreshold(context))) return ranked
@@ -216,7 +216,7 @@ object LiteRTVisionClassifier {
             } finally { resized.recycle() }
         }
         ensureIndexed(context)
-        val catalog = WildRiftRepository.champions.distinctBy { it.id }
+        val catalog = WildRiftRepository.championSnapshot().distinctBy { it.id }
             .filter { championEmbeddingCache.containsKey(it.id) }
         if (catalog.isEmpty()) return emptyList()
         val height = bitmap.height

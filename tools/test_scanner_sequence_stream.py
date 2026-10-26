@@ -12,6 +12,14 @@ spec.loader.exec_module(device)
 
 
 class SequenceStreamTest(unittest.TestCase):
+    def test_targeted_native_reports_do_not_overwrite_each_other(self):
+        labels = [device.evidence_label(True, 0, {case}) for case in
+                  ['sequence-49-enemy-first', 'sequence-56-ally-first', 'sequence-63-enemy-first']]
+        self.assertEqual(3, len(set(labels)))
+        self.assertEqual('preflight', device.evidence_label(True, 0, set()))
+        self.assertEqual('15', device.evidence_label(False, 15, set()))
+        self.assertNotIn('/', device.evidence_label(False, 0, {'../invalid'}))
+
     def test_real_stdout_and_stderr_remain_available_when_instrumentation_fails(self):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / 'native.txt'

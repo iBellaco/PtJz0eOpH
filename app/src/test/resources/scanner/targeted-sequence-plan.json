@@ -1,8 +1,29 @@
 {
   "sourceSha256": "42661aefae3df52b4f72047c039120f72f4ea351139d7bdb5107351fe8d3342a",
-  "modelProfiles": 6,
+  "modelProfiles": 7,
   "physicalDevicesTested": [],
   "cases": [
+    {
+      "capture": [1920, 869],
+      "layout": "uniform-fit-reference",
+      "prior": "default",
+      "calibration": {
+        "nameBandScale": 0.9988493,
+        "allySlotXRatios": [0.071875, 0.071875, 0.071875, 0.071875, 0.071875],
+        "enemySlotXRatios": [0.959375, 0.959375, 0.959375, 0.959375, 0.959375],
+        "allySlotYRatios": [0.19170983, 0.32686868, 0.46003994, 0.5922174, 0.7253886],
+        "enemySlotYRatios": [0.19099294, 0.3268364, 0.4596834, 0.59253037, 0.7243784],
+        "allySlotDiameterRatios": [0.10987342, 0.10987342, 0.10987342, 0.10987342, 0.10487917],
+        "enemySlotDiameterRatios": [0.10987342, 0.10987342, 0.10987342, 0.10987342, 0.10987342]
+      },
+      "safeInsets": [0, 0, 0, 0],
+      "profiles": [{"profile": "red-magic-reference", "model": "NX789J", "display": [2688, 1216], "specification": null}],
+      "id": "sequence-0-enemy-first",
+      "firstPick": false,
+      "language": "pt",
+      "shard": 0,
+      "preflight": true
+    },
     {
       "capture": [854, 480],
       "layout": "uniform-fit-reference",

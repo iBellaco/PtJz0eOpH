@@ -175,6 +175,11 @@ object WildRiftRepository {
     // ROSTER INTEGRAL DE CAMPEONES DE WILD RIFT
     // ==========================================
     val champions = androidx.compose.runtime.mutableStateListOf<Champion>()
+
+    /** SnapshotStateList.toList returns its immutable backing snapshot in O(1).
+     * Never hand its live iterator to a long-running OCR/portrait scan. */
+    @Synchronized
+    fun championSnapshot(): List<Champion> = champions.toList()
     var lastError: String? by mutableStateOf(null)
 
 
@@ -295,7 +300,10 @@ object WildRiftRepository {
         val normalized = com.example.data.sync.MetaRegion.normalize(region)
         val source = regionalSnapshot(normalized)
         activeRegionName = normalized
-        if (source.isNotEmpty()) { champions.clear(); champions.addAll(source) }
+        if (source.isNotEmpty()) androidx.compose.runtime.snapshots.Snapshot.withMutableSnapshot {
+            champions.clear()
+            champions.addAll(source)
+        }
     }
 
     @Synchronized
@@ -335,8 +343,10 @@ object WildRiftRepository {
             baseChampions.clear()
             baseChampions.addAll(parsed1)
             baseChampions.addAll(parsed2)
-            champions.clear()
-            champions.addAll(baseChampions)
+            androidx.compose.runtime.snapshots.Snapshot.withMutableSnapshot {
+                champions.clear()
+                champions.addAll(baseChampions)
+            }
             regionalChampions.clear()
             regionRevision++
             android.util.Log.d("WildRiftRepository", "Loaded ${champions.size} champions successfully")
