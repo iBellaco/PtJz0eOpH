@@ -20,15 +20,21 @@ object DraftImagePreprocessor {
     private const val TAG = "DraftImagePreprocessor"
 
     /** Remove a gold mastery badge only inside the leading icon zone, leaving the title and player line intact. */
-    internal fun suppressLeadingMasteryBadge(crop: Bitmap): Int {
+    internal fun suppressLeadingMasteryBadge(crop: Bitmap, includePaleEdges: Boolean = false): Int {
         val iconWidth = (crop.height * 1.35f).toInt().coerceIn(1, crop.width)
         val gold = BooleanArray(iconWidth*crop.height)
+        val warmPixels = BooleanArray(gold.size)
         for (y in 0 until crop.height) for (x in 0 until iconWidth) {
             val pixel = crop.getPixel(x, y)
             val red = Color.red(pixel); val green = Color.green(pixel); val blue = Color.blue(pixel)
             // Resizing blends the pale wings with the blue background. Requiring
             // strongly saturated gold left those wings attached to short titles.
-            gold[y*iconWidth+x] = red>95 && green>65 && red>green*.95f && green>blue*1.05f
+            val warm = red>95 && green>65 && red>green*.95f && green>blue*1.05f
+            warmPixels[y*iconWidth+x] = warm
+            val pale = minOf(red,green,blue)>100 && maxOf(red,green,blue)-minOf(red,green,blue)<45
+            // The pale edge belongs to the same connected crest as its gold
+            // core. Gold-only connectivity left that edge as a fake letter.
+            gold[y*iconWidth+x] = warm || (includePaleEdges && pale)
         }
         val seen = BooleanArray(gold.size)
         val canvas = android.graphics.Canvas(crop)
@@ -38,9 +44,11 @@ object DraftImagePreprocessor {
             val queue=ArrayDeque<Int>().apply { add(start) }
             seen[start]=true
             var left=iconWidth;var right=0;var top=crop.height;var bottom=0;var count=0
+            var hasWarmCore = false
             while(queue.isNotEmpty()) {
                 val index=queue.removeFirst();val x=index%iconWidth;val y=index/iconWidth
                 left=minOf(left,x);right=maxOf(right,x);top=minOf(top,y);bottom=maxOf(bottom,y);count++
+                hasWarmCore = hasWarmCore || warmPixels[index]
                 for(dy in -1..1) for(dx in -1..1) {
                     val nx=x+dx;val ny=y+dy
                     if(nx in 0 until iconWidth && ny in 0 until crop.height) {
@@ -51,14 +59,18 @@ object DraftImagePreprocessor {
             }
             val w=right-left+1;val h=bottom-top+1
             // Badge taller than a title glyph; do not erase small golden name letters.
-            if(count>=maxOf(6,crop.height/4) && h>=crop.height*.38f && w>=h*.55f && w<=h*2.4f) {
+            if(hasWarmCore && count>=maxOf(6,crop.height/4) && h>=crop.height*.38f && w>=h*.55f && w<=h*2.4f) {
                 // Include detached gold wing pixels around the tall core, but do
                 // not extend a fixed rectangle into the following title glyphs.
-                val centerX=(left+right)/2f
-                for(y in (top-1).coerceAtLeast(0)..(bottom+1).coerceAtMost(crop.height-1))
-                    for(x in 0 until iconWidth) if(gold[y*iconWidth+x] && kotlin.math.abs(x-centerX)<=h*.7f) {
-                        left=minOf(left,x);right=maxOf(right,x)
-                    }
+                // All connected pale wings are already in this component.
+                // Do not absorb disconnected title letters by radial proximity.
+                if (!includePaleEdges) {
+                    val centerX=(left+right)/2f
+                    for(y in (top-1).coerceAtLeast(0)..(bottom+1).coerceAtMost(crop.height-1))
+                        for(x in 0 until iconWidth) if(gold[y*iconWidth+x] && kotlin.math.abs(x-centerX)<=h*.7f) {
+                            left=minOf(left,x);right=maxOf(right,x)
+                        }
+                }
                 val eraseRight=(right+1).coerceAtMost(crop.width)
                 canvas.drawRect((left-1).coerceAtLeast(0).toFloat(),(top-1).coerceAtLeast(0).toFloat(),
                     // right is an inclusive component coordinate. An extra
@@ -66,6 +78,41 @@ object DraftImagePreprocessor {
                     // Include the badge itself, never pad toward the title.
                     eraseRight.toFloat(),(bottom+2).coerceAtMost(crop.height).toFloat(),paint)
                 removedRight=maxOf(removedRight,eraseRight)
+            }
+        }
+        if (removedRight == 0) {
+            // At some ultrawide resize factors the anti-aliased mastery crest is
+            // split into several components, so no individual component reaches
+            // the badge thresholds above.  Locate the first group of vertically
+            // tall gold columns instead. Champion title glyphs are shorter than
+            // this crest; this only reports a measured crop boundary and never
+            // supplies a champion identity.
+            val tall = BooleanArray(iconWidth)
+            for (x in 0 until iconWidth) {
+                var top = crop.height
+                var bottom = -1
+                var count = 0
+                for (y in 0 until crop.height) if (warmPixels[y * iconWidth + x]) {
+                    top = minOf(top, y)
+                    bottom = maxOf(bottom, y)
+                    count++
+                }
+                tall[x] = bottom >= top && bottom - top + 1 >= crop.height * .40f &&
+                    count >= maxOf(2, crop.height / 10)
+            }
+            var start = 0
+            while (start < iconWidth && !tall[start]) start++
+            if (start < iconWidth) {
+                var right = start
+                var gap = 0
+                var x = start + 1
+                while (x < iconWidth && gap <= 2) {
+                    if (tall[x]) { right = x; gap = 0 } else gap++
+                    x++
+                }
+                if (right - start + 1 >= maxOf(2, (crop.height * .08f).toInt())) {
+                    removedRight = right + 1
+                }
             }
         }
         return removedRight

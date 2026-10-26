@@ -77,6 +77,7 @@ jobs:
           python3 -m unittest discover -s tools -p 'test_scanner_sequence_audit.py'
           ./gradlew :app:testDebugUnitTest --rerun \
             --tests com.example.AllyDraftNameReaderTest \
+            --tests com.example.DraftNameAtlasTest \
             --tests com.example.ChampionNameResolverCoverageTest \
             --max-workers=1 --stacktrace --no-daemon
 
@@ -87,10 +88,12 @@ jobs:
           from pathlib import Path
           plan = json.loads(Path('app/src/test/resources/scanner/targeted-sequence-plan.json').read_text())
           profiles = [profile for case in plan['cases'] for profile in case['profiles']]
-          assert len(plan['cases']) == 3 and plan['modelProfiles'] == len(profiles) == 4
+          assert len(plan['cases']) == 5 and plan['modelProfiles'] == len(profiles) == 6
           assert all(profile['model'] != 'resolution-simulation' for profile in profiles)
           assert {case['id'] for case in plan['cases']} == {
-              'sequence-42-ally-first', 'sequence-49-enemy-first', 'sequence-52-ally-first'}
+              'sequence-42-ally-first', 'sequence-49-enemy-first',
+              'sequence-52-ally-first', 'sequence-56-ally-first',
+              'sequence-63-enemy-first'}
           PY
           mkdir -p app/build/generated/scanner-sequence-assets
           cp app/src/test/resources/scanner/targeted-sequence-plan.json \
@@ -114,7 +117,7 @@ jobs:
         env:
           COACH_SEQUENCE_SHARD: '0'
           COACH_SEQUENCE_PREFLIGHT: 'false'
-          COACH_SEQUENCE_TARGETS: 'sequence-42-ally-first'
+          COACH_SEQUENCE_TARGETS: 'sequence-42-ally-first,sequence-52-ally-first'
           COACH_SEQUENCE_BUILD_TYPE: debug
         with:
           api-level: 34
@@ -138,7 +141,7 @@ jobs:
           retention-days: 14
 
   targeted-red-magic-release:
-    name: Dos fallos Red Magic en APK release
+    name: Todos los errores conocidos en APK release
     runs-on: ubuntu-latest
     timeout-minutes: 40
     steps:
@@ -174,6 +177,11 @@ jobs:
         env:
           COACH_ALLOW_EPHEMERAL_TEST_SIGNING: 'true'
         run: python3 .github/scripts/restore-private-signing.py
+      - name: Preparar todos los casos que bloquearon la validación completa
+        run: |
+          mkdir -p app/build/generated/scanner-sequence-assets
+          cp app/src/test/resources/scanner/targeted-sequence-plan.json \
+            app/build/generated/scanner-sequence-assets/scanner-sequence-plan.json
       - name: Compilar los dos APK release con R8
         env:
           COACH_ALLOW_EPHEMERAL_TEST_SIGNING: 'true'
@@ -194,8 +202,13 @@ jobs:
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
           sudo chmod 666 /dev/kvm || true
-      - name: Reproducir únicamente las dos pruebas instaladas fallidas
+      - name: Reproducir Red Magic y todos los errores OCR conocidos en release
         uses: reactivecircus/android-emulator-runner@v2
+        env:
+          COACH_SEQUENCE_SHARD: '13'
+          COACH_SEQUENCE_PREFLIGHT: 'true'
+          COACH_SEQUENCE_TARGETS: 'sequence-49-enemy-first,sequence-56-ally-first,sequence-63-enemy-first'
+          COACH_SEQUENCE_BUILD_TYPE: release
         with:
           api-level: 34
           arch: x86_64
@@ -203,4 +216,14 @@ jobs:
           disable-animations: true
           emulator-boot-timeout: 300
           emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
-          script: python3 tools/verify-targeted-red-magic.py
+          script: |
+            python3 tools/verify-targeted-red-magic.py
+            /usr/bin/env bash -c 'overall_status=0; for target_case in sequence-49-enemy-first sequence-56-ally-first sequence-63-enemy-first; do if ! COACH_SEQUENCE_TARGETS="$target_case" python3 tools/verify-draft-sequence-device.py; then overall_status=1; fi; done; exit "$overall_status"'
+      - name: Conservar evidencia release de todos los errores conocidos
+        if: always()
+        uses: actions/upload-artifact@v5
+        with:
+          name: fix-error-known-release-evidence
+          path: app/build/reports/scanner-sequence-preflight/
+          if-no-files-found: warn
+          retention-days: 14

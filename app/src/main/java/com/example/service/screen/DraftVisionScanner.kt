@@ -678,10 +678,24 @@ object DraftVisionScanner {
             val atlas = DraftNameAtlas.create(bitmap,calib,exclusions+listOfNotNull(frameOverlay))
             try {
                 val detectedTitleLines=mutableMapOf<Pair<Boolean,Int>,MutableList<Rect>>()
-                suspend fun readTitles(input: DraftNameAtlas) {
+                val contextDonors=mutableMapOf<Pair<Boolean,Int>,Rect>()
+                suspend fun readTitles(input: DraftNameAtlas): com.google.mlkit.vision.text.Text {
                 val text = recognizer.process(InputImage.fromBitmap(input.bitmap,0)).await()
                 val lines = text.textBlocks.flatMap { it.lines }
                 for (tile in input.tiles) {
+                    if (tile.contextual) {
+                        val pairs = lines.mapNotNull { line ->
+                            val words = line.elements.filter { element ->
+                                element.boundingBox?.let { tile.region.contains(it) } == true
+                            }.sortedBy { it.boundingBox!!.left }
+                            if (words.isEmpty()) null else words.joinToString(" ") { it.text } to
+                                (words.first().boundingBox!!.centerY()-tile.region.top)
+                        }
+                        val reading = AllyDraftNameReader.readTitleRows(pairs,0,allChamps,tile.titleMaxY)
+                        val readings = if(tile.ally) targetedAllyReadings else targetedEnemyReadings
+                        readings[tile.slot] = AllyDraftNameReader.preferOriginal(readings[tile.slot],reading)
+                        continue
+                    }
                     val selected = lines.filter { line ->
                         line.boundingBox?.let { tile.region.contains(it.centerX(),it.centerY()) &&
                             it.centerY()-tile.region.top>=tile.titleMinY } == true
@@ -715,7 +729,16 @@ object DraftVisionScanner {
                     // Every alternative obeys the same title-row bounds. A
                     // short nickname below the title is never a fallback.
                     readings[tile.slot]=AllyDraftNameReader.preferOriginal(readings[tile.slot],reading)
+                    if (reading.champion != null && !reading.ambiguous) {
+                        titleLines.firstOrNull { line ->
+                            AllyDraftNameReader.read(listOf(line.text),allChamps).champion?.id == reading.champion.id
+                        }?.boundingBox?.let { box ->
+                            val mapped = DraftNameAtlas.mapDetectedLine(original,tile,box)
+                            if(mapped.width()>0 && mapped.height()>0) contextDonors[tile.ally to tile.slot] = mapped
+                        }
+                    }
                 }
+                return text
                 }
                 fun unresolvedReading(tile: DraftNameAtlas.Tile) =
                     (if(tile.ally) targetedAllyReadings else targetedEnemyReadings)[tile.slot].let {
@@ -793,14 +816,22 @@ object DraftVisionScanner {
                         } finally { focused.bitmap.recycle() }
                     }
                 }
-                // Keep established OCR image sizes unchanged. A fourth stacked
-                // variant changed the detector input size on previously passing
-                // profiles, so color separation is an independent final request.
-                for((tile,bounds) in unresolved) {
-                    if(!tile.ally && unresolvedReading(tile)) {
-                        val color=DraftNameAtlas.focusTitle(atlas,tile,bounds,colorOnly=true)
-                        try { readTitles(color) } finally { color.bitmap.recycle() }
+                // Keep established OCR image sizes unchanged. Color separation is
+                // a final independent request over the same title pixels. It is
+                // also required for short allied titles: on the 1920x924 P20
+                // geometry ML Kit sees neither VI nor a native line box in the
+                // intact band, while the badge-suppressed color crop retains both
+                // glyphs. Pack all unresolved crops so this remains one bounded
+                // request rather than one request per slot.
+                val colorAlternatives=mutableListOf<DraftNameAtlas>()
+                try {
+                    for((tile,bounds) in unresolved) if(unresolvedReading(tile)) {
+                        colorAlternatives += DraftNameAtlas.focusTitle(atlas,tile,bounds,colorOnly=true)
                     }
+                    if(colorAlternatives.isNotEmpty()) readAlternatives(colorAlternatives)
+                } catch(error:Throwable) {
+                    colorAlternatives.forEach { if(!it.bitmap.isRecycled) it.bitmap.recycle() }
+                    throw error
                 }
                 // ML Kit can reject a real two-letter title as an icon when a
                 // mastery badge and its wide empty margin share the same crop.
@@ -811,11 +842,35 @@ object DraftVisionScanner {
                 try {
                     for((tile,_) in unresolved) if(tile.ally && unresolvedReading(tile)) {
                         DraftNameAtlas.shortAlliedTitleAlternatives(atlas,tile)?.let(shortAlternatives::add)
+                        DraftNameAtlas.shortAlliedTitleAlternatives(atlas,tile,binary=false)?.let(shortAlternatives::add)
+                        DraftNameAtlas.shortAlliedTitleAlternatives(atlas,tile,neutralOnly=true)?.let(shortAlternatives::add)
                     }
                     if(shortAlternatives.isNotEmpty()) readAlternatives(shortAlternatives)
                 } catch(error:Throwable) {
                     shortAlternatives.forEach { if(!it.bitmap.isRecycled) it.bitmap.recycle() }
                     throw error
+                }
+                val repeatedShortAlternatives=mutableListOf<DraftNameAtlas>()
+                try {
+                    for((tile,_) in unresolved) if(tile.ally && unresolvedReading(tile)) {
+                        DraftNameAtlas.repeatedShortAlliedTitleAlternative(atlas,tile)
+                            ?.let(repeatedShortAlternatives::add)
+                        DraftNameAtlas.repeatedShortAlliedTitleAlternative(atlas,tile,neutralOnly=true)
+                            ?.let(repeatedShortAlternatives::add)
+                        DraftNameAtlas.repeatedShortAlliedTitleAlternative(atlas,tile,neutralOnly=true,binary=false)
+                            ?.let(repeatedShortAlternatives::add)
+                    }
+                    if(repeatedShortAlternatives.isNotEmpty()) readAlternatives(repeatedShortAlternatives)
+                } catch(error:Throwable) {
+                    repeatedShortAlternatives.forEach { if(!it.bitmap.isRecycled) it.bitmap.recycle() }
+                    throw error
+                }
+                for ((tile,_) in unresolved) if (tile.ally && unresolvedReading(tile)) {
+                    val donorEntry = contextDonors.entries.filter { it.key != (tile.ally to tile.slot) }
+                        .maxByOrNull { it.value.width().toFloat()/it.value.height() } ?: continue
+                    val donor = atlas.tiles.single { it.original && it.ally == donorEntry.key.first && it.slot == donorEntry.key.second }
+                    val contextual = DraftNameAtlas.contextualTitle(atlas,tile,donor,donorEntry.value) ?: continue
+                    try { readTitles(contextual) } finally { contextual.bitmap.recycle() }
                 }
                 val observedTitleIds=(targetedAllyReadings.toList()+targetedEnemyReadings.toList())
                     .mapNotNull { it.champion?.id }.toSet()
@@ -823,7 +878,24 @@ object DraftVisionScanner {
                     unresolvedReading(tile)
                 }) {
                     val scene=DraftNameAtlas.sceneTitles(bitmap,calib,exclusions+listOfNotNull(frameOverlay))
-                    try { readTitles(scene) } finally { scene.bitmap.recycle() }
+                    try {
+                        val sceneText = readTitles(scene)
+                        // The 1920x889 native evidence reads VI with a scene
+                        // donor but not with the widest enhanced-atlas donor.
+                        // Use those actual scene boxes after the ordinary scene
+                        // pass, keeping the successful earlier recovery intact.
+                        val titleBoxes = sceneText.textBlocks.flatMap { it.lines }.mapNotNull { line ->
+                            val reading = AllyDraftNameReader.read(listOf(line.text), allChamps)
+                            line.boundingBox?.takeIf { reading.champion != null && !reading.ambiguous }
+                        }
+                        for ((tile, _) in unresolved) if (tile.ally && unresolvedReading(tile)) {
+                            for ((donor, bounds) in DraftNameAtlas.sceneContextSources(atlas, scene, titleBoxes, tile)) {
+                                if (!unresolvedReading(tile)) break
+                                val contextual = DraftNameAtlas.contextualTitle(atlas, tile, donor, bounds) ?: continue
+                                try { readTitles(contextual) } finally { contextual.bitmap.recycle() }
+                            }
+                        }
+                    } finally { scene.bitmap.recycle() }
                 }
                 for (slot in 0..4) {
                     targetedEnemyChampions[slot] = targetedEnemyReadings[slot].let {

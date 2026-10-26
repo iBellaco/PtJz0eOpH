@@ -258,6 +258,9 @@ object ChampionNameResolver {
         val title = text.replace(Regex("\\s*\\((?:tu|tú|you|você|voce)\\)\\s*$", RegexOption.IGNORE_CASE), "")
         val normalized = normalize(title).trim()
         val variants = linkedSetOf(normalized)
+        val repeatedWords = normalized.split(Regex("\\s+")).filter(String::isNotBlank)
+        if (repeatedWords.size >= 2 && repeatedWords.distinct().size == 1)
+            variants.add(repeatedWords.first())
         // Optical 0/O confusion within a complete title; no edit distance,
         // missing-letter completion or champion token extraction from nicknames.
         if('0' in normalized) variants.add(normalized.replace('0','o'))

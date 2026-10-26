@@ -344,6 +344,80 @@ class DraftSequenceMultiDeviceInstalledTest {
                                             .put("directOcrLines",JSONArray(direct.textBlocks.flatMap { it.lines }.map { line ->
                                                 JSONObject().put("text",line.text).put("bounds",line.boundingBox.toString())
                                             }))
+                                        val atlas=DraftNameAtlas.create(realFrame,scanner.alignedConfigFlow.value,emptyList())
+                                        try {
+                                            val shortDiagnostics=JSONArray()
+                                            for(tile in atlas.tiles.filter { it.original && it.ally }) {
+                                                val donor = atlas.tiles.firstOrNull { it.original && it.slot != tile.slot &&
+                                                    direct.textBlocks.flatMap { block -> block.lines }.any { line ->
+                                                        line.boundingBox?.let { box -> it.source.contains(box) } == true
+                                                    } }
+                                                if (donor != null) {
+                                                    val box = direct.textBlocks.flatMap { it.lines }.first { line ->
+                                                        line.boundingBox?.let { donor.source.contains(it) } == true
+                                                    }.boundingBox!!
+                                                    val local = Rect((box.left-donor.source.left)*donor.region.width()/donor.source.width(),
+                                                        (box.top-donor.source.top)*donor.region.height()/donor.source.height(),
+                                                        (box.right-donor.source.left)*donor.region.width()/donor.source.width(),
+                                                        (box.bottom-donor.source.top)*donor.region.height()/donor.source.height())
+                                                    DraftNameAtlas.contextualTitle(atlas,tile,donor,local)?.let { contextual ->
+                                                        try {
+                                                            File(evidence,"${case.getString("id")}-${fixture.file}-context-${tile.slot}.png")
+                                                                .outputStream().use { contextual.bitmap.compress(Bitmap.CompressFormat.PNG,100,it) }
+                                                            val read = diagnosticRecognizer.process(com.google.mlkit.vision.common.InputImage.fromBitmap(contextual.bitmap,0)).await()
+                                                            shortDiagnostics.put(JSONObject().put("slot",tile.slot).put("variant","captured-text-context")
+                                                                .put("text",read.text).put("target",contextual.tiles.single().region.toString())
+                                                                .put("elements",JSONArray(read.textBlocks.flatMap { it.lines }.flatMap { it.elements }.map {
+                                                                    JSONObject().put("text",it.text).put("bounds",it.boundingBox.toString())
+                                                                })))
+                                                        } finally { contextual.bitmap.recycle() }
+                                                    }
+                                                }
+                                                DraftNameAtlas.repeatedShortAlliedTitleAlternative(atlas,tile,neutralOnly=true,binary=false)?.let { raw ->
+                                                    try {
+                                                        File(evidence,"${case.getString("id")}-${fixture.file}-raw-repeated-${tile.slot}.png")
+                                                            .outputStream().use { raw.bitmap.compress(Bitmap.CompressFormat.PNG,100,it) }
+                                                        val read = diagnosticRecognizer.process(
+                                                            com.google.mlkit.vision.common.InputImage.fromBitmap(raw.bitmap,0)).await()
+                                                        shortDiagnostics.put(JSONObject().put("slot",tile.slot)
+                                                            .put("variant","original-color-repeated").put("text",read.text))
+                                                    } finally { raw.bitmap.recycle() }
+                                                }
+                                                DraftNameAtlas.shortAlliedTitleAlternatives(atlas,tile,neutralOnly=true)?.let { neutral ->
+                                                    try {
+                                                        File(evidence,"${case.getString("id")}-${fixture.file}-neutral-${tile.slot}.png")
+                                                            .outputStream().use { neutral.bitmap.compress(Bitmap.CompressFormat.PNG,100,it) }
+                                                        val read = diagnosticRecognizer.process(
+                                                            com.google.mlkit.vision.common.InputImage.fromBitmap(neutral.bitmap,0)).await()
+                                                        shortDiagnostics.put(JSONObject().put("slot",tile.slot)
+                                                            .put("variant","neutral-title").put("text",read.text))
+                                                    } finally { neutral.bitmap.recycle() }
+                                                }
+                                                val alternatives=DraftNameAtlas.shortAlliedTitleAlternatives(atlas,tile) ?: continue
+                                                try {
+                                                    File(evidence,"${case.getString("id")}-${fixture.file}-short-${tile.slot}.png")
+                                                        .outputStream().use { alternatives.bitmap.compress(Bitmap.CompressFormat.PNG,100,it) }
+                                                    val read=diagnosticRecognizer.process(
+                                                        com.google.mlkit.vision.common.InputImage.fromBitmap(alternatives.bitmap,0)).await()
+                                                    shortDiagnostics.put(JSONObject().put("slot",tile.slot).put("text",read.text)
+                                                        .put("lines",JSONArray(read.textBlocks.flatMap { it.lines }.map { line ->
+                                                            JSONObject().put("text",line.text).put("bounds",line.boundingBox.toString())
+                                                        })))
+                                                } finally { alternatives.bitmap.recycle() }
+                                                val repeated=DraftNameAtlas.repeatedShortAlliedTitleAlternative(atlas,tile)
+                                                    ?: continue
+                                                try {
+                                                    val read=diagnosticRecognizer.process(
+                                                        com.google.mlkit.vision.common.InputImage.fromBitmap(repeated.bitmap,0)).await()
+                                                    shortDiagnostics.put(JSONObject().put("slot",tile.slot)
+                                                        .put("variant","repeated-captured-pixels").put("text",read.text)
+                                                        .put("lines",JSONArray(read.textBlocks.flatMap { it.lines }.map { line ->
+                                                            JSONObject().put("text",line.text).put("bounds",line.boundingBox.toString())
+                                                        })))
+                                                } finally { repeated.bitmap.recycle() }
+                                            }
+                                            realCheck.put("shortTitleDiagnostics",shortDiagnostics)
+                                        } finally { atlas.bitmap.recycle() }
                                     } finally { diagnosticRecognizer.close() }
                                 }
                                 realChecks.put(realCheck)
