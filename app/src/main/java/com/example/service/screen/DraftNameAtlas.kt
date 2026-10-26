@@ -379,6 +379,7 @@ internal class DraftNameAtlas private constructor(val bitmap: Bitmap, val tiles:
                                 if (maxOf(r,g,b) - minOf(r,g,b) > 40 || minOf(r,g,b) < 90)
                                     isolated.setPixel(x, y, Color.WHITE)
                             }
+                            removeSmallNeutralDebris(isolated)
                         }
                         // Scale the actual ink, not the empty calibrated band.
                         // Otherwise a 72px row can still contain a 10px VI and
@@ -445,11 +446,42 @@ internal class DraftNameAtlas private constructor(val bitmap: Bitmap, val tiles:
             }
         }
 
+        internal fun removeSmallNeutralDebris(bitmap: Bitmap) {
+            val width = bitmap.width; val height = bitmap.height
+            val seen = BooleanArray(width * height)
+            val components = mutableListOf<Pair<List<Int>, Int>>()
+            for (start in seen.indices) {
+                if (seen[start] || bitmap.getPixel(start % width, start / width) != Color.BLACK) continue
+                val queue = ArrayDeque<Int>().apply { add(start) }
+                val pixels = mutableListOf<Int>()
+                var top = height; var bottom = -1
+                seen[start] = true
+                while (queue.isNotEmpty()) {
+                    val index = queue.removeFirst(); val x = index % width; val y = index / width
+                    pixels += index; top = minOf(top,y); bottom = maxOf(bottom,y)
+                    for (dy in -1..1) for (dx in -1..1) {
+                        val nx = x + dx; val ny = y + dy
+                        if (nx !in 0 until width || ny !in 0 until height) continue
+                        val next = ny * width + nx
+                        if (!seen[next] && bitmap.getPixel(nx,ny) == Color.BLACK) {
+                            seen[next] = true; queue.add(next)
+                        }
+                    }
+                }
+                components += pixels to (bottom - top + 1)
+            }
+            val tallest = components.maxOfOrNull { it.second } ?: return
+            val largest = components.maxOf { it.first.size }
+            for ((pixels, componentHeight) in components)
+                if (componentHeight < tallest * .6f && pixels.size < largest * .15f)
+                    pixels.forEach { bitmap.setPixel(it % width,it / width,Color.WHITE) }
+        }
+
         /** Repeat the same captured short-title pixels on one baseline. Native
          * OCR may reject an isolated two-glyph crop as an icon but accepts the
          * repeated optical evidence as text. No glyph or expected name is drawn. */
-        fun repeatedShortAlliedTitleAlternative(atlas: DraftNameAtlas, tile: Tile): DraftNameAtlas? {
-            val short = shortAlliedTitleAlternatives(atlas, tile) ?: return null
+        fun repeatedShortAlliedTitleAlternative(atlas: DraftNameAtlas, tile: Tile, neutralOnly: Boolean = false): DraftNameAtlas? {
+            val short = shortAlliedTitleAlternatives(atlas, tile, neutralOnly=neutralOnly) ?: return null
             try {
                 val sampleTile = short.tiles.single { it.region.height() == 72 }
                 val repeats = 3

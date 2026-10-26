@@ -19,6 +19,20 @@ import org.robolectric.annotation.GraphicsMode
 @Config(sdk = [34], application = Application::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class DraftNameAtlasTest {
+    @Test fun neutralDebrisRemovalKeepsTallNarrowTitleStroke() {
+        val bitmap = Bitmap.createBitmap(100,40,Bitmap.Config.ARGB_8888)
+        try {
+            val canvas = Canvas(bitmap).apply { drawColor(Color.WHITE) }
+            val paint = Paint().apply { color = Color.BLACK }
+            canvas.drawRect(5f,15f,6f,19f,paint)
+            canvas.drawRect(20f,8f,36f,32f,paint)
+            canvas.drawRect(45f,8f,48f,32f,paint)
+            DraftNameAtlas.removeSmallNeutralDebris(bitmap)
+            assertEquals(Color.WHITE,bitmap.getPixel(5,16))
+            assertEquals(Color.BLACK,bitmap.getPixel(25,16))
+            assertEquals("A narrow I must not be removed as debris",Color.BLACK,bitmap.getPixel(46,16))
+        } finally { bitmap.recycle() }
+    }
     @Test fun paleConnectedCrestEdgeIsRemovedButSeparateTitleStrokesRemain() {
         val crop = Bitmap.createBitmap(100,40,Bitmap.Config.ARGB_8888)
         try {
