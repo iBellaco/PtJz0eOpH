@@ -357,7 +357,13 @@ internal class DraftNameAtlas private constructor(val bitmap: Bitmap, val tiles:
                 val sample = Bitmap.createBitmap(atlas.bitmap, tile.region.left + inset,
                     tile.region.top, sourceWidth, sourceHeight)
                 try {
-                    val isolated = sample.copy(Bitmap.Config.ARGB_8888, true)
+                    // Measure ink on the badge-suppressed pixels. Measuring the
+                    // original sample reintroduced a pale crest wing touching V
+                    // and made ML Kit read NI instead of the complete VI title.
+                    val masked = Bitmap.createBitmap(atlas.bitmap, prior.region.left + inset,
+                        prior.region.top, sourceWidth, sourceHeight)
+                    val isolated = try { masked.copy(Bitmap.Config.ARGB_8888, true) }
+                        finally { if (masked !== atlas.bitmap) masked.recycle() }
                     try {
                         isolateTitleColor(isolated)
                         // Scale the actual ink, not the empty calibrated band.
