@@ -20,7 +20,7 @@ object DraftImagePreprocessor {
     private const val TAG = "DraftImagePreprocessor"
 
     /** Remove a gold mastery badge only inside the leading icon zone, leaving the title and player line intact. */
-    internal fun suppressLeadingMasteryBadge(crop: Bitmap): Int {
+    internal fun suppressLeadingMasteryBadge(crop: Bitmap, includePaleEdges: Boolean = false): Int {
         val iconWidth = (crop.height * 1.35f).toInt().coerceIn(1, crop.width)
         val gold = BooleanArray(iconWidth*crop.height)
         val warmPixels = BooleanArray(gold.size)
@@ -34,7 +34,7 @@ object DraftImagePreprocessor {
             val pale = minOf(red,green,blue)>100 && maxOf(red,green,blue)-minOf(red,green,blue)<45
             // The pale edge belongs to the same connected crest as its gold
             // core. Gold-only connectivity left that edge as a fake letter.
-            gold[y*iconWidth+x] = warm || pale
+            gold[y*iconWidth+x] = warm || (includePaleEdges && pale)
         }
         val seen = BooleanArray(gold.size)
         val canvas = android.graphics.Canvas(crop)
@@ -64,6 +64,13 @@ object DraftImagePreprocessor {
                 // not extend a fixed rectangle into the following title glyphs.
                 // All connected pale wings are already in this component.
                 // Do not absorb disconnected title letters by radial proximity.
+                if (!includePaleEdges) {
+                    val centerX=(left+right)/2f
+                    for(y in (top-1).coerceAtLeast(0)..(bottom+1).coerceAtMost(crop.height-1))
+                        for(x in 0 until iconWidth) if(gold[y*iconWidth+x] && kotlin.math.abs(x-centerX)<=h*.7f) {
+                            left=minOf(left,x);right=maxOf(right,x)
+                        }
+                }
                 val eraseRight=(right+1).coerceAtMost(crop.width)
                 canvas.drawRect((left-1).coerceAtLeast(0).toFloat(),(top-1).coerceAtLeast(0).toFloat(),
                     // right is an inclusive component coordinate. An extra

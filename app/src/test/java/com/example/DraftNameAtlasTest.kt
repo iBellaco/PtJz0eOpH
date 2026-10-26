@@ -43,7 +43,13 @@ class DraftNameAtlasTest {
             canvas.drawRect(20f,12f,25f,24f,paint)
             canvas.drawRect(29f,15f,32f,24f,paint)
             canvas.drawRect(36f,15f,39f,24f,paint)
-            com.example.service.screen.DraftImagePreprocessor.suppressLeadingMasteryBadge(crop)
+            val baseline = crop.copy(Bitmap.Config.ARGB_8888,true)
+            try {
+                com.example.service.screen.DraftImagePreprocessor.suppressLeadingMasteryBadge(baseline)
+                assertEquals("General OCR must retain its established gold-only mask",
+                    Color.rgb(210,210,210),baseline.getPixel(23,18))
+            } finally { baseline.recycle() }
+            com.example.service.screen.DraftImagePreprocessor.suppressLeadingMasteryBadge(crop,includePaleEdges=true)
             assertEquals("Connected pale wing must not become an OCR letter",Color.BLACK,crop.getPixel(23,18))
             assertEquals("Separate title stroke must remain",Color.rgb(210,210,210),crop.getPixel(30,18))
             assertEquals(Color.rgb(210,210,210),crop.getPixel(37,18))

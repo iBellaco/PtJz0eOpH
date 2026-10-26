@@ -361,11 +361,19 @@ internal class DraftNameAtlas private constructor(val bitmap: Bitmap, val tiles:
                     // Measure ink on the badge-suppressed pixels. Measuring the
                     // original sample reintroduced a pale crest wing touching V
                     // and made ML Kit read NI instead of the complete VI title.
-                    val measuredTile = if (neutralOnly) tile else prior
-                    val masked = Bitmap.createBitmap(atlas.bitmap, measuredTile.region.left + inset,
-                        measuredTile.region.top, sourceWidth, sourceHeight)
-                    val isolated = try { masked.copy(Bitmap.Config.ARGB_8888, true) }
-                        finally { if (masked !== atlas.bitmap) masked.recycle() }
+                    // Remove the pale crest on the COMPLETE band before cropping
+                    // its leading margin. A partial crest no longer has the tall
+                    // core needed to distinguish its wing from a title letter.
+                    val fullSample = Bitmap.createBitmap(atlas.bitmap,tile.region.left,tile.region.top,
+                        tile.region.width(),tile.region.height())
+                    val fullMask = try { fullSample.copy(Bitmap.Config.ARGB_8888,true) }
+                        finally { if(fullSample !== atlas.bitmap) fullSample.recycle() }
+                    val isolated = try {
+                        DraftImagePreprocessor.suppressLeadingMasteryBadge(fullMask,includePaleEdges=true)
+                        val cropped = Bitmap.createBitmap(fullMask,inset,0,sourceWidth,sourceHeight)
+                        try { cropped.copy(Bitmap.Config.ARGB_8888,true) }
+                        finally { if(cropped !== fullMask) cropped.recycle() }
+                    } finally { fullMask.recycle() }
                     try {
                         isolateTitleColor(isolated)
                         if (neutralOnly) {
