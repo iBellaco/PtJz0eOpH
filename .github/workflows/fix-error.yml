@@ -12,6 +12,9 @@ on:
       - 'app/src/main/res/values*/strings.xml'
       - 'app/src/test/java/com/example/DeviceDraftProfileTest.kt'
       - 'app/src/test/java/com/example/SystemPermissionHelperTest.kt'
+      - 'app/src/test/java/com/example/OfflinePortugueseAuditTest.kt'
+      - '.github/scripts/validate-localized-resources.py'
+      - '.github/scripts/test_localized_resources.py'
       - 'app/src/test/java/com/example/DraftNameAtlasTest.kt'
       - 'app/src/main/java/com/example/data/WildRiftRepository.kt'
       - 'app/src/main/java/com/example/service/ConfirmedLastPickHud.kt'
@@ -38,7 +41,19 @@ permissions:
   contents: read
 
 jobs:
+  localized-resources:
+    name: Recursos de idiomas completos antes de compilar
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v5
+      - name: Comprobar portugués general y de Brasil
+        run: |
+          python3 -m unittest discover -s .github/scripts -p test_localized_resources.py
+          python3 .github/scripts/validate-localized-resources.py
+
   targeted-native-ocr:
+    needs: localized-resources
     name: Casos OCR fallidos únicamente
     runs-on: ubuntu-latest
     timeout-minutes: 50
@@ -90,8 +105,18 @@ jobs:
             --tests com.example.DeviceDraftProfileTest \
             --tests com.example.DraftRingAlignmentTest \
             --tests com.example.SystemPermissionHelperTest \
+            --tests com.example.OfflinePortugueseAuditTest \
             --tests com.example.ChampionNameResolverCoverageTest \
             --max-workers=1 --stacktrace --no-daemon
+
+      - name: Conservar resultados de todas las pruebas aisladas
+        if: always()
+        uses: actions/upload-artifact@v5
+        with:
+          name: fix-error-unit-evidence
+          path: app/build/test-results/testDebugUnitTest/
+          if-no-files-found: warn
+          retention-days: 14
 
       - name: Preparar el plan de la regresión actual
         run: |
@@ -153,6 +178,7 @@ jobs:
           retention-days: 14
 
   targeted-red-magic-release:
+    needs: localized-resources
     name: Errores conocidos en release (${{ matrix.suite }})
     runs-on: ubuntu-latest
     timeout-minutes: 50

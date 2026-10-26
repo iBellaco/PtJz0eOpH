@@ -66,12 +66,14 @@ class SystemPermissionHelperTest {
 
     @Test fun guidanceUsesSelectedLanguageAndIncludesTrustWarning() {
         val app=RuntimeEnvironment.getApplication()
-        for((language,trustWord) in listOf("es" to "confías","pt" to "confiar")) {
-            val config=Configuration(app.resources.configuration).apply { setLocale(Locale(language)) }
+        for((language,trustWord) in listOf("es" to "confías","pt" to "confiar","pt-BR" to "confiar")) {
+            val config=Configuration(app.resources.configuration).apply { setLocale(Locale.forLanguageTag(language)) }
             val text=app.createConfigurationContext(config).getString(R.string.overlay_restricted_help)
             assertTrue(text,text.contains(trustWord))
             assertTrue(text,text.contains("APK"))
             assertTrue(text,text.contains("⋮"))
+            val button=app.createConfigurationContext(config).getString(R.string.overlay_app_settings)
+            assertTrue(button,button.contains(if(language=="es") "información" else "informações"))
         }
     }
 }
