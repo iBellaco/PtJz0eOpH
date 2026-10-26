@@ -374,6 +374,25 @@ internal class DraftNameAtlas private constructor(val bitmap: Bitmap, val tiles:
                             }
                         }
                         if (inkRight < inkLeft) { bitmap.recycle(); return null }
+                        // A distant bright background stroke is not part of the
+                        // leading title. Split on an empty column gap measured
+                        // from this band, rather than scaling all page ink as a
+                        // single word (which reduced VI to a few pixels).
+                        val maxGap = (sourceHeight * .12f).toInt().coerceAtLeast(3)
+                        var gap = 0
+                        var wordRight = inkLeft
+                        for (x in inkLeft..inkRight) {
+                            val hasInk = (0 until sourceHeight).any { y -> isolated.getPixel(x, y) == Color.BLACK }
+                            if (hasInk) { wordRight = x; gap = 0 } else gap++
+                            if (gap > maxGap) break
+                        }
+                        inkRight = wordRight
+                        inkTop = sourceHeight; inkBottom = -1
+                        for (y in 0 until sourceHeight) for (x in inkLeft..inkRight) {
+                            if (isolated.getPixel(x, y) == Color.BLACK) {
+                                inkTop = minOf(inkTop, y); inkBottom = maxOf(inkBottom, y)
+                            }
+                        }
                         val inkBounds = Rect(inkLeft, inkTop, inkRight + 1, inkBottom + 1)
                         val source = Rect(
                             tile.source.left + (inset + inkLeft) * tile.source.width() / prior.region.width(),
