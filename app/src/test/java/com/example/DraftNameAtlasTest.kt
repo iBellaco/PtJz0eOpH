@@ -500,6 +500,9 @@ class DraftNameAtlasTest {
                 val atlas=DraftNameAtlas.create(frame,measured,emptyList())
                 try {
                     val tile=atlas.tiles.single { it.original && it.ally && it.slot==4 }
+                    val capturedPixels = IntArray(tile.source.width()*tile.source.height())
+                    frame.getPixels(capturedPixels,0,tile.source.width(),tile.source.left,tile.source.top,
+                        tile.source.width(),tile.source.height())
                     val alternatives=DraftNameAtlas.shortAlliedTitleAlternatives(atlas,tile)
                         ?: throw AssertionError("$height must produce a compact title retry")
                     try {
@@ -560,6 +563,11 @@ class DraftNameAtlasTest {
                                     color.bitmap.getPixel(part.region.left+x,part.region.top+y),
                                     repeatedColor.bitmap.getPixel(target.left+copy*(part.region.width()+24)+x,target.top+y))
                     } finally { color.bitmap.recycle(); repeatedColor.bitmap.recycle() }
+                    val after = IntArray(capturedPixels.size)
+                    assertFalse("The atlas must never recycle its borrowed capture",frame.isRecycled)
+                    frame.getPixels(after,0,tile.source.width(),tile.source.left,tile.source.top,
+                        tile.source.width(),tile.source.height())
+                    org.junit.Assert.assertArrayEquals("Native-resolution cleanup must not modify the capture",capturedPixels,after)
                 } finally { atlas.bitmap.recycle() }
             } finally { frame.recycle() }
         } } finally { raw.recycle() }

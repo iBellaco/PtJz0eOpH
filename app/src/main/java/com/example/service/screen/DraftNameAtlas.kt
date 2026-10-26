@@ -7,7 +7,9 @@ import android.graphics.Paint
 import android.graphics.Rect
 
 /** Isolated title bands in one OCR request, including an intact copy of every allied title. */
-internal class DraftNameAtlas private constructor(val bitmap: Bitmap, val tiles: List<Tile>) {
+internal class DraftNameAtlas private constructor(val bitmap: Bitmap, val tiles: List<Tile>,
+    // Borrowed for this scan only; never recycled or modified by the atlas.
+    private val capturedFrame: Bitmap? = null, private val captureMasks: List<Rect> = emptyList()) {
     data class Tile(val ally: Boolean, val slot: Int, val source: Rect, val region: Rect,
                     val titleMaxY: Int, val original: Boolean = true, val contrast: Boolean = false,
                     val titleMinY: Int = 0, val badgeRemoved: Boolean = false,
@@ -364,15 +366,28 @@ internal class DraftNameAtlas private constructor(val bitmap: Bitmap, val tiles:
                     // Remove the pale crest on the COMPLETE band before cropping
                     // its leading margin. A partial crest no longer has the tall
                     // core needed to distinguish its wing from a title letter.
-                    val fullSample = Bitmap.createBitmap(atlas.bitmap,tile.region.left,tile.region.top,
+                    val captured = atlas.capturedFrame
+                    val fullSample = if (captured != null)
+                        Bitmap.createBitmap(captured,tile.source.left,tile.source.top,tile.source.width(),tile.source.height())
+                    else Bitmap.createBitmap(atlas.bitmap,tile.region.left,tile.region.top,
                         tile.region.width(),tile.region.height())
                     val fullMask = try { fullSample.copy(Bitmap.Config.ARGB_8888,true) }
-                        finally { if(fullSample !== atlas.bitmap) fullSample.recycle() }
+                        finally { if(fullSample !== atlas.bitmap && fullSample !== captured) fullSample.recycle() }
                     val isolated = try {
+                        if (captured != null) {
+                            val maskCanvas = Canvas(fullMask)
+                            val maskPaint = Paint().apply { color = Color.BLACK }
+                            atlas.captureMasks.forEach { mask ->
+                                maskCanvas.drawRect(Rect(mask).apply { offset(-tile.source.left,-tile.source.top) },maskPaint)
+                            }
+                        }
                         DraftImagePreprocessor.suppressLeadingMasteryBadge(fullMask,includePaleEdges=true)
-                        val cropped = Bitmap.createBitmap(fullMask,inset,0,sourceWidth,sourceHeight)
-                        try { cropped.copy(Bitmap.Config.ARGB_8888,true) }
-                        finally { if(cropped !== fullMask) cropped.recycle() }
+                        val scaledMask = Bitmap.createScaledBitmap(fullMask,tile.region.width(),tile.region.height(),true)
+                        try {
+                            val cropped = Bitmap.createBitmap(scaledMask,inset,0,sourceWidth,sourceHeight)
+                            try { cropped.copy(Bitmap.Config.ARGB_8888,true) }
+                            finally { if(cropped !== scaledMask) cropped.recycle() }
+                        } finally { if(scaledMask !== fullMask) scaledMask.recycle() }
                     } finally { fullMask.recycle() }
                     try {
                         isolateTitleColor(isolated)
@@ -633,7 +648,7 @@ internal class DraftNameAtlas private constructor(val bitmap: Bitmap, val tiles:
                         } finally { crop.recycle() }
                     }
                 }
-                return DraftNameAtlas(bitmap,tiles)
+                return DraftNameAtlas(bitmap,tiles,source,masks.map { Rect(it) })
             } catch (error: Throwable) { bitmap.recycle(); throw error }
         }
 
