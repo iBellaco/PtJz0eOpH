@@ -348,6 +348,16 @@ class DraftSequenceMultiDeviceInstalledTest {
                                         try {
                                             val shortDiagnostics=JSONArray()
                                             for(tile in atlas.tiles.filter { it.original && it.ally }) {
+                                                DraftNameAtlas.repeatedShortAlliedTitleAlternative(atlas,tile,neutralOnly=true,binary=false)?.let { raw ->
+                                                    try {
+                                                        File(evidence,"${case.getString("id")}-${fixture.file}-raw-repeated-${tile.slot}.png")
+                                                            .outputStream().use { raw.bitmap.compress(Bitmap.CompressFormat.PNG,100,it) }
+                                                        val read = diagnosticRecognizer.process(
+                                                            com.google.mlkit.vision.common.InputImage.fromBitmap(raw.bitmap,0)).await()
+                                                        shortDiagnostics.put(JSONObject().put("slot",tile.slot)
+                                                            .put("variant","original-color-repeated").put("text",read.text))
+                                                    } finally { raw.bitmap.recycle() }
+                                                }
                                                 DraftNameAtlas.shortAlliedTitleAlternatives(atlas,tile,neutralOnly=true)?.let { neutral ->
                                                     try {
                                                         File(evidence,"${case.getString("id")}-${fixture.file}-neutral-${tile.slot}.png")

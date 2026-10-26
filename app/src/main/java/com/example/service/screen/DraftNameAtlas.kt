@@ -480,10 +480,14 @@ internal class DraftNameAtlas private constructor(val bitmap: Bitmap, val tiles:
         /** Repeat the same captured short-title pixels on one baseline. Native
          * OCR may reject an isolated two-glyph crop as an icon but accepts the
          * repeated optical evidence as text. No glyph or expected name is drawn. */
-        fun repeatedShortAlliedTitleAlternative(atlas: DraftNameAtlas, tile: Tile, neutralOnly: Boolean = false): DraftNameAtlas? {
-            val short = shortAlliedTitleAlternatives(atlas, tile, neutralOnly=neutralOnly) ?: return null
+        fun repeatedShortAlliedTitleAlternative(atlas: DraftNameAtlas, tile: Tile, neutralOnly: Boolean = false,
+            binary: Boolean = true): DraftNameAtlas? {
+            val short = shortAlliedTitleAlternatives(atlas, tile, binary=binary, neutralOnly=neutralOnly) ?: return null
             try {
-                val sampleTile = short.tiles.single { it.region.height() == 72 }
+                // Preserve the established binary request, but offer original
+                // antialiased pixels at ordinary text size independently. A
+                // thresholded two-letter glyph can lose its diagonal strokes.
+                val sampleTile = short.tiles.single { it.region.height() == if (binary) 72 else 32 }
                 val repeats = 3
                 val gap = 24
                 val width = sampleTile.region.width() * repeats + gap * (repeats - 1)

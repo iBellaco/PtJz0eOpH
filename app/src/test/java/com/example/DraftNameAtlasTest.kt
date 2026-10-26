@@ -543,6 +543,17 @@ class DraftNameAtlasTest {
                             }
                         })
                     } finally { neutral.bitmap.recycle() }
+                    val color = DraftNameAtlas.shortAlliedTitleAlternatives(atlas,tile,binary=false,neutralOnly=true)!!
+                    val repeatedColor = DraftNameAtlas.repeatedShortAlliedTitleAlternative(atlas,tile,neutralOnly=true,binary=false)!!
+                    try {
+                        val part = color.tiles.single { it.region.height() == 32 }
+                        val target = repeatedColor.tiles.single().region
+                        for (copy in 0..2) for (y in 0 until part.region.height())
+                            for (x in 0 until part.region.width())
+                                assertEquals("Repeated OCR evidence must contain only original captured pixels",
+                                    color.bitmap.getPixel(part.region.left+x,part.region.top+y),
+                                    repeatedColor.bitmap.getPixel(target.left+copy*(part.region.width()+24)+x,target.top+y))
+                    } finally { color.bitmap.recycle(); repeatedColor.bitmap.recycle() }
                 } finally { atlas.bitmap.recycle() }
             } finally { frame.recycle() }
         } } finally { raw.recycle() }

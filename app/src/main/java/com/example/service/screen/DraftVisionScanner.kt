@@ -834,6 +834,8 @@ object DraftVisionScanner {
                             ?.let(repeatedShortAlternatives::add)
                         DraftNameAtlas.repeatedShortAlliedTitleAlternative(atlas,tile,neutralOnly=true)
                             ?.let(repeatedShortAlternatives::add)
+                        DraftNameAtlas.repeatedShortAlliedTitleAlternative(atlas,tile,neutralOnly=true,binary=false)
+                            ?.let(repeatedShortAlternatives::add)
                     }
                     if(repeatedShortAlternatives.isNotEmpty()) readAlternatives(repeatedShortAlternatives)
                 } catch(error:Throwable) {
