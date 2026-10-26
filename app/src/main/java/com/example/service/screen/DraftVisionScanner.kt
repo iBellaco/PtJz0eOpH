@@ -678,10 +678,24 @@ object DraftVisionScanner {
             val atlas = DraftNameAtlas.create(bitmap,calib,exclusions+listOfNotNull(frameOverlay))
             try {
                 val detectedTitleLines=mutableMapOf<Pair<Boolean,Int>,MutableList<Rect>>()
+                val contextDonors=mutableMapOf<Pair<Boolean,Int>,Rect>()
                 suspend fun readTitles(input: DraftNameAtlas) {
                 val text = recognizer.process(InputImage.fromBitmap(input.bitmap,0)).await()
                 val lines = text.textBlocks.flatMap { it.lines }
                 for (tile in input.tiles) {
+                    if (tile.contextual) {
+                        val pairs = lines.mapNotNull { line ->
+                            val words = line.elements.filter { element ->
+                                element.boundingBox?.let { tile.region.contains(it) } == true
+                            }.sortedBy { it.boundingBox!!.left }
+                            if (words.isEmpty()) null else words.joinToString(" ") { it.text } to
+                                (words.first().boundingBox!!.centerY()-tile.region.top)
+                        }
+                        val reading = AllyDraftNameReader.readTitleRows(pairs,0,allChamps,tile.titleMaxY)
+                        val readings = if(tile.ally) targetedAllyReadings else targetedEnemyReadings
+                        readings[tile.slot] = AllyDraftNameReader.preferOriginal(readings[tile.slot],reading)
+                        continue
+                    }
                     val selected = lines.filter { line ->
                         line.boundingBox?.let { tile.region.contains(it.centerX(),it.centerY()) &&
                             it.centerY()-tile.region.top>=tile.titleMinY } == true
@@ -715,6 +729,14 @@ object DraftVisionScanner {
                     // Every alternative obeys the same title-row bounds. A
                     // short nickname below the title is never a fallback.
                     readings[tile.slot]=AllyDraftNameReader.preferOriginal(readings[tile.slot],reading)
+                    if (reading.champion != null && !reading.ambiguous) {
+                        titleLines.firstOrNull { line ->
+                            AllyDraftNameReader.read(listOf(line.text),allChamps).champion?.id == reading.champion.id
+                        }?.boundingBox?.let { box ->
+                            val mapped = DraftNameAtlas.mapDetectedLine(original,tile,box)
+                            if(mapped.width()>0 && mapped.height()>0) contextDonors[tile.ally to tile.slot] = mapped
+                        }
+                    }
                 }
                 }
                 fun unresolvedReading(tile: DraftNameAtlas.Tile) =
@@ -841,6 +863,13 @@ object DraftVisionScanner {
                 } catch(error:Throwable) {
                     repeatedShortAlternatives.forEach { if(!it.bitmap.isRecycled) it.bitmap.recycle() }
                     throw error
+                }
+                for ((tile,_) in unresolved) if (tile.ally && unresolvedReading(tile)) {
+                    val donorEntry = contextDonors.entries.filter { it.key != (tile.ally to tile.slot) }
+                        .maxByOrNull { it.value.width().toFloat()/it.value.height() } ?: continue
+                    val donor = atlas.tiles.single { it.original && it.ally == donorEntry.key.first && it.slot == donorEntry.key.second }
+                    val contextual = DraftNameAtlas.contextualTitle(atlas,tile,donor,donorEntry.value) ?: continue
+                    try { readTitles(contextual) } finally { contextual.bitmap.recycle() }
                 }
                 val observedTitleIds=(targetedAllyReadings.toList()+targetedEnemyReadings.toList())
                     .mapNotNull { it.champion?.id }.toSet()

@@ -348,6 +348,31 @@ class DraftSequenceMultiDeviceInstalledTest {
                                         try {
                                             val shortDiagnostics=JSONArray()
                                             for(tile in atlas.tiles.filter { it.original && it.ally }) {
+                                                val donor = atlas.tiles.firstOrNull { it.original && it.slot != tile.slot &&
+                                                    direct.textBlocks.flatMap { block -> block.lines }.any { line ->
+                                                        line.boundingBox?.let { box -> it.source.contains(box) } == true
+                                                    } }
+                                                if (donor != null) {
+                                                    val box = direct.textBlocks.flatMap { it.lines }.first { line ->
+                                                        line.boundingBox?.let { donor.source.contains(it) } == true
+                                                    }.boundingBox!!
+                                                    val local = Rect((box.left-donor.source.left)*donor.region.width()/donor.source.width(),
+                                                        (box.top-donor.source.top)*donor.region.height()/donor.source.height(),
+                                                        (box.right-donor.source.left)*donor.region.width()/donor.source.width(),
+                                                        (box.bottom-donor.source.top)*donor.region.height()/donor.source.height())
+                                                    DraftNameAtlas.contextualTitle(atlas,tile,donor,local)?.let { contextual ->
+                                                        try {
+                                                            File(evidence,"${case.getString("id")}-${fixture.file}-context-${tile.slot}.png")
+                                                                .outputStream().use { contextual.bitmap.compress(Bitmap.CompressFormat.PNG,100,it) }
+                                                            val read = diagnosticRecognizer.process(com.google.mlkit.vision.common.InputImage.fromBitmap(contextual.bitmap,0)).await()
+                                                            shortDiagnostics.put(JSONObject().put("slot",tile.slot).put("variant","captured-text-context")
+                                                                .put("text",read.text).put("target",contextual.tiles.single().region.toString())
+                                                                .put("elements",JSONArray(read.textBlocks.flatMap { it.lines }.flatMap { it.elements }.map {
+                                                                    JSONObject().put("text",it.text).put("bounds",it.boundingBox.toString())
+                                                                })))
+                                                        } finally { contextual.bitmap.recycle() }
+                                                    }
+                                                }
                                                 DraftNameAtlas.repeatedShortAlliedTitleAlternative(atlas,tile,neutralOnly=true,binary=false)?.let { raw ->
                                                     try {
                                                         File(evidence,"${case.getString("id")}-${fixture.file}-raw-repeated-${tile.slot}.png")

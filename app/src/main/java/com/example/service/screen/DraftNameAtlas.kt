@@ -13,7 +13,7 @@ internal class DraftNameAtlas private constructor(val bitmap: Bitmap, val tiles:
     data class Tile(val ally: Boolean, val slot: Int, val source: Rect, val region: Rect,
                     val titleMaxY: Int, val original: Boolean = true, val contrast: Boolean = false,
                     val titleMinY: Int = 0, val badgeRemoved: Boolean = false,
-                    val contentInsetLeft: Int = 0)
+                    val contentInsetLeft: Int = 0, val contextual: Boolean = false)
 
     companion object {
         private const val GUTTER = 32
@@ -467,6 +467,33 @@ internal class DraftNameAtlas private constructor(val bitmap: Bitmap, val tiles:
                 bitmap.recycle()
                 throw error
             }
+        }
+
+        /** Context contains captured text only. Only the central tile is decoded;
+         * neighbouring text supplies detection context, never a slot identity. */
+        fun contextualTitle(atlas: DraftNameAtlas, tile: Tile, donor: Tile, bounds: Rect): DraftNameAtlas? {
+            val short = shortAlliedTitleAlternatives(atlas,tile,binary=false,neutralOnly=true) ?: return null
+            try {
+                val clipped = Rect(bounds)
+                if (!clipped.intersect(0,0,donor.region.width(),donor.region.height())) return null
+                val target = short.tiles.single { it.region.height() == 32 }
+                val ink = Rect(target.region).apply { inset(8,8) }
+                val textHeight = ink.height()
+                val donorWidth = (clipped.width()*textHeight.toFloat()/clipped.height()).toInt().coerceAtLeast(1)
+                val left = GUTTER + donorWidth + 24
+                val region = Rect(left,GUTTER,left+ink.width(),GUTTER+textHeight)
+                val output = Bitmap.createBitmap(region.right+24+donorWidth+GUTTER,textHeight+GUTTER*2,Bitmap.Config.ARGB_8888)
+                try {
+                    val canvas = Canvas(output).apply { drawColor(Color.BLACK) }
+                    val donorSource = Rect(clipped).apply { offset(donor.region.left,donor.region.top) }
+                    val paint = Paint(Paint.FILTER_BITMAP_FLAG)
+                    canvas.drawBitmap(atlas.bitmap,donorSource,Rect(GUTTER,GUTTER,GUTTER+donorWidth,GUTTER+textHeight),paint)
+                    canvas.drawBitmap(short.bitmap,ink,region,null)
+                    canvas.drawBitmap(atlas.bitmap,donorSource,Rect(region.right+24,GUTTER,region.right+24+donorWidth,GUTTER+textHeight),paint)
+                    val acceptedRegion = Rect(region).apply { inset(-4,-4) }
+                    return DraftNameAtlas(output,listOf(target.copy(region=acceptedRegion,titleMinY=0,titleMaxY=acceptedRegion.height(),contextual=true)))
+                } catch(error:Throwable) { output.recycle();throw error }
+            } finally { short.bitmap.recycle() }
         }
 
         internal fun removeSmallNeutralDebris(bitmap: Bitmap) {

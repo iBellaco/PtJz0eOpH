@@ -563,6 +563,18 @@ class DraftNameAtlasTest {
                                     color.bitmap.getPixel(part.region.left+x,part.region.top+y),
                                     repeatedColor.bitmap.getPixel(target.left+copy*(part.region.width()+24)+x,target.top+y))
                     } finally { color.bitmap.recycle(); repeatedColor.bitmap.recycle() }
+                    val donor = atlas.tiles.single { it.original && it.ally && it.slot == 0 }
+                    val contextual = DraftNameAtlas.contextualTitle(atlas,tile,donor,
+                        android.graphics.Rect(0,0,donor.region.width(),donor.region.height()))!!
+                    try {
+                        val assigned = contextual.tiles.single()
+                        assertTrue(assigned.contextual)
+                        assertEquals(tile.slot,assigned.slot)
+                        assertTrue(tile.source.contains(assigned.source))
+                        assertFalse("Left context must never be assigned to the target",assigned.region.contains(32,32))
+                        assertFalse("Right context must never be assigned to the target",
+                            assigned.region.contains(contextual.bitmap.width-33,32))
+                    } finally { contextual.bitmap.recycle() }
                     val after = IntArray(capturedPixels.size)
                     assertFalse("The atlas must never recycle its borrowed capture",frame.isRecycled)
                     frame.getPixels(after,0,tile.source.width(),tile.source.left,tile.source.top,
