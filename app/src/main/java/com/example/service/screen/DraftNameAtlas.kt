@@ -358,18 +358,33 @@ internal class DraftNameAtlas private constructor(val bitmap: Bitmap, val tiles:
                     val isolated = sample.copy(Bitmap.Config.ARGB_8888, true)
                     try {
                         isolateTitleColor(isolated)
+                        // Scale the actual ink, not the empty calibrated band.
+                        // Otherwise a 72px row can still contain a 10px VI and
+                        // repeating that row only repeats the same empty margin.
+                        var inkLeft = sourceWidth
+                        var inkTop = sourceHeight
+                        var inkRight = -1
+                        var inkBottom = -1
+                        for (y in 0 until sourceHeight) for (x in 0 until sourceWidth) {
+                            if (isolated.getPixel(x, y) == Color.BLACK) {
+                                inkLeft = minOf(inkLeft, x); inkRight = maxOf(inkRight, x)
+                                inkTop = minOf(inkTop, y); inkBottom = maxOf(inkBottom, y)
+                            }
+                        }
+                        if (inkRight < inkLeft) { bitmap.recycle(); return null }
+                        val inkBounds = Rect(inkLeft, inkTop, inkRight + 1, inkBottom + 1)
                         val source = Rect(
-                            tile.source.left + inset * tile.source.width() / prior.region.width(),
-                            tile.source.top,
-                            tile.source.left + (inset + sourceWidth) * tile.source.width() / prior.region.width(),
-                            tile.source.bottom
+                            tile.source.left + (inset + inkLeft) * tile.source.width() / prior.region.width(),
+                            tile.source.top + inkTop * tile.source.height() / sourceHeight,
+                            tile.source.left + (inset + inkRight + 1) * tile.source.width() / prior.region.width(),
+                            tile.source.top + (inkBottom + 1) * tile.source.height() / sourceHeight
                         )
                         val tiles = targets.mapIndexed { index, target ->
-                            val width = kotlin.math.round(sourceWidth * target.toFloat() / sourceHeight)
-                                .toInt().coerceAtLeast(1)
+                            val width = kotlin.math.round(inkBounds.width() * target.toFloat() / inkBounds.height())
+                                .toInt().coerceIn(1, cellWidth - GUTTER * 2)
                             val top = index * cellHeight + GUTTER
                             val region = Rect(GUTTER, top, GUTTER + width, top + target)
-                            canvas.drawBitmap(isolated, null, region, null)
+                            canvas.drawBitmap(isolated, inkBounds, region, Paint(Paint.FILTER_BITMAP_FLAG))
                             tile.copy(source = source, region = region, original = false,
                                 contrast = true, titleMinY = 0, titleMaxY = target,
                                 badgeRemoved = true, contentInsetLeft = 0)

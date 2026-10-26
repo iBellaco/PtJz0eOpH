@@ -469,6 +469,8 @@ class DraftNameAtlasTest {
                     try {
                         assertEquals(listOf(48,72,96),alternatives.tiles.map { it.region.height() })
                         assertTrue(alternatives.tiles.all { it.badgeRemoved && tile.source.contains(it.source) })
+                        assertTrue("$height must scale ink rather than the empty title band",
+                            alternatives.tiles.all { it.source.height() < tile.source.height() })
                         assertTrue("$height retry must retain real dark title strokes on white",
                             alternatives.tiles.any { part ->
                                 (part.region.top until part.region.bottom).any { y ->
