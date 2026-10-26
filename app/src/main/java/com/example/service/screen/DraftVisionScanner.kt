@@ -679,7 +679,7 @@ object DraftVisionScanner {
             try {
                 val detectedTitleLines=mutableMapOf<Pair<Boolean,Int>,MutableList<Rect>>()
                 val contextDonors=mutableMapOf<Pair<Boolean,Int>,Rect>()
-                suspend fun readTitles(input: DraftNameAtlas) {
+                suspend fun readTitles(input: DraftNameAtlas): com.google.mlkit.vision.text.Text {
                 val text = recognizer.process(InputImage.fromBitmap(input.bitmap,0)).await()
                 val lines = text.textBlocks.flatMap { it.lines }
                 for (tile in input.tiles) {
@@ -738,6 +738,7 @@ object DraftVisionScanner {
                         }
                     }
                 }
+                return text
                 }
                 fun unresolvedReading(tile: DraftNameAtlas.Tile) =
                     (if(tile.ally) targetedAllyReadings else targetedEnemyReadings)[tile.slot].let {
@@ -877,7 +878,24 @@ object DraftVisionScanner {
                     unresolvedReading(tile)
                 }) {
                     val scene=DraftNameAtlas.sceneTitles(bitmap,calib,exclusions+listOfNotNull(frameOverlay))
-                    try { readTitles(scene) } finally { scene.bitmap.recycle() }
+                    try {
+                        val sceneText = readTitles(scene)
+                        // The 1920x889 native evidence reads VI with a scene
+                        // donor but not with the widest enhanced-atlas donor.
+                        // Use those actual scene boxes after the ordinary scene
+                        // pass, keeping the successful earlier recovery intact.
+                        val titleBoxes = sceneText.textBlocks.flatMap { it.lines }.mapNotNull { line ->
+                            val reading = AllyDraftNameReader.read(listOf(line.text), allChamps)
+                            line.boundingBox?.takeIf { reading.champion != null && !reading.ambiguous }
+                        }
+                        for ((tile, _) in unresolved) if (tile.ally && unresolvedReading(tile)) {
+                            for ((donor, bounds) in DraftNameAtlas.sceneContextSources(atlas, scene, titleBoxes, tile)) {
+                                if (!unresolvedReading(tile)) break
+                                val contextual = DraftNameAtlas.contextualTitle(atlas, tile, donor, bounds) ?: continue
+                                try { readTitles(contextual) } finally { contextual.bitmap.recycle() }
+                            }
+                        }
+                    } finally { scene.bitmap.recycle() }
                 }
                 for (slot in 0..4) {
                     targetedEnemyChampions[slot] = targetedEnemyReadings[slot].let {

@@ -19,6 +19,31 @@ import org.robolectric.annotation.GraphicsMode
 @Config(sdk = [34], application = Application::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class DraftNameAtlasTest {
+    @Test fun sceneContextIsBoundedAndExcludesTargetAndSummonerRows() {
+        val frame = Bitmap.createBitmap(1920,889,Bitmap.Config.ARGB_8888)
+        val config = VisionCalibrationConfig()
+        val atlas = DraftNameAtlas.create(frame,config,emptyList())
+        val scene = DraftNameAtlas.sceneTitles(frame,config,emptyList())
+        try {
+            val target = atlas.tiles.single { it.original && it.ally && it.slot == 4 }
+            val boxes = scene.tiles.map { android.graphics.Rect(it.region).apply { inset(2,2) } }
+            val donors = DraftNameAtlas.sceneContextSources(atlas,scene,boxes.reversed(),target)
+            assertEquals(listOf(0,1,2),donors.map { it.first.slot })
+            assertTrue(donors.all { it.first.ally })
+            assertEquals(3,donors.size)
+            for ((donor,bounds) in donors) {
+                assertTrue(android.graphics.Rect(0,0,donor.region.width(),donor.region.height()).contains(bounds))
+            }
+            val targetBox = scene.tiles.single { it.ally && it.slot == 4 }.region
+            val below = scene.tiles.first().region.let {
+                android.graphics.Rect(it.left,it.bottom+1,it.right,it.bottom+4)
+            }
+            assertTrue(DraftNameAtlas.sceneContextSources(atlas,scene,
+                listOf(targetBox,below,android.graphics.Rect()),target).isEmpty())
+            val enemies = scene.tiles.filter { !it.ally }.map { android.graphics.Rect(it.region).apply { inset(2,2) } }
+            assertTrue(DraftNameAtlas.sceneContextSources(atlas,scene,enemies,target).all { !it.first.ally })
+        } finally { scene.bitmap.recycle();atlas.bitmap.recycle();frame.recycle() }
+    }
     @Test fun neutralDebrisRemovalKeepsTallNarrowTitleStroke() {
         val bitmap = Bitmap.createBitmap(100,40,Bitmap.Config.ARGB_8888)
         try {
@@ -500,6 +525,25 @@ class DraftNameAtlasTest {
                 val atlas=DraftNameAtlas.create(frame,measured,emptyList())
                 try {
                     val tile=atlas.tiles.single { it.original && it.ally && it.slot==4 }
+                    if (height == 889) {
+                        // Actual ML Kit box from run 40311314615. The successful
+                        // diagnostic used this scene title, not the widest crop.
+                        val scene = DraftNameAtlas.sceneTitles(frame,measured,emptyList())
+                        try {
+                            val nativeBox = android.graphics.Rect(202,153,253,165)
+                            val (donor,bounds) = DraftNameAtlas.sceneContextSources(atlas,scene,listOf(nativeBox),tile).single()
+                            assertTrue(donor.ally)
+                            assertEquals(0,donor.slot)
+                            assertEquals(android.graphics.Rect(
+                                (202-donor.source.left)*donor.region.width()/donor.source.width(),
+                                (153-donor.source.top)*donor.region.height()/donor.source.height(),
+                                (253-donor.source.left)*donor.region.width()/donor.source.width(),
+                                (165-donor.source.top)*donor.region.height()/donor.source.height()),bounds)
+                            val contextual = DraftNameAtlas.contextualTitle(atlas,tile,donor,bounds)!!
+                            try { assertEquals(4,contextual.tiles.single().slot) }
+                            finally { contextual.bitmap.recycle() }
+                        } finally { scene.bitmap.recycle() }
+                    }
                     val capturedPixels = IntArray(tile.source.width()*tile.source.height())
                     frame.getPixels(capturedPixels,0,tile.source.width(),tile.source.left,tile.source.top,
                         tile.source.width(),tile.source.height())

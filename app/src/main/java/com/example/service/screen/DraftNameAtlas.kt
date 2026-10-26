@@ -75,6 +75,25 @@ internal class DraftNameAtlas private constructor(val bitmap: Bitmap, val tiles:
                 (sourceY(box.bottom)-original.source.top)*original.region.height()/original.source.height())
         }
 
+        /** Native scene boxes, not boxes inferred from enhanced/repacked crops.
+         * Callers supply only whole champion-title lines validated by the reader.
+         * At most three other title bands may supply context; none is an answer
+         * for the target slot. Stable spatial order avoids preferring long names. */
+        fun sceneContextSources(atlas: DraftNameAtlas, scene: DraftNameAtlas,
+                                titleBoxes: List<Rect>, target: Tile): List<Pair<Tile, Rect>> =
+            scene.tiles.asSequence()
+                .filter { it.ally != target.ally || it.slot != target.slot }
+                .sortedWith(compareByDescending<Tile> { it.ally }.thenBy { it.slot })
+                .mapNotNull { tile ->
+                    val box = titleBoxes.firstOrNull {
+                        it.width() > 0 && it.height() > 0 && tile.region.contains(it)
+                    } ?: return@mapNotNull null
+                    val original = atlas.tiles.single {
+                        it.original && it.ally == tile.ally && it.slot == tile.slot
+                    }
+                    original to mapDetectedLine(original, tile, box)
+                }.take(3).toList()
+
         /** Preserve the original scene for the detector when isolated two-letter
          * titles remain unreadable. Only calibrated TITLE regions are decoded;
          * the centre champion, summoner row and overlays cannot supply identities. */
