@@ -380,11 +380,17 @@ internal class DraftNameAtlas private constructor(val bitmap: Bitmap, val tiles:
                             tile.source.top + (inkBottom + 1) * tile.source.height() / sourceHeight
                         )
                         val tiles = targets.mapIndexed { index, target ->
-                            val width = kotlin.math.round(inkBounds.width() * target.toFloat() / inkBounds.height())
-                                .toInt().coerceIn(1, cellWidth - GUTTER * 2)
+                            // Padding must be INSIDE the tile: packAlternatives
+                            // copies only region, dropping the atlas gutters.
+                            // Black ink touching a black page merges with it.
+                            val padding = 8
+                            val width = (kotlin.math.round(inkBounds.width() * (target - 2 * padding).toFloat() / inkBounds.height())
+                                .toInt() + 2 * padding).coerceIn(2 * padding + 1, cellWidth - GUTTER * 2)
                             val top = index * cellHeight + GUTTER
                             val region = Rect(GUTTER, top, GUTTER + width, top + target)
-                            canvas.drawBitmap(isolated, inkBounds, region, Paint(Paint.FILTER_BITMAP_FLAG))
+                            canvas.drawRect(region, Paint().apply { color = Color.WHITE })
+                            val textRegion = Rect(region).apply { inset(padding, padding) }
+                            canvas.drawBitmap(isolated, inkBounds, textRegion, Paint(Paint.FILTER_BITMAP_FLAG))
                             tile.copy(source = source, region = region, original = false,
                                 contrast = true, titleMinY = 0, titleMaxY = target,
                                 badgeRemoved = true, contentInsetLeft = 0)

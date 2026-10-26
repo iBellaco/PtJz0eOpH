@@ -468,6 +468,19 @@ class DraftNameAtlasTest {
                         ?: throw AssertionError("$height must produce a compact title retry")
                     try {
                         assertEquals(listOf(48,72,96),alternatives.tiles.map { it.region.height() })
+                        val packed = DraftNameAtlas.packAlternatives(listOf(alternatives))
+                        try {
+                            for (page in packed) for (part in page.tiles) {
+                                for (x in part.region.left until part.region.right) {
+                                    assertEquals(Color.WHITE, page.bitmap.getPixel(x, part.region.top))
+                                    assertEquals(Color.WHITE, page.bitmap.getPixel(x, part.region.bottom - 1))
+                                }
+                                for (y in part.region.top until part.region.bottom) {
+                                    assertEquals(Color.WHITE, page.bitmap.getPixel(part.region.left, y))
+                                    assertEquals(Color.WHITE, page.bitmap.getPixel(part.region.right - 1, y))
+                                }
+                            }
+                        } finally { packed.forEach { it.bitmap.recycle() } }
                         assertTrue(alternatives.tiles.all { it.badgeRemoved && tile.source.contains(it.source) })
                         assertTrue("$height must scale ink rather than the empty title band",
                             alternatives.tiles.all { it.source.height() < tile.source.height() })
