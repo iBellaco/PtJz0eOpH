@@ -43,6 +43,7 @@ jobs:
     - uses: actions/checkout@v5
     - name: Check generated catalogs and Portuguese text before Android validation
       run: |
+        python3 -m unittest discover -s tools -p test_emulator_image.py
         python3 -m unittest discover -s .github/scripts -p test_localized_resources.py
         python3 .github/scripts/validate-localized-resources.py
         python3 .github/scripts/validate-patch-content.py
@@ -444,6 +445,7 @@ jobs:
         sudo udevadm control --reload-rules
         sudo udevadm trigger --name-match=kvm
         sudo chmod 666 /dev/kvm || true
+    - uses: ./.github/actions/prepare-emulator
     - name: Revisit installed APK in Portuguese
       uses: reactivecircus/android-emulator-runner@v2
       with:
@@ -487,6 +489,7 @@ jobs:
         sudo udevadm control --reload-rules
         sudo udevadm trigger --name-match=kvm
         sudo chmod 666 /dev/kvm || true
+    - uses: ./.github/actions/prepare-emulator
     - name: Revisit installed APK in Spanish and exercise overlay history
       uses: reactivecircus/android-emulator-runner@v2
       with:
@@ -534,6 +537,7 @@ jobs:
         sudo udevadm control --reload-rules
         sudo udevadm trigger --name-match=kvm
         sudo chmod 666 /dev/kvm || true
+    - uses: ./.github/actions/prepare-emulator
     - name: Run the fast gate for the previously failing native cases
       timeout-minutes: 35
       uses: reactivecircus/android-emulator-runner@v2
@@ -590,6 +594,7 @@ jobs:
         sudo udevadm control --reload-rules
         sudo udevadm trigger --name-match=kvm
         sudo chmod 666 /dev/kvm || true
+    - uses: ./.github/actions/prepare-emulator
     - name: Exercise sequential name OCR and tenth portrait on installed release
       uses: reactivecircus/android-emulator-runner@v2
       env:

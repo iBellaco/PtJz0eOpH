@@ -15,6 +15,9 @@ on:
       - 'app/src/test/java/com/example/OfflinePortugueseAuditTest.kt'
       - '.github/scripts/validate-localized-resources.py'
       - '.github/scripts/test_localized_resources.py'
+      - '.github/actions/prepare-emulator/action.yml'
+      - 'tools/prepare-emulator-image.py'
+      - 'tools/test_emulator_image.py'
       - 'app/src/test/java/com/example/DraftNameAtlasTest.kt'
       - 'app/src/main/java/com/example/data/WildRiftRepository.kt'
       - 'app/src/main/java/com/example/service/ConfirmedLastPickHud.kt'
@@ -49,6 +52,7 @@ jobs:
       - uses: actions/checkout@v5
       - name: Comprobar portugués general y de Brasil
         run: |
+          python3 -m unittest discover -s tools -p test_emulator_image.py
           python3 -m unittest discover -s .github/scripts -p test_localized_resources.py
           python3 .github/scripts/validate-localized-resources.py
 
@@ -149,6 +153,7 @@ jobs:
           sudo udevadm trigger --name-match=kvm
           sudo chmod 666 /dev/kvm || true
 
+      - uses: ./.github/actions/prepare-emulator
       - name: Ejecutar la secuencia completa que agotó el tiempo
         uses: reactivecircus/android-emulator-runner@v2
         env:
@@ -253,6 +258,7 @@ jobs:
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
           sudo chmod 666 /dev/kvm || true
+      - uses: ./.github/actions/prepare-emulator
       - name: Reproducir Red Magic y todos los errores OCR conocidos en release
         uses: reactivecircus/android-emulator-runner@v2
         env:
