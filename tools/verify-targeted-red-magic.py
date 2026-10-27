@@ -9,6 +9,8 @@ def main():
     ):
         subprocess.run(['adb', 'install', '-r', apk], check=True, timeout=120)
     methods = (
+        'boundedLiveSpanishTitlesRememberLanesAndUpdateHub',
+        'boundedLivePortugueseTitlesRememberLanesAndUpdateHub',
         'liveRedMagicCapturesWithMasteryBadgesAndViewerMasksFillTheActualHub',
         'reportedSlotsDoNotLoseSennaOrMalphiteAndFinishWithVisualRivalPick',
         'pocoLegendaryReadsCurrentTitlesAfterAStaleSessionAndClearRemovesCrops',

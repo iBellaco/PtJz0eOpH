@@ -62,6 +62,10 @@ El orden jerárquico de los rangos para consejos tácticos es:
 Antes de cambiar el escáner, leer completo `docs/draft-recognition-contract.md`.
 Es el contrato de capturas confirmado por el propietario: nueve selecciones por
 título completo, décima visual en el lado correspondiente y baneos omitidos vacíos.
+Antes del pick aliado, recordar la línea del mismo slot; después su título cambia
+al campeón. No leer el invocador de debajo ni inferir la línea aliada por afinidad.
+La maestría puede preceder al título. Primero aliado → décimo rival; primero rival
+→ décimo aliado. Aplicar la misma secuencia a todas las marcas.
 
 ## 2. Protocolo de Lectura (Antes de Modificar)
 Antes de generar código o responder a un requerimiento, el agente debe seguir estos pasos de lectura:

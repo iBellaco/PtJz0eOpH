@@ -5,9 +5,14 @@ internal class SlotTitleConfirmation {
     private val previous = mutableMapOf<Pair<Boolean, Int>, String>()
     private val counts = mutableMapOf<Pair<Boolean, Int>, Int>()
     private val gaps = mutableMapOf<Pair<Boolean, Int>, Int>()
-    fun observe(ally: Boolean, slot: Int, championId: String?): Boolean {
+    fun observe(ally: Boolean, slot: Int, championId: String?, exhaustive: Boolean = true): Boolean {
         val key = ally to slot
         if (championId == null) {
+            // A bounded live pass omitted difficult-name recovery. Absence here
+            // cannot expire a candidate found by a full pass, or several quick
+            // frames would prevent it ever receiving its second confirmation.
+            // This still contributes no positive evidence and cannot select.
+            if (!exhaustive) return false
             val gap = (gaps[key] ?: 0) + 1
             gaps[key] = gap
             if (gap > 1) { previous.remove(key); counts.remove(key) }

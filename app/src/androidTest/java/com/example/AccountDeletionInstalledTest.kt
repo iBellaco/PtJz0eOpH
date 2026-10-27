@@ -3,6 +3,12 @@ package com.example
 import android.graphics.Bitmap
 import androidx.activity.compose.setContent
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -38,19 +44,48 @@ class AccountDeletionInstalledTest {
         finally { picture.recycle() }
     }
     private fun frame() { compose.mainClock.advanceTimeBy(300); compose.waitForIdle() }
-    private fun click(tag: String) {
-        compose.waitUntil(timeoutMillis = 5_000) {
-            compose.onAllNodesWithTag(tag).fetchSemanticsNodes().isNotEmpty()
+    private fun waitForControl(tag: String) {
+        val instrumentation = InstrumentationRegistry.getInstrumentation()
+        instrumentation.sendStatus(2, android.os.Bundle().apply {
+            putString("stream", "\nACCOUNT_DELETION_CONTROL: waiting=$tag autoAdvance=${compose.mainClock.autoAdvance}\n")
+        })
+        try {
+            compose.waitUntil(timeoutMillis = 5_000) {
+                // waitUntil yields real time but does not advance a frozen
+                // Compose clock. A newly attached dialog can need another frame
+                // after the previous interaction's single advance has finished.
+                if (!compose.mainClock.autoAdvance) compose.mainClock.advanceTimeByFrame()
+                compose.onAllNodesWithTag(tag).fetchSemanticsNodes().size == 1
+            }
+        } catch (failure: ComposeTimeoutException) {
+            val folder = File(instrumentation.targetContext.getExternalFilesDir(null),
+                "coach-account-deletion-audit").apply { mkdirs() }
+            runCatching {
+                val roots = compose.onAllNodes(isRoot(), useUnmergedTree = true)
+                File(folder, "timeout-$tag.txt").writeText(roots.fetchSemanticsNodes().indices
+                    .joinToString("\n") { roots[it].printToString() })
+            }
+            runCatching {
+                instrumentation.uiAutomation.takeScreenshot()?.let { picture ->
+                    try { File(folder, "timeout-$tag.png").outputStream().use {
+                        picture.compress(Bitmap.CompressFormat.PNG, 100, it)
+                    } } finally { picture.recycle() }
+                }
+            }
+            throw AssertionError("Missing account deletion control: $tag; autoAdvance=${compose.mainClock.autoAdvance}", failure)
         }
-        compose.onNodeWithTag(tag).performClick()
+    }
+    private fun click(tag: String) {
+        waitForControl(tag)
+        compose.onNodeWithTag(tag).assertIsDisplayed().performClick()
         if (!compose.mainClock.autoAdvance) frame()
     }
     private fun openFinal() {
-        compose.onNodeWithTag("account_delete_first_confirm").performClick()
         // Freeze the automatically focused password cursor and progress animations;
         // every interaction still advances a frame and retains its behavioral assertions.
         compose.mainClock.autoAdvance = false
-        frame()
+        click("account_delete_first_confirm")
+        waitForControl("account_delete_final_confirm")
     }
     private fun password(value: String) {
         // Reopening a native dialog recreates its text semantics after focus.
@@ -84,7 +119,20 @@ class AccountDeletionInstalledTest {
     }
     private fun confirmations(lang: String) {
         language(lang); var calls=0; var delivered:Long?=null;var submittedPassword:String?=null
-        content { MyApplicationTheme { AccountDeletionCard("owner@test.invalid",submit={submittedPassword=it;calls++;123456789L},onScheduled={delivered=it}) } }
+        // Exercise the original deadlock deterministically: the first control
+        // cannot exist until the frozen clock receives subsequent frames.
+        // The old waitUntil-only helper times out here in either language.
+        compose.mainClock.autoAdvance = false
+        content {
+            var mounted by remember { mutableStateOf(false) }
+            LaunchedEffect(Unit) {
+                repeat(2) { withFrameNanos { } }
+                mounted = true
+            }
+            if (mounted) MyApplicationTheme {
+                AccountDeletionCard("owner@test.invalid",submit={submittedPassword=it;calls++;123456789L},onScheduled={delivered=it})
+            }
+        }
         click("account_delete_open")
         capture("account-delete-first-$lang")
         click("account_delete_first_cancel")

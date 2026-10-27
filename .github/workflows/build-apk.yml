@@ -44,6 +44,8 @@ jobs:
     - name: Check generated catalogs and Portuguese text before Android validation
       run: |
         python3 -m unittest discover -s tools -p test_emulator_image.py
+        python3 -m unittest discover -s tools -p test_draft_rival_device.py
+        python3 -m unittest discover -s tools -p test_account_deletion_device.py
         python3 -m unittest discover -s .github/scripts -p test_localized_resources.py
         python3 .github/scripts/validate-localized-resources.py
         python3 .github/scripts/validate-patch-content.py
