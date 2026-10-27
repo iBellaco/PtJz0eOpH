@@ -5,6 +5,20 @@ on:
     branches: [fix-error]
     paths:
       - 'app/src/main/java/com/example/service/screen/**'
+      - 'app/src/main/java/com/example/util/SystemPermissionHelper.kt'
+      - 'app/src/main/java/com/example/ui/components/OverlayPermissionHelp.kt'
+      - 'app/src/main/java/com/example/ui/components/BatteryAndOverlayNoticeCard.kt'
+      - 'app/src/main/java/com/example/ui/screens/MainDraftingScreen.kt'
+      - 'app/src/main/res/values*/strings.xml'
+      - 'app/src/test/java/com/example/DeviceDraftProfileTest.kt'
+      - 'app/src/test/java/com/example/SystemPermissionHelperTest.kt'
+      - 'app/src/test/java/com/example/OfflinePortugueseAuditTest.kt'
+      - '.github/scripts/validate-localized-resources.py'
+      - '.github/scripts/test_localized_resources.py'
+      - '.github/actions/prepare-emulator/action.yml'
+      - 'tools/prepare-emulator-image.py'
+      - 'tools/test_emulator_image.py'
+      - 'app/src/test/java/com/example/DraftNameAtlasTest.kt'
       - 'app/src/main/java/com/example/data/WildRiftRepository.kt'
       - 'app/src/main/java/com/example/service/ConfirmedLastPickHud.kt'
       - 'app/build.gradle.kts'
@@ -30,7 +44,20 @@ permissions:
   contents: read
 
 jobs:
+  localized-resources:
+    name: Recursos de idiomas completos antes de compilar
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v5
+      - name: Comprobar portugués general y de Brasil
+        run: |
+          python3 -m unittest discover -s tools -p test_emulator_image.py
+          python3 -m unittest discover -s .github/scripts -p test_localized_resources.py
+          python3 .github/scripts/validate-localized-resources.py
+
   targeted-native-ocr:
+    needs: localized-resources
     name: Casos OCR fallidos únicamente
     runs-on: ubuntu-latest
     timeout-minutes: 50
@@ -79,8 +106,21 @@ jobs:
           ./gradlew :app:testDebugUnitTest --rerun \
             --tests com.example.AllyDraftNameReaderTest \
             --tests com.example.DraftNameAtlasTest \
+            --tests com.example.DeviceDraftProfileTest \
+            --tests com.example.DraftRingAlignmentTest \
+            --tests com.example.SystemPermissionHelperTest \
+            --tests com.example.OfflinePortugueseAuditTest \
             --tests com.example.ChampionNameResolverCoverageTest \
             --max-workers=1 --stacktrace --no-daemon
+
+      - name: Conservar resultados de todas las pruebas aisladas
+        if: always()
+        uses: actions/upload-artifact@v5
+        with:
+          name: fix-error-unit-evidence
+          path: app/build/test-results/testDebugUnitTest/
+          if-no-files-found: warn
+          retention-days: 14
 
       - name: Preparar el plan de la regresión actual
         run: |
@@ -113,6 +153,7 @@ jobs:
           sudo udevadm trigger --name-match=kvm
           sudo chmod 666 /dev/kvm || true
 
+      - uses: ./.github/actions/prepare-emulator
       - name: Ejecutar la secuencia completa que agotó el tiempo
         uses: reactivecircus/android-emulator-runner@v2
         env:
@@ -142,6 +183,7 @@ jobs:
           retention-days: 14
 
   targeted-red-magic-release:
+    needs: localized-resources
     name: Errores conocidos en release (${{ matrix.suite }})
     runs-on: ubuntu-latest
     timeout-minutes: 50
@@ -216,6 +258,7 @@ jobs:
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
           sudo chmod 666 /dev/kvm || true
+      - uses: ./.github/actions/prepare-emulator
       - name: Reproducir Red Magic y todos los errores OCR conocidos en release
         uses: reactivecircus/android-emulator-runner@v2
         env:
@@ -231,7 +274,7 @@ jobs:
           emulator-boot-timeout: 300
           emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
           script: |
-            python3 tools/verify-targeted-red-magic.py
+            if [ "$COACH_SEQUENCE_PREFLIGHT" = "true" ]; then python3 tools/verify-targeted-red-magic.py; fi
             /usr/bin/env bash -c 'overall_status=0; for target_case in ${COACH_SEQUENCE_TARGETS//,/ }; do if ! COACH_SEQUENCE_TARGETS="$target_case" python3 tools/verify-draft-sequence-device.py; then overall_status=1; fi; done; exit "$overall_status"'
       - name: Conservar evidencia release de todos los errores conocidos
         if: always()

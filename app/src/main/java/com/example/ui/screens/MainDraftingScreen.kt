@@ -559,11 +559,12 @@ fun MainDraftingScreen(
                                         colors = ButtonDefaults.outlinedButtonColors(contentColor = HextechCyan),
                                         border = BorderStroke(1.dp, HextechCyan),
                                         contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp),
-                                        modifier = Modifier.height(30.dp)
+                                        modifier = Modifier.heightIn(min = 48.dp).testTag("hub_overlay_permission")
                                     ) {
                                         Text(tr("Activar"), fontSize = 11.sp, fontWeight = FontWeight.Bold)
                                     }
                                 }
+                                com.example.ui.components.OverlayPermissionHelp()
                             }
 
                             // 2. Batería / Segundo plano
@@ -733,7 +734,7 @@ fun MainDraftingScreen(
                     }
                 },
                 text = {
-                    Column {
+                    Column(Modifier.verticalScroll(rememberScrollState())) {
                         Text(
                             text = tr("Para que el asistente inteligente funcione en segundo plano sobre Wild Rift, Android requiere habilitar 'Aparecer encima' (Superposición)."),
                             color = TextPrimary,
@@ -746,6 +747,7 @@ fun MainDraftingScreen(
                             color = HextechCyan,
                             fontSize = 12.sp
                         )
+                        com.example.ui.components.OverlayPermissionHelp()
                     }
                 },
                 confirmButton = {

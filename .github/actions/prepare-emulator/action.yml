@@ -1,0 +1,11 @@
+name: Prepare emulator system image
+description: Recover transient SDK image downloads before running Android tests
+runs:
+  using: composite
+  steps:
+    - name: Install Android 34 image with bounded transport retries
+      shell: bash
+      run: |
+        sdk_root="${ANDROID_SDK_ROOT:-$ANDROID_HOME}"
+        export PATH="$sdk_root/cmdline-tools/latest/bin:$PATH"
+        python3 tools/prepare-emulator-image.py

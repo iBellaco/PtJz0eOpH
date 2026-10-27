@@ -251,7 +251,7 @@ VisionCalibrationConfig(
     }
 
     fun saveToPrefs(context: Context) {
-        discardOldRedMagicGeometry(context)
+        discardLegacyDeviceGeometry(context)
         val prefs = context.getSharedPreferences("vision_calibration_prefs", Context.MODE_PRIVATE)
         prefs.edit().apply {
             putString("calibration_device_model", deviceModelKey())
@@ -289,7 +289,7 @@ VisionCalibrationConfig(
 
     /** Saves the geometry that was calibrated for one capture aspect ratio. */
     fun saveProfileToPrefs(context: Context, profileKey: String) {
-        discardOldRedMagicGeometry(context)
+        discardLegacyDeviceGeometry(context)
         val prefs = context.getSharedPreferences("vision_calibration_prefs", Context.MODE_PRIVATE)
         val prefix = "profile_${deviceModelKey()}_${profileKey}_"
         prefs.edit().apply {
@@ -325,15 +325,17 @@ VisionCalibrationConfig(
         private fun deviceModelKey(): String =
             "${android.os.Build.MANUFACTURER}:${android.os.Build.MODEL}".lowercase(java.util.Locale.ROOT)
 
-        /** One-time opt-in requested by the owner of the NX789J reference phone.
+        /** One-time migration requested for the old Red Magic and POCO presets.
          * Forget old geometry, not accounts or future manual adjustments. The
          * normal viewport/ring alignment then handles this model like any other. */
         @Synchronized
-        private fun discardOldRedMagicGeometry(context: Context) {
+        private fun discardLegacyDeviceGeometry(context: Context) {
             val model=android.os.Build.MODEL.lowercase(java.util.Locale.ROOT).filter { it.isLetterOrDigit() }
-            if(model!="nx789j" && !model.startsWith("redmagic10")) return
+            val redMagic = model == "nx789j" || model.startsWith("redmagic10")
+            val poco = "pocox7pro" in model || "2412dpc0a" in model || "2412dpc0i" in model
+            if (!redMagic && !poco) return
             val prefs=context.getSharedPreferences("vision_calibration_prefs",Context.MODE_PRIVATE)
-            val marker="red_magic_adaptive_geometry_v1"
+            val marker=if(redMagic) "red_magic_adaptive_geometry_v1" else "poco_adaptive_geometry_v1"
             if(prefs.getBoolean(marker,false)) return
             val globals=setOf("nameBandScale","allyAvatarCenterX","enemyAvatarCenterX","avatarDiameterRatio",
                 "allyOcrMinX","allyOcrMaxX","enemyOcrMinX","enemyOcrMaxX","topAvatarYRatio",
@@ -359,7 +361,7 @@ VisionCalibrationConfig(
 
         /** Returns the capture-specific geometry, or null when this profile has not been calibrated. */
         internal fun loadProfileFromPrefs(context: Context, profileKey: String): VisionCalibrationConfig? {
-            discardOldRedMagicGeometry(context)
+            discardLegacyDeviceGeometry(context)
             val prefs = context.getSharedPreferences("vision_calibration_prefs", Context.MODE_PRIVATE)
             val scoped = "profile_${deviceModelKey()}_${profileKey}_"
             val legacy = "profile_${profileKey}_"
@@ -398,7 +400,7 @@ VisionCalibrationConfig(
         }
 
         internal fun hasCaptureProfiles(context: Context): Boolean {
-            discardOldRedMagicGeometry(context)
+            discardLegacyDeviceGeometry(context)
             val prefs = context.getSharedPreferences("vision_calibration_prefs", Context.MODE_PRIVATE)
             return prefs.all.keys.any { key ->
                 key.startsWith("profile_${deviceModelKey()}_") ||
@@ -407,19 +409,10 @@ VisionCalibrationConfig(
             }
         }
 
-        /** Measured normalized capture coordinates; saved individual adjustments take precedence. */
-        internal fun defaultsForDevice(manufacturer: String, model: String): VisionCalibrationConfig {
-            val device = "$manufacturer $model".lowercase(java.util.Locale.ROOT)
-            // POCO X7 Pro regional identifiers, including the global 2412DPC0AG.
-            val poco = "poco x7 pro" in device || "2412dpc0a" in device || "2412dpc0i" in device
-            return if (!poco) VisionCalibrationConfig() else VisionCalibrationConfig(
-                allyAvatarCenterX = .120f, enemyAvatarCenterX = .911f,
-                allySlotXRatios = List(5) { .120f }, enemySlotXRatios = List(5) { .911f },
-                allySlotYRatios = listOf(.184f, .320f, .454f, .592f, .728f),
-                enemySlotYRatios = listOf(.179f, .315f, .449f, .587f, .723f),
-                allySlotDiameterRatios = List(5) { .110f }
-            )
-        }
+        /** Shared starting geometry; viewport/rings determine the actual positions.
+         * No manufacturer/model may select hard-coded player coordinates. */
+        @Suppress("UNUSED_PARAMETER")
+        internal fun defaultsForDevice(manufacturer: String, model: String): VisionCalibrationConfig = VisionCalibrationConfig()
 
         fun resetToDefaults(context: Context): VisionCalibrationConfig {
             val prefs = context.getSharedPreferences("vision_calibration_prefs", Context.MODE_PRIVATE)
@@ -431,7 +424,7 @@ VisionCalibrationConfig(
         }
 
         fun loadFromPrefs(context: Context): VisionCalibrationConfig {
-            discardOldRedMagicGeometry(context)
+            discardLegacyDeviceGeometry(context)
             val prefs = context.getSharedPreferences("vision_calibration_prefs", Context.MODE_PRIVATE)
             val savedModel = prefs.getString("calibration_device_model", null)
             if (savedModel != null && savedModel != deviceModelKey()) {
@@ -439,27 +432,6 @@ VisionCalibrationConfig(
                 prefs.edit().clear().apply()
             }
             prefs.edit().putString("calibration_device_model", deviceModelKey()).apply()
-            if (!prefs.getBoolean("device_profile_checked", false)) {
-                val poco = defaultsForDevice(android.os.Build.MANUFACTURER, android.os.Build.MODEL)
-                val generic = VisionCalibrationConfig()
-                val untouched = (0..4).all { i ->
-                    prefs.getFloat("ally_slot_x_$i", generic.getAllySlotX(i)) == generic.getAllySlotX(i) &&
-                    prefs.getFloat("enemy_slot_x_$i", generic.getEnemySlotX(i)) == generic.getEnemySlotX(i) &&
-                    prefs.getFloat("ally_slot_y_$i", generic.allySlotYRatios[i]) == generic.allySlotYRatios[i] &&
-                    prefs.getFloat("enemy_slot_y_$i", generic.enemySlotYRatios[i]) == generic.enemySlotYRatios[i] &&
-                    prefs.getFloat("ally_slot_diam_$i", generic.getSlotDiameter(true, i)) == generic.getSlotDiameter(true, i) &&
-                    prefs.getFloat("enemy_slot_diam_$i", generic.getSlotDiameter(false, i)) == generic.getSlotDiameter(false, i)
-                }
-                if (poco != generic && untouched) {
-                    // Preserve existing ban adjustments while replacing only the player-column preset.
-                    val old = prefs.all.filterKeys { it.startsWith("ban_") }
-                    poco.saveToPrefs(context)
-                    prefs.edit().apply { old.forEach { (key, value) -> when(value) {
-                        is Float -> putFloat(key, value); is Boolean -> putBoolean(key, value)
-                    } }; apply() }
-                }
-                prefs.edit().putBoolean("device_profile_checked", true).apply()
-            }
             val version = prefs.getInt("calibration_version", 0)
             val default = defaultsForDevice(android.os.Build.MANUFACTURER, android.os.Build.MODEL)
 

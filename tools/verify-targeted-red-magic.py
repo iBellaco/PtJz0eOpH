@@ -1,4 +1,4 @@
-"""Run the two installed Red Magic regressions without shell heredoc parsing."""
+"""Run installed Red Magic and adaptive POCO image regressions (not physical tests)."""
 import subprocess
 
 
@@ -11,6 +11,7 @@ def main():
     methods = (
         'liveRedMagicCapturesWithMasteryBadgesAndViewerMasksFillTheActualHub',
         'reportedSlotsDoNotLoseSennaOrMalphiteAndFinishWithVisualRivalPick',
+        'pocoLegendaryReadsCurrentTitlesAfterAStaleSessionAndClearRemovesCrops',
     )
     for method in methods:
         result = subprocess.run(

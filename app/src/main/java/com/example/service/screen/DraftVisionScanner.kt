@@ -112,7 +112,8 @@ data class DraftScanResult(
     val statusMessage: String,
     val allyRolesBySlot: Map<Int, LaneRole> = emptyMap(),
     val observedTitleIds: Map<Int, String> = emptyMap(),
-    val ocrFailure: String? = null
+    val ocrFailure: String? = null,
+    val ocrRequestCount: Int = 0
 )
 
 object DraftVisionScanner {
@@ -620,6 +621,7 @@ object DraftVisionScanner {
         }
         val allChamps = WildRiftRepository.championSnapshot()
         var ocrFailure: String? = null
+        var ocrRequestCount = 0
         val auditList = mutableListOf<String>()
         val defaultRolesList = listOf(LaneRole.TOP, LaneRole.JUNGLE, LaneRole.MID, LaneRole.ADC, LaneRole.SUPPORT)
         val currentScanFrameOcrLanes = mutableMapOf<Int, LaneRole>()
@@ -672,6 +674,7 @@ object DraftVisionScanner {
                         val paint = android.graphics.Paint().apply { color = android.graphics.Color.BLACK }
                         exclusions.forEach { canvas.drawRect(it, paint) }
                     }
+                    ocrRequestCount++
                     recognizer.process(InputImage.fromBitmap(ocrBitmap, 0)).await()
                 } finally { if (ocrBitmap !== bitmap) ocrBitmap.recycle() }
             }
@@ -683,6 +686,7 @@ object DraftVisionScanner {
                 val detectedTitleLines=mutableMapOf<Pair<Boolean,Int>,MutableList<Rect>>()
                 val contextDonors=mutableMapOf<Pair<Boolean,Int>,Rect>()
                 suspend fun readTitles(input: DraftNameAtlas): com.google.mlkit.vision.text.Text {
+                ocrRequestCount++
                 val text = recognizer.process(InputImage.fromBitmap(input.bitmap,0)).await()
                 val lines = text.textBlocks.flatMap { it.lines }
                 for (tile in input.tiles) {
@@ -787,8 +791,7 @@ object DraftVisionScanner {
                     focusedAlternatives.forEach { if(!it.bitmap.isRecycled) it.bitmap.recycle() }
                     throw error
                 }
-                for((tile,bounds) in unresolved) {
-                    if(!unresolvedReading(tile)) continue
+                val measuredRetries = unresolved.filter { unresolvedReading(it.first) }.map { (tile,bounds) ->
                     // First use measured native text boxes. If the detector did
                     // not find a line, also isolate the calibrated title row;
                     // the untouched full band has already been read above.
@@ -800,23 +803,31 @@ object DraftVisionScanner {
                     // made recovery impossible. The full row stays available.
                     val candidates=if(detected.isNotEmpty()) detected.distinct().take(2)
                         else listOf(fallback)
-                    for(line in candidates) {
-                        if(!unresolvedReading(tile)) break
-                        val focused=DraftNameAtlas.focusDetectedLine(atlas,tile,line)
+                    tile to candidates
+                }
+                // Batch equal recovery stages across slots instead of waiting
+                // for up to four native requests per unresolved slot. Packing
+                // preserves every crop pixel, mask and title-row boundary.
+                // Keep both measured candidates and native-size recovery; no
+                // portrait may replace a missing title among picks 1–9.
+                for(candidateIndex in 0..1) {
+                    for(nativeSize in listOf(false,true)) {
+                        val inputs=mutableListOf<DraftNameAtlas>()
                         try {
-                            // Native evidence already reads MEL from the second
-                            // unscaled crop. Do not normalize away that evidence.
-                            readTitles(focused)
-                            // Short titles such as Vi can disappear at the
-                            // source crop size. The diagnostic path proved that
-                            // these same pixels become readable at native text
-                            // sizes; use that bounded recovery in production as
-                            // well, without inventing a champion identity.
-                            if (unresolvedReading(tile)) {
-                                val native = DraftNameAtlas.nativeTextSizes(focused, line.height())
-                                try { readTitles(native) } finally { native.bitmap.recycle() }
+                            for((tile,candidates) in measuredRetries) {
+                                if(!unresolvedReading(tile)) continue
+                                val line=candidates.getOrNull(candidateIndex) ?: continue
+                                val focused=DraftNameAtlas.focusDetectedLine(atlas,tile,line)
+                                if(nativeSize) {
+                                    try { inputs += DraftNameAtlas.nativeTextSizes(focused,line.height()) }
+                                    finally { focused.bitmap.recycle() }
+                                } else inputs += focused
                             }
-                        } finally { focused.bitmap.recycle() }
+                            if(inputs.isNotEmpty()) readAlternatives(inputs)
+                        } catch(error:Throwable) {
+                            inputs.forEach { if(!it.bitmap.isRecycled) it.bitmap.recycle() }
+                            throw error
+                        }
                     }
                 }
                 // Keep established OCR image sizes unchanged. Color separation is
@@ -1818,7 +1829,8 @@ object DraftVisionScanner {
             } + targetedEnemyReadings.mapIndexedNotNull { i, reading ->
                 reading.champion?.takeUnless { reading.ambiguous }?.let { (i + 5) to it.id }
             }).toMap(),
-            ocrFailure = ocrFailure
+            ocrFailure = ocrFailure,
+            ocrRequestCount = ocrRequestCount
         )
         } catch (t: CancellationException) {
             throw t

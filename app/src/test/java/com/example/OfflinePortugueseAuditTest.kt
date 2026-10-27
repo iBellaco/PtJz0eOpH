@@ -68,7 +68,8 @@ class OfflinePortugueseAuditTest {
         val defaultKeys = strings("values").keys
         for (directory in listOf("values-pt", "values-pt-rBR")) {
             val translated = strings(directory)
-            assertTrue("Missing Portuguese resources in $directory", translated.keys.containsAll(defaultKeys))
+            val missing = defaultKeys - translated.keys
+            assertTrue("Missing Portuguese resources in $directory: ${missing.sorted().joinToString()}", missing.isEmpty())
             translated.forEach { (key, value) ->
                 assertFalse("Mixed resource $directory/$key: $value", spanishResidue.containsMatchIn(value))
             }

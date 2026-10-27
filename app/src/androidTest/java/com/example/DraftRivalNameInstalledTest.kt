@@ -140,11 +140,9 @@ class DraftRivalNameInstalledTest {
             com.example.service.screen.TenthPickDiagnosticManager.setDiagnosticMode(ctx,true)
             hud.startAutomaticScan()
             assertTrue(scanner.debugVisualMatches.value.isEmpty())
-            scanner.updateCalibration(ctx,com.example.service.screen.VisionCalibrationConfig(
-                allyAvatarCenterX=.120f,enemyAvatarCenterX=.911f,
-                allySlotXRatios=List(5){.120f},enemySlotXRatios=List(5){.911f},
-                allySlotYRatios=listOf(.184f,.320f,.454f,.592f,.728f),
-                enemySlotYRatios=listOf(.179f,.315f,.449f,.587f,.723f)))
+            // Exercise production's shared geometry and ring alignment. A test
+            // must not restore the removed POCO-specific preset behind its back.
+            scanner.resetCalibration(ctx)
             fun physical(a:org.json.JSONArray)=android.graphics.Rect(
                 kotlin.math.floor(a.getInt(0)*2712/1280.0).toInt(),kotlin.math.floor(a.getInt(1)*1220/576.0).toInt(),
                 kotlin.math.ceil(a.getInt(2)*2712/1280.0).toInt(),kotlin.math.ceil(a.getInt(3)*1220/576.0).toInt())
