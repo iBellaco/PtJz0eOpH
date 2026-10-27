@@ -1,5 +1,5 @@
 import {FieldValue} from 'firebase-admin/firestore';
-import {allowedAccount, balance, cashRedemption, deadline, ensure, fingerprint, integer, premiumPurchase, sponsorPrice, validateInput, DAY} from './policy.mjs';
+import {allowedAccount, balance, cashRedemption, deadline, ensure, fingerprint, hasSponsorRole, integer, premiumPurchase, sponsorPrice, validateInput, DAY} from './policy.mjs';
 
 const serverTime = () => FieldValue.serverTimestamp();
 const adminActions = new Set(['REDEEM', 'RESOLVE', 'ADJUST', 'PREMIUM_GRANT', 'PREMIUM_REMOVE', 'ROLE', 'CLEANUP']);
@@ -160,7 +160,7 @@ export async function executeEconomy(db, auth, raw, clock = Date.now, {requested
         record = receipt(input.id, now, 'CREATOR_UNSUBSCRIBE', 'Suscripción a Creador retirada', '0 EN');
       }
     } else if (input.action === 'SPONSOR') {
-      ensure(admin || [account.role, account.secondaryRole].includes('patrocinador'), 'permission-denied', 'No tienes permisos para esta operación');
+      ensure(hasSponsorRole(account, admin), 'permission-denied', 'Tu cuenta no tiene el rol de patrocinador');
       const registry = await tx.get(db.doc('system_config/app_notices'));
       const active = (registry.get('notices') ?? []).filter(n => ['PUBLICIDAD', 'ADS'].includes((n.tag ?? '').toUpperCase()) && n.isApproved && n.isEnabled && (!n.expiresAtMillis || n.expiresAtMillis > now)).length;
       const price = sponsorPrice(input.notice, active);
