@@ -47,7 +47,7 @@ object EconomyServiceClient {
             if (error.code in setOf(FirebaseFunctionsException.Code.NOT_FOUND, FirebaseFunctionsException.Code.UNAVAILABLE, FirebaseFunctionsException.Code.DEADLINE_EXCEEDED)) null
             else {
                 if (admin) AdminDirectOperationIds.complete(commandKey)
-                throw IllegalStateException(error.message ?: appTr("No se pudo completar la operación. Vuelve a intentarlo."), error)
+                throw IllegalStateException(functionErrorMessage(error), error)
             }
         } catch (error: CancellationException) {
             throw error
@@ -125,6 +125,19 @@ object EconomyServiceClient {
         }
         check(AuthManager.getAuth()?.currentUser?.uid == user.uid) { appTr("Inicia sesión") }
         return result ?: throw EconomyPendingException()
+    }
+
+    private fun functionErrorMessage(error: FirebaseFunctionsException): String {
+        val detail = error.message?.trim().orEmpty()
+        if (detail.isNotBlank() && !detail.equals(error.code.name, ignoreCase = true)) return detail
+        return when (error.code) {
+            FirebaseFunctionsException.Code.PERMISSION_DENIED -> appTr("Tu cuenta no tiene permiso para publicar anuncios.")
+            FirebaseFunctionsException.Code.FAILED_PRECONDITION -> appTr("La publicación cambió o no cumple las condiciones actuales. Revisa el costo y los datos del anuncio.")
+            FirebaseFunctionsException.Code.INVALID_ARGUMENT -> appTr("El anuncio contiene datos inválidos. Revisa título, descripción, duración y enlaces.")
+            FirebaseFunctionsException.Code.ALREADY_EXISTS -> appTr("Este anuncio ya fue enviado. Revisa tus anuncios pendientes antes de repetirlo.")
+            FirebaseFunctionsException.Code.RESOURCE_EXHAUSTED -> appTr("No hay suficientes esencias azules para publicar este anuncio.")
+            else -> appTr("No se pudo completar la operación. Código: ${error.code.name}.")
+        }
     }
 
 }

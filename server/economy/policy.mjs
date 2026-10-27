@@ -21,6 +21,13 @@ export function allowedAccount(account, deletion) {
   ensure(account && !account.banned && ![account.role, account.secondaryRole].includes('banned'), 'permission-denied', 'Cuenta suspendida');
   ensure(!['PENDING', 'PROCESSING', 'DATA_PURGED', 'COMPLETED'].includes(deletion?.status), 'failed-precondition', 'La cuenta tiene una solicitud de eliminación');
 }
+export function hasSponsorRole(account, admin = false) {
+  if (admin) return true;
+  return [account?.role, account?.secondaryRole]
+    .filter(value => typeof value === 'string')
+    .map(value => value.trim().toLowerCase())
+    .some(value => value === 'patrocinador' || value === 'patrocinio' || value === 'sponsor');
+}
 export function balance(account, currency) {
   ensure(['BLUE', 'ORANGE'].includes(currency), 'invalid-argument', 'Moneda no válida');
   return integer(account[currency === 'BLUE' ? 'blueEssence' : 'orangeEssence'] ?? 0);
