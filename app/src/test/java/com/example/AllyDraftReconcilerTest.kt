@@ -9,6 +9,15 @@ import org.junit.Assert.assertNull
 import org.junit.Test
 
 class AllyDraftReconcilerTest {
+    @Test fun unknownJungleCannotMoveAnObservedDragonLaneInAnyScreenSlot() {
+        for (adc in 0..4) for (jungle in 0..4) {
+            if (adc == jungle) continue
+            val observed = mapOf(adc to LaneRole.ADC, jungle to LaneRole.JUNGLE)
+            assertEquals(observed, AllyDraftReconciler.observedRoles(emptyMap(), observed))
+            assertEquals(mapOf(adc to LaneRole.ADC),
+                AllyDraftReconciler.observedRoles(mapOf(adc to LaneRole.ADC), emptyMap()))
+        }
+    }
     private val senna = Champion(id = "senna", name = "Senna", primaryRole = LaneRole.SUPPORT, secondaryRoles = listOf(LaneRole.ADC))
     private val sett = Champion(id = "sett", name = "Sett", primaryRole = LaneRole.TOP)
     private val smolder = Champion(id = "smolder", name = "Smolder", primaryRole = LaneRole.ADC)

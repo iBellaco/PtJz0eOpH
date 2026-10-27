@@ -24,7 +24,7 @@ internal class BannedPortraitScanner {
                            exclusions: List<Rect> = emptyList(), config: VisionCalibrationConfig = VisionCalibrationConfig(),
                            pickedIds: Set<String> = emptySet(), isCurrent: () -> Boolean = { true }): Set<String> {
         val capturedRevision = synchronized(this) {
-            if (!isCurrent() || bitmap.isRecycled || bitmap.width < bitmap.height || nowMs - lastScanAt < 1500L ||
+            if (!isCurrent() || bitmap.isRecycled || bitmap.width < bitmap.height || nowMs - lastScanAt < 250L ||
                 slots.all { it.state == BanState.CONFIRMED }) return confirmedIds()
             lastScanAt = nowMs
             revision
