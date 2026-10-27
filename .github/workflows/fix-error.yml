@@ -29,6 +29,8 @@ on:
       - 'app/src/test/resources/scanner/targeted-sequence-plan.json'
       - 'tools/verify-draft-sequence-device.py'
       - 'tools/verify-targeted-red-magic.py'
+      - 'tools/verify-draft-rival-names-device.py'
+      - 'tools/test_draft_rival_device.py'
       - 'tools/scanner-sequence-plan.py'
       - 'tools/scanner-sequence-summary.py'
       - 'tools/test_scanner_sequence_audit.py'
@@ -53,6 +55,7 @@ jobs:
       - name: Comprobar portugués general y de Brasil
         run: |
           python3 -m unittest discover -s tools -p test_emulator_image.py
+          python3 -m unittest discover -s tools -p test_draft_rival_device.py
           python3 -m unittest discover -s .github/scripts -p test_localized_resources.py
           python3 .github/scripts/validate-localized-resources.py
 
@@ -206,6 +209,9 @@ jobs:
           - suite: xiaomi-secuencia-completa
             preflight: 'false'
             targets: 'sequence-42-ally-first'
+          - suite: espanol-instalado
+            preflight: 'false'
+            targets: ''
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-java@v5
@@ -272,6 +278,7 @@ jobs:
           COACH_SEQUENCE_PREFLIGHT: ${{ matrix.preflight }}
           COACH_SEQUENCE_TARGETS: ${{ matrix.targets }}
           COACH_SEQUENCE_BUILD_TYPE: release
+          COACH_ISOLATED_SUITE: ${{ matrix.suite }}
         with:
           api-level: 34
           arch: x86_64
@@ -280,6 +287,7 @@ jobs:
           emulator-boot-timeout: 300
           emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
           script: |
+            if [ "$COACH_ISOLATED_SUITE" = "espanol-instalado" ]; then python3 tools/verify-account-deletion-device.py && python3 tools/verify-draft-rival-names-device.py && COACH_AUDIT_LANGUAGE=es python3 tools/audit-portuguese-device.py && python3 tools/verify-overlay-history-device.py; fi
             if [ "$COACH_SEQUENCE_PREFLIGHT" = "true" ]; then python3 tools/verify-targeted-red-magic.py; fi
             /usr/bin/env bash -c 'overall_status=0; for target_case in ${COACH_SEQUENCE_TARGETS//,/ }; do if ! COACH_SEQUENCE_TARGETS="$target_case" python3 tools/verify-draft-sequence-device.py; then overall_status=1; fi; done; exit "$overall_status"'
       - name: Conservar evidencia release de todos los errores conocidos
@@ -290,5 +298,6 @@ jobs:
           path: |
             app/build/reports/scanner-sequence-preflight/
             app/build/reports/scanner-sequence/
+            app/build/reports/spanish-device/
           if-no-files-found: warn
           retention-days: 14
