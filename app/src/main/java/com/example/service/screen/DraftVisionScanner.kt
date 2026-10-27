@@ -605,8 +605,10 @@ object DraftVisionScanner {
         currentActiveRole: LaneRole? = null,
         confirmedHudPicks: List<Champion> = emptyList(),
         detectBannedPortraits: Boolean = false,
-        namesOnly: Boolean = false
+        namesOnly: Boolean = false,
+        quickTitlePass: Boolean = false
     ): DraftScanResult {
+        require(!quickTitlePass || namesOnly) { "A bounded title pass cannot request full metadata" }
         if (bitmap.isRecycled || bitmap.width < bitmap.height) {
             return DraftScanResult(emptyList(), emptyList(), isSuccessful = false, statusMessage = "Orientación no horizontal")
         }
@@ -775,6 +777,11 @@ object DraftVisionScanner {
                     val retry = DraftNameAtlas.retryUnresolved(atlas,unresolved.map { it.first })
                     try { readTitles(retry) } finally { retry.bitmap.recycle() }
                 }
+                // Publish readable titles after at most two native requests on
+                // live frames. Empty enemy slots/background must not make every
+                // pick wait for the complete recovery chain. Periodic full scans
+                // retain every recovery below for difficult names and badges.
+                if (!quickTitlePass) {
                 // Keep the recovery bounded: the previous global multiscale pass
                 // created several large OCR requests per unresolved slot and made
                 // 640x360 hit the 60-second frame deadline. One shared page now
@@ -912,6 +919,7 @@ object DraftVisionScanner {
                             }
                         }
                     } finally { scene.bitmap.recycle() }
+                }
                 }
                 for (slot in 0..4) {
                     targetedEnemyChampions[slot] = targetedEnemyReadings[slot].let {
@@ -1134,7 +1142,8 @@ object DraftVisionScanner {
                         (height * (calib.allySlotYRatios[i] + 0.005f * calib.nameBandScale)).toInt())
                 detectedRoleInSlot = reading.lane
                 val stableTitle = titleConfirmation.observe(true, i,
-                    reading.champion?.id ?: reading.lane?.let { "lane:${it.name}" })
+                    reading.champion?.id ?: reading.lane?.let { "lane:${it.name}" },
+                    exhaustive = !quickTitlePass)
                 detectedChampInSlot = reading.champion.takeIf { stableTitle }
                 if (detectedRoleInSlot != null && (stableTitle || allySlotConfirmedChampions[i] == null)) {
                     currentScanFrameOcrLanes[i] = detectedRoleInSlot
@@ -1355,7 +1364,7 @@ object DraftVisionScanner {
                 }
 
                 detectedEnemyChamp = (targetedEnemyChampions[i] ?: detectedEnemyChamp).takeIf {
-                    titleConfirmation.observe(false, i, it?.id)
+                    titleConfirmation.observe(false, i, it?.id, exhaustive = !quickTitlePass)
                 }
 
                 // REGLAS ESTRICTAS DEL USUARIO:

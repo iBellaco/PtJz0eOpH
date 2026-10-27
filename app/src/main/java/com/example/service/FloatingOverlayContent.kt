@@ -414,7 +414,7 @@ internal fun FloatingOverlayContent(
                                     quickReadCount++
                                     val result=DraftVisionScanner.scanDraftFromBitmap(bitmap,context,
                                         if(state.isFirstPickManuallySelected) isFirstPick else null,activeRole,
-                                        confirmedHudPicks(),namesOnly=true)
+                                        confirmedHudPicks(),namesOnly=true,quickTitlePass=true)
                                     if(result.isSuccessful) withContext(Dispatchers.Main) {
                                         if(!autoScanEnabled) return@withContext
                                         if(result.detectedFirstPick!=null && !state.isFirstPickManuallySelected)

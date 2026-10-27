@@ -203,6 +203,9 @@ class DraftRivalNameInstalledTest {
     @Test fun SpanishLaneTitlesPersistThroughSelectionAndChampionTrades() = inspectAlliedTransition("es")
     @Test fun PortugueseLaneTitlesPersistThroughSelectionAndChampionTrades() = inspectAlliedTransition("pt")
 
+    @Test fun boundedLiveSpanishTitlesRememberLanesAndUpdateHub() = inspectAlliedTransition("es", quick = true)
+    @Test fun boundedLivePortugueseTitlesRememberLanesAndUpdateHub() = inspectAlliedTransition("pt", quick = true)
+
     @Test fun reportedAlliedNameBandsReadTheExactFiveChampions() {
         val instrumentation = InstrumentationRegistry.getInstrumentation()
         val catalog = listOf("yuumi", "jinx", "brand", "skarner", "pantheon").map { com.example.model.Champion(id = it, name = it) }
@@ -345,7 +348,7 @@ class DraftRivalNameInstalledTest {
         } finally { scanner.resetSlotMemory(); scanner.updateCalibration(context, original) }
     }
 
-    private fun inspectAlliedTransition(language: String) = kotlinx.coroutines.runBlocking {
+    private fun inspectAlliedTransition(language: String, quick: Boolean = false) = kotlinx.coroutines.runBlocking {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
         val scanner = com.example.service.screen.DraftVisionScanner
         val roles = listOf(com.example.model.LaneRole.JUNGLE, com.example.model.LaneRole.ADC,
@@ -353,6 +356,7 @@ class DraftRivalNameInstalledTest {
         val labels = if (language == "es") listOf("JUNGLA", "CALLE DEL DRAGÓN", "CALLE CENTRAL", "CALLE DEL BARÓN", "APOYO")
             else listOf("SELVA", "ROTA DO DRAGÃO", "ROTA DO MEIO", "ROTA DO BARÃO", "SUPORTE")
         val picks = listOf("yuumi", "senna", "brand", "skarner", "pantheon")
+        val hud = com.example.service.OverlayState()
         scanner.resetSlotMemory()
         fun frame(titles: List<String>): Bitmap = Bitmap.createBitmap(1920, 868, Bitmap.Config.ARGB_8888).apply {
             eraseColor(android.graphics.Color.BLACK)
@@ -374,32 +378,47 @@ class DraftRivalNameInstalledTest {
                 android.os.Bundle().apply { putString("stream", "\nDRAFT_NATIVE_FRAME: $language $phase $message\n") })
             progress("start")
             val bitmap = frame(titles)
+            val startedAt = android.os.SystemClock.elapsedRealtime()
+            suspend fun readFrame(): com.example.service.screen.DraftScanResult {
+                val result = kotlinx.coroutines.withTimeout(60_000L) {
+                    scanner.scanDraftFromBitmap(bitmap, context, true, com.example.model.LaneRole.TOP,
+                        namesOnly = quick, quickTitlePass = quick)
+                }
+                assertTrue("$language $phase: ${result.statusMessage}", result.isSuccessful)
+                if (quick) assertTrue("Live title requests=${result.ocrRequestCount}", result.ocrRequestCount in 1..2)
+                hud.syncScannedAllies(result)
+                return result
+            }
             return try {
-                var result = kotlinx.coroutines.withTimeout(60_000L) {
-                    scanner.scanDraftFromBitmap(bitmap, context, true, com.example.model.LaneRole.TOP)
-                }
+                var result = readFrame()
                 if (phase == "selection" || phase == "trade") {
-                    result = kotlinx.coroutines.withTimeout(60_000L) {
-                        scanner.scanDraftFromBitmap(bitmap, context, true, com.example.model.LaneRole.TOP)
-                    }
+                    if (phase == "selection") assertTrue("One frame cannot select", result.alliesBySlot.isEmpty())
+                    result = readFrame()
                 }
-                result.also { progress("done ${it.allyRolesBySlot} ${it.alliesBySlot.mapValues { entry -> entry.value.id }}") }
+                result.also { progress("done quick=$quick ms=${android.os.SystemClock.elapsedRealtime()-startedAt} " +
+                    "requests=${it.ocrRequestCount} ${it.allyRolesBySlot} ${it.alliesBySlot.mapValues { entry -> entry.value.id }}") }
             } finally { bitmap.recycle() }
         }
         try {
             val initial = scan("lanes", labels)
             assertEquals(roles.mapIndexed { index, role -> index to role }.toMap(), initial.allyRolesBySlot)
             assertTrue(initial.allies.isEmpty())
-            assertEquals(com.example.model.LaneRole.ADC, initial.userExplicitlyDetectedRole)
+            if (!quick) assertEquals(com.example.model.LaneRole.ADC, initial.userExplicitlyDetectedRole)
             val selected = scan("selection", picks.map { it.uppercase() })
-            picks.forEachIndexed { index, id -> assertEquals(id, selected.alliesByRole[roles[index]]?.id) }
-            assertEquals(com.example.model.LaneRole.ADC, selected.userExplicitlyDetectedRole)
+            picks.forEachIndexed { index, id ->
+                assertEquals(id, selected.alliesByRole[roles[index]]?.id)
+                val hudIndex = com.example.service.screen.AllyDraftReconciler.roles.indexOf(roles[index])
+                assertEquals("Observed lane must reach the Hub", id, hud.allies[hudIndex]?.id)
+            }
+            if (!quick) assertEquals(com.example.model.LaneRole.ADC, selected.userExplicitlyDetectedRole)
             val gap = scan("gap", List(5) { "" })
             assertEquals(selected.alliesByRole, gap.alliesByRole)
             val traded = scan("trade", listOf("SKARNER", "SENNA", "BRAND", "YUUMI", "PANTHEON"))
             assertEquals("skarner", traded.alliesByRole[com.example.model.LaneRole.JUNGLE]?.id)
             assertEquals("yuumi", traded.alliesByRole[com.example.model.LaneRole.TOP]?.id)
-            assertEquals(com.example.model.LaneRole.ADC, traded.userExplicitlyDetectedRole)
+            assertEquals("skarner", hud.allies[1]?.id)
+            assertEquals("yuumi", hud.allies[0]?.id)
+            if (!quick) assertEquals(com.example.model.LaneRole.ADC, traded.userExplicitlyDetectedRole)
         } finally { scanner.resetSlotMemory() }
     }
 

@@ -111,6 +111,8 @@ jobs:
             --tests com.example.SystemPermissionHelperTest \
             --tests com.example.EconomyRequestPolicyTest \
             --tests com.example.CoachRoutineRegressionTest \
+            --tests com.example.LiveTitleConfirmationTest \
+            --tests com.example.DraftStableTitlesTest \
             --tests com.example.AllyDraftReconcilerTest \
             --tests com.example.BannedPortraitScannerTest \
             --tests com.example.OfflinePortugueseAuditTest \

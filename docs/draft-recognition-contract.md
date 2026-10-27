@@ -38,6 +38,22 @@ cambian. Nunca usar el fondo ni el campeón central como identidad de un slot.
 
 ## Selecciones 1–9: solo texto
 
+Reconfirmado por el propietario el 27 de octubre de 2026: con el autoescáner
+activo, capturar primero las líneas de los cinco aliados. El mismo renglón
+pasa de línea a nombre completo del campeón; el invocador permanece debajo y
+la insignia de maestría puede preceder el título. Guardar la relación
+slot → línea durante toda la selección, también al intercambiar campeones.
+El rival no muestra línea: cualquier asignación rival es una estimación.
+Primero aliado implica décimo rival; primero rival implica décimo aliado.
+Esta regla es compartida por todos los dispositivos, sin presets por marca.
+
+Las pasadas rápidas del Hub usan como máximo dos solicitudes OCR nativas.
+La pasada periódica completa conserva todas las recuperaciones de texto.
+Una pasada rápida sin lectura no borra una candidatura pendiente de recuperación
+completa ni cuenta como confirmación. Una lectura distinta sí la reemplaza;
+dos fallos de lectura completa o el reinicio de selección eliminan la candidatura.
+Siempre hacen falta dos lecturas coincidentes en fotogramas distintos.
+
 Leer el título completo del campeón en su banda, sin coincidencias de subcadenas
 ni abreviaturas. Una insignia de maestría puede precederlo. El nombre de invocador
 está debajo: incluso si coincide con un campeón, no es el título seleccionado.
