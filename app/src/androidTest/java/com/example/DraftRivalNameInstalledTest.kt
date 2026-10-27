@@ -245,8 +245,19 @@ class DraftRivalNameInstalledTest {
                 "roles=${selected.allyRolesBySlot}; status=${selected.statusMessage}",
                 "malphite", selected.alliesBySlot[3]?.id)
             assertNull("Lane title must not select the Akshan preview", selected.alliesBySlot[4])
-            assertEquals("malphite", selected.alliesByRole[com.example.model.LaneRole.TOP]?.id)
-            assertEquals("senna", selected.alliesByRole[com.example.model.LaneRole.ADC]?.id)
+            // This fixture starts after these players picked: their lane titles
+            // were never observed. Keep their identities in screen slots, but
+            // do not invent TOP/ADC from champion affinity (Senna is a flex pick).
+            for (slot in listOf(0, 3)) {
+                val observedRole = selected.allyRolesBySlot[slot]
+                if (observedRole != null) {
+                    assertEquals(selected.alliesBySlot[slot]?.id,
+                        selected.alliesByRole[observedRole]?.id)
+                } else {
+                    assertFalse("An unobserved lane must not be filled by champion affinity",
+                        selected.alliesByRole.values.any { it.id == selected.alliesBySlot[slot]?.id })
+                }
+            }
             // Final turn: ninth player is now selected; final rival has portrait but no title.
             val config = scanner.calibrationConfig
             val canvas = android.graphics.Canvas(bitmap)
