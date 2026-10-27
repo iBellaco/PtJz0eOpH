@@ -31,6 +31,9 @@ on:
       - 'tools/verify-targeted-red-magic.py'
       - 'tools/verify-draft-rival-names-device.py'
       - 'tools/test_draft_rival_device.py'
+      - 'tools/verify-account-deletion-device.py'
+      - 'tools/test_account_deletion_device.py'
+      - 'app/src/androidTest/java/com/example/AccountDeletionInstalledTest.kt'
       - 'tools/scanner-sequence-plan.py'
       - 'tools/scanner-sequence-summary.py'
       - 'tools/test_scanner_sequence_audit.py'
@@ -56,6 +59,7 @@ jobs:
         run: |
           python3 -m unittest discover -s tools -p test_emulator_image.py
           python3 -m unittest discover -s tools -p test_draft_rival_device.py
+          python3 -m unittest discover -s tools -p test_account_deletion_device.py
           python3 -m unittest discover -s .github/scripts -p test_localized_resources.py
           python3 .github/scripts/validate-localized-resources.py
 
@@ -287,7 +291,7 @@ jobs:
           emulator-boot-timeout: 300
           emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
           script: |
-            if [ "$COACH_ISOLATED_SUITE" = "espanol-instalado" ]; then python3 tools/verify-account-deletion-device.py && python3 tools/verify-draft-rival-names-device.py && COACH_AUDIT_LANGUAGE=es python3 tools/audit-portuguese-device.py && python3 tools/verify-overlay-history-device.py; fi
+            if [ "$COACH_ISOLATED_SUITE" = "espanol-instalado" ]; then for attempt in 1 2 3; do COACH_ACCOUNT_DELETION_ATTEMPT="$attempt" python3 tools/verify-account-deletion-device.py || exit 1; done; python3 tools/verify-draft-rival-names-device.py && COACH_AUDIT_LANGUAGE=es python3 tools/audit-portuguese-device.py && python3 tools/verify-overlay-history-device.py; fi
             if [ "$COACH_SEQUENCE_PREFLIGHT" = "true" ]; then python3 tools/verify-targeted-red-magic.py; fi
             /usr/bin/env bash -c 'overall_status=0; for target_case in ${COACH_SEQUENCE_TARGETS//,/ }; do if ! COACH_SEQUENCE_TARGETS="$target_case" python3 tools/verify-draft-sequence-device.py; then overall_status=1; fi; done; exit "$overall_status"'
       - name: Conservar evidencia release de todos los errores conocidos
