@@ -5,6 +5,13 @@ import org.junit.Assert.*
 import org.junit.Test
 
 class EconomyRequestPolicyTest {
+    @Test fun personalSponsorSubmissionCanFallBackForStaffWithoutQueuingPrivilegedCommands() {
+        assertTrue(EconomyRequestPolicy.canQueue("SPONSOR", administrator = true))
+        assertTrue(EconomyRequestPolicy.canQueue("SPONSOR", administrator = false))
+        for (action in listOf("ADJUST", "ROLE", "PREMIUM_GRANT", "PREMIUM_REMOVE", "RESOLVE", "REDEEM", "CLEANUP")) {
+            assertFalse(action, EconomyRequestPolicy.canQueue(action, administrator = true))
+        }
+    }
     @Test fun retriesReuseOnlyTheSameMeaning() {
         val existing = mapOf("id" to "old", "action" to "ROLE", "uid" to "a", "role" to "free")
         assertTrue(EconomyRequestPolicy.sameCommand(existing, existing + ("id" to "new")))

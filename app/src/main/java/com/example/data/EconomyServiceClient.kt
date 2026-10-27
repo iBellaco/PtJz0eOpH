@@ -58,9 +58,9 @@ object EconomyServiceClient {
             if (result["ok"] == true) return result
             throw IllegalStateException(appTr("No se pudo completar la operación. Vuelve a intentarlo."))
         }
-        // Administrative commands must either complete directly or report a recoverable error.
-        // Never enqueue a privileged command behind the five-minute worker.
-        check(token.claims["admin"] != true) {
+        // Personal advertisements may use the trusted queue even for staff accounts.
+        // Privileged administration commands still require the direct service.
+        check(EconomyRequestPolicy.canQueue(action, admin)) {
             appTr("No se pudo completar la operación. Vuelve a intentarlo.")
         }
         // The direct service is optional during migration. Keep the private queue as a
@@ -75,10 +75,10 @@ object EconomyServiceClient {
                         val same = EconomyRequestPolicy.sameCommand(pending, payload)
                         Triple(current.getString("operationId") ?: "", !same, current.getString("status") == "REVIEW")
                     } else {
-                        tx.set(ref, mapOf("userId" to user.uid, "operationId" to id, "payload" to payload,
+                        tx.set(ref, mapOf("userId" to user.uid, "operationId" to directId, "payload" to payload,
                             "status" to "PENDING", "schema" to 2, "createdAt" to FieldValue.serverTimestamp(),
                             "authTime" to ((token.claims["auth_time"] as? Number)?.toLong() ?: 0L)))
-                        Triple(id, false, false)
+                        Triple(directId, false, false)
                     }
                 }.await()
             } ?: throw EconomyPendingException()
@@ -124,7 +124,9 @@ object EconomyServiceClient {
             }
         }
         check(AuthManager.getAuth()?.currentUser?.uid == user.uid) { appTr("Inicia sesión") }
-        return result ?: throw EconomyPendingException()
+        if (result == null) throw EconomyPendingException()
+        if (admin) AdminDirectOperationIds.complete(commandKey)
+        return result
     }
 
     private fun functionErrorMessage(error: FirebaseFunctionsException): String {
