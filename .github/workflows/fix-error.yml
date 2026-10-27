@@ -110,6 +110,9 @@ jobs:
             --tests com.example.DraftRingAlignmentTest \
             --tests com.example.SystemPermissionHelperTest \
             --tests com.example.EconomyRequestPolicyTest \
+            --tests com.example.CoachRoutineRegressionTest \
+            --tests com.example.AllyDraftReconcilerTest \
+            --tests com.example.BannedPortraitScannerTest \
             --tests com.example.OfflinePortugueseAuditTest \
             --tests com.example.ChampionNameResolverCoverageTest \
             --max-workers=1 --stacktrace --no-daemon

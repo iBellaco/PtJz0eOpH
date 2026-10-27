@@ -9,10 +9,13 @@ class CoachRoutineRegressionTest {
     @Test fun `metadata leaves time for fast title frames even after a slow scan`() {
         assertFalse(DraftSyncCadence.metadataDue(1000,1000))
         assertFalse(DraftSyncCadence.metadataDue(2499,1000))
-        assertTrue(DraftSyncCadence.metadataDue(2500,1000))
+        assertFalse(DraftSyncCadence.metadataDue(2500,1000))
+        assertFalse(DraftSyncCadence.metadataDue(6999,1000))
+        assertTrue(DraftSyncCadence.metadataDue(7000,1000))
         // A slow scan finishes at 5000, so title frames have the next interval.
         assertFalse(DraftSyncCadence.metadataDue(5001,5000))
-        assertTrue(DraftSyncCadence.metadataDue(6500,5000))
+        assertFalse(DraftSyncCadence.metadataDue(6500,5000))
+        assertTrue(DraftSyncCadence.metadataDue(11000,5000))
     }
     @Test fun `CPM respects thousands fractional rates and invalid inputs`() {
         assertEquals(3.75, CpmPolicy.revenue(1500, 2.50), 0.0001)

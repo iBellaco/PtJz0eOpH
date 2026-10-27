@@ -236,6 +236,8 @@ object DraftVisionScanner {
 
     suspend fun scanActiveSlotDirectly(bitmap: Bitmap, turn: DraftPickTurn, context: Context? = null, confirmedHudPicks: List<Champion> = emptyList()): ScannedSlotInfo? {
         if (turn.turnNumber == 10) {
+            if (DraftPickOrderPolicy.tenthSideFromTitles(
+                    allySlotNameConfirmed.toList(), enemySlotNameConfirmed.toList()) != turn.isAlly) return null
             val w = bitmap.width
             val h = bitmap.height
             val calib = configForFrame(bitmap)
@@ -1633,7 +1635,7 @@ object DraftVisionScanner {
             slotIndex = tenthSlotIndex,
             context = context,
             confirmedTargetChampion = targetSlot.champion?.takeIf { targetNameConfirmed },
-            allowVisualConfirmation = !tenthIsAlly || currentScanFrameOcrLanes[tenthSlotIndex] == null || otherPicks.size >= 9
+            allowVisualConfirmation = missingTenthSide == tenthIsAlly
         )
 
         if (liteRTDecision != null && confirmedPicksCount >= 9) {
@@ -1681,12 +1683,9 @@ object DraftVisionScanner {
 
         try { tenthCrop?.recycle() } catch (_: Throwable) {}
         
-        // Observed or remembered lane titles are authoritative. If a capture
-        // starts after some players already selected, complete only the still
-        // unknown slots deterministically from champion affinity; never move
-        // or overwrite an OCR-observed lane.
-        val resolvedAlliedRoles = AllyDraftReconciler.resolveRoles(
-            allySlots.mapNotNull { slot -> slot.champion?.let { slot.slotIndex to it } }.toMap(),
+        // Allied lanes require slot-local evidence. Champion affinity is not
+        // evidence of the player's assigned lane, especially for flex picks.
+        val resolvedAlliedRoles = AllyDraftReconciler.observedRoles(
             allySlotOcrLaneCache,
             allySlotRolesCache
         )

@@ -105,7 +105,7 @@ class BannedPortraitScannerTest {
         val scanner = BannedPortraitScanner()
         try {
             scanner.scan(bitmap, context, 0)
-            val ids = scanner.scan(bitmap, context, 1500)
+            val ids = scanner.scan(bitmap, context, 250)
             assertTrue("Poco bans=$ids", ids.containsAll(setOf("hwei", "varus", "kayn", "nocturne", "zyra", "norra", "k_sante")))
             assertFalse("Adjacent profile must not occupy a ban", "caitlyn" in ids)
             assertEquals(listOf("hwei","varus","kayn","nocturne",null),scanner.slots.filter { it.side==com.example.service.screen.BanSide.ALLY }.sortedBy {it.index}.map {it.championId})
