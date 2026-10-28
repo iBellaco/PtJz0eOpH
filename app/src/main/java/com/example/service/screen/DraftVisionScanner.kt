@@ -536,6 +536,9 @@ object DraftVisionScanner {
         lastVisualPick = null
         slotLifecycle.reset()
         observedFirstPick = null
+        // Reset the viewer together with the internal order, including a new
+        // draft that retains bans. Otherwise it displays the previous tenth side.
+        isFirstPickState.value = null
         isLegendaryRankedCache = false
         cachedUserSlotIndex = null
         allySlotRolesCache.clear()
@@ -561,7 +564,6 @@ object DraftVisionScanner {
         debugTextRects = emptyList()
         showCalibrationBoxes.value = false
         isVisionEngineBusy.value = false
-        isFirstPickState.value = null
         updateFps(0f)
         framesSkippedCount.value = 0L
         lastProcessingDurationMs.value = 0L

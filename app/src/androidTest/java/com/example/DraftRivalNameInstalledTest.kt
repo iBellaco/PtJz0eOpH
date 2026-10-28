@@ -24,6 +24,25 @@ import org.junit.runner.RunWith
 /** Real pixels from the reported name bands, without account/player names. */
 @RunWith(AndroidJUnit4::class)
 class DraftRivalNameInstalledTest {
+    @Test fun slotResetClearsPublishedOrderForBothSidesEvenWhenKeepingBans() {
+        val scanner = com.example.service.screen.DraftVisionScanner
+        try {
+            for (previousFirstAlly in listOf(true, false)) {
+                for (preserveBans in listOf(false, true)) {
+                    scanner.isFirstPickState.value = previousFirstAlly
+                    scanner.resetSlotMemory(preserveBans = preserveBans)
+                    assertNull("Stale first=$previousFirstAlly, preserveBans=$preserveBans",
+                        scanner.isFirstPickState.value)
+                    scanner.resetSlotMemory(preserveBans = preserveBans)
+                    assertNull("Repeated reset must stay unknown", scanner.isFirstPickState.value)
+                }
+                scanner.isFirstPickState.value = previousFirstAlly
+                scanner.clearSessionState()
+                assertNull("Full session reset must also clear order", scanner.isFirstPickState.value)
+            }
+        } finally { scanner.resetSlotMemory() }
+    }
+
     @Test fun lateSennaUsesShiftedEmptyLanesAndInfersFirstPickWithoutBanner() = kotlinx.coroutines.runBlocking {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
         val scanner = com.example.service.screen.DraftVisionScanner
