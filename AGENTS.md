@@ -48,8 +48,7 @@ El orden jerárquico de los rangos para consejos tácticos es:
 11. Soberano
 
 ### Preferencias autorizadas de entrega
-- Fusionar automáticamente en `main` los cambios propios después de validar las comprobaciones y el APK; entregar un enlace directo al APK publicado sin pedir confirmación.
-- Mantener únicamente `main` (publicación del APK) y `coach-validacion` (validación) en GitHub.
+- Mantener únicamente `main`, `coach-validacion` y `fix-error`. Toda modificación empieza en `fix-error` con pruebas del arreglo concreto. Solo después de verde se integra en `coach-validacion` para la validación completa. El propietario hace manualmente el paso a `main`; el agente nunca lo fusiona automáticamente.
 - Conservar hasta 30 ejecuciones de GitHub Actions en total, reservando 15 para entregas y 15 para servicios, y hasta 30 releases.
 - Mantener español y portugués como únicos idiomas seleccionables. Revisar las pantallas y el contenido generado en portugués antes de entregar.
 - Después de cualquier modificación, por pequeña que sea, entregar siempre el APK ofuscado y un ZIP del proyecto mediante enlaces de descarga directos en la conversación, sin obligar al usuario a descargar desde GitHub. El ZIP del código fuente no incluye claves, credenciales ni archivos privados. El código fuente no se presenta como ofuscado. Publicar únicamente esos dos archivos en cada release.

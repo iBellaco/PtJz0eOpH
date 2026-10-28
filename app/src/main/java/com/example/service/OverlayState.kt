@@ -53,7 +53,10 @@ class OverlayState {
         scanner.resetSlotLifecycle()
         autoScanEnabled = true
     }
-    internal fun stopAutomaticScanIfComplete(confirmed: Boolean = false): Boolean {
+    internal fun stopAutomaticScanIfComplete(confirmed: Boolean = false, selectionEnded: Boolean = false): Boolean {
+        // Ten recognized portraits can still include a hover. Only the capture
+        // loop's sustained departure observation may close and persist the draft.
+        if (!selectionEnded || completedDraftLocked) return false
         val picks=(allies+enemies).filterNotNull()
         if ((!confirmed && trackedLastPick == null) || !autoScanEnabled || picks.size!=10 || picks.map {it.id}.distinct().size!=10) return false
         autoScanEnabled=false

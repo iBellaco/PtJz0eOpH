@@ -237,7 +237,6 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser? = nul
     var showStreamerPanel by remember { mutableStateOf(false) }
     var showSupportPanel by remember { mutableStateOf(false) }
     var showSponsorPanel by remember { mutableStateOf(false) }
-    var showSponsorModerationDialog by remember { mutableStateOf(false) }
     var showBuyEssenceDialog by remember { mutableStateOf(false) }
     var showRedemptionDialog by remember { mutableStateOf(false) }
     var showSignOutConfirm by remember { mutableStateOf(false) }
@@ -304,12 +303,6 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser? = nul
     if (showSponsorPanel) {
         com.example.ui.components.SponsorCpmPanelDialog(
             onDismiss = { showSponsorPanel = false }
-        )
-    }
-
-    if (showSponsorModerationDialog) {
-        com.example.ui.components.AdminSponsorModerationDialog(
-            onDismiss = { showSponsorModerationDialog = false }
         )
     }
 
@@ -1047,33 +1040,6 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser? = nul
                 }
                 Spacer(modifier = Modifier.height(10.dp))
 
-                // Panel de Moderador / Patrocinios (Solo para Administradores)
-                com.example.ui.components.HextechAnimatedButton(
-                    onClick = { showSponsorModerationDialog = true },
-                    backgroundBrush = androidx.compose.ui.graphics.Brush.horizontalGradient(
-                        listOf(Color(0xFFF97316), Color(0xFFEA580C))
-                    ),
-                    borderColor = com.example.ui.theme.HextechGold,
-                    glowColor = Color(0xFFF97316),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .heightIn(min = 52.dp),
-                    shape = RoundedCornerShape(12.dp),
-                    enableShimmer = true,
-                    enablePulse = true
-                ) {
-                    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center) {
-                        Icon(Icons.Default.Verified, contentDescription = null, tint = Color.White,
-                            modifier = Modifier.size(24.dp).testTag("moderator_panel_icon"))
-                        Text(text = tr("Panel de Moderador"),
-                            modifier = Modifier.padding(start = 8.dp).weight(1f, fill = false).testTag("moderator_panel_title"),
-                            textAlign = androidx.compose.ui.text.style.TextAlign.Center,
-                            color = Color.White, fontWeight = FontWeight.Bold)
-                        Spacer(Modifier.width(8.dp))
-                        com.example.ui.components.PanelNotificationBadge(notifications.count(com.example.data.NotificationPanel.SPONSOR_MODERATION), com.example.data.NotificationPanel.SPONSOR_MODERATION)
-                    }
-                }
             }
 
             Spacer(Modifier.height(12.dp))

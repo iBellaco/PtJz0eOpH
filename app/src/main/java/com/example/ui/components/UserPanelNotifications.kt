@@ -37,7 +37,6 @@ fun userPanelNotificationSummary(): PanelNotificationState {
     val secondary by SubscriptionManager.secondaryRole.collectAsStateWithLifecycle()
     val claim by AuthManager.isAdminClaim.collectAsStateWithLifecycle()
     val signedIn by AuthManager.isSignedIn.collectAsStateWithLifecycle()
-    val notices by AppNoticeManager.notices.collectAsStateWithLifecycle()
     val queues by PanelNotificationStore.queues.collectAsStateWithLifecycle()
     val read by PanelReadRepository.read.collectAsStateWithLifecycle()
     val versions by PanelReadRepository.versions.collectAsStateWithLifecycle()
@@ -47,10 +46,8 @@ fun userPanelNotificationSummary(): PanelNotificationState {
         onDispose { PanelNotificationStore.release(key) }
     }
     if (key.uid.isBlank()) return PanelNotificationState()
-    val sponsors = if (RolePanelAccess.isAdministrator(role, claim)) notices.filter {
-        (it.tag.equals("Publicidad", true) || it.sponsorEmail.isNotBlank()) && !it.isApproved
-    }.map { "notice:${it.id}" }.filterNot { PanelReadRepository.key(it) in read }.toSet() else emptySet()
-    return PanelNotificationPolicy.combine(unread, routes, queues.mapValues { (_, events) -> events.filterNot { PanelReadRepository.key(it, versions[it].orEmpty()) in read }.toSet() }, sponsors)
+    // Pending sponsorships come from the shared live queue, not stale local previews.
+    return PanelNotificationPolicy.combine(unread, routes, queues.mapValues { (_, events) -> events.filterNot { PanelReadRepository.key(it, versions[it].orEmpty()) in read }.toSet() }, emptySet())
 }
 
 @Composable

@@ -378,6 +378,16 @@ class DraftRivalNameInstalledTest {
             hud.applyConfirmedLastPick(ninth.copy(isLastPickConfirmed = true, isLastPickFinalized = true,
                 lastPickChampion = finalPortrait?.pickedChampion))
             assertEquals(10, (hud.allies + hud.enemies).filterNotNull().size)
+            assertTrue(hud.autoScanEnabled)
+            assertFalse(hud.autoSavePendingRequested)
+            val departure = com.example.service.screen.DraftSlotLifecycle()
+            departure.observe(true, true, 0)
+            departure.observe(false, true, 100)
+            departure.observe(false, true, 500)
+            assertEquals(com.example.service.screen.DraftSlotLifecycle.Observation.FINISHED,
+                departure.observe(false, true, 900))
+            assertTrue(hud.stopAutomaticScanIfComplete(selectionEnded = true))
+            assertTrue(hud.autoSavePendingRequested)
             assertFalse(hud.autoScanEnabled)
         } finally { bitmap.recycle(); scanner.resetSlotMemory(); scanner.updateCalibration(context, original) }
     }
