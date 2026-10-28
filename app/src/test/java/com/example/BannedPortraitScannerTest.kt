@@ -23,6 +23,13 @@ class BannedPortraitScannerTest {
     private val context get() = RuntimeEnvironment.getApplication()
     @Before fun prepare() { WildRiftRepository.initChampions(context, forceReload = true) }
 
+    @Test fun marginalCropScoreCannotReplaceAnAcceptedBanIdentity() {
+        assertFalse(com.example.service.screen.isClearlyStrongerBan(.8514074f, .83980703f))
+        assertFalse(com.example.service.screen.isClearlyStrongerBan(.89f, .81f))
+        assertFalse(com.example.service.screen.isClearlyStrongerBan(.94f, .92f))
+        assertTrue(com.example.service.screen.isClearlyStrongerBan(.94f, .81f))
+    }
+
     @Test fun fiveObservedCirclesKeepTheirMeasuredPositionsInsteadOfAnEvenlySpacedGrid() {
         val scanner = BannedPortraitScanner()
         val ids = listOf("camille", "vladimir", "karma", "lee_sin", "rammus")

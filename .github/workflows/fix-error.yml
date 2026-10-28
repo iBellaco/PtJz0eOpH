@@ -110,6 +110,7 @@ jobs:
               'com.example.DraftOrderUiTest',
               'com.example.DraftBanWorkerTest',
               'com.example.BannedPortraitScannerTest',
+              'com.example.PortraitMatcherTest',
               'com.example.CatalogBalanceTest',
               'com.example.RequiredItemCorrectionsTest',
               'com.example.ChampionBuildsCatalogValidationTest',
@@ -130,6 +131,23 @@ jobs:
           path: |
             app/build/test-results/testDebugUnitTest/
             app/build/reports/tests/testDebugUnitTest/
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Reproducir el baneo de Jhin en la captura reducida
+        run: |
+          ./gradlew :app:testDebugUnitTest \
+            --tests 'com.example.DraftMultiDeviceAuditTest.smallCapturePreservesJhinWhenPortraitsAndBansChange' \
+            --stacktrace --no-daemon --max-workers=1
+
+      - name: Conservar la regresión de la captura reducida
+        if: always()
+        uses: actions/upload-artifact@v5
+        with:
+          name: fix-error-small-capture-evidence
+          path: |
+            app/build/test-results/testDebugUnitTest/TEST-com.example.DraftMultiDeviceAuditTest.xml
+            app/build/reports/scanner-multidevice/
           if-no-files-found: warn
           retention-days: 14
 

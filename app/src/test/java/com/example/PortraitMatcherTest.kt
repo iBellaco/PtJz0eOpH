@@ -31,10 +31,10 @@ class PortraitMatcherTest {
 
     @Before fun prepare() {
         savedCatalog = WildRiftRepository.champions.toList()
-        WildRiftRepository.champions.clear()
-        context.assets.list("champions")!!.filter { it.endsWith(".png") }.forEach {
-            WildRiftRepository.champions.add(Champion(id = it.removeSuffix(".png"), name = it.removeSuffix(".png")))
-        }
+        // The HUD now estimates the complete enemy composition after the tenth
+        // pick. Identity-only objects default every champion to MID and cannot
+        // represent the expected Darius/Vi/Mel/Caitlyn/Milio lane assignment.
+        WildRiftRepository.initChampions(context, forceReload = true)
         LiteRTVisionClassifier.reset()
         LiteRTVisionClassifier.setThreshold(0.80f, context)
     }
@@ -71,8 +71,9 @@ class PortraitMatcherTest {
     }
 
     private fun ninePickState(finalIsAlly: Boolean): OverlayState {
-        val full = listOf("skarner", "pantheon", "brand", "jinx", "yuumi").map { Champion(id = it) }
-        val pending = listOf("darius", null, "mel", "caitlyn", "milio").map { it?.let { Champion(id = it) } }
+        fun champion(id: String) = WildRiftRepository.championSnapshot().single { it.id == id }
+        val full = listOf("skarner", "pantheon", "brand", "jinx", "yuumi").map(::champion)
+        val pending = listOf("darius", null, "mel", "caitlyn", "milio").map { it?.let(::champion) }
         return OverlayState().apply {
             (if (finalIsAlly) enemies else allies).apply { clear(); addAll(full) }
             (if (finalIsAlly) allies else enemies).apply { clear(); addAll(pending) }

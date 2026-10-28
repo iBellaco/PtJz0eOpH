@@ -119,7 +119,7 @@ internal class BannedPortraitScanner {
                         minOf(observation.similarity, old.similarity)))
                 slot.state == BanState.CONFIRMED && observation?.championId != null &&
                     observation.championId != slot.championId && old != null && observation.championId == old.championId &&
-                    minOf(observation.similarity, old.similarity) >= maxOf(.90f, slot.similarity + .05f) ->
+                    isClearlyStrongerBan(minOf(observation.similarity, old.similarity), slot.similarity) ->
                     slot.copy(region = observation.region, championId = observation.championId,
                         similarity = minOf(observation.similarity, old.similarity))
                 slot.state == BanState.CONFIRMED -> slot // Hidden/empty/weaker evidence cannot erase a ban.

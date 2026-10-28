@@ -9,6 +9,10 @@ internal data class BanObservation(val side: BanSide, val region: BanRegion,
 internal data class BanSlot(val side: BanSide, val index: Int, val region: BanRegion? = null,
     val championId: String? = null, val state: BanState = BanState.UNKNOWN, val similarity: Float = 0f)
 
+/** A nearby crop must not replace an accepted identity on a marginal score gain. */
+internal fun isClearlyStrongerBan(candidateScore: Float, previousScore: Float): Boolean =
+    candidateScore >= maxOf(.90f, previousScore + .05f)
+
 internal fun emptyBanSlots(): List<BanSlot> = BanSide.entries.flatMap { side ->
     List(5) { BanSlot(side, it) }
 }

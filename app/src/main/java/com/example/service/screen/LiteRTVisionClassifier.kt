@@ -399,9 +399,21 @@ object LiteRTVisionClassifier {
                 }
                 if (best.second > bestScore && PortraitMatcher.accepts(best.second,
                         ranked.getOrNull(1)?.second ?: 0f, DEFAULT_CONFIDENCE_THRESHOLD)) {
-                    bestScore = best.second
-                    refined = observation.copy(region = BanRegion(x.toFloat()/width, y.toFloat()/height,
-                        radius.toFloat()/height), championId = best.first.id, empty = false, similarity = best.second)
+                    // The shortlist is a search optimization, not the acceptance
+                    // boundary. Check every competing identity for this crop.
+                    val fullRanking = catalog.map { champion -> champion to
+                        PortraitMatcher.similarity(descriptor, championEmbeddingCache.getValue(champion.id))
+                    }.sortedByDescending { it.second }
+                    val candidate = fullRanking.first()
+                    val preservesIdentity = refined.championId == null || candidate.first.id == refined.championId
+                    if (candidate.second > bestScore &&
+                        (preservesIdentity || isClearlyStrongerBan(candidate.second, bestScore)) &&
+                        PortraitMatcher.accepts(candidate.second, fullRanking.getOrNull(1)?.second ?: 0f,
+                            DEFAULT_CONFIDENCE_THRESHOLD)) {
+                        bestScore = candidate.second
+                        refined = observation.copy(region = BanRegion(x.toFloat()/width, y.toFloat()/height,
+                            radius.toFloat()/height), championId = candidate.first.id, empty = false, similarity = candidate.second)
+                    }
                 }
             }
             val pending = unresolved.values.sortedByDescending { it.first }.take(4)
