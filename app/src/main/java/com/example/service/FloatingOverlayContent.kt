@@ -423,7 +423,6 @@ internal fun FloatingOverlayContent(
                                         syncAlliedHud(result)
                                         syncEnemyHud(result)
                                         commitLastPickToHud(result)
-                                        state.stopAutomaticScanIfComplete(result.isLastPickConfirmed)
                                     }
                                 } else if (!isGlobalSyncCycle && hasActiveTurns) {
                                     quickReadCount++
@@ -442,9 +441,7 @@ internal fun FloatingOverlayContent(
                                     if (detectedPicks.isNotEmpty()) {
                                         withContext(Dispatchers.Main) {
                                             if (!autoScanEnabled) return@withContext
-                                            var fastPicksAdded = 0
                                             for ((turn, champ) in detectedPicks) {
-                                                val before = (allies + enemies).count { it != null }
                                                 val scan = com.example.service.screen.DraftScanResult(
                                                     allies = allies.filterNotNull(), enemies = enemies.filterNotNull(),
                                                     isLastPickConfirmed = true,
@@ -458,16 +455,6 @@ internal fun FloatingOverlayContent(
                                                 if (state.trackedLastPick == (turn.isAlly to champ.id)) {
                                                     (if (turn.isAlly) DraftVisionScanner.allySlotConfirmedChampions
                                                      else DraftVisionScanner.enemySlotConfirmedChampions)[turn.slotIndex] = champ
-                                                }
-                                                if ((allies + enemies).count { it != null } > before) {
-                                                    fastPicksAdded++
-                                                }
-                                            }
-                                            if (fastPicksAdded > 0) {
-                                                val totalAllies = allies.filterNotNull().size
-                                                val totalEnemies = enemies.filterNotNull().size
-                                                if (totalAllies == 5 && totalEnemies == 5) {
-                                                    state.stopAutomaticScanIfComplete(com.example.service.screen.LiteRTVisionClassifier.reportFlow.value.isConfirmed)
                                                 }
                                             }
                                         }
@@ -521,7 +508,6 @@ internal fun FloatingOverlayContent(
                                             val finalAlliesPicked = allies.filterNotNull().size
                                             val finalEnemiesPicked = enemies.filterNotNull().size
                                             val isDraftFullyConfirmed = (finalAlliesPicked == 5 && finalEnemiesPicked == 5)
-                                            if(isDraftFullyConfirmed) state.stopAutomaticScanIfComplete(result.isLastPickConfirmed)
 
                                             if (result.userExplicitlyDetectedRole != null && activeRole != result.userExplicitlyDetectedRole) {
                                                 activeRole = result.userExplicitlyDetectedRole
