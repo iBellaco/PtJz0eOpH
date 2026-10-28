@@ -23,6 +23,25 @@ class BannedPortraitScannerTest {
     private val context get() = RuntimeEnvironment.getApplication()
     @Before fun prepare() { WildRiftRepository.initChampions(context, forceReload = true) }
 
+    @Test fun fiveObservedCirclesKeepTheirMeasuredPositionsInsteadOfAnEvenlySpacedGrid() {
+        val scanner = BannedPortraitScanner()
+        val ids = listOf("camille", "vladimir", "karma", "lee_sin", "rammus")
+        val centers = listOf(.07578125f, .11171875f, .14609376f, .19765624f, .23203126f)
+        val observations = ids.mapIndexed { index, id ->
+            com.example.service.screen.BanObservation(com.example.service.screen.BanSide.ALLY,
+                com.example.service.screen.BanRegion(centers[index], .052f, .03f), id, similarity = .92f)
+        }
+        // An incomplete first frame may establish a provisional grid. A full row
+        // must replace that geometry without dropping the wider-spaced last pair.
+        scanner.update(observations.take(3), 1280f / 579f)
+        repeat(2) { scanner.update(observations, 1280f / 579f) }
+        val allied = scanner.slots.filter { it.side == com.example.service.screen.BanSide.ALLY }
+        assertEquals(ids, allied.map { it.championId })
+        assertEquals(centers, allied.map { it.region!!.x })
+        scanner.update(emptyList(), 1280f / 579f)
+        assertEquals(ids, scanner.slots.take(5).map { it.championId })
+    }
+
     @Test fun strongerMelEvidenceCorrectsWeakSionOnlyAfterTwoNewFrames() {
         val scanner = BannedPortraitScanner()
         val region = com.example.service.screen.BanRegion(.9f, .05f, .03f)
@@ -240,6 +259,8 @@ class BannedPortraitScannerTest {
         assertTrue(scanner.scan(bitmap, context, 0).isEmpty())
         val bans = scanner.scan(bitmap, context, 1500)
         assertTrue(bans.toString(), bans.containsAll(setOf("camille", "vladimir", "karma", "lee_sin", "rammus", "ahri", "lillia", "taliyah")))
+        assertEquals(listOf("camille", "vladimir", "karma", "lee_sin", "rammus"),
+            scanner.slots.take(5).map { it.championId })
         assertEquals(report, LiteRTVisionClassifier.reportFlow.value)
         scanner.reset()
         assertTrue(scanner.scan(bitmap, context, 3000).isEmpty())

@@ -83,7 +83,12 @@ internal class BannedPortraitScanner {
             val seen = observations.filter { it.side == side }.sortedBy { it.region.x }
             if (seen.isEmpty()) continue
             val existing = current.filter { it.side == side }
-            val regions = if (existing.all { it.region != null }) existing.map { it.region!! } else {
+            // Five observed circles already define the five positions. Their
+            // spacing is not necessarily uniform (the POCO video header has a
+            // wider gap before Lee Sin); extrapolation can reject the last two
+            // portraits even after the classifier identified them correctly.
+            val regions = if (seen.size == 5) seen.map { it.region }
+                else if (existing.all { it.region != null }) existing.map { it.region!! } else {
                 // Learn horizontal spacing from visible neighbors, retaining missing positions.
                 val nominal = .080f * contentHeightRatio / aspect
                 val gaps = seen.zipWithNext { a, b -> b.region.x - a.region.x }
