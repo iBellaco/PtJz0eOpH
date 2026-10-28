@@ -361,7 +361,7 @@ fun AdminModeratorRequestsDialog(
                                             )
                                             if (type == "SPONSOR") {
                                                 Text(
-                                                    text = newValue.ifBlank { "Publicidad pendiente de revisión" },
+                                                    text = newValue.ifBlank { context.getString(com.example.R.string.sponsor_pending_review) },
                                                     color = TextPrimary,
                                                     fontSize = 11.sp,
                                                     maxLines = 3
