@@ -245,7 +245,7 @@ class RuntimeVisibilityTest(private val screen: String) {
             screen.startsWith("profile-admin") -> {
                 val panels = when (screen) {
                     "profile-admin-notifications" -> com.example.data.PanelNotificationState(com.example.data.NotificationPanel.entries.associateWith { setOf("event:${it.name}") })
-                    "profile-admin-large" -> com.example.data.PanelNotificationState(mapOf(com.example.data.NotificationPanel.SPONSOR_MODERATION to setOf("notice:local-pending")))
+                    "profile-admin-large" -> com.example.data.PanelNotificationState(mapOf(com.example.data.NotificationPanel.ADMINISTRATION to setOf("notice:local-pending")))
                     else -> com.example.data.PanelNotificationState()
                 }
                 AuthenticatedProfilePanel(user = null, panelNotifications = panels) {}
@@ -767,7 +767,7 @@ class RuntimeVisibilityTest(private val screen: String) {
                 val maximumGap = 16f * context.resources.displayMetrics.density
                 Assert.assertTrue("Moderator icon must sit beside its title: $icon $title", title.left >= icon.right && title.left - icon.right <= maximumGap)
                 compose.onNodeWithText("Solicitação pendente").assertDoesNotExist()
-                if (screen == "profile-admin-large") compose.onNodeWithTag("panel_notification_badge_SPONSOR_MODERATION", useUnmergedTree = true).assertExists()
+                if (screen == "profile-admin-large") compose.onNodeWithTag("panel_notification_badge_ADMINISTRATION", useUnmergedTree = true).assertExists()
                 inspect("role-buttons")
                 compose.onNodeWithText(appTr("Panel de Soporte y Moderación")).performScrollTo().performClick()
                 compose.onNodeWithText(appTr("Bandeja de Moderación")).assertExists()

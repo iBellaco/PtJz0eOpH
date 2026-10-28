@@ -1,7 +1,7 @@
 package com.example.data
 
 /** One event may be reachable from multiple panels, but is counted once in navigation. */
-enum class NotificationPanel { INBOX, HISTORY, CREATOR, STREAMER, ADMINISTRATION, SPONSOR_MODERATION, SUPPORT, SPONSOR, PLANS }
+enum class NotificationPanel { INBOX, HISTORY, CREATOR, STREAMER, ADMINISTRATION, SUPPORT, SPONSOR, PLANS }
 
 data class PanelNotificationState(val events: Map<NotificationPanel, Set<String>> = emptyMap()) {
     fun count(panel: NotificationPanel): Int = events[panel].orEmpty().size
@@ -28,7 +28,9 @@ object PanelNotificationPolicy {
         pendingSponsors: Set<String>): PanelNotificationState {
         val result = queues.mapValues { it.value.toMutableSet() }.toMutableMap()
         for (id in unread) for (panel in routes[id] ?: setOf(NotificationPanel.INBOX)) result.getOrPut(panel) { mutableSetOf() }.add(id)
-        result.getOrPut(NotificationPanel.SPONSOR_MODERATION) { mutableSetOf() }.addAll(pendingSponsors)
+        // Las solicitudes de patrocinio se revisan en el mismo buzón que las
+        // solicitudes de verificación, roles y streamers.
+        result.getOrPut(NotificationPanel.ADMINISTRATION) { mutableSetOf() }.addAll(pendingSponsors)
         return PanelNotificationState(result.mapValues { it.value.toSet() })
     }
 }

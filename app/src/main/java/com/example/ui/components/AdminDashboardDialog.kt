@@ -142,7 +142,6 @@ fun AdminDashboardDialog(
     var showCashRequests by remember { mutableStateOf(false) }
     var showDatabaseConsumptionDialog by remember { mutableStateOf(false) }
     var showModeratorActivityDialog by remember { mutableStateOf(false) }
-    var showSponsorModerationDialog by remember { mutableStateOf(false) }
     var showSponsorPanelDialog by remember { mutableStateOf(false) }
     var showModeratorRequestsDialog by remember { mutableStateOf(false) }
     var showOverlayAccessDialog by remember { mutableStateOf(false) }
@@ -213,10 +212,6 @@ fun AdminDashboardDialog(
     if (showModeratorActivityDialog) AdminModeratorActivityDialog(onDismiss = { showModeratorActivityDialog = false })
     if (showOverlayAccessDialog) AdminOverlayAccessDialog(onDismiss = { showOverlayAccessDialog = false })
 
-    if (showSponsorModerationDialog) {
-        AdminSponsorModerationDialog(onDismiss = { showSponsorModerationDialog = false })
-    }
-
     if (showSponsorPanelDialog) {
         SponsorCpmPanelDialog(onDismiss = { showSponsorPanelDialog = false })
     }
@@ -231,7 +226,6 @@ fun AdminDashboardDialog(
                 showCpmAnalyticsDialog -> showCpmAnalyticsDialog = false
                 showDatabaseConsumptionDialog -> showDatabaseConsumptionDialog = false
                 showModeratorActivityDialog -> showModeratorActivityDialog = false
-                showSponsorModerationDialog -> showSponsorModerationDialog = false
                 showSponsorPanelDialog -> showSponsorPanelDialog = false
                 showModeratorRequestsDialog -> showModeratorRequestsDialog = false
                 else -> onDismiss()
@@ -250,7 +244,6 @@ fun AdminDashboardDialog(
                 showNoticeConfigDialog -> showNoticeConfigDialog = false
                 showCpmAnalyticsDialog -> showCpmAnalyticsDialog = false
                 showDatabaseConsumptionDialog -> showDatabaseConsumptionDialog = false
-                showSponsorModerationDialog -> showSponsorModerationDialog = false
                 showSponsorPanelDialog -> showSponsorPanelDialog = false
                 showModeratorRequestsDialog -> showModeratorRequestsDialog = false
                 else -> onDismiss()

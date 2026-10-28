@@ -74,11 +74,13 @@ fun AdminModeratorRequestsDialog(
                             data["id"] = doc.id
                             combinedMap[doc.id] = data
                         }
-                        requests = combinedMap.values.sortedByDescending { (it["timestamp"] as? Number)?.toLong() ?: 0L }
+                        requests = requests.filter { it["requestType"] == "SPONSOR" } + combinedMap.values
+                            .sortedByDescending { (it["timestamp"] as? Number)?.toLong() ?: 0L }
                         isLoading = false
                     }
                     .addOnFailureListener {
-                        requests = combinedMap.values.sortedByDescending { (it["timestamp"] as? Number)?.toLong() ?: 0L }
+                        requests = requests.filter { it["requestType"] == "SPONSOR" } + combinedMap.values
+                            .sortedByDescending { (it["timestamp"] as? Number)?.toLong() ?: 0L }
                         isLoading = false
                     }
             }
@@ -91,7 +93,7 @@ fun AdminModeratorRequestsDialog(
                             data["id"] = doc.id
                             data
                         }.sortedByDescending { (it["timestamp"] as? Number)?.toLong() ?: 0L }
-                        requests = list
+                        requests = requests.filter { it["requestType"] == "SPONSOR" } + list
                         isLoading = false
                     }
                     .addOnFailureListener { e ->
@@ -101,8 +103,27 @@ fun AdminModeratorRequestsDialog(
             }
     }
 
+    fun loadSponsorRequests() {
+        db.collection("pending_sponsor_ads").whereEqualTo("isApproved", false).get()
+            .addOnSuccessListener { snap ->
+                val sponsorRequests = snap.documents.map { doc ->
+                    val data = doc.data?.toMutableMap() ?: mutableMapOf()
+                    data["id"] = doc.id
+                    data["requestType"] = "SPONSOR"
+                    data["status"] = "PENDIENTE"
+                    data["targetName"] = data["title"] as? String ?: "Publicidad"
+                    data["targetEmail"] = data["sponsorEmail"] as? String ?: ""
+                    data["newValue"] = data["content"] as? String ?: ""
+                    data["timestamp"] = (data["createdAt"] as? Number)?.toLong() ?: System.currentTimeMillis()
+                    data
+                }
+                requests = requests.filterNot { it["requestType"] == "SPONSOR" } + sponsorRequests
+            }
+    }
+
     LaunchedEffect(Unit) {
         loadRequests()
+        loadSponsorRequests()
     }
 
     val filtered = requests.filter { req ->
@@ -255,13 +276,22 @@ fun AdminModeratorRequestsDialog(
                                         Surface(
                                             color = when (type) {
                                                 "VERIFICATION" -> HextechCyan.copy(alpha = 0.15f)
+                                                "SPONSOR" -> Color(0xFFF97316).copy(alpha = 0.15f)
                                                 else -> HextechGold.copy(alpha = 0.15f)
                                             },
                                             shape = RoundedCornerShape(4.dp)
                                         ) {
                                             Text(
-                                                text = com.example.util.tr(if (type == "VERIFICATION") "VERIFICACIÓN" else "ROL SECUNDARIO"),
-                                                color = if (type == "VERIFICATION") HextechCyan else HextechGold,
+                                                text = com.example.util.tr(when (type) {
+                                                    "VERIFICATION" -> "VERIFICACIÓN"
+                                                    "SPONSOR" -> "PATROCINIO"
+                                                    else -> "ROL SECUNDARIO"
+                                                }),
+                                                color = when (type) {
+                                                    "VERIFICATION" -> HextechCyan
+                                                    "SPONSOR" -> Color(0xFFF97316)
+                                                    else -> HextechGold
+                                                },
                                                 fontSize = 9.sp,
                                                 fontWeight = FontWeight.ExtraBold,
                                                 modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
@@ -302,11 +332,18 @@ fun AdminModeratorRequestsDialog(
                                             verticalAlignment = Alignment.CenterVertically
                                         ) {
                                             Text(
-                                                text = tr("Cambio propuesto: "),
+                                                text = tr(if (type == "SPONSOR") "Anuncio: " else "Cambio propuesto: "),
                                                 color = TextMuted,
                                                 fontSize = 11.sp
                                             )
-                                            if (type == "VERIFICATION") {
+                                            if (type == "SPONSOR") {
+                                                Text(
+                                                    text = newValue.ifBlank { "Publicidad pendiente de revisión" },
+                                                    color = TextPrimary,
+                                                    fontSize = 11.sp,
+                                                    maxLines = 3
+                                                )
+                                            } else if (type == "VERIFICATION") {
                                                 val verifyVal = newValue.toBoolean()
                                                 Surface(
                                                     color = if (verifyVal) HextechCyan.copy(alpha = 0.12f) else DangerRed.copy(alpha = 0.12f),
@@ -344,7 +381,7 @@ fun AdminModeratorRequestsDialog(
 
                                     // Requested by
                                     Text(
-                                        text = com.example.util.tr("Solicitado por moderador: $requestedByName"),
+                                        text = com.example.util.tr(if (type == "SPONSOR") "Solicitado por patrocinador: $targetEmail" else "Solicitado por moderador: $requestedByName"),
                                         color = TextSecondary,
                                         fontSize = 11.sp,
                                         fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
@@ -360,10 +397,16 @@ fun AdminModeratorRequestsDialog(
                                             OutlinedButton(
                                                 onClick = {
                                                     val updateMap = mapOf<String, Any>("status" to "RECHAZADA")
-                                                    try { db.collection("support_reports").document(id).update(updateMap) } catch (_: Exception) {}
-                                                    try { db.collection("moderator_requests").document(id).update(updateMap) } catch (_: Exception) {}
+                                                    if (type == "SPONSOR") {
+                                                        try { db.collection("pending_sponsor_ads").document(id).delete() } catch (_: Exception) {}
+                                                        com.example.data.AppNoticeManager.rejectSponsorNotice(context, id)
+                                                    } else {
+                                                        try { db.collection("support_reports").document(id).update(updateMap) } catch (_: Exception) {}
+                                                        try { db.collection("moderator_requests").document(id).update(updateMap) } catch (_: Exception) {}
+                                                    }
                                                     Toast.makeText(context, com.example.util.appTr("Solicitud rechazada"), Toast.LENGTH_SHORT).show()
                                                     loadRequests()
+                                                    loadSponsorRequests()
                                                 },
                                                 modifier = Modifier.weight(1f),
                                                 colors = ButtonDefaults.outlinedButtonColors(contentColor = DangerRed),
@@ -379,7 +422,12 @@ fun AdminModeratorRequestsDialog(
                                                 onClick = {
                                                     val updateMap = mapOf<String, Any>("status" to "APROBADA")
                                                     // Apply change first
-                                                    if (type == "VERIFICATION") {
+                                                    if (type == "SPONSOR") {
+                                                        com.example.data.AppNoticeManager.approveSponsorNotice(context, id)
+                                                        Toast.makeText(context, com.example.util.appTr("Patrocinio aprobado y publicado"), Toast.LENGTH_SHORT).show()
+                                                        loadRequests()
+                                                        loadSponsorRequests()
+                                                    } else if (type == "VERIFICATION") {
                                                         val verifyVal = newValue.toBoolean()
                                                         updateUserVerification(context, targetUid, verifyVal) {
                                                             try { db.collection("support_reports").document(id).update(updateMap) } catch (_: Exception) {}
