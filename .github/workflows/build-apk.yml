@@ -390,7 +390,10 @@ jobs:
     needs: [find-validated-apk, catalog-validation]
     if: needs.find-validated-apk.outputs.run_id == ''
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    # Compile, focused regressions and the complete capture matrix share this
+    # budget. The full matrix exceeded the old 30-minute job limit; keep every
+    # case and allow the same bounded budget as core-and-rendered.
+    timeout-minutes: 60
     steps:
     - *id001
     - *id002

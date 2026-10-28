@@ -112,6 +112,7 @@ jobs:
               'com.example.BannedPortraitScannerTest',
               'com.example.PortraitMatcherTest',
               'com.example.CatalogBalanceTest',
+              'com.example.PortugueseGeneratedSurfaceTest',
               'com.example.RequiredItemCorrectionsTest',
               'com.example.ChampionBuildsCatalogValidationTest',
               'com.example.BuildCoachingRegressionTest',
@@ -131,6 +132,7 @@ jobs:
           path: |
             app/build/test-results/testDebugUnitTest/
             app/build/reports/tests/testDebugUnitTest/
+            app/build/reports/portuguese-rendered/
           if-no-files-found: warn
           retention-days: 14
 

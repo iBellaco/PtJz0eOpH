@@ -80,6 +80,23 @@ class PortugueseGeneratedSurfaceTest {
         println("PORTUGUESE_GENERATED_AUDIT: $profiles profiles; ${values.size} distinct texts")
     }
 
+    @Test fun `fallback item advice preserves authored language and current balance across switches`() {
+        val item = com.example.data.WildRiftItemsData.getItemById("fiendhunter_bolts")!!
+        for (language in listOf("es", "pt", "es")) {
+            AppLanguage.select(context, language)
+            val advice = SituationalItemAdvisor.getAdvice(item.name, language)
+            assertEquals(item.getLocalizedName(language), advice.name)
+            assertEquals(item.getLocalizedPassive(language), advice.purpose)
+            assertEquals(item.getLocalizedStats(language), advice.keyEffect)
+            assertTrue(advice.purpose, advice.purpose.contains("85%"))
+            assertTrue(advice.purpose, advice.purpose.contains("17,5%"))
+            if (language == "pt") {
+                assertTrue(advice.purpose, advice.purpose.contains("Vigília Noturna"))
+                assertFalse(advice.purpose, SpanishUiResidue.pattern.containsMatchIn(advice.purpose))
+            }
+        }
+    }
+
     @Test fun `duel plans reflect every champion kit and both photographed matchups differ`() {
         val champions = WildRiftRepository.champions
         val enemy = champions.first { it.id == "smolder" }
