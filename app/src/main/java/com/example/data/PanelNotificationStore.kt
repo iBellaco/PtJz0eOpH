@@ -84,6 +84,7 @@ object PanelNotificationStore {
                     }
                     listeners += db.collection("pending_sponsor_ads").whereEqualTo("isApproved", false).addSnapshotListener { snapshot, error ->
                         sponsorRequests = if (error == null) snapshot?.documents.orEmpty()
+                            .filter { SponsorReviewPolicy.pending(it.data.orEmpty()) }
                             .associate { "sponsor:${it.id}" to PanelReadRepository.revision(it.data.orEmpty()) } else emptyMap()
                         publishAdministration()
                     }

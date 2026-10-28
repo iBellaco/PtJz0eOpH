@@ -479,9 +479,10 @@ object DraftVisionScanner {
 
     fun resetSlotLifecycle() = slotLifecycle.reset()
 
-    fun observeSelectionSlots(bitmap: Bitmap, confirmedPicksCount: Int): DraftSlotLifecycle.Observation {
+    fun observeSelectionSlots(bitmap: Bitmap, confirmedPicksCount: Int,
+        nowMillis: Long = System.nanoTime() / 1_000_000): DraftSlotLifecycle.Observation {
         if (bitmap.isRecycled) return DraftSlotLifecycle.Observation.DISAPPEARING
-        if (bitmap.width < bitmap.height) return slotLifecycle.observe(false,confirmedPicksCount>=9)
+        if (bitmap.width < bitmap.height) return slotLifecycle.observe(false,confirmedPicksCount>=9, nowMillis)
         val config = configForFrame(bitmap)
         val visibleSlots = listOf(true, false).sumOf { isAlly ->
             (0..4).count { index ->
@@ -494,7 +495,7 @@ object DraftVisionScanner {
         }
         // One circular decoration in the loading screen is not a visible draft.
         val visible = visibleSlots >= 3
-        return slotLifecycle.observe(visible, confirmedPicksCount >= 9)
+        return slotLifecycle.observe(visible, confirmedPicksCount >= 9, nowMillis)
     }
 
     // Filtros de estabilización temporal (anti-parpadeo y anti-oscilación)

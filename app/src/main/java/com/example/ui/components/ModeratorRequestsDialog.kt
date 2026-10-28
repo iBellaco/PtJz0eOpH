@@ -35,6 +35,9 @@ import com.google.firebase.firestore.FirebaseFirestore
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import kotlinx.coroutines.launch
+import com.example.data.SponsorReviewPolicy
+import com.example.data.SponsorReviewRepository
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -49,6 +52,22 @@ fun AdminModeratorRequestsDialog(
     var showPayments by remember { mutableStateOf(false) }
     var showStreamers by remember { mutableStateOf(false) }
     var showHistory by remember { mutableStateOf(false) }
+    val reviewScope = rememberCoroutineScope()
+    var sponsorBusy by remember { mutableStateOf<Set<String>>(emptySet()) }
+
+    fun resolveSponsor(id: String, approve: Boolean) {
+        if (id in sponsorBusy) return
+        sponsorBusy = sponsorBusy + id
+        reviewScope.launch {
+            try {
+                SponsorReviewRepository.resolve(id, approve)
+                com.example.data.AppNoticeManager.syncFromCloud(context)
+                Toast.makeText(context, com.example.util.appTr(if (approve) "Anuncio aprobado y visible en el panel de anuncios" else "Solicitud rechazada"), Toast.LENGTH_SHORT).show()
+            } catch (_: Exception) {
+                Toast.makeText(context, context.getString(com.example.R.string.sponsor_review_error), Toast.LENGTH_LONG).show()
+            } finally { sponsorBusy = sponsorBusy - id }
+        }
+    }
 
     fun loadRequests() {
         isLoading = true
@@ -103,10 +122,14 @@ fun AdminModeratorRequestsDialog(
             }
     }
 
-    fun loadSponsorRequests() {
-        db.collection("pending_sponsor_ads").whereEqualTo("isApproved", false).get()
-            .addOnSuccessListener { snap ->
-                val sponsorRequests = snap.documents.map { doc ->
+    DisposableEffect(adminClaim) {
+        val listener = if (!adminClaim) null else db.collection("pending_sponsor_ads")
+            .whereEqualTo("isApproved", false).addSnapshotListener { snap, error ->
+                if (error != null) {
+                    Toast.makeText(context, context.getString(com.example.R.string.sponsor_review_error), Toast.LENGTH_LONG).show()
+                    return@addSnapshotListener
+                }
+                val sponsorRequests = snap?.documents.orEmpty().filter { SponsorReviewPolicy.pending(it.data.orEmpty()) }.map { doc ->
                     val data = doc.data?.toMutableMap() ?: mutableMapOf()
                     data["id"] = doc.id
                     data["requestType"] = "SPONSOR"
@@ -119,11 +142,11 @@ fun AdminModeratorRequestsDialog(
                 }
                 requests = requests.filterNot { it["requestType"] == "SPONSOR" } + sponsorRequests
             }
+        onDispose { listener?.remove() }
     }
 
     LaunchedEffect(Unit) {
         loadRequests()
-        loadSponsorRequests()
     }
 
     val filtered = requests.filter { req ->
@@ -398,16 +421,15 @@ fun AdminModeratorRequestsDialog(
                                                 onClick = {
                                                     val updateMap = mapOf<String, Any>("status" to "RECHAZADA")
                                                     if (type == "SPONSOR") {
-                                                        try { db.collection("pending_sponsor_ads").document(id).delete() } catch (_: Exception) {}
-                                                        com.example.data.AppNoticeManager.rejectSponsorNotice(context, id)
+                                                        resolveSponsor(id, false)
                                                     } else {
                                                         try { db.collection("support_reports").document(id).update(updateMap) } catch (_: Exception) {}
                                                         try { db.collection("moderator_requests").document(id).update(updateMap) } catch (_: Exception) {}
+                                                        Toast.makeText(context, com.example.util.appTr("Solicitud rechazada"), Toast.LENGTH_SHORT).show()
+                                                        loadRequests()
                                                     }
-                                                    Toast.makeText(context, com.example.util.appTr("Solicitud rechazada"), Toast.LENGTH_SHORT).show()
-                                                    loadRequests()
-                                                    loadSponsorRequests()
                                                 },
+                                                enabled = id !in sponsorBusy,
                                                 modifier = Modifier.weight(1f),
                                                 colors = ButtonDefaults.outlinedButtonColors(contentColor = DangerRed),
                                                 border = androidx.compose.foundation.BorderStroke(1.dp, DangerRed),
@@ -423,10 +445,7 @@ fun AdminModeratorRequestsDialog(
                                                     val updateMap = mapOf<String, Any>("status" to "APROBADA")
                                                     // Apply change first
                                                     if (type == "SPONSOR") {
-                                                        com.example.data.AppNoticeManager.approveSponsorNotice(context, id)
-                                                        Toast.makeText(context, com.example.util.appTr("Patrocinio aprobado y publicado"), Toast.LENGTH_SHORT).show()
-                                                        loadRequests()
-                                                        loadSponsorRequests()
+                                                        resolveSponsor(id, true)
                                                     } else if (type == "VERIFICATION") {
                                                         val verifyVal = newValue.toBoolean()
                                                         updateUserVerification(context, targetUid, verifyVal) {
@@ -442,6 +461,7 @@ fun AdminModeratorRequestsDialog(
                                                         }
                                                     }
                                                 },
+                                                enabled = id !in sponsorBusy,
                                                 modifier = Modifier.weight(1f),
                                                 colors = ButtonDefaults.buttonColors(containerColor = HextechGold, contentColor = HextechDarkBg),
                                                 shape = RoundedCornerShape(6.dp),

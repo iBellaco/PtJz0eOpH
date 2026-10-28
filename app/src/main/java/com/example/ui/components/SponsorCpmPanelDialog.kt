@@ -62,6 +62,30 @@ fun SponsorCpmPanelDialog(
     val authUser = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser
     val userEmail = authUser?.email ?: "patrocinador@coach.app"
     val coroutineScope = rememberCoroutineScope()
+    var remoteOwnAds by remember(authUser?.uid) { mutableStateOf<List<AppNotice>?>(null) }
+    var queuedTitle by remember(authUser?.uid) { mutableStateOf<String?>(null) }
+    DisposableEffect(authUser?.uid) {
+        val uid = authUser?.uid
+        val db = com.google.firebase.firestore.FirebaseFirestore.getInstance()
+        val ads = uid?.let { db.collection("pending_sponsor_ads").whereEqualTo("userId", it)
+            .addSnapshotListener { snapshot, error ->
+                if (error == null) remoteOwnAds = snapshot?.documents.orEmpty()
+                    .filter { it.getString("status") != "REFUNDED" }
+                    .map { com.example.data.SponsorReviewPolicy.notice(it.id, it.data.orEmpty()) }
+            }
+        }
+        val queue = uid?.let { db.collection("economy_requests").document(it)
+            .addSnapshotListener { snapshot, error ->
+                if (error == null) {
+                    val payload = snapshot?.get("payload") as? Map<*, *>
+                    queuedTitle = if (payload?.get("action") == "SPONSOR" && snapshot?.getString("status") in setOf("PENDING", "PROCESSING", "REVIEW"))
+                        (payload?.get("notice") as? Map<*, *>)?.get("title") as? String ?: ""
+                    else null
+                }
+            }
+        }
+        onDispose { ads?.remove(); queue?.remove() }
+    }
 
     val allNotices by AppNoticeManager.notices.collectAsState()
     val currentBlueEssence by com.example.util.SubscriptionManager.blueEssence.collectAsState()
@@ -110,12 +134,9 @@ fun SponsorCpmPanelDialog(
     val now = System.currentTimeMillis()
     val sevenDaysMillis = 7 * 24 * 60 * 60 * 1000L
 
-    val myNotices = remember(allNotices, userEmail, localPendingAds, now) {
-        val remoteAds = allNotices.filter { notice ->
-            val isPubTag = notice.tag.equals("Publicidad", ignoreCase = true) || notice.tag.equals("Ads", ignoreCase = true)
-            (notice.sponsorEmail.equals(userEmail, true) || (notice.sponsorEmail.isBlank() && isPubTag))
-        }
-        val localFiltered = localPendingAds.filter { it.sponsorEmail.equals(userEmail, true) || it.sponsorEmail.isBlank() }
+    val myNotices = remember(allNotices, userEmail, localPendingAds, remoteOwnAds, now) {
+        val remoteAds = remoteOwnAds ?: allNotices.filter { it.sponsorEmail.equals(userEmail, true) }
+        val localFiltered = if (remoteOwnAds != null) emptyList() else localPendingAds.filter { it.sponsorEmail.equals(userEmail, true) }
         val remoteAdIds = remoteAds.map { it.id }.toSet()
         val combined = remoteAds + localFiltered.filter { it.id !in remoteAdIds }
 
@@ -301,6 +322,10 @@ fun SponsorCpmPanelDialog(
                     .padding(20.dp)
             ) {
             PanelReadControl(com.example.data.NotificationPanel.SPONSOR)
+            queuedTitle?.let { title ->
+                Text(context.getString(com.example.R.string.sponsor_processing_notice, title),
+                    color = HextechGold, modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp))
+            }
                 // Header
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -345,6 +370,7 @@ fun SponsorCpmPanelDialog(
                             durationValueInput = "1"
                             showCreateDialog = true
                         },
+                        enabled = queuedTitle == null,
                         colors = ButtonDefaults.buttonColors(containerColor = HextechGold),
                         shape = RoundedCornerShape(8.dp)
                     ) {

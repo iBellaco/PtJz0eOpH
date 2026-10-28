@@ -41,8 +41,9 @@ class DraftSlotVisibilityTest {
                 drawColor(Color.BLACK)
                 drawBitmap(image, roi, roi, null)
             }
-            assertEquals(DISAPPEARING, scanner.observeSelectionSlots(departed, 9))
-            assertEquals(FINISHED, scanner.observeSelectionSlots(departed, 9))
+            assertEquals(DISAPPEARING, scanner.observeSelectionSlots(departed, 9, 100))
+            assertEquals(DISAPPEARING, scanner.observeSelectionSlots(departed, 9, 500))
+            assertEquals(FINISHED, scanner.observeSelectionSlots(departed, 9, 900))
         } finally {
             image.recycle(); departed.recycle()
             scanner.resetSlotLifecycle(); scanner.updateCalibration(context, original)
