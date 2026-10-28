@@ -554,7 +554,9 @@ object LiteRTVisionClassifier {
             isConfirmed = confirmed, stableFramesCount = frameStability.count,
             minConfidenceThreshold = threshold
         )
-        if (accepted && confirmedPicksCount >= 9) lastVisibleSelection = _reportFlow.value
+        // A single late classification must not replace the last stable portrait
+        // just because the next frame is already the loading screen.
+        if (confirmed) lastVisibleSelection = _reportFlow.value
         TenthPickDiagnosticManager.recordTenthPickCrop(cropCopy ?: cropBitmap, isAlly, slotIndex,
             stage = if (confirmed) "CONFIRMED" else "INFERENCE", candidateName = best.first.name,
             confidence = (best.second * 100).toInt(), similarityScore = best.second, context = context)

@@ -105,6 +105,14 @@ las pruebas secuenciales deben declarar qué etapas son simuladas.
 
 ## Baneos
 
+Actualización del propietario, 28 de octubre de 2026: un décimo retrato estable
+es provisional mientras los slots sigan visibles. Si cambia Sion por Gwen,
+reconfirmar el retrato en fotogramas distintos y sustituir solo ese slot.
+No detener ni guardar por alcanzar diez campeones. Cerrar tras ausencia sostenida
+de slots (al menos tres capturas válidas y 800 ms), usando el último retrato
+estable; un fotograma ambiguo no sustituye una identidad confirmada. Conservar
+las nueve selecciones previas y guardar una sola vez al cierre.
+
 Conservar las diez posiciones, aunque no se banee en alguna. Un círculo de
 omisión no es un campeón, y una observación desconocida no es un baneo confirmado.
 No desplazar los restantes para cerrar un hueco. No inventar identidades a partir

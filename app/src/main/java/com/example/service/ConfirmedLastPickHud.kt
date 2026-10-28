@@ -98,6 +98,6 @@ internal fun OverlayState.applyConfirmedLastPick(result: DraftScanResult) {
         (applied || previousId == champion.id || scannedTarget?.id == champion.id) &&
         ownTeam.any { it?.id == champion.id }) {
         trackedLastPick = result.tenthPickIsAlly to champion.id
-        stopAutomaticScanIfComplete(result.isLastPickConfirmed)
+        // Keep this preview replaceable until the selection screen disappears.
     }
 }

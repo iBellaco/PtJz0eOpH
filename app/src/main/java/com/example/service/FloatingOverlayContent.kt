@@ -407,6 +407,7 @@ internal fun FloatingOverlayContent(
                                                     isSuccessful = true, statusMessage = ""
                                                 ))
                                             }
+                                            state.stopAutomaticScanIfComplete(selectionEnded = true)
                                             autoScanEnabled = false
                                         }
                                     }
@@ -454,9 +455,11 @@ internal fun FloatingOverlayContent(
                                                     isSuccessful = true, statusMessage = ""
                                                 )
                                                 state.applyConfirmedLastPick(scan)
-                                                if ((allies + enemies).count { it != null } > before) {
+                                                if (state.trackedLastPick == (turn.isAlly to champ.id)) {
                                                     (if (turn.isAlly) DraftVisionScanner.allySlotConfirmedChampions
                                                      else DraftVisionScanner.enemySlotConfirmedChampions)[turn.slotIndex] = champ
+                                                }
+                                                if ((allies + enemies).count { it != null } > before) {
                                                     fastPicksAdded++
                                                 }
                                             }
