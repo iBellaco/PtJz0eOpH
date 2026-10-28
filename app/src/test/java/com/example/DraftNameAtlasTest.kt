@@ -19,6 +19,25 @@ import org.robolectric.annotation.GraphicsMode
 @Config(sdk = [34], application = Application::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class DraftNameAtlasTest {
+    @Test fun shiftedLaneBandsKeepSummonerRowsOutAndPreserveMasksAtDifferentSizes() {
+        for ((width, height) in listOf(1280 to 579, 1920 to 868, 2400 to 1080)) {
+            val config = VisionCalibrationConfig()
+            val source = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888).apply { eraseColor(Color.WHITE) }
+            val masked = AdaptiveScreenLayoutEngine.calculateAllyLaneRect(width, height, 4, config)
+            val atlas = DraftNameAtlas.createAllyLanes(source, config, listOf(masked), listOf(1, 2, 3, 4))
+            try {
+                assertTrue(atlas.tiles.all { it.ally && it.laneOnly && it.slot in 1..4 })
+                for (tile in atlas.tiles) {
+                    val title = AdaptiveScreenLayoutEngine.calculateSlotNameRect(width, height, true, tile.slot, config)
+                    assertTrue(tile.source.left < title.left)
+                    assertEquals(title.top, tile.source.top)
+                    assertEquals(title.bottom, tile.source.bottom)
+                    if (tile.slot == 4) assertEquals(Color.BLACK,
+                        atlas.bitmap.getPixel(tile.region.centerX(), tile.region.centerY()))
+                }
+            } finally { atlas.bitmap.recycle(); source.recycle() }
+        }
+    }
     @Test fun sceneContextIsBoundedAndExcludesTargetAndSummonerRows() {
         val frame = Bitmap.createBitmap(1920,889,Bitmap.Config.ARGB_8888)
         val config = VisionCalibrationConfig()

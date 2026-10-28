@@ -66,6 +66,9 @@ Antes del pick aliado, recordar la línea del mismo slot; después su título ca
 al campeón. No leer el invocador de debajo ni inferir la línea aliada por afinidad.
 La maestría puede preceder al título. Primero aliado → décimo rival; primero rival
 → décimo aliado. Aplicar la misma secuencia a todas las marcas.
+Los puestos aliados vacíos pueden desplazarse antes de aparecer los hechizos:
+leer también la banda previa de línea. Al iniciar tarde, cuatro líneas distintas
+permiten deducir la quinta; menos evidencia no permite adivinarla por campeón.
 
 ## 2. Protocolo de Lectura (Antes de Modificar)
 Antes de generar código o responder a un requerimiento, el agente debe seguir estos pasos de lectura:

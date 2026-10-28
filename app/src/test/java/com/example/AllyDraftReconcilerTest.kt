@@ -9,6 +9,17 @@ import org.junit.Assert.assertNull
 import org.junit.Test
 
 class AllyDraftReconcilerTest {
+    @Test fun lateSennaBelongsToTheOnlyLaneMissingFromFourOtherSlots() {
+        val visible = mapOf(1 to LaneRole.SUPPORT, 2 to LaneRole.MID, 3 to LaneRole.TOP, 4 to LaneRole.JUNGLE)
+        val roles = AllyDraftReconciler.observedRoles(visible, emptyMap())
+        assertEquals(LaneRole.ADC, roles[0])
+        assertEquals(visible, roles.filterKeys { it != 0 })
+        val selected = mapOf(roles.getValue(0) to senna)
+        assertEquals(listOf(null, null, null, senna, null),
+            AllyDraftReconciler.hudAllies(List(5) { null }, selected, emptySet(), roles.values.toSet()))
+        assertNull(AllyDraftReconciler.observedRoles(visible - 4, emptyMap())[0])
+        assertNull(AllyDraftReconciler.observedRoles(visible + (4 to LaneRole.TOP), emptyMap())[0])
+    }
     @Test fun unknownJungleCannotMoveAnObservedDragonLaneInAnyScreenSlot() {
         for (adc in 0..4) for (jungle in 0..4) {
             if (adc == jungle) continue

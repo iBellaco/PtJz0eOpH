@@ -9,6 +9,8 @@ def main():
     ):
         subprocess.run(['adb', 'install', '-r', apk], check=True, timeout=120)
     methods = (
+        'slotResetClearsPublishedOrderForBothSidesEvenWhenKeepingBans',
+        'lateSennaUsesShiftedEmptyLanesAndInfersFirstPickWithoutBanner',
         'boundedLiveSpanishTitlesRememberLanesAndUpdateHub',
         'boundedLivePortugueseTitlesRememberLanesAndUpdateHub',
         'liveRedMagicCapturesWithMasteryBadgesAndViewerMasksFillTheActualHub',

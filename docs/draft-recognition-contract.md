@@ -36,6 +36,19 @@ no demuestran cuál es la resolución efectiva de captura en ese teléfono.
 Los fondos, el campeón central, las skins, los retratos y los campeones baneados
 cambian. Nunca usar el fondo ni el campeón central como identidad de un slot.
 
+Actualización del propietario, 28 de octubre de 2026: un puesto aliado vacío
+puede estar desplazado hacia la izquierda antes de aparecer sus hechizos y
+retrato. El orden de las cinco filas permanece igual; el texto de la línea debe
+leerse también en esa posición previa, no solamente al lado del retrato ya
+seleccionado. Esa región adicional solo aporta líneas, nunca nombres de campeón
+ni del invocador. El visor muestra ambas regiones de lectura.
+
+Si el escáner empieza tarde y ya aparece Senna, pero los otros cuatro puestos
+indican Apoyo, Central, Barón y Jungla, la única línea restante es Dragón.
+Inferirla solo cuando hay cuatro líneas distintas y un único puesto pendiente.
+Con menos evidencia o líneas repetidas, conservar la incertidumbre; no usar la
+línea primaria de Senna para completar el dato.
+
 ## Selecciones 1–9: solo texto
 
 Reconfirmado por el propietario el 27 de octubre de 2026: con el autoescáner
@@ -71,6 +84,13 @@ equivale a recibir otro fotograma. Un retrato visible puede ser una preselecció
 no confirma ninguno de los primeros nueve picks.
 
 ## Décima selección: visual y condicionada
+
+No depende de alcanzar a leer el anuncio «Primera selección»: un primer campeón
+confirmado por título en aliados y ninguno rival permite conservar primero
+aliado; el caso inverso permite primero rival. Los retratos preseleccionados no
+cuentan. Si no hay orden observado ni elección manual, el visor no debe mostrar
+por defecto el décimo en aliados. La posición final inferida no autoriza todavía
+su reconocimiento: siguen siendo necesarios nueve títulos confirmados.
 
 | Primera selección | Décima selección visual |
 | --- | --- |

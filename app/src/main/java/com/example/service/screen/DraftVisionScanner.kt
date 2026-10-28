@@ -142,7 +142,7 @@ object DraftVisionScanner {
     val liveScanFps = kotlinx.coroutines.flow.MutableStateFlow(0f)
     val framesSkippedCount = kotlinx.coroutines.flow.MutableStateFlow(0L)
     val lastProcessingDurationMs = kotlinx.coroutines.flow.MutableStateFlow(0L)
-    val isFirstPickState = kotlinx.coroutines.flow.MutableStateFlow(false)
+    val isFirstPickState = kotlinx.coroutines.flow.MutableStateFlow<Boolean?>(null)
 
     val allySlotRolesCache = mutableMapOf<Int, LaneRole>()
     val allySlotOcrLaneCache = mutableMapOf<Int, LaneRole>()
@@ -536,6 +536,9 @@ object DraftVisionScanner {
         lastVisualPick = null
         slotLifecycle.reset()
         observedFirstPick = null
+        // Reset the viewer together with the internal order, including a new
+        // draft that retains bans. Otherwise it displays the previous tenth side.
+        isFirstPickState.value = null
         isLegendaryRankedCache = false
         cachedUserSlotIndex = null
         allySlotRolesCache.clear()
@@ -561,7 +564,6 @@ object DraftVisionScanner {
         debugTextRects = emptyList()
         showCalibrationBoxes.value = false
         isVisionEngineBusy.value = false
-        isFirstPickState.value = false
         updateFps(0f)
         framesSkippedCount.value = 0L
         lastProcessingDurationMs.value = 0L
@@ -694,6 +696,18 @@ object DraftVisionScanner {
                 val text = recognizer.process(InputImage.fromBitmap(input.bitmap,0)).await()
                 val lines = text.textBlocks.flatMap { it.lines }
                 for (tile in input.tiles) {
+                    if (tile.laneOnly) {
+                        val pairs = lines.filter { line -> line.boundingBox?.let {
+                            tile.region.contains(it)
+                        } == true }.sortedBy { it.boundingBox!!.left }.map { line ->
+                            line.text to (line.boundingBox!!.centerY() - tile.region.top)
+                        }
+                        val lane = AllyDraftNameReader.readTitleRows(pairs,
+                            (tile.region.height() * .30f).toInt(), emptyList(), tile.titleMaxY).lane
+                        if (lane != null) targetedAllyReadings[tile.slot] = AllyDraftNameReader.preferOriginal(
+                            targetedAllyReadings[tile.slot], AllyDraftNameReader.Reading(lane = lane))
+                        continue
+                    }
                     if (tile.contextual) {
                         val pairs = lines.mapNotNull { line ->
                             val words = line.elements.filter { element ->
@@ -768,12 +782,22 @@ object DraftVisionScanner {
                     } finally { inputs.forEach { it.bitmap.recycle() } }
                 }
                 readTitles(atlas)
+                val missingLanes = (0..4).filter { slot ->
+                    slot !in previousLanes && targetedAllyReadings[slot].let {
+                        !it.ambiguous && it.champion == null && it.lane == null
+                    }
+                }
+                if (missingLanes.isNotEmpty()) {
+                    val lanes = DraftNameAtlas.createAllyLanes(bitmap, calib,
+                        exclusions + listOfNotNull(frameOverlay), missingLanes)
+                    try { readTitles(lanes) } finally { lanes.bitmap.recycle() }
+                }
                 val unresolved = atlas.tiles.filter { tile -> tile.original &&
                     (if(tile.ally) targetedAllyReadings else targetedEnemyReadings)[tile.slot].let {
                         !it.ambiguous && it.champion==null && it.lane==null && !it.unpicked
                     }
                 }.mapNotNull { tile -> DraftNameAtlas.titleFocusBounds(atlas,tile)?.let { tile to it } }
-                if (unresolved.isNotEmpty()) {
+                if (unresolved.isNotEmpty() && (!quickTitlePass || missingLanes.isEmpty())) {
                     val retry = DraftNameAtlas.retryUnresolved(atlas,unresolved.map { it.first })
                     try { readTitles(retry) } finally { retry.bitmap.recycle() }
                 }
@@ -781,6 +805,8 @@ object DraftVisionScanner {
                 // live frames. Empty enemy slots/background must not make every
                 // pick wait for the complete recovery chain. Periodic full scans
                 // retain every recovery below for difficult names and badges.
+                // When lanes are missing, the second request reads their shifted
+                // bands instead of repeating the selected-title crop.
                 if (!quickTitlePass) {
                 // Keep the recovery bounded: the previous global multiscale pass
                 // created several large OCR requests per unresolved slot and made
@@ -1578,7 +1604,9 @@ object DraftVisionScanner {
         } else recoverFirstPick(totalAllyOcr, totalEnemyOcr, detectedFirstPick)
 
         val effectiveFirstPick = currentIsFirstPick ?: detectedFirstPick ?: false
-        isFirstPickState.value = effectiveFirstPick
+        // Unknown is not "rivals first": the viewer must not label the wrong
+        // tenth side before an observed title sequence or manual choice exists.
+        isFirstPickState.value = currentIsFirstPick ?: detectedFirstPick
         val pickSequence = getDraftPickSequence(effectiveFirstPick)
 
         // -----------------------------------------------------------------------------------------

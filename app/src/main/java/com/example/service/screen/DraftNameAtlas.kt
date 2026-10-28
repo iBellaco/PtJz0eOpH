@@ -13,7 +13,8 @@ internal class DraftNameAtlas private constructor(val bitmap: Bitmap, val tiles:
     data class Tile(val ally: Boolean, val slot: Int, val source: Rect, val region: Rect,
                     val titleMaxY: Int, val original: Boolean = true, val contrast: Boolean = false,
                     val titleMinY: Int = 0, val badgeRemoved: Boolean = false,
-                    val contentInsetLeft: Int = 0, val contextual: Boolean = false)
+                    val contentInsetLeft: Int = 0, val contextual: Boolean = false,
+                    val laneOnly: Boolean = false)
 
     companion object {
         private const val GUTTER = 32
@@ -639,6 +640,42 @@ internal class DraftNameAtlas private constructor(val bitmap: Bitmap, val tiles:
             }
             for(i in pixels.indices) pixels[i]=if(best>=0 && ink[i]>threshold && ink[i]>=45) Color.BLACK else Color.WHITE
             crop.setPixels(pixels,0,crop.width,0,0,crop.width,crop.height)
+        }
+
+        /** A separate compact request for shifted empty allied rows. Its pixels
+         * can only supply lanes, never champion or summoner identities. */
+        fun createAllyLanes(source: Bitmap, config: VisionCalibrationConfig,
+                            masks: List<Rect>, slots: List<Int>): DraftNameAtlas {
+            require(slots.isNotEmpty() && slots.distinct().size == slots.size && slots.all { it in 0..4 })
+            val bands = slots.map { it to AdaptiveScreenLayoutEngine.calculateAllyLaneRect(
+                source.width, source.height, it, config) }
+            val scale = (100f / bands.minOf { it.second.height() }).coerceIn(1f, 12f)
+            val cellWidth = bands.maxOf { (it.second.width() * scale).toInt() } + GUTTER * 2
+            val cellHeight = bands.maxOf { (it.second.height() * scale).toInt() } + GUTTER * 2
+            val columns = compactColumns(slots.size * 2, cellWidth, cellHeight)
+            val rows = (slots.size * 2 + columns - 1) / columns
+            val bitmap = Bitmap.createBitmap(cellWidth * columns, cellHeight * rows, Bitmap.Config.ARGB_8888)
+            try {
+                val canvas = Canvas(bitmap).apply { drawColor(Color.BLACK) }
+                val paint = Paint().apply { color = Color.BLACK }
+                val tiles = bands.flatMapIndexed { index, (slot, band) -> (0..1).map { variant ->
+                    val crop = Bitmap.createBitmap(band.width(), band.height(), Bitmap.Config.ARGB_8888)
+                    try {
+                        val local = Canvas(crop)
+                        local.drawBitmap(source, band, Rect(0, 0, crop.width, crop.height), null)
+                        masks.forEach { local.drawRect(Rect(it).apply { offset(-band.left, -band.top) }, paint) }
+                        if (variant == 1) DraftImagePreprocessor.suppressLeadingMasteryBadge(crop)
+                        val tileIndex = index * 2 + variant
+                        val left = (tileIndex % columns) * cellWidth + GUTTER
+                        val top = (tileIndex / columns) * cellHeight + GUTTER
+                        val region = Rect(left, top, left + (band.width() * scale).toInt(),
+                            top + (band.height() * scale).toInt())
+                        canvas.drawBitmap(crop, null, region, Paint(Paint.FILTER_BITMAP_FLAG))
+                        Tile(true, slot, band, region, region.height(), original = variant == 0, laneOnly = true)
+                    } finally { crop.recycle() }
+                } }
+                return DraftNameAtlas(bitmap, tiles)
+            } catch (failure: Throwable) { bitmap.recycle(); throw failure }
         }
 
         fun create(source: Bitmap, config: VisionCalibrationConfig, masks: List<Rect>): DraftNameAtlas {

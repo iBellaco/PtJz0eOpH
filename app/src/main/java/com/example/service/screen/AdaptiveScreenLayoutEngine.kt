@@ -14,6 +14,15 @@ import kotlin.math.min
  * - Tablets y Plegables 4:3 (1.333), 16:10 (1.600)
  */
 object AdaptiveScreenLayoutEngine {
+    /** Empty allied rows have no spell column and their lane title starts
+     * farther left. This additional band is lane-only, never a champion source.
+     * Keep the same vertical boundary above the summoner's name. */
+    fun calculateAllyLaneRect(width: Int, height: Int, slot: Int,
+        config: VisionCalibrationConfig): Rect =
+        calculateSlotNameRect(width, height, true, slot, config).apply {
+            left = (left - height * config.nameBandScale * .075f).toInt().coerceAtLeast(0)
+        }
+
     /** The name band belongs to one row and stops before its portrait. */
     fun calculateSlotNameRect(width: Int, height: Int, isAlly: Boolean, slot: Int,
         config: VisionCalibrationConfig): Rect {
