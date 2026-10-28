@@ -580,8 +580,8 @@ class RuntimeBehaviorTest {
         assertEquals(3, summary.count(com.example.data.NotificationPanel.INBOX))
         for (panel in listOf(com.example.data.NotificationPanel.STREAMER, com.example.data.NotificationPanel.CREATOR,
             com.example.data.NotificationPanel.HISTORY, com.example.data.NotificationPanel.SPONSOR,
-            com.example.data.NotificationPanel.ADMINISTRATION, com.example.data.NotificationPanel.SUPPORT,
-            com.example.data.NotificationPanel.SPONSOR_MODERATION)) assertEquals(panel.name, 1, summary.count(panel))
+            com.example.data.NotificationPanel.SUPPORT)) assertEquals(panel.name, 1, summary.count(panel))
+        assertEquals(2, summary.count(com.example.data.NotificationPanel.ADMINISTRATION))
         val read = com.example.data.PanelNotificationPolicy.combine(emptySet(), routes, emptyMap(), emptySet())
         assertEquals(0, read.total)
         com.example.data.NotificationPanel.entries.forEach { assertEquals(0, read.count(it)) }

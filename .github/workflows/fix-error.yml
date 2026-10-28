@@ -1,45 +1,14 @@
-name: Fix error OCR del escáner
+name: Fix error de solicitudes de patrocinio
 
 on:
   push:
     branches: [fix-error]
-    paths:
-      - 'app/src/main/java/com/example/service/screen/**'
-      - 'app/src/main/java/com/example/util/SystemPermissionHelper.kt'
-      - 'app/src/main/java/com/example/ui/components/OverlayPermissionHelp.kt'
-      - 'app/src/main/java/com/example/ui/components/BatteryAndOverlayNoticeCard.kt'
-      - 'app/src/main/java/com/example/ui/screens/MainDraftingScreen.kt'
-      - 'app/src/main/res/values*/strings.xml'
-      - 'app/src/test/java/com/example/DeviceDraftProfileTest.kt'
-      - 'app/src/test/java/com/example/SystemPermissionHelperTest.kt'
-      - 'app/src/test/java/com/example/OfflinePortugueseAuditTest.kt'
-      - '.github/scripts/validate-localized-resources.py'
-      - '.github/scripts/test_localized_resources.py'
-      - '.github/actions/prepare-emulator/action.yml'
-      - 'tools/prepare-emulator-image.py'
-      - 'tools/test_emulator_image.py'
-      - 'app/src/test/java/com/example/DraftNameAtlasTest.kt'
-      - 'app/src/main/java/com/example/data/WildRiftRepository.kt'
-      - 'app/src/main/java/com/example/service/ConfirmedLastPickHud.kt'
-      - 'app/build.gradle.kts'
-      - 'app/src/test/java/com/example/ChampionNameResolverCoverageTest.kt'
-      - 'app/src/test/java/com/example/AllyDraftNameReaderTest.kt'
-      - 'app/src/androidTest/java/com/example/DraftSequenceMultiDeviceInstalledTest.kt'
-      - 'app/src/androidTest/java/com/example/DraftRivalNameInstalledTest.kt'
-      - 'app/src/test/resources/scanner/targeted-sequence-plan.json'
-      - 'tools/verify-draft-sequence-device.py'
-      - 'tools/verify-targeted-red-magic.py'
-      - 'tools/verify-draft-rival-names-device.py'
-      - 'tools/test_draft_rival_device.py'
-      - 'tools/verify-account-deletion-device.py'
-      - 'tools/test_account_deletion_device.py'
-      - 'app/src/androidTest/java/com/example/AccountDeletionInstalledTest.kt'
-      - 'tools/scanner-sequence-plan.py'
-      - 'tools/scanner-sequence-summary.py'
-      - 'tools/test_scanner_sequence_audit.py'
-      - '.github/workflows/fix-error.yml'
-      - '.github/workflows/build-apk.yml'
   workflow_dispatch:
+    inputs:
+      scanner_regressions:
+        description: Ejecutar también las regresiones OCR instaladas (opcional y lento)
+        type: boolean
+        default: false
 
 concurrency:
   group: coach-fix-error-${{ github.ref }}
@@ -49,25 +18,42 @@ permissions:
   contents: read
 
 jobs:
-  localized-resources:
-    name: Recursos de idiomas completos antes de compilar
+  catalog-preflight:
+    name: Comprobaciones previas de catálogos, idiomas y planes de prueba
     runs-on: ubuntu-latest
-    timeout-minutes: 3
+    timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v5
-      - name: Comprobar portugués general y de Brasil
-        run: |
-          python3 -m unittest discover -s tools -p test_emulator_image.py
-          python3 -m unittest discover -s tools -p test_draft_rival_device.py
-          python3 -m unittest discover -s tools -p test_account_deletion_device.py
-          python3 -m unittest discover -s .github/scripts -p test_localized_resources.py
-          python3 .github/scripts/validate-localized-resources.py
+    - uses: actions/checkout@v5
+    - uses: actions/setup-java@v5
+      with:
+        distribution: temurin
+        java-version: '21'
+    - name: Ejecutar las mismas comprobaciones previas de validación
+      run: |
+        python3 -m unittest discover -s tools -p test_emulator_image.py
+        python3 -m unittest discover -s tools -p test_draft_rival_device.py
+        python3 -m unittest discover -s tools -p test_account_deletion_device.py
+        python3 -m unittest discover -s .github/scripts -p test_localized_resources.py
+        python3 .github/scripts/validate-localized-resources.py
+        python3 .github/scripts/validate-patch-content.py
+        python3 -m unittest discover -s .github/scripts -p test_patch_content.py
+        python3 -m unittest discover -s tools -p test_draft_audit_retry.py
+        python3 -m unittest discover -s tools -p test_scanner_device_report.py
+        python3 -m unittest discover -s tools -p test_scanner_audit_summary.py
+        python3 -m unittest discover -s tools -p test_scanner_sequence_audit.py
+        python3 -m unittest discover -s tools -p test_scanner_sequence_stream.py
+        python3 -m unittest discover -s tools -p test_scanner_request_coverage.py
+        python3 -m unittest discover -s tools -p test_junit_failure_report.py
+        python3 tools/generate-component-items.py --check
+        python3 tools/import-component-icons.py --check
+        python3 tools/update-champion-builds.py --check
+        bash tools/audit-portuguese.sh
 
-  targeted-native-ocr:
-    needs: localized-resources
-    name: Casos OCR fallidos únicamente
+  targeted-last-pick:
+    needs: catalog-preflight
+    name: Solicitudes, contadores y cierre de selección
     runs-on: ubuntu-latest
-    timeout-minutes: 50
+    timeout-minutes: 30
     steps:
       - name: Descargar el código de fix-error
         uses: actions/checkout@v5
@@ -107,96 +93,61 @@ jobs:
         with:
           gradle-version: 9.3.1
 
-      - name: Reproducir la prueba exacta que bloqueó el flujo completo
-        run: |
-          python3 -m unittest discover -s tools -p 'test_scanner_sequence_audit.py'
-          ./gradlew :app:testDebugUnitTest --rerun \
-            --tests com.example.AllyDraftNameReaderTest \
-            --tests com.example.DraftNameAtlasTest \
-            --tests com.example.DeviceDraftProfileTest \
-            --tests com.example.DraftRingAlignmentTest \
-            --tests com.example.SystemPermissionHelperTest \
-            --tests com.example.EconomyRequestPolicyTest \
-            --tests com.example.CoachRoutineRegressionTest \
-            --tests com.example.LiveTitleConfirmationTest \
-            --tests com.example.DraftStableTitlesTest \
-            --tests com.example.AllyDraftReconcilerTest \
-            --tests com.example.BannedPortraitScannerTest \
-            --tests com.example.OfflinePortugueseAuditTest \
-            --tests com.example.ChampionNameResolverCoverageTest \
-            --max-workers=1 --stacktrace --no-daemon
 
-      - name: Conservar resultados de todas las pruebas aisladas
-        if: always()
-        uses: actions/upload-artifact@v5
-        with:
-          name: fix-error-unit-evidence
-          path: app/build/test-results/testDebugUnitTest/
-          if-no-files-found: warn
-          retention-days: 14
+      - name: Validar recursos de los dos idiomas
+        run: python3 .github/scripts/validate-localized-resources.py
 
-      - name: Preparar el plan de la regresión actual
+      - name: Probar cambio de retrato, estabilidad, cierre y regresiones del Hub
         run: |
           python3 - <<'PY'
-          import json
-          from pathlib import Path
-          plan = json.loads(Path('app/src/test/resources/scanner/targeted-sequence-plan.json').read_text())
-          profiles = [profile for case in plan['cases'] for profile in case['profiles']]
-          assert len(plan['cases']) == 6 and plan['modelProfiles'] == len(profiles) == 7
-          assert all(profile['model'] != 'resolution-simulation' for profile in profiles)
-          assert {case['id'] for case in plan['cases']} == {
-              'sequence-42-ally-first', 'sequence-49-enemy-first',
-              'sequence-52-ally-first', 'sequence-56-ally-first',
-              'sequence-63-enemy-first', 'sequence-0-enemy-first'}
+          import sys
+          sys.path.insert(0, 'tools')
+          from importlib.machinery import SourceFileLoader
+          runner = SourceFileLoader('regression', 'tools/run-jvm-regression.py').load_module()
+          runner.verify([
+              'com.example.DraftAutoStopTest',
+              'com.example.DraftSlotLifecycleTest',
+              'com.example.DraftSlotVisibilityTest',
+              'com.example.SponsorReviewPolicyTest',
+              'com.example.EconomyRequestPolicyTest',
+              'com.example.RuntimeBehaviorTest',
+          ])
           PY
-          mkdir -p app/build/generated/scanner-sequence-assets
-          cp app/src/test/resources/scanner/targeted-sequence-plan.json \
-            app/build/generated/scanner-sequence-assets/scanner-sequence-plan.json
 
-      - name: Compilar variante de prueba del escáner
-        run: |
-          ./gradlew :app:assembleDebug :app:assembleDebugAndroidTest \
-            -PcoachInstrumentedBuildType=debug \
-            --max-workers=2 --stacktrace --no-daemon
-
-      - name: Activar aceleración del emulador
-        run: |
-          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
-          sudo udevadm control --reload-rules
-          sudo udevadm trigger --name-match=kvm
-          sudo chmod 666 /dev/kvm || true
-
-      - uses: ./.github/actions/prepare-emulator
-      - name: Ejecutar la secuencia completa que agotó el tiempo
-        uses: reactivecircus/android-emulator-runner@v2
-        env:
-          COACH_SEQUENCE_SHARD: '0'
-          COACH_SEQUENCE_PREFLIGHT: 'false'
-          COACH_SEQUENCE_TARGETS: 'sequence-42-ally-first,sequence-52-ally-first'
-          COACH_SEQUENCE_BUILD_TYPE: debug
-        with:
-          api-level: 34
-          arch: x86_64
-          target: google_apis
-          disable-animations: true
-          emulator-boot-timeout: 300
-          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
-          script: python3 tools/verify-draft-sequence-device.py
-
-      - name: Conservar evidencia del diagnóstico
+      - name: Conservar resultados del arreglo
         if: always()
         uses: actions/upload-artifact@v5
         with:
-          name: fix-error-ocr-evidence
-          path: app/build/reports/scanner-sequence/
-          # The evidence directory is created only after the emulator phase;
-          # a compile failure must remain the primary diagnostic instead of
-          # being replaced by a misleading missing-artifact failure.
+          name: fix-error-last-pick-evidence
+          path: |
+            app/build/test-results/testDebugUnitTest/
+            app/build/reports/tests/testDebugUnitTest/
           if-no-files-found: warn
           retention-days: 14
 
+  sponsor-permissions:
+    needs: catalog-preflight
+    name: Aprobar y rechazar anuncios con las reglas reales
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+      - run: npm ci --no-audit --no-fund
+        working-directory: tests/firestore
+      - name: Comprobar únicamente el flujo de patrocinio en emulador
+        working-directory: tests/firestore
+        run: npx firebase emulators:exec --only firestore --project demo-coach-tests --config ../../firebase.json 'node sponsor-review.test.mjs'
+
   targeted-red-magic-release:
-    needs: localized-resources
+    if: github.event_name == 'workflow_dispatch' && inputs.scanner_regressions
+    needs: catalog-preflight
     name: Errores conocidos en release (${{ matrix.suite }})
     runs-on: ubuntu-latest
     timeout-minutes: 50

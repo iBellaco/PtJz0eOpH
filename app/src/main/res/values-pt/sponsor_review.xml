@@ -1,0 +1,5 @@
+<resources>
+    <string name="sponsor_pending_review">Publicidade aguardando revisão</string>
+    <string name="sponsor_review_error">Não foi possível confirmar a operação do anúncio. Verifique a conexão e tente novamente.</string>
+    <string name="sponsor_processing_notice">%1$s: solicitação recebida, aguardando processamento. Ela aparecerá para aprovação quando essa etapa terminar. Se a espera continuar, contate o Suporte; não repita o envio.</string>
+</resources>

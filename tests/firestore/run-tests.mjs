@@ -3,3 +3,5 @@ for(const file of ['storage.test.mjs','rules.test.mjs','../../server/account-del
   const result=spawnSync(process.execPath,[file],{stdio:'inherit',env:process.env});
   if(result.status!==0)process.exit(result.status||1);
 }
+const sponsors=spawnSync(process.execPath,['sponsor-review.test.mjs'],{stdio:'inherit',env:process.env});
+if(sponsors.status!==0)process.exit(sponsors.status||1);
