@@ -24,6 +24,69 @@ import org.junit.runner.RunWith
 /** Real pixels from the reported name bands, without account/player names. */
 @RunWith(AndroidJUnit4::class)
 class DraftRivalNameInstalledTest {
+    @Test fun lateSennaUsesShiftedEmptyLanesAndInfersFirstPickWithoutBanner() = kotlinx.coroutines.runBlocking {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val scanner = com.example.service.screen.DraftVisionScanner
+        val previous = scanner.calibrationConfig
+        try {
+            for ((width, height) in listOf(1280 to 579, 1920 to 868)) {
+                scanner.resetSlotMemory()
+                scanner.updateCalibration(context, com.example.service.screen.VisionCalibrationConfig())
+                assertNull("Unknown order must not label the allied tenth slot", scanner.isFirstPickState.value)
+                val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+                try {
+                    val canvas = android.graphics.Canvas(bitmap).apply {
+                        drawColor(android.graphics.Color.rgb(10, 20, 40))
+                        scale(width / 1280f, height / 579f)
+                    }
+                    val paint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply {
+                        color = android.graphics.Color.WHITE; textSize = 12f
+                        typeface = android.graphics.Typeface.DEFAULT_BOLD
+                    }
+                    // Synthetic transition based on the reported layout. Positions
+                    // are independent of the production rectangle calculation.
+                    val titles = listOf("SENNA", "APOYO", "CALLE CENTRAL", "CALLE DEL BARÓN", "JUNGLA")
+                    val xs = listOf(134f, 134f, 96f, 116f, 116f)
+                    val ys = listOf(103f, 180f, 258f, 335f, 413f)
+                    titles.indices.forEach { slot ->
+                        canvas.drawText(titles[slot], xs[slot], ys[slot], paint)
+                        // A summoner named after a champion must never fill a slot.
+                        canvas.drawText("JINX", xs[slot], ys[slot] + 24f, paint)
+                    }
+                    paint.color = android.graphics.Color.rgb(220, 170, 60)
+                    canvas.drawCircle(107f, 330f, 4f, paint)
+                    canvas.drawCircle(107f, 408f, 4f, paint)
+                    val hud = com.example.service.OverlayState()
+                    var latest: com.example.service.screen.DraftScanResult? = null
+                    repeat(2) { index ->
+                        latest = scanner.scanDraftFromBitmap(bitmap, context, namesOnly = true, quickTitlePass = true)
+                        assertNull(latest!!.ocrFailure)
+                        assertTrue("Live OCR requests=${latest!!.ocrRequestCount}", latest!!.ocrRequestCount in 1..2)
+                        if (index == 0) assertTrue(latest!!.alliesBySlot.isEmpty())
+                        hud.syncScannedAllies(latest!!)
+                        hud.syncScannedEnemies(latest!!)
+                    }
+                    val result = latest!!
+                    assertEquals(mapOf(0 to com.example.model.LaneRole.ADC, 1 to com.example.model.LaneRole.SUPPORT,
+                        2 to com.example.model.LaneRole.MID, 3 to com.example.model.LaneRole.TOP,
+                        4 to com.example.model.LaneRole.JUNGLE), result.allyRolesBySlot)
+                    assertEquals(mapOf(0 to "senna"), result.alliesBySlot.mapValues { it.value.id })
+                    assertTrue(result.enemiesBySlot.isEmpty())
+                    assertEquals("senna", hud.allies[3]?.id)
+                    assertTrue(hud.unassignedAllies.isEmpty())
+                    assertEquals(true, result.detectedFirstPick)
+                    assertEquals(true, scanner.isFirstPickState.value)
+                    assertEquals(false, result.tenthPickIsAlly)
+                    assertFalse(result.isLastPickConfirmed)
+                    assertEquals(false, scanner.getDraftPickSequence(true).last().isAlly)
+                    InstrumentationRegistry.getInstrumentation().sendStatus(2, android.os.Bundle().apply {
+                        putString("stream", "\nLATE_SENNA_LANE_AUDIT: synthetic ${width}x$height; four lanes; Senna ADC; ally first; rival tenth\n")
+                    })
+                } finally { bitmap.recycle() }
+            }
+        } finally { scanner.resetSlotMemory(); scanner.updateCalibration(context, previous) }
+    }
+
     @Test fun tester8067NeverConfirmsBackgroundAsCaitlynBan() = kotlinx.coroutines.runBlocking<Unit> {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
         val scanner = com.example.service.screen.DraftVisionScanner

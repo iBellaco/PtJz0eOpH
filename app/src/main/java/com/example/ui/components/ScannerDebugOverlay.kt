@@ -207,6 +207,14 @@ fun ScannerDebugOverlay(
                 style = Stroke(width = 1.2f)
             )
 
+            // Same extra title band used by OCR before the allied spell column
+            // appears. Portrait circles remain selection targets, not lane ROIs.
+            val laneRect = AdaptiveScreenLayoutEngine.calculateAllyLaneRect(w.toInt(), h.toInt(), sIdx, currentConfig)
+            drawRect(color = Color(0x6600E5FF),
+                topLeft = Offset(laneRect.left.toFloat(), laneRect.top.toFloat()),
+                size = Size(laneRect.width().toFloat(), laneRect.height().toFloat()),
+                style = Stroke(width = 1f))
+
             // Etiqueta del slot / rol aliado dinámico: único 1 a 1 por equipo sin duplicados
             val slotLabel = "Aliado ${sIdx + 1}"
             val allyLabelX = (allyX - allyAvatarRad).coerceAtLeast(8f)
@@ -280,7 +288,8 @@ fun ScannerDebugOverlay(
         // -------------------------------------------------------------
         // 3. Círculo de Visión del 10º Pick (Dinámico según 1ª Selección: Aliado 5 o Rival 5)
         // -------------------------------------------------------------
-        val tenthIsAlly = !isFirstPickAlly
+        isFirstPickAlly?.let { firstAlly ->
+        val tenthIsAlly = !firstAlly
         val tenthCrop = AdaptiveScreenLayoutEngine.calculateSlotCropRect(w.toInt(), h.toInt(), tenthIsAlly, 4, currentConfig)
         val tenthTargetY = tenthCrop.exactCenterY()
         val tenthTargetX = tenthCrop.exactCenterX()
@@ -299,6 +308,7 @@ fun ScannerDebugOverlay(
             tenthTargetY + avatarRadius + 14f,
             tenthPickPaint
         )
+        }
 
         // 4. Límites del Asistente Flotante
         if (overlayRect != null) {
