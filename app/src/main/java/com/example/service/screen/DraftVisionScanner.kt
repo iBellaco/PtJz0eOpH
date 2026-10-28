@@ -1593,8 +1593,8 @@ object DraftVisionScanner {
         // - Si el Equipo Aliado es Segundo Pick (1E -> 2A -> 2E -> 2A -> 2E -> 1A):
         //   El 10º pick es ALIADO (el último campeón aliado). Se aplica reconocimiento visual al slot aliado restante.
         // -----------------------------------------------------------------------------------------
-        val totalAllyOcr = allySlots.count { it.champion != null }
-        val totalEnemyOcr = enemySlots.count { it.champion != null }
+        val totalAllyOcr = allySlotNameConfirmed.count { it }
+        val totalEnemyOcr = enemySlotNameConfirmed.count { it }
 
         // Recover the order from a valid prefix even when auto-scan starts late.
         // Ambiguous prefixes preserve observed order; only an explicit manual choice overrides it.

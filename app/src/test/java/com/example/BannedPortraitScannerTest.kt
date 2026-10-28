@@ -23,6 +23,67 @@ class BannedPortraitScannerTest {
     private val context get() = RuntimeEnvironment.getApplication()
     @Before fun prepare() { WildRiftRepository.initChampions(context, forceReload = true) }
 
+    @Test fun strongerMelEvidenceCorrectsWeakSionOnlyAfterTwoNewFrames() {
+        val scanner = BannedPortraitScanner()
+        val region = com.example.service.screen.BanRegion(.9f, .05f, .03f)
+        val wrong = com.example.service.screen.BanObservation(com.example.service.screen.BanSide.ENEMY,
+            region, "sion", similarity = .81f)
+        repeat(2) { scanner.update(listOf(wrong), 2f) }
+        assertEquals("sion", scanner.slots.first { it.championId != null }.championId)
+        val correct = wrong.copy(championId = "mel", similarity = .94f)
+        scanner.update(listOf(correct), 2f)
+        assertTrue(scanner.slots.any { it.championId == "sion" })
+        scanner.update(listOf(correct), 2f)
+        assertTrue(scanner.slots.any { it.championId == "mel" })
+        repeat(3) { scanner.update(listOf(wrong), 2f) }
+        assertFalse(scanner.slots.any { it.championId == "sion" })
+        assertEquals(10, scanner.slots.size)
+    }
+
+    @Test fun anAlreadyConfirmedPickCannotRemainInTheBanList() {
+        val scanner = BannedPortraitScanner()
+        val observation = com.example.service.screen.BanObservation(com.example.service.screen.BanSide.ALLY,
+            com.example.service.screen.BanRegion(.1f, .05f, .03f), "sion", similarity = .83f)
+        repeat(2) { scanner.update(listOf(observation), 2f) }
+        val bitmap = Bitmap.createBitmap(1280, 576, Bitmap.Config.ARGB_8888)
+        try {
+            assertFalse("Selected identities invalidate stale bans",
+                "sion" in scanner.scan(bitmap, context, 0, listOf(Rect(0, 0, 1280, 576)), pickedIds = setOf("sion")))
+        } finally { bitmap.recycle() }
+    }
+
+    @Test fun syntheticMelAndDariusHeaderIsNotMisidentifiedAsSionAcrossCaptureScales() {
+        // Constructed from local champion assets: this is not the tester's screenshot.
+        val expected = listOf("caitlyn", "master_yi", "nocturne", "jax", "samira",
+            "rammus", "darius", "varus", "lulu", "mel")
+        val original = Bitmap.createBitmap(1280, 576, Bitmap.Config.ARGB_8888)
+        val canvas = android.graphics.Canvas(original)
+        canvas.drawColor(android.graphics.Color.rgb(9, 15, 30))
+        val paint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG or android.graphics.Paint.FILTER_BITMAP_FLAG)
+        expected.forEachIndexed { index, id ->
+            val cx = if (index < 5) 96f + index * 46f else 995f + (index - 5) * 46f
+            val cy = 30f
+            paint.color = android.graphics.Color.rgb(120, 45, 65)
+            canvas.drawCircle(cx, cy, 20f, paint)
+            val portrait = context.assets.open("champions/$id.png").use { BitmapFactory.decodeStream(it)!! }
+            try {
+                canvas.save()
+                canvas.clipPath(android.graphics.Path().apply { addCircle(cx, cy, 18f, android.graphics.Path.Direction.CW) })
+                canvas.drawBitmap(portrait, null, android.graphics.RectF(cx - 18, cy - 18, cx + 18, cy + 18), paint)
+                canvas.restore()
+            } finally { portrait.recycle() }
+        }
+        try { for (scale in listOf(1f, 1.5f, 2f)) {
+            val bitmap = Bitmap.createScaledBitmap(original, (1280 * scale).toInt(), (576 * scale).toInt(), true)
+            try {
+                val scanner = BannedPortraitScanner()
+                scanner.scan(bitmap, context, 0)
+                scanner.scan(bitmap, context, 1500)
+                assertEquals("Synthetic capture at scale $scale", expected, scanner.slots.map { it.championId })
+            } finally { if (bitmap !== original) bitmap.recycle() }
+        } } finally { original.recycle() }
+    }
+
     @Test fun aTexturedNeighbourCannotDisplaceTheFifthVisibleRivalBan() {
         val observations = listOf("lee_sin", "mordekaiser", "syndra", "cho_gath", "hwei").mapIndexed { index, id ->
             com.example.service.screen.BanObservation(com.example.service.screen.BanSide.ENEMY,

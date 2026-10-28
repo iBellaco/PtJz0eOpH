@@ -1,14 +1,14 @@
 {
   "fiendhunter_bolts": {
-    "passive": "Vigilia nocturna: Otorga 20 de velocidad de habilidad definitiva.\nAndanada inicial: Tras lanzar tu habilidad definitiva, tus siguientes 3 ataques en los próximos 8 s obtienen un 50% de velocidad de ataque y asestan impactos críticos, que infligen un 80% de tu daño de impacto crítico normal. Si un ataque fuera a infligir un impacto crítico, inflige un 15% de daño verdadero adicional, enfriamiento de 45 s.",
-    "passivePt": "Vigília Noturna: Concede 20 de aceleração da habilidade ultimate.\nRajada Inicial: Após conjurar sua ultimate, seus próximos 3 ataques nos próximos 8 s recebem 50% de velocidade de ataque e causam acertos críticos que infligem 80% do seu dano crítico normal. Se um ataque já causaria um acerto crítico, causa 15% de dano verdadeiro adicional, tempo de recarga de 45 s.",
+    "passive": "Vigilia nocturna: Otorga 20 de velocidad de habilidad definitiva.\nAndanada inicial: Tras lanzar tu habilidad definitiva, tus siguientes 3 ataques en los próximos 8 s obtienen un 50% de velocidad de ataque y asestan impactos críticos, que infligen un 85% de tu daño de impacto crítico normal. Si un ataque fuera a infligir un impacto crítico, inflige un 17,5% de daño verdadero adicional, enfriamiento de 45 s.",
+    "passivePt": "Vigília Noturna: Concede 20 de aceleração da habilidade ultimate.\nRajada Inicial: Após conjurar sua ultimate, seus próximos 3 ataques nos próximos 8 s recebem 50% de velocidade de ataque e causam acertos críticos que infligem 85% do seu dano crítico normal. Se um ataque já causaria um acerto crítico, causa 17,5% de dano verdadeiro adicional, tempo de recarga de 45 s.",
     "stats": "+25% Probabilidad de crítico • +45% Velocidad de ataque • +4% Velocidad de movimiento",
     "goldCost": 2650,
     "statsPt": "+25% Chance de acerto crítico • +45% Velocidade de ataque • +4% Velocidade de movimento"
   },
   "stormrazor": {
-    "passive": "Proyectil: Al moverte y atacar generas un ataque con vigor que inflige 120 de daño mágico adicional y otorga un 45% de velocidad de movimiento durante 1,5 s al impactar.",
-    "passivePt": "Projétil: Mover-se e atacar gera um ataque energizado que causa 120 de dano mágico adicional e concede 45% de velocidade de movimento por 1,5 s ao contato.",
+    "passive": "Proyectil: Al moverte y atacar generas un ataque con vigor que inflige 100 de daño mágico adicional y otorga un 35% de velocidad de movimiento durante 1,5 s al impactar.",
+    "passivePt": "Projétil: Mover-se e atacar gera um ataque energizado que causa 100 de dano mágico adicional e concede 35% de velocidade de movimento por 1,5 s ao contato.",
     "stats": "+50 Daño de ataque • +25% Tasa Crítica • +20% Velocidad de Ataque",
     "goldCost": 3000,
     "statsPt": "+50 Dano de ataque • +25% Chance de acerto crítico • +20% Velocidade de ataque"
@@ -71,8 +71,8 @@
   "essence_reaver": {
     "passive": "Hoja encantada: Tras utilizar una habilidad, el siguiente ataque que realices en los próximos 10 s inflige daño físico adicional equivalente a un 135% del daño básico más 0-80, aumenta 0,8 por cada 1% de probabilidad de crítico, y recupera un 50% del daño infligido en forma de maná, enfriamiento de 1,5 s.",
     "passivePt": "Lâmina Encantada: Após usar uma habilidade, seu próximo ataque nos próximos 10 s causa dano físico adicional equivalente a 135% do dano de ataque base mais 0-80, aumentando em 0,8 para cada 1% de chance de acerto crítico, e restaura 50% do dano causado como mana, tempo de recarga de 1,5 s.",
-    "stats": "+50 Daño de ataque • +25% Probabilidad de crítico • +20 Velocidad de habilidades",
-    "statsPt": "+50 Dano de ataque • +25% Chance de acerto crítico • +20 Aceleração de habilidade"
+    "stats": "+55 Daño de ataque • +25% Probabilidad de crítico • +20 Velocidad de habilidades",
+    "statsPt": "+55 Dano de ataque • +25% Chance de acerto crítico • +20 Aceleração de habilidade"
   },
   "navori_quickblades": {
     "passive": "Golpes diestros: Los ataques reducen los enfriamientos restantes de tus habilidades básicas un 15%.",

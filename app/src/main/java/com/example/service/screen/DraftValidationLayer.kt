@@ -520,6 +520,17 @@ object DraftValidationLayer {
         auditList: MutableList<String>,
         isAllyTeam: Boolean = true
     ): ResolvedTeam {
+        if (!isAllyTeam) {
+            // Enemy rows are pick order, not TOP/JUNGLE/MID/ADC/SUPPORT. Neither
+            // stale assignedRole nor an ordinal bonus is evidence of a lane.
+            val assignments = EnemyRoleInference.resolve(scannedSlots.mapNotNull { it.champion })
+            scannedSlots.forEach { slot ->
+                slot.assignedRole = assignments.entries.firstOrNull { it.value.id == slot.champion?.id }?.key
+            }
+            return ResolvedTeam(assignments, assignments.mapValues { (role, champion) ->
+                EnemyRoleInference.confidence(champion, role)
+            })
+        }
         val standardRoles = listOf(LaneRole.TOP, LaneRole.JUNGLE, LaneRole.MID, LaneRole.ADC, LaneRole.SUPPORT)
         val finalMap = mutableMapOf<LaneRole, Champion>()
         val confidences = mutableMapOf<LaneRole, Int>()

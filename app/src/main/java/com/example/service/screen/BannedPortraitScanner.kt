@@ -24,8 +24,17 @@ internal class BannedPortraitScanner {
                            exclusions: List<Rect> = emptyList(), config: VisionCalibrationConfig = VisionCalibrationConfig(),
                            pickedIds: Set<String> = emptySet(), isCurrent: () -> Boolean = { true }): Set<String> {
         val capturedRevision = synchronized(this) {
-            if (!isCurrent() || bitmap.isRecycled || bitmap.width < bitmap.height || nowMs - lastScanAt < 250L ||
-                slots.all { it.state == BanState.CONFIRMED }) return confirmedIds()
+            if (!isCurrent()) return confirmedIds()
+            slots = slots.map { slot ->
+                if (slot.championId in pickedIds) slot.copy(championId = null, state = BanState.UNKNOWN, similarity = 0f)
+                else slot
+            }
+            previous = previous.filterValues { it.championId !in pickedIds }
+            // Recheck a completed header at a lower cadence: an early weak match
+            // must not remain permanent for the rest of the draft.
+            val interval = if (slots.all { it.state == BanState.CONFIRMED }) 1500L else 250L
+            if (!isCurrent() || bitmap.isRecycled || bitmap.width < bitmap.height || nowMs - lastScanAt < interval)
+                return confirmedIds()
             lastScanAt = nowMs
             revision
         }
@@ -100,14 +109,23 @@ internal class BannedPortraitScanner {
             val observation = assigned[key]
             val old = previous[key]
             when {
-                slot.state == BanState.CONFIRMED -> slot // Latched until explicit draft clear.
+                slot.state == BanState.CONFIRMED && observation != null && observation.championId == slot.championId && old != null &&
+                    old.championId == slot.championId -> slot.copy(similarity = maxOf(slot.similarity,
+                        minOf(observation.similarity, old.similarity)))
+                slot.state == BanState.CONFIRMED && observation?.championId != null &&
+                    observation.championId != slot.championId && old != null && observation.championId == old.championId &&
+                    minOf(observation.similarity, old.similarity) >= maxOf(.90f, slot.similarity + .05f) ->
+                    slot.copy(region = observation.region, championId = observation.championId,
+                        similarity = minOf(observation.similarity, old.similarity))
+                slot.state == BanState.CONFIRMED -> slot // Hidden/empty/weaker evidence cannot erase a ban.
                 observation == null -> slot // no evidence of an empty slot, preserve last confirmation
                 observation.championId == null && !observation.empty ->
                     if (slot.state == BanState.CONFIRMED) slot else slot.copy(region = observation.region,
                         championId = null, state = BanState.UNKNOWN)
                 old != null && observation.empty && old.empty -> slot.copy(region = observation.region, championId = null, state = BanState.EMPTY)
                 old != null && !observation.empty && observation.championId == old.championId && old.championId != null ->
-                    slot.copy(region = observation.region, championId = observation.championId, state = BanState.CONFIRMED)
+                    slot.copy(region = observation.region, championId = observation.championId, state = BanState.CONFIRMED,
+                        similarity = minOf(observation.similarity, old.similarity))
                 slot.state == BanState.CONFIRMED -> slot
                 else -> slot.copy(region = observation.region, championId = null, state = BanState.PENDING)
             }

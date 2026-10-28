@@ -1,4 +1,4 @@
-name: Fix error de solicitudes de patrocinio
+name: Fix error de draft y catálogo
 
 on:
   push:
@@ -51,9 +51,9 @@ jobs:
 
   targeted-last-pick:
     needs: catalog-preflight
-    name: Solicitudes, contadores y cierre de selección
+    name: Roles, primera selección, baneos y catálogo
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 40
     steps:
       - name: Descargar el código de fix-error
         uses: actions/checkout@v5
@@ -106,6 +106,14 @@ jobs:
           runner = SourceFileLoader('regression', 'tools/run-jvm-regression.py').load_module()
           runner.verify([
               'com.example.DraftAutoStopTest',
+              'com.example.EnemyRoleInferenceTest',
+              'com.example.DraftOrderUiTest',
+              'com.example.DraftBanWorkerTest',
+              'com.example.BannedPortraitScannerTest',
+              'com.example.CatalogBalanceTest',
+              'com.example.RequiredItemCorrectionsTest',
+              'com.example.ChampionBuildsCatalogValidationTest',
+              'com.example.BuildCoachingRegressionTest',
               'com.example.DraftSlotLifecycleTest',
               'com.example.DraftSlotVisibilityTest',
               'com.example.SponsorReviewPolicyTest',
@@ -118,7 +126,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v5
         with:
-          name: fix-error-last-pick-evidence
+          name: fix-error-draft-catalog-evidence
           path: |
             app/build/test-results/testDebugUnitTest/
             app/build/reports/tests/testDebugUnitTest/

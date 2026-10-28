@@ -42,6 +42,14 @@ def validate_text(text, expected):
     return errors
 
 
+def valid_evidence_patches(patches, expected):
+    def key(value):
+        match = re.fullmatch(r'(\d+)\.(\d+)([a-z]?)', value) if isinstance(value, str) else None
+        return (int(match[1]), int(match[2]), match[3]) if match else None
+    return isinstance(patches, list) and bool(patches) and all(
+        key(patch) is not None and key(patch) <= key(expected) for patch in patches)
+
+
 def main() -> int:
     errors = []
     # Translation dictionaries also preserve old, no-longer-referenced keys.
@@ -66,8 +74,11 @@ def main() -> int:
             errors.append(f"{path.relative_to(ROOT)}: {error}")
     references = json.loads((ROOT / "app/src/main/assets/matchup_references.json").read_text())
     for source in ("wildriftfire", "wildriftcore"):
-        if references["sources"][source]["patches"] != [EXPECTED]:
-            errors.append(f"Fuente activa {source}: parche incompatible")
+        # These arrays record the version actually scraped from each publisher,
+        # not the locally updated item catalog. Never relabel old evidence as new.
+        patches = references["sources"][source]["patches"]
+        if not valid_evidence_patches(patches, EXPECTED):
+            errors.append(f"Fuente {source}: versión de evidencia ausente, inválida o futura")
     scraper = (ROOT / "app/src/main/java/com/example/data/sync/BestBuildWrScraper.kt").read_text()
     if scraper.count("com.example.data.GamePatch.VERSION") != 2:
         errors.append("Las dos fuentes activas deben usar GamePatch.VERSION")

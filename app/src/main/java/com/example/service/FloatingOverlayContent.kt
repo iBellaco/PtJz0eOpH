@@ -418,8 +418,7 @@ internal fun FloatingOverlayContent(
                                         confirmedHudPicks(),namesOnly=true,quickTitlePass=true)
                                     if(result.isSuccessful) withContext(Dispatchers.Main) {
                                         if(!autoScanEnabled) return@withContext
-                                        if(result.detectedFirstPick!=null && !state.isFirstPickManuallySelected)
-                                            isFirstPick=result.detectedFirstPick
+                                        state.observeFirstPick(result.detectedFirstPick)
                                         syncAlliedHud(result)
                                         syncEnemyHud(result)
                                         commitLastPickToHud(result)
@@ -469,9 +468,7 @@ internal fun FloatingOverlayContent(
                                     if (result.isSuccessful) {
                                         withContext(Dispatchers.Main) {
                                             if (!autoScanEnabled) return@withContext
-                                            if (result.detectedFirstPick != null && !state.isFirstPickManuallySelected) {
-                                                isFirstPick = result.detectedFirstPick
-                                            }
+                                            state.observeFirstPick(result.detectedFirstPick)
 
                                             val newAlliesAdded = syncAlliedHud(result)
                                             val newEnemiesAdded = syncEnemyHud(result)
@@ -583,9 +580,7 @@ internal fun FloatingOverlayContent(
                 withContext(Dispatchers.Main) {
                     if (result.isSuccessful) {
                         // Sincronizar primera selección si se detectó y no ha sido fijada manualmente
-                        if (result.detectedFirstPick != null && !state.isFirstPickManuallySelected) {
-                            isFirstPick = result.detectedFirstPick
-                        }
+                        state.observeFirstPick(result.detectedFirstPick)
 
                         // 1. Asignación directa y de alta precisión por rol (respetando selecciones manuales)
                         syncAlliedHud(result)
@@ -1177,6 +1172,7 @@ internal fun FloatingOverlayContent(
                                                 com.example.util.UserPreferences.setActiveDraftRole(context, it)
                                             },
                                             isFirstPick = isFirstPick,
+                                            isFirstPickKnown = state.isFirstPickKnown,
                                             onFirstPickToggle = {
                                                 state.isFirstPickManuallySelected = true
                                                 isFirstPick = !isFirstPick

@@ -270,12 +270,15 @@ object LiteRTVisionClassifier {
                 found.add(proposal to null)
                 continue
             }
-            val ranked = proposal.shortlist.map { champ ->
+            // The coarse shortlist locates circles, not identities. A differently
+            // scaled Mel/Darius can be absent from its eight candidates; compare
+            // every local identity before accepting or computing the margin.
+            val ranked = catalog.map { champ ->
                 champ to PortraitMatcher.similarity(proposal.descriptor, championEmbeddingCache.getValue(champ.id))
             }.sortedByDescending { it.second }
             val best = ranked.first()
             if (PortraitMatcher.accepts(best.second, ranked.getOrNull(1)?.second ?: 0f, DEFAULT_CONFIDENCE_THRESHOLD)) {
-                found.add(proposal to best.first)
+                found.add(proposal.copy(score = best.second) to best.first)
             }
         }
         // A single gameplay HUD portrait must not be interpreted as a ban row.
@@ -283,7 +286,7 @@ object LiteRTVisionClassifier {
         val observations = found.map { (proposal, champion) ->
             BanObservation(if (proposal.x < width / 2) BanSide.ALLY else BanSide.ENEMY,
                 BanRegion(proposal.x.toFloat() / width, proposal.y.toFloat() / height,
-                    proposal.radius.toFloat() / height), champion?.id, champion == null)
+                    proposal.radius.toFloat() / height), champion?.id, champion == null, proposal.score)
         }
         // A final unused rival ban may have no crossed-out emblem. Infer its position
         // only from a regular row of at least four observed circles near the screen edge,
@@ -347,7 +350,7 @@ object LiteRTVisionClassifier {
                 (0..2).sumOf { squares[it] / count - (sums[it] / count) * (sums[it] / count) } / 3 >= 144.0
             }
         }
-        // Refine only textured but unidentified positions. A single central template can miss
+        // Refine unknown and weakly matched positions. A single central template can miss
         // differently scaled portraits; the final confidence and separation gates stay unchanged.
         val calibrated = positioned.filter { if (it.side == BanSide.ALLY) !config.manualAllyBans else !config.manualEnemyBans } +
             BanSide.entries.flatMap { side ->
@@ -356,12 +359,12 @@ object LiteRTVisionClassifier {
                     config.banRegions(ally).map { BanObservation(side, it, null, false) } else emptyList()
             }
         return calibrated.map { observation ->
-            if (observation.championId != null) return@map observation
+            if (observation.championId != null && observation.similarity >= .90f) return@map observation
             val region = observation.region
             val centerX = kotlin.math.round(region.x * width).toInt()
             val centerY = kotlin.math.round(region.y * height).toInt()
             val baseRadius = kotlin.math.round(region.radius * height).toInt()
-            var bestScore = 0f
+            var bestScore = if (observation.championId != null) observation.similarity else 0f
             var refined = observation
             // Keep the best alignment at each radius: resampling can move the optimum
             // between neighbouring crop sizes even when coarse correlation is lower.
@@ -398,7 +401,7 @@ object LiteRTVisionClassifier {
                         ranked.getOrNull(1)?.second ?: 0f, DEFAULT_CONFIDENCE_THRESHOLD)) {
                     bestScore = best.second
                     refined = observation.copy(region = BanRegion(x.toFloat()/width, y.toFloat()/height,
-                        radius.toFloat()/height), championId = best.first.id, empty = false)
+                        radius.toFloat()/height), championId = best.first.id, empty = false, similarity = best.second)
                 }
             }
             val pending = unresolved.values.sortedByDescending { it.first }.take(4)
@@ -420,7 +423,7 @@ object LiteRTVisionClassifier {
                 }.sortedByDescending { it.second }
                 val best=ranked.firstOrNull()
                 if (best != null && PortraitMatcher.accepts(best.second,ranked.getOrNull(1)?.second ?: 0f,DEFAULT_CONFIDENCE_THRESHOLD)) {
-                    refined=observation.copy(championId=best.first.id,empty=false)
+                    refined=observation.copy(championId=best.first.id,empty=false,similarity=best.second)
                 }
             }
             refined

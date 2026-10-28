@@ -87,7 +87,7 @@ internal fun OverlayState.applyConfirmedLastPick(result: DraftScanResult) {
         )?.let { index ->
             enemies[index] = champion
             applied = true
-            enemyConfidences[roles[index]] = 100
+            enemyConfidences[roles[index]] = com.example.service.screen.EnemyRoleInference.confidence(champion, roles[index])
         }
         null -> Unit
     }
@@ -98,6 +98,21 @@ internal fun OverlayState.applyConfirmedLastPick(result: DraftScanResult) {
         (applied || previousId == champion.id || scannedTarget?.id == champion.id) &&
         ownTeam.any { it?.id == champion.id }) {
         trackedLastPick = result.tenthPickIsAlly to champion.id
+        if (result.tenthPickIsAlly == false) {
+            // The last portrait can change the optimal roles of all five enemies.
+            // A portrait confirms identity, never 100% certainty of an enemy lane.
+            val policy = com.example.service.screen.EnemyRoleInference
+            val locked = manualLockedEnemySlots.filterValues { it }.keys.mapNotNull { index ->
+                enemies.getOrNull(index)?.let { roles[index] to it }
+            }.toMap()
+            val estimated = policy.resolve(enemies.filterNotNull(), locked)
+            androidx.compose.runtime.snapshots.Snapshot.withMutableSnapshot {
+                roles.forEachIndexed { index, role ->
+                    enemies[index] = estimated[role]
+                    estimated[role]?.let { enemyConfidences[role] = policy.confidence(it, role) }
+                }
+            }
+        }
         // Keep this preview replaceable until the selection screen disappears.
     }
 }

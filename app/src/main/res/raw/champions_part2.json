@@ -258,7 +258,8 @@
       "Presagio de Randuin",
       "Ángel de la guarda",
       "Colmillo de serpiente",
-      "Recuerdos de Lord Dominik"
+      "Recuerdos de Lord Dominik",
+      "Desgarrador divino"
     ],
     "situationalItemsIcons": [
       "file:///android_asset/offline_images/919bc13bc2461bb522082722e34a456d.webp",
@@ -266,7 +267,8 @@
       "file:///android_asset/offline_images/a01f7976459d788cbb0a763155cb39b8.webp",
       "file:///android_asset/offline_images/a9e382435db8c5b4d3dada562fa99d42.webp",
       "file:///android_asset/offline_images/9056fe258a17cfe13919ec1b3e222f4a.webp",
-      "file:///android_asset/offline_images/22544e382529f38069d660a78e6df20e.png"
+      "file:///android_asset/offline_images/22544e382529f38069d660a78e6df20e.png",
+      "file:///android_asset/offline_images/691296760b88f9735ddee2799f4992d4.webp"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -344,7 +346,8 @@
           "Presagio de Randuin",
           "Ángel de la guarda",
           "Colmillo de serpiente",
-          "Recuerdos de Lord Dominik"
+          "Recuerdos de Lord Dominik",
+          "Desgarrador divino"
         ],
         "bootBase": "Grebas codiciosas",
         "bootUpgrade": "Botas inmortales",
@@ -377,7 +380,8 @@
           "Presagio de Randuin",
           "Ángel de la guarda",
           "Colmillo de serpiente",
-          "Recuerdos de Lord Dominik"
+          "Recuerdos de Lord Dominik",
+          "Desgarrador divino"
         ],
         "bootBase": "Grebas codiciosas",
         "bootUpgrade": "Botas inmortales",
@@ -1053,7 +1057,7 @@
       "Twisted Fate",
       "Shen"
     ],
-    "tacticalAdvice": "Parche 7.3c: pierde vida por nivel, daño temprano de Portador del Anochecer (H1) y Paranoia tiene más enfriamiento. Prioriza rutas limpias y ganks garantizados; no fuerces cada definitiva sin visión de seguimiento.",
+    "tacticalAdvice": "pierde vida por nivel, daño temprano de Portador del Anochecer (H1) y Paranoia tiene más enfriamiento. Prioriza rutas limpias y ganks garantizados; no fuerces cada definitiva sin visión de seguimiento.",
     "recommendedRunes": "Compás Letal, Triunfo, Leyenda: Presteza, Golpe de Gracia, Impacto Repentino",
     "runeTreeDetails": "Precisión / Dominación: Compás Letal • Triunfo • Leyenda: Presteza • Golpe de Gracia • Impacto Repentino",
     "primaryRuneIconUrl": "file:///android_asset/runes/lethal_tempo.png",
@@ -4765,7 +4769,7 @@
       "Thresh",
       "Leona"
     ],
-    "tacticalAdvice": "Parche 7.3c: baja crítico, daño por alma y daño base de Oscuridad Lacerante (H1). Necesita jugar más segura por almas y utilidad; evita duelos tempranos contra tiradores de all-in.",
+    "tacticalAdvice": "baja crítico, daño por alma y daño base de Oscuridad Lacerante (H1). Necesita jugar más segura por almas y utilidad; evita duelos tempranos contra tiradores de all-in.",
     "recommendedRunes": "Pies Veloces, Brutal, Leyenda: Linaje, Golpe de Gracia, Revestimiento de Huesos",
     "runeTreeDetails": "Precisión / Valor: Pies Veloces • Brutal • Leyenda: Linaje • Golpe de Gracia • Revestimiento de Huesos",
     "primaryRuneIconUrl": "file:///android_asset/runes/fleet_footwork.png",
@@ -8425,7 +8429,8 @@
       "Arcoescudo Inmortal",
       "Colmillo de serpiente",
       "Recuerdos de Lord Dominik",
-      "Puñal de Statikk"
+      "Puñal de Statikk",
+      "Dardos rastreademonios"
     ],
     "situationalItemsIcons": [
       "file:///android_asset/offline_images/926efbca7b9ae9f241ddf7cd3c250273.webp",
@@ -8434,7 +8439,8 @@
       "file:///android_asset/offline_images/immortal_shieldbow.webp",
       "file:///android_asset/offline_images/9056fe258a17cfe13919ec1b3e222f4a.webp",
       "file:///android_asset/offline_images/22544e382529f38069d660a78e6df20e.png",
-      "file:///android_asset/offline_images/statikk_shiv.webp"
+      "file:///android_asset/offline_images/statikk_shiv.webp",
+      "file:///android_asset/offline_images/fiendhunter-bolts.webp"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -8513,7 +8519,8 @@
           "Arcoescudo Inmortal",
           "Colmillo de serpiente",
           "Recuerdos de Lord Dominik",
-          "Puñal de Statikk"
+          "Puñal de Statikk",
+          "Dardos rastreademonios"
         ],
         "bootBase": "Grebas de berserker",
         "bootUpgrade": "Grebas de metal",
@@ -8598,7 +8605,7 @@
       "Jarvan IV",
       "Vi"
     ],
-    "tacticalAdvice": "Parche 7.3c: la probabilidad de crítico por furia es más estable y Giro Cuchilla (H3) pega más. Entra con furia alta, fuerza recursos y guarda Furia Inmortal para el último tramo.",
+    "tacticalAdvice": "la probabilidad de crítico por furia es más estable y Giro Cuchilla (H3) pega más. Entra con furia alta, fuerza recursos y guarda Furia Inmortal para el último tramo.",
     "recommendedRunes": "Compás Letal, Brutal, Leyenda: Presteza, Último Esfuerzo, Revestimiento de Huesos",
     "runeTreeDetails": "Precisión / Valor: Compás Letal • Brutal • Leyenda: Presteza • Último Esfuerzo • Revestimiento de Huesos",
     "primaryRuneIconUrl": "file:///android_asset/runes/lethal_tempo.png",
@@ -11114,7 +11121,7 @@
       "Jarvan IV",
       "Vi"
     ],
-    "tacticalAdvice": "Parche 7.3c: tu Mordisco Frenético (H2) pega más y la curación potenciada escala mejor. Busca intercambios largos cuando puedas marcar al mismo rival dos veces antes de comprometer la definitiva.",
+    "tacticalAdvice": "tu Mordisco Frenético (H2) pega más y la curación potenciada escala mejor. Busca intercambios largos cuando puedas marcar al mismo rival dos veces antes de comprometer la definitiva.",
     "recommendedRunes": "Garras del Inmortal, Demoler, Fuerzas Renovadas, Sobrecrecimiento, Triunfo",
     "runeTreeDetails": "Valor / Precisión: Garras del Inmortal • Demoler • Fuerzas Renovadas • Sobrecrecimiento • Triunfo",
     "primaryRuneIconUrl": "file:///android_asset/runes/grasp_undying.png",
@@ -11513,7 +11520,8 @@
       "Fuerza de la naturaleza",
       "Ángel de la guarda",
       "Colmillo de serpiente",
-      "Recuerdos de Lord Dominik"
+      "Recuerdos de Lord Dominik",
+      "Desgarrador divino"
     ],
     "situationalItemsIcons": [
       "file:///android_asset/offline_images/c98e3aff8b69a404445bcedab6bc9b96.webp",
@@ -11521,7 +11529,8 @@
       "file:///android_asset/offline_images/3e9ae4d161ed330f5ba83c71d2b2a637.webp",
       "file:///android_asset/offline_images/a9e382435db8c5b4d3dada562fa99d42.webp",
       "file:///android_asset/offline_images/9056fe258a17cfe13919ec1b3e222f4a.webp",
-      "file:///android_asset/offline_images/22544e382529f38069d660a78e6df20e.png"
+      "file:///android_asset/offline_images/22544e382529f38069d660a78e6df20e.png",
+      "file:///android_asset/offline_images/691296760b88f9735ddee2799f4992d4.webp"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -11605,7 +11614,8 @@
           "Fuerza de la naturaleza",
           "Ángel de la guarda",
           "Colmillo de serpiente",
-          "Recuerdos de Lord Dominik"
+          "Recuerdos de Lord Dominik",
+          "Desgarrador divino"
         ],
         "bootBase": "Grebas codiciosas",
         "bootUpgrade": "Botas inmortales",
@@ -11638,7 +11648,8 @@
           "Fuerza de la naturaleza",
           "Ángel de la guarda",
           "Colmillo de serpiente",
-          "Recuerdos de Lord Dominik"
+          "Recuerdos de Lord Dominik",
+          "Desgarrador divino"
         ],
         "bootBase": "Grebas codiciosas",
         "bootUpgrade": "Botas inmortales",
@@ -11715,7 +11726,8 @@
       "Arcoescudo Inmortal",
       "Colmillo de serpiente",
       "Recuerdos de Lord Dominik",
-      "Puñal de Statikk"
+      "Puñal de Statikk",
+      "Dardos rastreademonios"
     ],
     "situationalItemsIcons": [
       "file:///android_asset/offline_images/rapid_firecannon.webp",
@@ -11724,7 +11736,8 @@
       "file:///android_asset/offline_images/immortal_shieldbow.webp",
       "file:///android_asset/offline_images/9056fe258a17cfe13919ec1b3e222f4a.webp",
       "file:///android_asset/offline_images/22544e382529f38069d660a78e6df20e.png",
-      "file:///android_asset/offline_images/statikk_shiv.webp"
+      "file:///android_asset/offline_images/statikk_shiv.webp",
+      "file:///android_asset/offline_images/fiendhunter-bolts.webp"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -11803,7 +11816,8 @@
           "Arcoescudo Inmortal",
           "Colmillo de serpiente",
           "Recuerdos de Lord Dominik",
-          "Puñal de Statikk"
+          "Puñal de Statikk",
+          "Dardos rastreademonios"
         ],
         "bootBase": "Grebas de berserker",
         "bootUpgrade": "Grebas de metal",
@@ -12088,7 +12102,7 @@
       "Diana",
       "Gragas"
     ],
-    "tacticalAdvice": "Parche 7.3c: mejora el daño crítico y el escudo escala más alto. Puedes aceptar intercambios cortos con pasiva disponible, pero espera levantamientos aliados para cerrar peleas.",
+    "tacticalAdvice": "mejora el daño crítico y el escudo escala más alto. Puedes aceptar intercambios cortos con pasiva disponible, pero espera levantamientos aliados para cerrar peleas.",
     "recommendedRunes": "Compás Letal, Brutal, Leyenda: Presteza, Golpe de Gracia, Revestimiento de Huesos",
     "runeTreeDetails": "Precisión / Valor: Compás Letal • Brutal • Leyenda: Presteza • Golpe de Gracia • Revestimiento de Huesos",
     "primaryRuneIconUrl": "file:///android_asset/runes/lethal_tempo.png",
@@ -12502,7 +12516,7 @@
       "Lulu",
       "Braum"
     ],
-    "tacticalAdvice": "Parche 7.3c: baja el daño de Cultivo del Espíritu y sube el enfriamiento de la definitiva. Mantén distancia y juega a ventanas con protección aliada en vez de duelo extendido sin recursos.",
+    "tacticalAdvice": "baja el daño de Cultivo del Espíritu y sube el enfriamiento de la definitiva. Mantén distancia y juega a ventanas con protección aliada en vez de duelo extendido sin recursos.",
     "recommendedRunes": "Compás Letal, Brutal, Leyenda: Linaje, Golpe de Gracia, Revestimiento de Huesos",
     "runeTreeDetails": "Precisión / Valor: Compás Letal • Brutal • Leyenda: Linaje • Golpe de Gracia • Revestimiento de Huesos",
     "primaryRuneIconUrl": "file:///android_asset/runes/lethal_tempo.png",
