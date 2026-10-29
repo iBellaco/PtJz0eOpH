@@ -118,6 +118,26 @@ omisión no es un campeón, y una observación desconocida no es un baneo confir
 No desplazar los restantes para cerrar un hueco. No inventar identidades a partir
 del fondo ni del vecino; las exclusiones del visor también se aplican aquí.
 
+Actualización del propietario, 28 de octubre de 2026: el tester POCO reporta Mel
+leída como Sion y un Darius ausente en los baneos. Comparar la identidad con todo
+el catálogo antes de aceptar el margen; la preselección reducida sirve para
+localizar, no para descartar competidores. Una lectura confirmada débil puede
+corregirse únicamente con dos nuevas observaciones coincidentes y claramente
+mejores (similitud mínima 0,90 y mejora mínima 0,05). Un vacío, una máscara o una
+lectura más débil no la borra. Un campeón seleccionado invalida su supuesto baneo.
+Revisar la cabecera completa con menor frecuencia, sin bloquear los títulos.
+
+## Orden y roles en el Hub
+
+Sin orden observado ni elección manual, mostrar «por confirmar», nunca primera
+selección rival por defecto. Contar títulos confirmados, no retratos provisionales.
+Conservar las líneas aliadas observadas. Los roles rivales se estiman para el
+equipo completo sin usar el orden de filas como línea; priorizar junglas
+compatibles antes de colocar un tirador fuera de rol. Recalcular al cambiar el
+décimo rival y respetar bloqueos manuales. El Hub debe representar ese resultado,
+no repetir una asignación por rol primario. La certeza de identidad de un retrato
+no convierte una línea rival estimada en una certeza del 100%.
+
 ## Evidencias y límites
 
 Red Magic y POCO funcionan en pruebas físicas reportadas por el propietario.

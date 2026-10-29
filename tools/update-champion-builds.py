@@ -19,6 +19,7 @@ OVERRIDES = {
  'caitlyn':['Filo Infinito','Cañón de Fuego Rápido','Recuerdos de Lord Dominik'],
  'jinx':['Flechas de los Yun Tal','Huracán de Runaan','Filo Infinito'],
  'lucian':['Segador de esencia','Filoveloz de Navori','Filo Infinito'],
+ 'miss_fortune':['Segador de esencia','Recaudadora','Filo Infinito'],
  'xayah':['Flechas de los Yun Tal','Filoveloz de Navori','Filo Infinito'],
  'yunara':['Flechas de los Yun Tal','Huracán de Runaan','Filo Infinito'],
  'zeri':['Flechas de los Yun Tal','Huracán de Runaan','Filo Infinito'],
@@ -65,6 +66,17 @@ def main(check=False):
             build['coreItems']=OVERRIDES[champ['id']][:]
         core=build['coreItems']
         situational=[i for i in build['situationalItems'] if i not in core]
+        # Conditional alternatives, not a blanket replacement of every lane build.
+        balance_alternatives = []
+        if champ['id'] == 'miss_fortune' and lane == 'ADC':
+            balance_alternatives.append('Filo fantasmal de Youmuu')
+        if champ['id'] in ('camille', 'nasus', 'jax', 'wukong') and lane in ('TOP', 'JUNGLE'):
+            balance_alternatives.append('Desgarrador divino')
+        if champ['id'] in ('ashe', 'tristana', 'xayah') and lane == 'ADC':
+            balance_alternatives.append('Dardos rastreademonios')
+        for name in balance_alternatives:
+            if name not in core + situational:
+                situational.append(name)
         # Move displaced core items to conditional alternatives, retaining the user's options.
         old=next((b for b in champ.get('builds',[]) if b['role'].upper()==lane),{})
         alternatives=old.get('coreItems',[])+champ.get('situationalItems',[])

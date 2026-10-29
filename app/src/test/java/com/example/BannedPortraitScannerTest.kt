@@ -23,6 +23,93 @@ class BannedPortraitScannerTest {
     private val context get() = RuntimeEnvironment.getApplication()
     @Before fun prepare() { WildRiftRepository.initChampions(context, forceReload = true) }
 
+    @Test fun marginalCropScoreCannotReplaceAnAcceptedBanIdentity() {
+        assertFalse(com.example.service.screen.isClearlyStrongerBan(.8514074f, .83980703f))
+        assertFalse(com.example.service.screen.isClearlyStrongerBan(.89f, .81f))
+        assertFalse(com.example.service.screen.isClearlyStrongerBan(.94f, .92f))
+        assertTrue(com.example.service.screen.isClearlyStrongerBan(.94f, .81f))
+    }
+
+    @Test fun fiveObservedCirclesKeepTheirMeasuredPositionsInsteadOfAnEvenlySpacedGrid() {
+        val scanner = BannedPortraitScanner()
+        val ids = listOf("camille", "vladimir", "karma", "lee_sin", "rammus")
+        val centers = listOf(.07578125f, .11171875f, .14609376f, .19765624f, .23203126f)
+        val observations = ids.mapIndexed { index, id ->
+            com.example.service.screen.BanObservation(com.example.service.screen.BanSide.ALLY,
+                com.example.service.screen.BanRegion(centers[index], .052f, .03f), id, similarity = .92f)
+        }
+        // An incomplete first frame may establish a provisional grid. A full row
+        // must replace that geometry without dropping the wider-spaced last pair.
+        scanner.update(observations.take(3), 1280f / 579f)
+        repeat(2) { scanner.update(observations, 1280f / 579f) }
+        val allied = scanner.slots.filter { it.side == com.example.service.screen.BanSide.ALLY }
+        assertEquals(ids, allied.map { it.championId })
+        assertEquals(centers, allied.map { it.region!!.x })
+        scanner.update(emptyList(), 1280f / 579f)
+        assertEquals(ids, scanner.slots.take(5).map { it.championId })
+    }
+
+    @Test fun strongerMelEvidenceCorrectsWeakSionOnlyAfterTwoNewFrames() {
+        val scanner = BannedPortraitScanner()
+        val region = com.example.service.screen.BanRegion(.9f, .05f, .03f)
+        val wrong = com.example.service.screen.BanObservation(com.example.service.screen.BanSide.ENEMY,
+            region, "sion", similarity = .81f)
+        repeat(2) { scanner.update(listOf(wrong), 2f) }
+        assertEquals("sion", scanner.slots.first { it.championId != null }.championId)
+        val correct = wrong.copy(championId = "mel", similarity = .94f)
+        scanner.update(listOf(correct), 2f)
+        assertTrue(scanner.slots.any { it.championId == "sion" })
+        scanner.update(listOf(correct), 2f)
+        assertTrue(scanner.slots.any { it.championId == "mel" })
+        repeat(3) { scanner.update(listOf(wrong), 2f) }
+        assertFalse(scanner.slots.any { it.championId == "sion" })
+        assertEquals(10, scanner.slots.size)
+    }
+
+    @Test fun anAlreadyConfirmedPickCannotRemainInTheBanList() {
+        val scanner = BannedPortraitScanner()
+        val observation = com.example.service.screen.BanObservation(com.example.service.screen.BanSide.ALLY,
+            com.example.service.screen.BanRegion(.1f, .05f, .03f), "sion", similarity = .83f)
+        repeat(2) { scanner.update(listOf(observation), 2f) }
+        val bitmap = Bitmap.createBitmap(1280, 576, Bitmap.Config.ARGB_8888)
+        try {
+            assertFalse("Selected identities invalidate stale bans",
+                "sion" in scanner.scan(bitmap, context, 0, listOf(Rect(0, 0, 1280, 576)), pickedIds = setOf("sion")))
+        } finally { bitmap.recycle() }
+    }
+
+    @Test fun syntheticMelAndDariusHeaderIsNotMisidentifiedAsSionAcrossCaptureScales() {
+        // Constructed from local champion assets: this is not the tester's screenshot.
+        val expected = listOf("caitlyn", "master_yi", "nocturne", "jax", "samira",
+            "rammus", "darius", "varus", "lulu", "mel")
+        val original = Bitmap.createBitmap(1280, 576, Bitmap.Config.ARGB_8888)
+        val canvas = android.graphics.Canvas(original)
+        canvas.drawColor(android.graphics.Color.rgb(9, 15, 30))
+        val paint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG or android.graphics.Paint.FILTER_BITMAP_FLAG)
+        expected.forEachIndexed { index, id ->
+            val cx = if (index < 5) 96f + index * 46f else 995f + (index - 5) * 46f
+            val cy = 30f
+            paint.color = android.graphics.Color.rgb(120, 45, 65)
+            canvas.drawCircle(cx, cy, 20f, paint)
+            val portrait = context.assets.open("champions/$id.png").use { BitmapFactory.decodeStream(it)!! }
+            try {
+                canvas.save()
+                canvas.clipPath(android.graphics.Path().apply { addCircle(cx, cy, 18f, android.graphics.Path.Direction.CW) })
+                canvas.drawBitmap(portrait, null, android.graphics.RectF(cx - 18, cy - 18, cx + 18, cy + 18), paint)
+                canvas.restore()
+            } finally { portrait.recycle() }
+        }
+        try { for (scale in listOf(1f, 1.5f, 2f)) {
+            val bitmap = Bitmap.createScaledBitmap(original, (1280 * scale).toInt(), (576 * scale).toInt(), true)
+            try {
+                val scanner = BannedPortraitScanner()
+                scanner.scan(bitmap, context, 0)
+                scanner.scan(bitmap, context, 1500)
+                assertEquals("Synthetic capture at scale $scale", expected, scanner.slots.map { it.championId })
+            } finally { if (bitmap !== original) bitmap.recycle() }
+        } } finally { original.recycle() }
+    }
+
     @Test fun aTexturedNeighbourCannotDisplaceTheFifthVisibleRivalBan() {
         val observations = listOf("lee_sin", "mordekaiser", "syndra", "cho_gath", "hwei").mapIndexed { index, id ->
             com.example.service.screen.BanObservation(com.example.service.screen.BanSide.ENEMY,
@@ -179,6 +266,8 @@ class BannedPortraitScannerTest {
         assertTrue(scanner.scan(bitmap, context, 0).isEmpty())
         val bans = scanner.scan(bitmap, context, 1500)
         assertTrue(bans.toString(), bans.containsAll(setOf("camille", "vladimir", "karma", "lee_sin", "rammus", "ahri", "lillia", "taliyah")))
+        assertEquals(listOf("camille", "vladimir", "karma", "lee_sin", "rammus"),
+            scanner.slots.take(5).map { it.championId })
         assertEquals(report, LiteRTVisionClassifier.reportFlow.value)
         scanner.reset()
         assertTrue(scanner.scan(bitmap, context, 3000).isEmpty())

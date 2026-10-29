@@ -1676,7 +1676,8 @@
       "Ángel de la guarda",
       "Fauces de Malmortius",
       "Colmillo de serpiente",
-      "Puñal de Statikk"
+      "Puñal de Statikk",
+      "Dardos rastreademonios"
     ],
     "situationalItemsIcons": [
       "file:///android_asset/offline_images/22544e382529f38069d660a78e6df20e.png",
@@ -1684,7 +1685,8 @@
       "file:///android_asset/offline_images/a9e382435db8c5b4d3dada562fa99d42.webp",
       "file:///android_asset/offline_images/fde3101c1b0cf8002454b75c285cd1fe.webp",
       "file:///android_asset/offline_images/9056fe258a17cfe13919ec1b3e222f4a.webp",
-      "file:///android_asset/offline_images/statikk_shiv.webp"
+      "file:///android_asset/offline_images/statikk_shiv.webp",
+      "file:///android_asset/offline_images/fiendhunter-bolts.webp"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -1762,7 +1764,8 @@
           "Ángel de la guarda",
           "Fauces de Malmortius",
           "Colmillo de serpiente",
-          "Puñal de Statikk"
+          "Puñal de Statikk",
+          "Dardos rastreademonios"
         ],
         "bootBase": "Grebas de berserker",
         "bootUpgrade": "Grebas de metal",
@@ -3278,7 +3281,8 @@
       "Fauces de Malmortius",
       "Colmillo de serpiente",
       "Recuerdos de Lord Dominik",
-      "Fuerza de la naturaleza"
+      "Fuerza de la naturaleza",
+      "Desgarrador divino"
     ],
     "situationalItemsIcons": [
       "file:///android_asset/offline_images/0678b476a01b8e1b5fa9754e8858ee93.png",
@@ -3287,7 +3291,8 @@
       "file:///android_asset/offline_images/fde3101c1b0cf8002454b75c285cd1fe.webp",
       "file:///android_asset/offline_images/9056fe258a17cfe13919ec1b3e222f4a.webp",
       "file:///android_asset/offline_images/22544e382529f38069d660a78e6df20e.png",
-      "file:///android_asset/offline_images/3e9ae4d161ed330f5ba83c71d2b2a637.webp"
+      "file:///android_asset/offline_images/3e9ae4d161ed330f5ba83c71d2b2a637.webp",
+      "file:///android_asset/offline_images/691296760b88f9735ddee2799f4992d4.webp"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -3366,7 +3371,8 @@
           "Fauces de Malmortius",
           "Colmillo de serpiente",
           "Recuerdos de Lord Dominik",
-          "Fuerza de la naturaleza"
+          "Fuerza de la naturaleza",
+          "Desgarrador divino"
         ],
         "bootBase": "Grebas codiciosas",
         "bootUpgrade": "Botas inmortales",
@@ -3400,7 +3406,8 @@
           "Fauces de Malmortius",
           "Colmillo de serpiente",
           "Recuerdos de Lord Dominik",
-          "Fuerza de la naturaleza"
+          "Fuerza de la naturaleza",
+          "Desgarrador divino"
         ],
         "bootBase": "Grebas codiciosas",
         "bootUpgrade": "Botas inmortales",
@@ -7454,7 +7461,7 @@
       "Vi",
       "Amumu"
     ],
-    "tacticalAdvice": "Parche 7.3c: bajaron daño, escudos y alcance de Fauces Trituradoras (H3). Juega más por control de zona y castigo seguro; evita intercambios largos si fallas la pincelada clave.",
+    "tacticalAdvice": "bajaron daño, escudos y alcance de Fauces Trituradoras (H3). Juega más por control de zona y castigo seguro; evita intercambios largos si fallas la pincelada clave.",
     "recommendedRunes": "Cometa Arcano, Banda de Maná, Trascendencia, Piroláser, Revestimiento de Huesos",
     "runeTreeDetails": "Brujería / Valor: Cometa Arcano • Banda de Maná • Trascendencia • Piroláser • Revestimiento de Huesos",
     "primaryRuneIconUrl": "file:///android_asset/runes/arcane_comet.png",
@@ -8275,7 +8282,8 @@
       "Ángel de la guarda",
       "Fauces de Malmortius",
       "Malla de espinas",
-      "Fuerza de la naturaleza"
+      "Fuerza de la naturaleza",
+      "Desgarrador divino"
     ],
     "situationalItemsIcons": [
       "file:///android_asset/offline_images/537435e5e6691bd654c89dba3aa169ef.webp",
@@ -8283,7 +8291,8 @@
       "file:///android_asset/offline_images/a9e382435db8c5b4d3dada562fa99d42.webp",
       "file:///android_asset/offline_images/fde3101c1b0cf8002454b75c285cd1fe.webp",
       "file:///android_asset/offline_images/b68d6e640042b5db9b2c77722c9187e5.webp",
-      "file:///android_asset/offline_images/3e9ae4d161ed330f5ba83c71d2b2a637.webp"
+      "file:///android_asset/offline_images/3e9ae4d161ed330f5ba83c71d2b2a637.webp",
+      "file:///android_asset/offline_images/691296760b88f9735ddee2799f4992d4.webp"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -8361,7 +8370,8 @@
           "Ángel de la guarda",
           "Fauces de Malmortius",
           "Malla de espinas",
-          "Fuerza de la naturaleza"
+          "Fuerza de la naturaleza",
+          "Desgarrador divino"
         ],
         "bootBase": "Grebas codiciosas",
         "bootUpgrade": "Botas inmortales",
@@ -8394,7 +8404,8 @@
           "Ángel de la guarda",
           "Fauces de Malmortius",
           "Malla de espinas",
-          "Fuerza de la naturaleza"
+          "Fuerza de la naturaleza",
+          "Desgarrador divino"
         ],
         "bootBase": "Grebas codiciosas",
         "bootUpgrade": "Botas inmortales",
@@ -8650,7 +8661,7 @@
       "Leona",
       "Nautilus"
     ],
-    "tacticalAdvice": "Parche 7.3c: el daño crítico y la ejecución por vida faltante mejoran antes. Guarda el 4º disparo para rematar y no lo gastes en tanques si el carry está alcanzable.",
+    "tacticalAdvice": "el daño crítico y la ejecución por vida faltante mejoran antes. Guarda el 4º disparo para rematar y no lo gastes en tanques si el carry está alcanzable.",
     "recommendedRunes": "Pies Veloces, Brutal, Leyenda: Linaje, Golpe de Gracia, Celeridad",
     "runeTreeDetails": "Precisión / Brujería: Pies Veloces • Brutal • Leyenda: Linaje • Golpe de Gracia • Celeridad",
     "primaryRuneIconUrl": "file:///android_asset/runes/fleet_footwork.png",
@@ -13847,12 +13858,12 @@
     ],
     "spellsIcons": [],
     "coreItems": [
-      "Filo fantasmal de Youmuu",
+      "Segador de esencia",
       "Recaudadora",
       "Filo Infinito"
     ],
     "coreItemsIcons": [
-      "file:///android_asset/offline_images/f1b8c4afd751ba63ea7b8f0ff5f2c981.webp",
+      "file:///android_asset/offline_images/essence_reaver.webp",
       "file:///android_asset/offline_images/c341133522f4f2bf164b1b823a13249c.webp",
       "file:///android_asset/offline_images/277520aa7c2716fe0e494a9f2fa55e2a.webp"
     ],
@@ -13862,7 +13873,8 @@
       "Ángel de la guarda",
       "Filo de la noche",
       "Colmillo de serpiente",
-      "Puñal de Statikk"
+      "Puñal de Statikk",
+      "Filo fantasmal de Youmuu"
     ],
     "situationalItemsIcons": [
       "file:///android_asset/offline_images/22544e382529f38069d660a78e6df20e.png",
@@ -13870,7 +13882,8 @@
       "file:///android_asset/offline_images/a9e382435db8c5b4d3dada562fa99d42.webp",
       "file:///android_asset/offline_images/9d3f49bbe18458be5b63ce1d74b3e91c.webp",
       "file:///android_asset/offline_images/9056fe258a17cfe13919ec1b3e222f4a.webp",
-      "file:///android_asset/offline_images/statikk_shiv.webp"
+      "file:///android_asset/offline_images/statikk_shiv.webp",
+      "file:///android_asset/offline_images/f1b8c4afd751ba63ea7b8f0ff5f2c981.webp"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -13933,12 +13946,12 @@
         "title": "Build Línea de Dragón • Criterio Coach",
         "role": "adc",
         "coreItems": [
-          "Filo fantasmal de Youmuu",
+          "Segador de esencia",
           "Recaudadora",
           "Filo Infinito"
         ],
         "items": [
-          "Filo fantasmal de Youmuu",
+          "Segador de esencia",
           "Recaudadora",
           "Filo Infinito"
         ],
@@ -13948,7 +13961,8 @@
           "Ángel de la guarda",
           "Filo de la noche",
           "Colmillo de serpiente",
-          "Puñal de Statikk"
+          "Puñal de Statikk",
+          "Filo fantasmal de Youmuu"
         ],
         "bootBase": "Grebas codiciosas",
         "bootUpgrade": "Botas inmortales",

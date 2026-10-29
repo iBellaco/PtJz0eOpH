@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -79,6 +80,7 @@ internal fun FloatingDraftCoachView(
     activeRole: LaneRole,
     onActiveRoleChange: (LaneRole) -> Unit,
     isFirstPick: Boolean,
+    isFirstPickKnown: Boolean = true,
     onFirstPickToggle: () -> Unit,
     isLegendaryQueue: Boolean = false,
     onToggleLegendaryQueue: (() -> Unit)? = null,
@@ -107,13 +109,8 @@ internal fun FloatingDraftCoachView(
 
     val defaultRoles = remember { listOf(LaneRole.TOP, LaneRole.JUNGLE, LaneRole.MID, LaneRole.ADC, LaneRole.SUPPORT) }
 
-    val explicitEnemyOpponent = remember(activeRole, enemies.toList(), isLoadingScreenMode) {
-        if (isLoadingScreenMode) {
-            val roleIndex = defaultRoles.indexOf(activeRole).coerceIn(0, 4)
-            enemies.getOrNull(roleIndex)
-        } else {
-            enemies.filterNotNull().find { it.primaryRole == activeRole }
-        }
+    val explicitEnemyOpponent = remember(activeRole, enemies.toList()) {
+        enemies.getOrNull(defaultRoles.indexOf(activeRole))
     }
 
     val allySlots = remember(allies.toList(), allySpells.toMap()) {
@@ -130,28 +127,10 @@ internal fun FloatingDraftCoachView(
         }
     }
     val enemySlots = remember(enemies.toList(), enemyConfidences.toMap(), enemySpells.toMap(), enemySummonerNames.toMap()) {
-        // En Wild Rift el orden de líneas del rival está oculto en el draft. Se deduce por afinidad de rol primario o flex
-        val availableRoles = defaultRoles.toMutableList()
-        val assignedList = mutableListOf<DraftSlot>()
-        enemies.filterNotNull().forEachIndexed { index, champ ->
-            val targetRole = if (availableRoles.contains(champ.primaryRole)) {
-                champ.primaryRole
-            } else {
-                champ.secondaryRoles.firstOrNull { availableRoles.contains(it) } ?: availableRoles.firstOrNull() ?: champ.primaryRole
-            }
-            availableRoles.remove(targetRole)
-            val conf = enemyConfidences[targetRole] ?: 85
-            assignedList.add(
-                DraftSlot(
-                    champion = champ,
-                    assignedRole = targetRole,
-                    confidence = conf,
-                    summonerName = enemySummonerNames[index],
-                    spells = enemySpells[index] ?: emptyList()
-                )
-            )
-        }
-        assignedList
+        // The scanner/manual editor already owns these role-indexed rows.
+        // Reassigning by primary role here destroys the composition and manual edits.
+        com.example.service.screen.EnemyDraftReconciler.hudSlots(enemies.toList(),
+            enemyConfidences.toMap(), enemySummonerNames.toMap(), enemySpells.toMap())
     }
 
     Column(
@@ -174,6 +153,7 @@ internal fun FloatingDraftCoachView(
             allySummonerNames = allySummonerNames.toMap(),
             activeUserRole = activeRole,
             isFirstPick = isFirstPick,
+            isFirstPickKnown = isFirstPickKnown,
             onToggleFirstPick = onFirstPickToggle,
             isLegendary = isLegendaryQueue,
             onToggleLegendary = onToggleLegendaryQueue,
@@ -218,12 +198,13 @@ internal fun FloatingDraftCoachView(
 }
 
 @Composable
-private fun OverlayVersusDraftBoard(
+internal fun OverlayVersusDraftBoard(
     allySlots: List<DraftSlot>,
     enemySlots: List<DraftSlot>,
     allySummonerNames: Map<Int, String> = emptyMap(),
     activeUserRole: LaneRole?,
     isFirstPick: Boolean = true,
+    isFirstPickKnown: Boolean = true,
     onToggleFirstPick: (() -> Unit)? = null,
     isLegendary: Boolean = false,
     onToggleLegendary: (() -> Unit)? = null,
@@ -255,10 +236,11 @@ private fun OverlayVersusDraftBoard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Surface(
-                    modifier = Modifier.clickable { onToggleFirstPick?.invoke() },
+                    modifier = Modifier.heightIn(min = 48.dp).testTag("draft_first_pick_toggle")
+                        .clickable { onToggleFirstPick?.invoke() },
                     shape = RoundedCornerShape(12.dp),
-                    color = if (isFirstPick) AllyBlue.copy(alpha = 0.15f) else DangerRed.copy(alpha = 0.15f),
-                    border = BorderStroke(1.dp, if (isFirstPick) AllyBlue.copy(alpha = 0.6f) else DangerRed.copy(alpha = 0.6f))
+                    color = if (!isFirstPickKnown) HextechDarkBg else if (isFirstPick) AllyBlue.copy(alpha = 0.15f) else DangerRed.copy(alpha = 0.15f),
+                    border = BorderStroke(1.dp, if (!isFirstPickKnown) TextSecondary else if (isFirstPick) AllyBlue.copy(alpha = 0.6f) else DangerRed.copy(alpha = 0.6f))
                 ) {
                     Row(
                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
@@ -268,12 +250,13 @@ private fun OverlayVersusDraftBoard(
                             modifier = Modifier
                                 .size(5.dp)
                                 .clip(CircleShape)
-                                .background(if (isFirstPick) AllyBlue else DangerRed)
+                                .background(if (!isFirstPickKnown) TextSecondary else if (isFirstPick) AllyBlue else DangerRed)
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
-                            text = com.example.util.tr(if (isFirstPick) tr("1ª Selección: Aliados") else tr("1ª Selección: Rival")),
-                            color = if (isFirstPick) AllyBlue else DangerRed,
+                            text = if (!isFirstPickKnown) com.example.util.localizedString(com.example.R.string.draft_first_pick_unknown)
+                                else if (isFirstPick) tr("1ª Selección: Aliados") else tr("1ª Selección: Rival"),
+                            color = if (!isFirstPickKnown) TextSecondary else if (isFirstPick) AllyBlue else DangerRed,
                             fontWeight = FontWeight.Bold,
                             fontSize = 9.5.sp
                         )
@@ -319,7 +302,7 @@ private fun OverlayVersusDraftBoard(
                     Box(modifier = Modifier.size(6.dp).clip(CircleShape).background(AllyBlue))
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(tr("EQUIPO ALIADO"), color = AllyBlue, fontWeight = FontWeight.Black, fontSize = 10.5.sp)
-                    if (isFirstPick) {
+                    if (isFirstPickKnown && isFirstPick) {
                         Spacer(modifier = Modifier.width(4.dp))
                         Surface(
                             shape = RoundedCornerShape(4.dp),
@@ -356,7 +339,7 @@ private fun OverlayVersusDraftBoard(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.clickable { onToggleFirstPick?.invoke() }
                 ) {
-                    if (!isFirstPick) {
+                    if (isFirstPickKnown && !isFirstPick) {
                         Surface(
                             shape = RoundedCornerShape(4.dp),
                             color = DangerRed.copy(alpha = 0.2f),

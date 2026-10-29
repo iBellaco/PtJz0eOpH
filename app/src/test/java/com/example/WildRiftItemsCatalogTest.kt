@@ -154,7 +154,8 @@ class WildRiftItemsCatalogTest {
         val diadema = WildRiftItemsData.getItemByName("Diadema melodiosa")
         assertNotNull(diadema)
         assertTrue(diadema!!.stats.contains("+1200 Maná máximo"))
-        assertTrue(diadema.stats.contains("+8% Poder de curaciones y escudos"))
+        assertTrue("Diadema melodiosa debe otorgar 6%: ${diadema.stats}",
+            diadema.stats.contains("+6% Poder de curaciones y escudos"))
         assertTrue(diadema.passive.contains("0,25%"))
         assertTrue(diadema.passive.contains("0,8%"))
 

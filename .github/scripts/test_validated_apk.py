@@ -16,7 +16,8 @@ class ValidatedApkTest(unittest.TestCase):
     workflow = (Path(__file__).parents[1] / 'workflows/build-apk.yml').read_text()
     workflow_jobs = set(re.findall(r'^  ([a-z][a-z-]+):$', workflow, re.MULTILINE))
 
-    def invoke(self, changed_tree=False, failed_job=None, expired=False, run=None, files=None, missing_job=None):
+    def invoke(self, changed_tree=False, failed_job=None, expired=False, run=None, files=None, missing_job=None,
+               failed_conclusion='failure'):
         def request(path):
             if '/git/commits/' in path:
                 return {'tree': {'sha': 'different' if changed_tree and path.endswith('a' * 40) else 'same'}}
@@ -31,7 +32,7 @@ class ValidatedApkTest(unittest.TestCase):
             if '/workflows/' in path:
                 return {'workflow_runs': [run or self.fixture_run]}
             if '/jobs?' in path:
-                return {'jobs': [{'name': name, 'conclusion': 'failure' if failed_job == name else 'success'}
+                return {'jobs': [{'name': name, 'conclusion': failed_conclusion if failed_job == name else 'success'}
                                  for name in self.workflow_jobs if name != missing_job]}
             if '/artifacts?' in path:
                 return {'artifacts': [{'name': 'app-release.apk', 'expired': expired}]}
@@ -65,6 +66,13 @@ class ValidatedApkTest(unittest.TestCase):
     def test_failed_installed_audit_prevents_reuse(self):
         self.assertEqual(('', ''), self.invoke(failed_job='installed-audit'))
 
+    def test_both_parallel_jobs_must_pass_before_reuse(self):
+        for name in ['core-tests', 'rendered-audit']:
+            with self.subTest(job=name):
+                self.assertEqual(('', ''), self.invoke(missing_job=name))
+                for conclusion in ['failure', 'cancelled', 'timed_out', 'skipped', None]:
+                    self.assertEqual(('', ''), self.invoke(failed_job=name, failed_conclusion=conclusion))
+
     def test_required_jobs_exist_in_the_actual_workflow(self):
         self.assertTrue(validated.REQUIRED_JOBS.issubset(self.workflow_jobs))
 
@@ -84,7 +92,7 @@ class ValidatedApkTest(unittest.TestCase):
 
     def test_parallel_build_cannot_publish_before_full_and_native_regressions(self):
         release = self.workflow.split('  build-and-release:', 1)[1].split('  cleanup-history:', 1)[0]
-        for dependency in ['core-and-rendered', 'installed-audit', 'installed-spanish', 'scanner-sequence-audit','native-title-preflight']:
+        for dependency in ['core-tests', 'rendered-audit', 'installed-audit', 'installed-spanish', 'scanner-sequence-audit','native-title-preflight']:
             self.assertIn('    - ' + dependency + '\n', release)
         self.assertIn("'RENDERED_RESULT', 'DEVICE_RESULT', 'SPANISH_RESULT', 'SEQUENCE_RESULT'", release)
         self.assertIn('if any(value != expected for value in results.values())', release)

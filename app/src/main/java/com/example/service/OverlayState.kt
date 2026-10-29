@@ -21,6 +21,15 @@ class OverlayState {
     var isRoleManuallySelected by androidx.compose.runtime.mutableStateOf(false)
     var isFirstPick by androidx.compose.runtime.mutableStateOf(false)
     var isFirstPickManuallySelected by androidx.compose.runtime.mutableStateOf(false)
+    var isFirstPickObserved by androidx.compose.runtime.mutableStateOf(false)
+    val isFirstPickKnown: Boolean get() = isFirstPickManuallySelected || isFirstPickObserved
+
+    internal fun observeFirstPick(value: Boolean?) {
+        if (value != null && !isFirstPickManuallySelected) {
+            isFirstPick = value
+            isFirstPickObserved = true
+        }
+    }
     var isLegendaryQueue by androidx.compose.runtime.mutableStateOf(false)
     var isCompactBubble by androidx.compose.runtime.mutableStateOf(false)
     var isScanning by androidx.compose.runtime.mutableStateOf(false)
@@ -45,6 +54,7 @@ class OverlayState {
         // Resume a populated draft; a blank hub cannot own old parser evidence.
         if (remembered.isNotEmpty() && (displayed.isEmpty() || remembered.none { it in represented })) {
             trackedLastPick = null
+            isFirstPickObserved = false
             scanner.resetSlotMemory(preserveBans=true)
         } else if (displayed.isEmpty()) {
             // No player evidence: discard captions, retaining a live ban-only phase.
@@ -82,6 +92,7 @@ class OverlayState {
         allySpells.clear(); enemySpells.clear()
         isRoleManuallySelected = false; isFirstPickManuallySelected = false
         isFirstPick = false
+        isFirstPickObserved = false
         com.example.service.screen.DraftVisionScanner.clearSessionState()
         com.example.service.screen.TenthPickDiagnosticManager.clearAllCaches(context)
     }

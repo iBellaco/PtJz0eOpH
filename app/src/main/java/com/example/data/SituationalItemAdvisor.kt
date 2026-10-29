@@ -315,11 +315,11 @@ object SituationalItemAdvisor {
         "Flechas de los Yun Tal" to SituationalItemInfo(
             name = "Flechas de los Yun Tal",
             iconUrl = "file:///android_asset/offline_images/yun_tal_wildarrows.webp",
-            categoryName = "Daño Físico & Crítico con Ráfaga (Parche 7.3c)",
+            categoryName = "Daño Físico & Crítico con Ráfaga",
             purpose = "Ofrece un pico de velocidad de ataque para tiradores de autoataques continuos.",
             bestAgainst = listOf("Tiradores de autoataques continuos (Jinx, Tristana, Draven, Caitlyn, Ashe, Kai'Sa)"),
             keyEffect = "Ráfaga: al atacar a un campeón enemigo, otorga +35% velocidad de ataque durante 6 s; los ataques reducen su enfriamiento.",
-            recommendationTip = "Primer objeto de crítico más accesible en 7.3c para acelerar el pico de poder en juego temprano y medio."
+            recommendationTip = "Primer objeto de crítico más accesible para acelerar el pico de poder en juego temprano y medio."
         ),
         "Velo del amanecer" to SituationalItemInfo(
             name = "Velo del amanecer",
@@ -423,10 +423,14 @@ object SituationalItemAdvisor {
         
         val baseAdvice = matched?.value ?: run {
             val itemData = WildRiftItemsData.getItemByName(itemName)
-            val effectText = if (!itemData?.passive.isNullOrBlank()) itemData!!.passive else "Objeto estratégico seleccionado para contrarrestar amenazas específicas de la composición rival."
-            val statsText = if (!itemData?.stats.isNullOrBlank()) itemData!!.stats else "Mejora estadísticas y pasivas críticas para neutralizar las condiciones de victoria del rival."
+            // Use the authored catalog language before generic phrase translation;
+            // partial word substitutions can otherwise hide a newer Portuguese passive.
+            val effectText = itemData?.getLocalizedPassive(lang)?.takeIf { it.isNotBlank() }
+                ?: "Objeto estratégico seleccionado para contrarrestar amenazas específicas de la composición rival."
+            val statsText = itemData?.getLocalizedStats(lang)?.takeIf { it.isNotBlank() }
+                ?: "Mejora estadísticas y pasivas críticas para neutralizar las condiciones de victoria del rival."
             SituationalItemInfo(
-                name = itemData?.name ?: itemName,
+                name = itemData?.getLocalizedName(lang) ?: itemName,
                 iconUrl = itemData?.iconUrl ?: WildRiftItemsData.getItemIconByName(itemName),
                 categoryName = itemData?.category ?: "Objeto Situacional Adaptativo",
                 purpose = effectText,

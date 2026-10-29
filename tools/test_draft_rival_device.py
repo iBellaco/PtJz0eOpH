@@ -35,6 +35,23 @@ class DraftRivalDeviceTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             device.validate_result(successful_output(old), 0, self.expected)
 
+    def test_default_selection_still_requires_the_entire_installed_suite(self):
+        methods, selector = device.select_methods(self.expected)
+        self.assertEqual(self.expected, methods)
+        self.assertEqual(device.TEST_CLASS, selector)
+        with self.assertRaises(ValueError):
+            device.validate_result(successful_output(device.VI_METHODS), 0, methods)
+
+    def test_explicit_vi_selection_requires_both_exact_methods_and_normal_completion(self):
+        methods, selector = device.select_methods(self.expected, vi_only=True)
+        self.assertEqual(device.VI_METHODS, methods)
+        self.assertEqual({f'{device.TEST_CLASS}#{m}' for m in methods}, set(selector.split(',')))
+        device.validate_result(successful_output(methods), 0, methods)
+        with self.assertRaises(ValueError):
+            device.validate_result(successful_output({sorted(methods)[0]}), 0, methods)
+        with self.assertRaises(ValueError):
+            device.select_methods(self.expected - {sorted(methods)[0]}, vi_only=True)
+
     def test_matching_count_with_a_wrong_method_cannot_pass(self):
         wrong = (self.expected - {sorted(self.expected)[0]}) | {'unrelated'}
         with self.assertRaises(ValueError):

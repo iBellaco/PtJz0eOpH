@@ -102,6 +102,11 @@ class DraftMultiDeviceAuditTest {
             Profile(fields[0],fields[1],fields[2],fields[3].toInt(),fields[4].toInt(),specification=fields[5])
         }, "requested-brand-displays")
     }
+    // Run this exact regression early in fix-error; the full requested-display
+    // matrix remains unchanged in validation. This is a resized fixture, not a phone test.
+    @Test fun smallCapturePreservesJhinWhenPortraitsAndBansChange() = audit(listOf(
+        Profile("regression-small-jhin", "generic", "resized-reference", 854, 480)
+    ), "small-jhin-regression")
     @Test fun fullScreenSidePanelsRetainCircularPortraitsWithoutLetterboxing() = audit(
         listOf(640 to 360, 1280 to 720, 2400 to 1080, 2712 to 1220, 3120 to 1440,
             1024 to 768, 1600 to 1000, 2560 to 1600, 2440 to 2268, 1800 to 1800).map { (w, h) ->

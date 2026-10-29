@@ -26,6 +26,7 @@ import org.robolectric.annotation.Config
 @Config(sdk = [34])
 class TenthPickRegressionTest {
     private val vi = Champion(id = "vi", name = "Vi", primaryRole = LaneRole.JUNGLE)
+    private fun champion(id: String) = com.example.data.WildRiftRepository.championSnapshot().single { it.id == id }
 
     private fun assertFloatListEquals(expected: List<Float>, actual: List<Float>) {
         assertEquals(expected.size, actual.size)
@@ -36,6 +37,7 @@ class TenthPickRegressionTest {
 
     @Before
     fun setUp() {
+        com.example.data.WildRiftRepository.initChampions(org.robolectric.RuntimeEnvironment.getApplication(), forceReload = true)
         DraftVisionScanner.resetSlotMemory()
     }
 
@@ -245,25 +247,38 @@ class TenthPickRegressionTest {
             val hud = OverlayState()
             val own = if (isAlly) hud.allies else hud.enemies
             val other = if (isAlly) hud.enemies else hud.allies
-            repeat(4) { own[it] = Champion(id = "own$it") }
-            repeat(5) { other[it] = Champion(id = "other$it") }
-            val initialNine = (own + other).filterNotNull().map { it.id }
+            val ownIds = listOf("darius", "mel", "caitlyn", "milio")
+            val otherIds = listOf("skarner", "pantheon", "brand", "jinx", "yuumi")
+            ownIds.forEachIndexed { index, id -> own[index] = champion(id) }
+            otherIds.forEachIndexed { index, id -> other[index] = champion(id) }
+            val initialNine = (ownIds + otherIds).toSet()
+            // An observed allied lane stays in its row, even for an off-role
+            // pick. Hidden enemy lanes can be re-estimated after the last pick.
+            val targetIndex = if (isAlly) 4 else 1
+            fun expectedOwn(lastId: String) = if (isAlly) ownIds + lastId
+                else listOf("darius", lastId, "mel", "caitlyn", "milio")
             fun result(champion: Champion) = DraftScanResult(emptyList(), emptyList(),
                 isSuccessful = true, statusMessage = "", isLastPickConfirmed = true,
                 lastPickChampion = champion, tenthPickIsAlly = isAlly, tenthPickSlotIndex = 4,
                 allyRolesBySlot = mapOf(4 to LaneRole.SUPPORT))
             hud.applyConfirmedLastPick(result(vi))
             repeat(3) { hud.applyConfirmedLastPick(result(vi)) }
-            assertEquals("vi", own[4]?.id)
+            assertEquals(expectedOwn("vi"), own.map { it?.id })
+            assertEquals(isAlly to "vi", hud.trackedLastPick)
             // An earlier pick cannot become the tracked preview through a bad report.
             hud.applyConfirmedLastPick(result(own[0]!!))
-            val changed = Champion(id = "changed", name = "Changed")
+            assertEquals(isAlly to "vi", hud.trackedLastPick)
+            val changed = champion("wukong")
             hud.applyConfirmedLastPick(result(changed))
-            assertEquals("changed", own[4]?.id)
-            assertEquals(initialNine, (own.take(4) + other).filterNotNull().map { it.id })
-            (if (isAlly) hud.manualLockedAllySlots else hud.manualLockedEnemySlots)[4] = true
+            assertEquals(expectedOwn("wukong"), own.map { it?.id })
+            assertEquals(isAlly to "wukong", hud.trackedLastPick)
+            assertEquals(initialNine, (own + other).filterNotNull().map { it.id }.toSet() - "wukong")
+            assertEquals(otherIds, other.map { it?.id })
+            assertEquals(10, (own + other).filterNotNull().map { it.id }.distinct().size)
+            (if (isAlly) hud.manualLockedAllySlots else hud.manualLockedEnemySlots)[targetIndex] = true
             hud.applyConfirmedLastPick(result(vi))
-            assertEquals("changed", own[4]?.id)
+            assertEquals(expectedOwn("wukong"), own.map { it?.id })
+            assertEquals(isAlly to "wukong", hud.trackedLastPick)
         }
     }
 
@@ -288,14 +303,14 @@ class TenthPickRegressionTest {
         val roles = com.example.service.screen.AllyDraftReconciler.roles
         val hud = OverlayState()
         val allyIds = listOf("skarner", "pantheon", "brand", "jinx", "yuumi")
-        allyIds.forEachIndexed { i, id -> hud.allies[i] = Champion(id = id) }
+        allyIds.forEachIndexed { i, id -> hud.allies[i] = champion(id) }
         // The old preview occupied a different role and must not survive the new scan.
         listOf("milio", "darius", "mel", "corki", "yunara").forEachIndexed { i, id ->
-            hud.enemies[i] = Champion(id = id)
+            hud.enemies[i] = champion(id)
         }
-        val current = mapOf(LaneRole.TOP to Champion(id = "darius"),
-            LaneRole.MID to Champion(id = "mel"), LaneRole.ADC to Champion(id = "caitlyn"),
-            LaneRole.SUPPORT to Champion(id = "milio"))
+        val current = mapOf(LaneRole.TOP to champion("darius"),
+            LaneRole.MID to champion("mel"), LaneRole.ADC to champion("caitlyn"),
+            LaneRole.SUPPORT to champion("milio"))
         val scan = DraftScanResult(hud.allies.filterNotNull(), current.values.toList(),
             enemiesByRole = current, isSuccessful = true, statusMessage = "",
             lastPickChampion = vi, isLastPickConfirmed = true, tenthPickIsAlly = false)
@@ -305,16 +320,18 @@ class TenthPickRegressionTest {
         assertEquals(listOf("darius", "vi", "mel", "caitlyn", "milio"), hud.enemies.map { it?.id })
         assertEquals(allyIds, hud.allies.map { it?.id })
         assertEquals(10, (hud.allies + hud.enemies).filterNotNull().map { it.id }.distinct().size)
-        assertEquals(100, hud.enemyConfidences[roles[1]])
+        // Portrait certainty is not certainty of a hidden enemy lane.
+        assertEquals(90, hud.enemyConfidences[roles[1]])
+        assertTrue(hud.enemyConfidences.values.all { it < 100 })
     }
 
     @Test fun confirmedYunaraAppearsInEnemyHudAndManualSelectionsArePreserved() {
         val hud = OverlayState()
-        val yunara = Champion(id = "yunara", name = "Yunara")
-        val locked = Champion(id = "ornn", name = "Ornn")
+        val yunara = champion("yunara")
+        val locked = champion("ornn")
         hud.enemies[0] = locked
         hud.manualLockedEnemySlots[0] = true
-        val source = mapOf(LaneRole.TOP to Champion(id = "darius"), LaneRole.ADC to yunara,
+        val source = mapOf(LaneRole.TOP to champion("darius"), LaneRole.ADC to yunara,
             LaneRole.SUPPORT to locked)
         hud.syncScannedEnemies(DraftScanResult(emptyList(), source.values.toList(),
             enemiesByRole = source, isSuccessful = true, statusMessage = ""))
