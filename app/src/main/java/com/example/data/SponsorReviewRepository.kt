@@ -48,7 +48,8 @@ object SponsorReviewRepository {
                 tx.update(request, changes)
                 tx.set(registry, mapOf("notices" to (notices + SponsorReviewPolicy.publicNotice(id, data + changes))), SetOptions.merge())
             } else {
-                tx.delete(request)
+                // Keep the outcome visible to its owner instead of silently losing the ad.
+                tx.update(request, mapOf("status" to "REJECTED", "isApproved" to false, "isEnabled" to false))
                 tx.set(registry, mapOf("notices" to notices), SetOptions.merge())
             }
         }.await()

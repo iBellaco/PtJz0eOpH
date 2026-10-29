@@ -13,6 +13,9 @@ object AuthManager {
 
     private val _isAdminClaim = MutableStateFlow(false)
     val isAdminClaim: StateFlow<Boolean> = _isAdminClaim.asStateFlow()
+    private val _permissionsLoading = MutableStateFlow(true)
+    val permissionsLoading: StateFlow<Boolean> = _permissionsLoading.asStateFlow()
+    private var permissionRequest = 0L
 
     const val GUEST_READER_EMAIL = "coach.guest.reader@gmail.com"
 
@@ -31,39 +34,19 @@ object AuthManager {
     }
 
     private fun setupAuthListeners() {
-        val auth = getAuth() ?: return
+        val auth = getAuth() ?: run { _permissionsLoading.value = false; return }
 
         auth.addIdTokenListener(FirebaseAuth.IdTokenListener { firebaseAuth ->
             val user = firebaseAuth.currentUser
             _isSignedIn.value = !isGuestOrUnauthenticated(user)
-            if (user != null && !isGuestOrUnauthenticated(user)) {
-                user.getIdToken(false).addOnSuccessListener { result ->
-                    val claims = result.claims
-                    val isAdmin = claims["admin"] == true
-                    if (firebaseAuth.currentUser?.uid == user.uid) _isAdminClaim.value = isAdmin
-                }.addOnFailureListener {
-                    if (firebaseAuth.currentUser?.uid == user.uid) _isAdminClaim.value = false
-                }
-            } else {
-                _isAdminClaim.value = false
-            }
+            readClaims(forceRefresh = false)
         })
 
         auth.addAuthStateListener(FirebaseAuth.AuthStateListener { firebaseAuth ->
             val user = firebaseAuth.currentUser
             _isAdminClaim.value = false
             _isSignedIn.value = !isGuestOrUnauthenticated(user)
-            if (user != null && !isGuestOrUnauthenticated(user)) {
-                user.getIdToken(true).addOnSuccessListener { result ->
-                    val claims = result.claims
-                    val isAdmin = claims["admin"] == true
-                    if (firebaseAuth.currentUser?.uid == user.uid) _isAdminClaim.value = isAdmin
-                }.addOnFailureListener {
-                    _isAdminClaim.value = false
-                }
-            } else {
-                _isAdminClaim.value = false
-            }
+            readClaims(forceRefresh = true)
         })
     }
 
@@ -85,20 +68,31 @@ object AuthManager {
     }
 
     fun refreshClaims(onComplete: (Boolean) -> Unit = {}) {
+        readClaims(forceRefresh = true, onComplete = onComplete)
+    }
+
+    private fun readClaims(forceRefresh: Boolean, onComplete: (Boolean) -> Unit = {}) {
+        val request = ++permissionRequest
         val user = getAuth()?.currentUser
         if (isGuestOrUnauthenticated(user)) {
             _isAdminClaim.value = false
+            _permissionsLoading.value = false
             onComplete(false)
             return
         }
-        user!!.getIdToken(true).addOnSuccessListener { result ->
-            val isAdmin = result.claims["admin"] == true
-            if (getAuth()?.currentUser?.uid == user.uid) {
+        _permissionsLoading.value = true
+        user!!.getIdToken(forceRefresh).addOnSuccessListener { result ->
+            val isAdmin = result.claims["admin"] == true && result.claims["email_verified"] == true
+            if (permissionRequest == request && getAuth()?.currentUser?.uid == user.uid) {
                 _isAdminClaim.value = isAdmin
+                _permissionsLoading.value = false
                 onComplete(isAdmin)
             } else onComplete(false)
         }.addOnFailureListener {
-            if (getAuth()?.currentUser?.uid == user.uid) _isAdminClaim.value = false
+            if (permissionRequest == request && getAuth()?.currentUser?.uid == user.uid) {
+                _isAdminClaim.value = false
+                _permissionsLoading.value = false
+            }
             onComplete(false)
         }
     }

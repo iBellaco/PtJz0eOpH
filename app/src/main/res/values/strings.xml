@@ -1,4 +1,21 @@
 <resources>
+    <string name="sponsor_rejected">Rechazado</string>
+    <string name="sponsor_refunded">No publicado: esencias reembolsadas</string>
+    <string name="sponsor_paused">Aprobado, publicación pausada</string>
+    <string name="operation_unconfirmed">Todavía no se pudo confirmar el envío. Conservamos su identificador; al reintentarlo se comprobará el mismo envío, sin crear otro.</string>
+    <string name="operation_sending">Enviando solicitud… Puedes cerrar esta ventana; al volver se consultará su estado sin duplicarla.</string>
+    <string name="permissions_checking">Comprobando permisos de la sesión…</string>
+    <string name="permissions_unavailable">No se pudo confirmar el acceso. Vuelve a comprobar los permisos de tu sesión.</string>
+    <string name="sponsor_loading">Consultando tus anuncios…</string>
+    <string name="sponsor_unavailable">No se pudieron sincronizar los anuncios. La lista puede estar desactualizada; no repitas un envío sin consultar su estado.</string>
+    <string name="sponsor_received">Envío recibido. Espera la confirmación del procesamiento; todavía no significa que el anuncio esté aprobado.</string>
+    <string name="sponsor_check_submission">Consultar envío sin duplicarlo</string>
+    <string name="sponsor_review_confirmed">Anuncio enviado a revisión. Todavía necesita aprobación para publicarse.</string>
+    <string name="operation_storage_failed">No se pudo guardar el estado del envío en este dispositivo. Revisa el espacio disponible y consulta su estado antes de reintentar.</string>
+    <string name="draft_provisional">Décima selección provisional: puede cambiar hasta que termine la selección.</string>
+    <string name="draft_confirmed">Selección final confirmada.</string>
+    <string name="draft_collecting">Selección en curso: faltan confirmaciones.</string>
+    <string name="draft_roles_estimated">Líneas rivales estimadas. Usa el selector del puesto para corregirlas; las elecciones manuales se conservan.</string>
     <string name="calibration_send">Enviar coordenadas</string>
     <string name="calibration_sending">Enviando a soporte…</string>
     <string name="calibration_sent">Coordenadas enviadas a soporte.</string>

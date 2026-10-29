@@ -9,7 +9,7 @@ import com.example.model.Champion
 import com.example.model.LaneRole
 
 class OverlayState {
-    internal var trackedLastPick: Pair<Boolean, String>? = null
+    internal var trackedLastPick by mutableStateOf<Pair<Boolean, String>?>(null)
     internal var completedDraftLocked by androidx.compose.runtime.mutableStateOf(false)
     var isExpanded by androidx.compose.runtime.mutableStateOf(false)
     var overlayHubTab by androidx.compose.runtime.mutableStateOf(OverlayHubTab.DRAFT)

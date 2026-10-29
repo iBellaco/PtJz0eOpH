@@ -430,7 +430,7 @@ object WildRiftRepository {
             synergies.isNotEmpty() -> t(lang, "SINERGIA DE EQUIPE", "SINERGIA DE EQUIPO")
             else -> t(lang, "ESCOLHA EQUILIBRADA", "ELECCIÓN EQUILIBRADA")
         }
-        val reasons = mutableListOf(com.example.util.CoachingGenerator.generateTacticalAdvice(champ,myRole,lang))
+        val reasons = mutableListOf(com.example.util.CoachingGenerator.generateTacticalAdvice(champ,myRole,lang,lane))
         if (laneRelation == MatchupRelation.UNFAVORABLE) reasons += t(lang,
             "${lane!!.getLocalizedName(lang)} tem vantagem neste confronto. Evite trocas prolongadas e procure apoio da equipe.",
             "${lane!!.getLocalizedName(lang)} tiene ventaja en este enfrentamiento. Evita intercambios prolongados y busca apoyo del equipo.")
@@ -570,7 +570,7 @@ object WildRiftRepository {
             var counterText = ""
 
             val isFlex = myRole != null && champ.primaryRole != myRole
-            val dynamicAdvice = com.example.util.CoachingGenerator.generateTacticalAdvice(champ, effectiveRole, lang)
+            val dynamicAdvice = com.example.util.CoachingGenerator.generateTacticalAdvice(champ, effectiveRole, lang, lane)
             val roleContextAdvice = if (isFlex) {
                 t(lang, "Flex na ${effectiveRole.getLocalizedName(lang)}: Vantagem de fator surpresa. Desvantagem: Pode sofrer contra escolhas dominantes naturais desta rota. Dicas: $dynamicAdvice", "Flex en ${effectiveRole.getLocalizedName(lang)}: Ventaja de factor sorpresa. Desventaja: Puede sufrir contra picks dominantes naturales de la línea. Consejos: $dynamicAdvice")
             } else {

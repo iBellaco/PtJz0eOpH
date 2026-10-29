@@ -25,14 +25,6 @@ object DraftBuildPolicy {
         "talon", "zed", "pyke"
     )
 
-    private fun item(vararg names: String): List<String> = names.mapNotNull { name ->
-        WildRiftItemsData.getItemByName(name)?.name
-    }
-
-    private fun rune(vararg names: String): List<String> = names.mapNotNull { name ->
-        WildRiftSpellsAndRunes.getRuneByName(name)?.name
-    }
-
     private fun spell(vararg names: String): List<String> = names.mapNotNull { name ->
         WildRiftSpellsAndRunes.getSpellByName(name)?.name
     }
@@ -51,8 +43,9 @@ object DraftBuildPolicy {
 
     private fun parseChampionRunes(champion: Champion): List<String> =
         (listOf(champion.recommendedRunes) + champion.runeTreeDetails.split("•", ","))
-            .flatMap { it.split(":", limit = 2).last().split("/", "|") }
+            .flatMap { it.split(",", "/", "|") }
             .map { it.replace(Regex("\\s*\\(.*?\\)"), "").trim() }
+            .map { if (WildRiftSpellsAndRunes.getRuneByName(it) != null) it else it.substringAfter(": ", it) }
             .filter { it.isNotBlank() }
 
     private fun parseChampionSpells(champion: Champion): List<String> = champion.recommendedSpells
@@ -60,17 +53,10 @@ object DraftBuildPolicy {
         .map { it.trim() }
         .filter { it.isNotBlank() }
 
-    private fun fallbackCore(role: LaneRole, damageType: DamageType): List<String> = when (role) {
-        LaneRole.TOP -> item("Cuchilla negra", "Desgarrador divino", "Ángel de la guarda")
-        LaneRole.JUNGLE -> if (damageType == DamageType.MAGIC) {
-            item("Eco de Luden", "Bastón del Vacío", "Ángel de la guarda")
-        } else item("Filo fantasmal de Youmuu", "Cuchilla negra", "Ángel de la guarda")
-        LaneRole.MID -> if (damageType == DamageType.PHYSICAL) {
-            item("Filo fantasmal de Youmuu", "Eclipse", "Ángel de la guarda")
-        } else item("Eco de Luden", "Bastón del Vacío", "Reloj de Arena de Zhonya")
-        LaneRole.ADC -> item("Hoja del rey arruinado", "Filo Infinito", "Recordatorio letal")
-        LaneRole.SUPPORT -> item("Hoz espectral", "Baluarte de la montaña", "Redención")
-    }
+    private val supportQuestItems = setOf("hoz espectral", "escudo reliquia", "guadaña de la niebla negra", "baluarte de la montaña")
+
+    private fun validRunePage(names: List<String>): Boolean = com.example.util.BuildChoiceRules.validRunePage(
+        names.map { com.example.util.BuildChoiceRules.RuneChoice(it, WildRiftSpellsAndRunes.getRuneByName(it)?.category.orEmpty()) })
 
     private fun supportStarter(champion: Champion): String? {
         val tankLike = champion.isFrontline || champion.id in setOf("nautilus", "leona", "alistar", "braum", "thresh")
@@ -127,37 +113,42 @@ object DraftBuildPolicy {
         val isPhysical = champion.damageType == DamageType.PHYSICAL
         val isMagic = champion.damageType == DamageType.MAGIC
 
-        val catalogChampionCore = resolveItems(champion.coreItems)
+        // Prefer the champion's explicit lane build. Never invent a generic physical top
+        // build for a mage, or combine two support quests to fill empty slots.
+        val laneBuild = champion.builds.firstOrNull { it.role.equals(role.name, true) }
+        val catalogChampionCore = resolveItems(laneBuild?.coreItems?.takeIf { it.isNotEmpty() }
+            ?: champion.coreItems.takeIf { role == champion.primaryRole }.orEmpty())
         val core = buildList {
             if (role == LaneRole.SUPPORT) supportStarter(champion)?.let(::add)
-            addAll(catalogChampionCore)
-            addAll(fallbackCore(role, champion.damageType))
+            addAll(catalogChampionCore.filterNot { it.lowercase() in supportQuestItems })
         }.distinctBy { it.lowercase() }.take(3)
 
+        val championSituational = resolveItems(laneBuild?.situationalItems ?: champion.situationalItems)
         val situationalCandidates = buildList {
-            if (hasHealing) add(if (isMagic) "Morellonomicón" else "Recordatorio letal")
-            if (hasShields) add(if (isMagic) "Tridente de Oceánida" else "Colmillo de serpiente")
-            if (hasTanks) add(if (isMagic) "Bastón del Vacío" else "Recuerdos de Lord Dominik")
-            if (hasAssassins) add(if (isMagic) "Reloj de Arena de Zhonya" else "Ángel de la guarda")
-            addAll(champion.situationalItems)
+            val threats = buildList {
+                if (hasHealing) add(if (isMagic) "Morellonomicón" else "Recordatorio letal")
+                if (hasShields) add(if (isMagic) "Tridente de Oceánida" else "Colmillo de serpiente")
+                if (hasTanks) add(if (isMagic) "Bastón del Vacío" else "Recuerdos de Lord Dominik")
+                if (hasAssassins) add(if (isMagic) "Reloj de Arena de Zhonya" else "Ángel de la guarda")
+            }
+            // Threats reorder compatible, champion-specific options, not its archetype.
+            addAll(resolveItems(threats).filter { it in championSituational })
+            addAll(championSituational)
         }
         val situational = resolveItems(situationalCandidates)
+            .filterNot { it.lowercase() in supportQuestItems }
             .filterNot { it.lowercase() in core.map(String::lowercase) }
             .take(4)
 
-        val runesFromChampion = resolveRunes(parseChampionRunes(champion))
-        val runes = (runesFromChampion + when {
-            role == LaneRole.SUPPORT && hasAssassins -> rune("Réplica", "Revestimiento de Huesos")
-            hasTanks -> rune("Derribado", "Conquistador")
-            hasHealing -> rune("Triunfo", "Golpe de Gracia")
-            else -> rune("Conquistador", "Triunfo")
-        }).distinctBy { it.lowercase() }.take(5)
+        val runesFromChampion = resolveRunes(laneBuild?.runes?.takeIf { it.isNotBlank() }?.split(",")?.map { it.trim() }
+            ?: parseChampionRunes(champion))
+        val runes = runesFromChampion.takeIf(::validRunePage).orEmpty()
 
-        val championSpells = resolveSpells(parseChampionSpells(champion))
+        val championSpells = resolveSpells(laneBuild?.spells ?: parseChampionSpells(champion))
         val spells = when (role) {
             LaneRole.JUNGLE -> (spell("Destello", "Aplastar") + championSpells).distinctBy { it.lowercase() }.take(2)
             LaneRole.SUPPORT -> {
-                val second = if (hasAssassins) "Extenuación" else if (hasHealing) "Curar" else "Prender"
+                val second = if (hasAssassins) "Extenuación" else "Prender"
                 (spell("Destello", second) + championSpells).distinctBy { it.lowercase() }.take(2)
             }
             else -> (championSpells + spell("Destello", if (hasAssassins) "Extenuación" else "Prender"))
@@ -165,12 +156,13 @@ object DraftBuildPolicy {
         }
 
         val reasons = buildList {
-            if (hasHealing) add(reason("Incluye una respuesta del catálogo contra la curación rival.", "Inclui uma resposta do catálogo contra a cura inimiga.", lang))
-            if (hasShields && !isMagic) add(reason("Incluye reducción de escudos para que el daño físico atraviese la protección rival.", "Inclui redução de escudos para que o dano físico atravesse a proteção inimiga.", lang))
-            if (hasTanks) add(reason("Incluye penetración contra la vida y resistencias de la primera línea rival.", "Inclui penetração contra a vida e as resistências da linha de frente inimiga.", lang))
+            add(reason("Plan condicionado al draft: no conocemos oro, inventarios ni enfriamientos de la partida.", "Plano condicionado à seleção: não conhecemos ouro, inventários nem recargas da partida.", lang))
+            if (core.size < 3 || runes.isEmpty()) add(reason("Base incompleta para este campeón y línea: revisa sus builds; no se rellenan huecos con opciones genéricas.", "Base incompleta para este campeão e rota: confira suas builds; as lacunas não são preenchidas com opções genéricas.", lang))
+            if (hasHealing) add(reason("Si la curación decide los combates, coordina quién puede aplicar anti-curación de forma constante sin retrasar su pico esencial.", "Se a cura decide as lutas, combinem quem pode aplicar anti-cura de forma constante sem atrasar seu pico essencial.", lang))
+            if (hasShields) add(reason("Si los escudos absorben tu ventana de daño, compara una opción anti-escudos compatible con retrasar tu objeto principal.", "Se os escudos absorvem sua janela de dano, compare uma opção anti-escudos compatível com o atraso do seu item principal.", lang))
+            if (hasTanks) add(reason("Confirma las resistencias compradas antes de priorizar penetración; vida y resistencia no requieren la misma respuesta.", "Confirme as resistências compradas antes de priorizar penetração; vida e resistência não exigem a mesma resposta.", lang))
             if (hasAssassins) add(reason("Prioriza supervivencia y control del ritmo contra entradas explosivas.", "Prioriza sobrevivência e controle do ritmo contra entradas explosivas.", lang))
             if (allies.any { it.isFrontline } && champion.isRanged) add(reason("Aprovecha la primera línea aliada para jugar a distancia.", "Aproveita a linha de frente aliada para jogar à distância.", lang))
-            if (isMagic && hasShields) add(reason("Incluye Tridente de Oceánida, el anti-escudos AP del catálogo, para reducir las barreras antes del daño principal.", "Inclui o Tridente de Oceânida, o anti-escudos AP do catálogo, para reduzir as barreiras antes do dano principal.", lang))
             if (isPhysical && !hasHealing && !hasTanks && !hasAssassins && !hasShields) add(reason("Mantiene el pico de poder propio del campeón y su función principal.", "Mantém o pico de poder do campeão e sua função principal.", lang))
         }
 

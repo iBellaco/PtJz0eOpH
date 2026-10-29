@@ -94,7 +94,7 @@ fun CustomBuildDetailDialog(
     val isOwnBuild = (currentUserId.isNotBlank() && currentUserId.lowercase(Locale.ROOT) == creatorUidClean) ||
         (currentUserName.isNotBlank() && currentUserName.lowercase(Locale.ROOT) == creatorNameClean)
 
-    val isAdmin = userRole == "admin" || AuthManager.isCurrentUserAdmin()
+    val isAdmin = sessionPanelAccess()
 
     val isSubscribedToCreator = remember(subscribedSet, creatorUidClean, creatorNameClean) {
         (creatorUidClean.isNotBlank() && subscribedSet.contains(creatorUidClean)) ||

@@ -89,7 +89,7 @@ fun UserDetailManagementDialog(
 
     val currentLoggedInRole by com.example.util.SubscriptionManager.userRole.collectAsState()
     val isMod = currentLoggedInRole == "moderador"
-    val isAdmin = currentLoggedInRole == "admin" || com.example.util.AuthManager.isCurrentUserAdmin()
+    val isAdmin = sessionPanelAccess()
     val canAssignSecondaryOrVerify = isAdmin || isMod
 
     var secondaryRoleToConfirm by remember { mutableStateOf<AppUserRole?>(null) }

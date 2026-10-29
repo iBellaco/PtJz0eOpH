@@ -24,6 +24,12 @@ class EconomyRequestPolicyTest {
         assertTrue(EconomyRequestPolicy.sameCommand(existing, mapOf("action" to "SPONSOR", "id" to "new", "notice" to mapOf("title" to "Test", "duration" to 2))))
         assertFalse(EconomyRequestPolicy.sameCommand(existing, existing + ("notice" to mapOf("duration" to 3, "title" to "Test"))))
     }
+    @Test fun retryIdentityCannotCollideThroughDelimitersInUserText() {
+        assertNotEquals(EconomyRequestPolicy.operationKey("u", "ADJUST", mapOf("a" to "x, b=y")),
+            EconomyRequestPolicy.operationKey("u", "ADJUST", mapOf("a" to "x", "b" to "y")))
+        assertEquals(EconomyRequestPolicy.operationKey("u", "ADJUST", mapOf("a" to 1L, "b" to true)),
+            EconomyRequestPolicy.operationKey("u", "ADJUST", mapOf("b" to true, "a" to 1.0)))
+    }
     @Test fun roleChangesCannotModifyBalancesOrAssignAdministrator() {
         val account=mapOf<String,Any>("role" to "creador", "secondaryRole" to "streamer", "blueEssence" to 99L,
             "orangeEssence" to 25L, "premiumUntil" to 9000000000000L, "subscriptionPlan" to "ADMIN_GIFT")

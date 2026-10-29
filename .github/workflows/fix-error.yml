@@ -126,6 +126,10 @@ jobs:
               'com.example.DraftSlotVisibilityTest',
               'com.example.SponsorReviewPolicyTest',
               'com.example.EconomyRequestPolicyTest',
+              'com.example.AppReliabilityTest',
+              'com.example.SponsorSubmissionStoreTest',
+              'com.example.InboxSynchronizationTest',
+              'com.example.CoachingGeneratorLocalizationTest',
               'com.example.RuntimeBehaviorTest',
           ])
           PY
@@ -161,7 +165,7 @@ jobs:
 
   sponsor-permissions:
     needs: catalog-preflight
-    name: Aprobar y rechazar anuncios con las reglas reales
+    name: Solicitudes, esencias y moderación con las reglas reales
     runs-on: ubuntu-latest
     timeout-minutes: 12
     steps:
@@ -175,9 +179,12 @@ jobs:
           java-version: '21'
       - run: npm ci --no-audit --no-fund
         working-directory: tests/firestore
-      - name: Comprobar únicamente el flujo de patrocinio en emulador
+      - run: npm ci --no-audit --no-fund
+        working-directory: server/economy
+      - run: node --test server/economy/test/*.test.mjs
+      - name: Comprobar envíos, moderación e idempotencia en emulador aislado
         working-directory: tests/firestore
-        run: npx firebase emulators:exec --only firestore --project demo-coach-tests --config ../../firebase.json 'node sponsor-review.test.mjs'
+        run: npx firebase emulators:exec --only firestore,auth --project demo-coach-tests --config ../../firebase.json 'node economy-submission.test.mjs && node sponsor-review.test.mjs && node ../../server/economy/test/emulator.integration.mjs'
 
   targeted-red-magic-release:
     if: github.event_name == 'workflow_dispatch' && inputs.scanner_regressions

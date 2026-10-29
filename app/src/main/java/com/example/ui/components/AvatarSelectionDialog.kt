@@ -76,7 +76,7 @@ fun AvatarSelectionBottomSheet(
     val unlockedAvatars by SubscriptionManager.unlockedAvatars.collectAsState()
     val userRole by SubscriptionManager.userRole.collectAsState()
     val secondaryRole by SubscriptionManager.secondaryRole.collectAsState()
-    val isAdmin = userRole == "admin" || com.example.util.AuthManager.isCurrentUserAdmin()
+    val isAdmin = sessionPanelAccess()
 
     val validRegions = remember {
         setOf("Aguas Esturbias", "Ciudad de Bandle", "Demacia", "El Vacío", "Freljord", "Islas de la Sombra", "Jonia", "Ixtal", "Noxus", "Piltóver", "Runaterra", "Shurima", "Targon", "Zaun", "Poro")

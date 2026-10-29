@@ -473,7 +473,7 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser? = nul
             }
             if (showBuyEssenceDialog) {
                 com.example.ui.components.BuyEssenceDialog(
-                    isAdmin = userRole == "admin" || AuthManager.isCurrentUserAdmin(),
+                    isAdmin = com.example.ui.components.sessionPanelAccess(),
                     initialCurrency = buyEssenceCurrency,
                     onDismiss = { showBuyEssenceDialog = false }
                 )

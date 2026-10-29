@@ -13,13 +13,13 @@ async function resolve(store,id,approve) {
   const ref=doc(store,'pending_sponsor_ads',id), registry=doc(store,'system_config/app_notices');
   return runTransaction(store,async tx=>{
     const request=await tx.get(ref), current=await tx.get(registry), data=request.data();
-    assert.ok(data && !data.isApproved && !data.refundedAtMillis);
+    assert.ok(data && !data.isApproved && !data.refundedAtMillis && data.status !== 'REJECTED');
     const notices=(current.data()?.notices??[]).filter(n=>n.id!==id);
     if(approve) {
       const changes={isApproved:true,isEnabled:true,approvedAtMillis:1000,expiresAtMillis:86401000};
       tx.update(ref,changes);
       tx.set(registry,{notices:[...notices,{id,title:data.title,tag:'PUBLICIDAD',...changes}]},{merge:true});
-    } else { tx.delete(ref); tx.set(registry,{notices},{merge:true}); }
+    } else { tx.update(ref,{status:'REJECTED',isApproved:false,isEnabled:false}); tx.set(registry,{notices},{merge:true}); }
   });
 }
 try {
@@ -48,7 +48,9 @@ try {
   assert.equal(registry.get('streamerIntervalValue'),15);
   await assert.rejects(resolve(admin,'approve',true));
   await assertSucceeds(resolve(admin,'reject',false));
-  assert.equal((await getDoc(doc(admin,'pending_sponsor_ads/reject'))).exists(),false);
+  assert.equal((await getDoc(doc(owner,'pending_sponsor_ads/reject'))).get('status'),'REJECTED');
+  await assertFails(updateDoc(doc(owner,'pending_sponsor_ads/reject'),{status:'PENDING'}));
+  await assertFails(updateDoc(doc(admin,'pending_sponsor_ads/reject'),{isApproved:true,isEnabled:true}));
   await assertFails(updateDoc(doc(admin,'pending_sponsor_ads/refunded'),{isApproved:true}));
   // The old client sent this extra field; rules reject it.
   await assertFails(updateDoc(doc(admin,'pending_sponsor_ads/approve'),{approvedAt:1000}));

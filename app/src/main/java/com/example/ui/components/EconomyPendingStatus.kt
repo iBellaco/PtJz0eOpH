@@ -20,7 +20,8 @@ import java.text.DateFormat
 
 private data class RequestView(val request: Map<String, Any>? = null, val loading: Boolean = true,
     val unavailable: Boolean = false, val cached: Boolean = false, val target: String = "",
-    val serviceCheckedAt: Long? = null, val serviceObservedAt: Long = 0)
+    val serviceCheckedAt: Long? = null, val serviceObservedAt: Long = 0,
+    val requests: List<Map<String, Any>> = emptyList())
 
 @Composable
 private fun observeRequest(): RequestView {
@@ -41,10 +42,16 @@ private fun observeRequest(): RequestView {
         onDispose { listener?.remove() }
     }
     DisposableEffect(uid) {
-        val listener = uid?.let { FirebaseFirestore.getInstance().collection("economy_requests").document(it)
+        val listener = uid?.let { FirebaseFirestore.getInstance().collection("economy_requests").whereEqualTo("userId", it)
             .addSnapshotListener(MetadataChanges.INCLUDE) { snapshot, error ->
-                state = if (error != null) state.copy(loading = false, unavailable = true)
-                    else RequestView(snapshot?.data, false, cached = snapshot?.metadata?.isFromCache == true)
+                if (error != null) state = state.copy(loading = false, unavailable = true)
+                else {
+                    val requests = snapshot?.documents.orEmpty().mapNotNull { it.data }
+                        .sortedWith(compareByDescending<Map<String, Any>> { it["status"] in setOf("PENDING", "PROCESSING", "REVIEW") }
+                            .thenByDescending { (it["createdAt"] as? Timestamp)?.toDate()?.time ?: 0L })
+                    state = RequestView(requests.firstOrNull(), false,
+                        cached = snapshot?.metadata?.isFromCache == true, requests = requests)
+                }
             } }
         onDispose { listener?.remove() }
     }
@@ -75,8 +82,7 @@ fun EconomyPendingStatus(alwaysVisible: Boolean = false) {
             Text(appTr(if (pending) "Ver solicitud en espera" else "Solicitudes"))
         }
     }
-    if (details) EconomyRequestDetails(state.request, state.loading, state.unavailable, state.cached, state.target,
-        state.serviceCheckedAt, state.serviceObservedAt) { details = false }
+    if (details) EconomyRequestDialog { details = false }
 }
 
 @Composable
@@ -84,14 +90,45 @@ fun EconomyPendingInboxCount(): Int {
     val user = AuthManager.getAuth()?.currentUser ?: return 0
     if (AuthManager.isGuestOrUnauthenticated(user)) return 0
     val state = observeRequest()
-    return if (state.request?.get("status") in setOf("PENDING", "PROCESSING", "REVIEW")) 1 else 0
+    return state.requests.count { it["status"] in setOf("PENDING", "PROCESSING", "REVIEW") }
 }
 
 @Composable
 fun EconomyRequestDialog(onDismiss: () -> Unit) {
     val state = observeRequest()
-    EconomyRequestDetails(state.request, state.loading, state.unavailable, state.cached, state.target,
-        state.serviceCheckedAt, state.serviceObservedAt, onDismiss)
+    var selectedId by remember { mutableStateOf<String?>(null) }
+    val selected = state.requests.firstOrNull { it["operationId"] == selectedId }
+    if (selected != null) {
+        EconomyRequestDetails(selected, state.loading, state.unavailable, state.cached,
+            serviceCheckedAt = state.serviceCheckedAt, serviceObservedAt = state.serviceObservedAt) { selectedId = null }
+    } else AlertDialog(onDismissRequest = onDismiss, title = { Text(appTr("Solicitudes")) }, text = {
+        Column(Modifier.verticalScroll(rememberScrollState())) {
+            if (state.loading) Text(appTr("Consultando solicitud…"))
+            if (state.unavailable || state.cached) Text(appTr("Sin confirmación en vivo. El estado mostrado puede estar desactualizado; comprueba tu conexión."))
+            if (!state.loading && !state.unavailable && state.requests.isEmpty()) Text(appTr("No tienes solicitudes pendientes."))
+            state.requests.forEach { request ->
+                CoachOutlinedButton(onClick = { selectedId = request["operationId"] as? String },
+                    modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp).testTag("economy_request_${request["operationId"]}")) {
+                    val payload = request["payload"] as? Map<*, *>
+                    val notice = payload?.get("notice") as? Map<*, *>
+                    Column {
+                        Text(notice?.get("title") as? String ?: appTr(if (payload?.get("action") == "ADJUST") "Ajuste de esencias" else "Operación de cuenta"))
+                        Text(appTr(requestStatusText(request["status"] as? String)))
+                    }
+                }
+            }
+        }
+    }, confirmButton = { CoachTextButton(onClick = onDismiss,
+        modifier = Modifier.heightIn(min = 48.dp).testTag("economy_requests_close")) { Text(appTr("Cerrar")) } })
+}
+
+private fun requestStatusText(status: String?): String = when (status) {
+    "PENDING" -> "Estado: en espera"
+    "PROCESSING" -> "Estado: en procesamiento"
+    "REVIEW" -> "Estado: requiere revisión"
+    "COMPLETED" -> "Estado: completada"
+    "FAILED" -> "Estado: no completada"
+    else -> "Estado: por confirmar"
 }
 
 /** Read-only details. Closing never cancels, repeats, or confirms a command. */
@@ -126,14 +163,7 @@ fun EconomyRequestDetails(request: Map<String, Any>?, loading: Boolean = false, 
                         else -> "Operación de cuenta"
                     }
                     Text(appTr(action), style = MaterialTheme.typography.titleMedium, modifier = Modifier.testTag("economy_request_action"))
-                    Text(appTr(when (status) {
-                        "PENDING" -> "Estado: en espera"
-                        "PROCESSING" -> "Estado: en procesamiento"
-                        "REVIEW" -> "Estado: requiere revisión"
-                        "COMPLETED" -> "Estado: completada"
-                        "FAILED" -> "Estado: no completada"
-                        else -> "Estado: por confirmar"
-                    }), modifier = Modifier.testTag("economy_request_status"))
+                    Text(appTr(requestStatusText(status)), modifier = Modifier.testTag("economy_request_status"))
                     if (targetName.isNotBlank()) Text(appTr("Cuenta") + ": " + targetName, modifier = Modifier.testTag("economy_request_target"))
                     else if (payload["uid"] != null || payload["creatorUid"] != null) Text(appTr("Destino: cuenta seleccionada"))
                     if (payload["action"] == "ROLE") Text(appTr("Rol solicitado") + ": " + appTr(AppUserRole.fromId(payload["role"] as? String ?: "free").displayName))

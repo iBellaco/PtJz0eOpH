@@ -12,7 +12,7 @@ export async function maintainEconomy(db, now = Date.now()) {
     for (const notice of page.docs) {
       const refunded = await db.runTransaction(async tx => {
         const fresh = await tx.get(notice.ref), data = fresh.data();
-        if (!data || data.isApproved || data.refundedAtMillis || !Number.isSafeInteger(data.createdAt) || data.createdAt + 7 * DAY > now || !Number.isSafeInteger(data.chargedEssence) || data.chargedEssence <= 0 || !/^[a-zA-Z0-9_-]{1,128}$/.test(data.userId ?? '')) return false;
+        if (!data || data.status === 'REJECTED' || data.isApproved || data.refundedAtMillis || !Number.isSafeInteger(data.createdAt) || data.createdAt + 7 * DAY > now || !Number.isSafeInteger(data.chargedEssence) || data.chargedEssence <= 0 || !/^[a-zA-Z0-9_-]{1,128}$/.test(data.userId ?? '')) return false;
         const profile = db.doc(`users/${data.userId}`), account = (await tx.get(profile)).data();
         const deletion = (await tx.get(db.doc(`account_deletions/${data.userId}`))).data();
         if (!account || ['PROCESSING', 'DATA_PURGED', 'COMPLETED'].includes(deletion?.status)) return false;

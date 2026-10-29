@@ -13,6 +13,7 @@ class SponsorReviewPolicyTest {
         assertFalse(SponsorReviewPolicy.pending(pending + ("isApproved" to true)))
         assertFalse(SponsorReviewPolicy.pending(pending + ("refundedAtMillis" to 123L)))
         assertFalse(SponsorReviewPolicy.pending(pending + ("status" to "REFUNDED")))
+        assertFalse(SponsorReviewPolicy.pending(pending + ("status" to "REJECTED")))
         assertFalse(SponsorReviewPolicy.pending(emptyMap()))
     }
 

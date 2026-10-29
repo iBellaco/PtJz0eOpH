@@ -1,4 +1,21 @@
 <resources>
+    <string name="sponsor_rejected">Rejeitado</string>
+    <string name="sponsor_refunded">Não publicado: essências reembolsadas</string>
+    <string name="sponsor_paused">Aprovado, publicação pausada</string>
+    <string name="operation_unconfirmed">Ainda não foi possível confirmar o envio. Guardamos seu identificador; ao tentar novamente, o mesmo envio será verificado, sem criar outro.</string>
+    <string name="operation_sending">Enviando solicitação… Você pode fechar esta janela; ao voltar, o estado será consultado sem duplicá-la.</string>
+    <string name="permissions_checking">Verificando permissões da sessão…</string>
+    <string name="permissions_unavailable">Não foi possível confirmar o acesso. Verifique novamente as permissões da sua sessão.</string>
+    <string name="sponsor_loading">Consultando seus anúncios…</string>
+    <string name="sponsor_unavailable">Não foi possível sincronizar os anúncios. A lista pode estar desatualizada; não repita um envio sem consultar seu estado.</string>
+    <string name="sponsor_received">Envio recebido. Aguarde a confirmação do processamento; isso ainda não significa que o anúncio foi aprovado.</string>
+    <string name="sponsor_check_submission">Consultar envio sem duplicá-lo</string>
+    <string name="sponsor_review_confirmed">Anúncio enviado para análise. Ainda precisa de aprovação para ser publicado.</string>
+    <string name="operation_storage_failed">Não foi possível salvar o estado do envio neste dispositivo. Verifique o espaço disponível e consulte seu estado antes de tentar novamente.</string>
+    <string name="draft_provisional">Décima seleção provisória: pode mudar até o fim da seleção.</string>
+    <string name="draft_confirmed">Seleção final confirmada.</string>
+    <string name="draft_collecting">Seleção em andamento: faltam confirmações.</string>
+    <string name="draft_roles_estimated">Rotas inimigas estimadas. Use o seletor da posição para corrigir; as escolhas manuais são preservadas.</string>
     <string name="calibration_send">Enviar coordenadas</string>
     <string name="calibration_sending">Enviando ao suporte…</string>
     <string name="calibration_sent">Coordenadas enviadas ao suporte.</string>

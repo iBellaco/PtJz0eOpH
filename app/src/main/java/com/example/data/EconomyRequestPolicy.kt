@@ -18,6 +18,23 @@ object EconomyRequestPolicy {
     fun sameCommand(existing: Map<*, *>, requested: Map<*, *>): Boolean =
         canonical(existing.filterKeys { it != "id" }) == canonical(requested.filterKeys { it != "id" })
 
+    fun operationKey(uid: String, action: String, fields: Map<String, Any>): String {
+        val serialized = encode(canonical(listOf(uid, action, fields)))
+        return java.security.MessageDigest.getInstance("SHA-256").digest(serialized.toByteArray(Charsets.UTF_8))
+            .joinToString("") { "%02x".format(it) }
+    }
+
+    // Length-prefixed values avoid collisions caused by delimiters inside user text.
+    private fun encode(value: Any?): String = when (value) {
+        null -> "n"
+        is String -> "s${value.length}:$value"
+        is Boolean -> if (value) "b1" else "b0"
+        is Number -> "d${value.toDouble()};"
+        is Map<*, *> -> "m${value.size}:" + value.entries.joinToString("") { encode(it.key) + encode(it.value) }
+        is List<*> -> "l${value.size}:" + value.joinToString("") { encode(it) }
+        else -> error("Unsupported operation value")
+    }
+
     private fun canonical(value: Any?): Any? = when (value) {
         is Map<*, *> -> value.entries.associate { it.key.toString() to canonical(it.value) }.toSortedMap()
         is List<*> -> value.map(::canonical)

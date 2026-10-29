@@ -121,10 +121,18 @@ fun AdminDashboardDialog(
 ) {
     val context = LocalContext.current
     val userRole by com.example.util.SubscriptionManager.userRole.collectAsState()
-    val isAdmin = userRole == "admin" || AuthManager.isCurrentUserAdmin()
+    val isAdmin = sessionPanelAccess()
+    val checkingPermissions by AuthManager.permissionsLoading.collectAsState()
 
     if (!isAdmin) {
-        LaunchedEffect(Unit) { onDismiss() }
+        AlertDialog(onDismissRequest = onDismiss,
+            title = { Text(tr("Solicitudes")) },
+            text = { Text(androidx.compose.ui.res.stringResource(if (checkingPermissions)
+                com.example.R.string.permissions_checking else com.example.R.string.permissions_unavailable)) },
+            confirmButton = { CoachTextButton(onClick = { AuthManager.refreshClaims() }, enabled = !checkingPermissions,
+                modifier = Modifier.heightIn(min = 48.dp).testTag("permissions_retry")) { Text(tr("Reintentar")) } },
+            dismissButton = { CoachTextButton(onClick = onDismiss,
+                modifier = Modifier.heightIn(min = 48.dp).testTag("permissions_close")) { Text(tr("Cerrar")) } })
         return
     }
 
@@ -151,8 +159,7 @@ fun AdminDashboardDialog(
     val reviewScope = rememberCoroutineScope()
     var isMonitoringMinimized by remember { mutableStateOf(false) }
 
-    val userRoleForRequests = com.example.util.SubscriptionManager.userRole.collectAsState().value
-    val isAdminUserForRequests = userRoleForRequests == "admin" || com.example.util.AuthManager.isCurrentUserAdmin()
+    val isAdminUserForRequests = isAdmin
 
     if (showUsers) {
         Dialog(onDismissRequest = { showUsers = false }, properties = DialogProperties(usePlatformDefaultWidth = false)) {
@@ -273,7 +280,7 @@ fun AdminDashboardDialog(
                     onOpenModeratorActivity = { showModeratorActivityDialog = true },
                     onOpenSponsorPanel = { showSponsorPanelDialog = true },
                     onOpenOverlayAccess = { showOverlayAccessDialog = true },
-                    isFullAdmin = userRole == "admin" || com.example.util.AuthManager.isCurrentUserAdmin()
+                    isFullAdmin = isAdmin
                 )
 
                 // Panel principal de gestión
@@ -282,10 +289,10 @@ fun AdminDashboardDialog(
                         .fillMaxSize()
                         .weight(1f)
                 ) {
-                    if (userRole == "admin" || userRole == "moderador" || com.example.util.AuthManager.isCurrentUserAdmin()) {
+                    if (isAdmin || userRole == "moderador") {
                         Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
                             MetaMonitoringCard()
-                            if (userRole == "admin" || com.example.util.AuthManager.isCurrentUserAdmin()) {
+                            if (isAdmin) {
                                 AppUpdateVerificationControl()
                             }
                             AdminUserPresenceCard()

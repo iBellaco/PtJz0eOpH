@@ -154,6 +154,17 @@ try {
     assert.equal((await db.doc(`users/${owner.uid}/subscription_history/sponsor_refund_sponsor_valid_price`).get()).get('amount'), '+27 EA');
     await maintainEconomy(db, now + 1); assert.equal((await profile.get()).get('blueEssence'), before + 27);
   });
+  await test('explicitly rejected advertisements retain their outcome without an automatic refund', async () => {
+    const now = Date.now(), profile = db.doc(`users/${owner.uid}`), before = (await profile.get()).get('blueEssence');
+    const id = 'sponsor_rejected_history';
+    await db.doc(`pending_sponsor_ads/${id}`).set({userId:owner.uid,status:'REJECTED',isApproved:false,isEnabled:false,
+      createdAt:now - 8 * 86400000,chargedEssence:27});
+    await profile.collection('economy_operations').doc(id).set({kind:'SPONSOR',cost:27});
+    await maintainEconomy(db, now);
+    assert.equal((await db.doc(`pending_sponsor_ads/${id}`).get()).get('status'),'REJECTED');
+    assert.equal((await profile.get()).get('blueEssence'),before);
+    assert.equal((await profile.collection('economy_operations').doc(`sponsor_refund_${id}`).get()).exists,false);
+  });
   await test('retention removes expired resolved requests and preserves pending money', async () => {
     const now = Date.now();
     await db.doc('cash_redemptions/cash_server_ten').update({historyDeleteAtMillis: now - 1});
