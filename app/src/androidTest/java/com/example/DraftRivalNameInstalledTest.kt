@@ -517,6 +517,8 @@ class DraftRivalNameInstalledTest {
     private fun inspectVi(fixture: String) = kotlinx.coroutines.runBlocking {
         val instrumentation = InstrumentationRegistry.getInstrumentation()
         val context = instrumentation.targetContext
+        com.example.data.WildRiftRepository.initChampions(context, forceReload = true)
+        fun champion(id: String) = com.example.data.WildRiftRepository.championSnapshot().single { it.id == id }
         val json = instrumentation.context.assets.open("draft/$fixture.json").bufferedReader().use { it.readText() }
         val bytes = android.util.Base64.decode(org.json.JSONObject(json).getString("pngBase64"), android.util.Base64.DEFAULT)
         val crop = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)!!
@@ -528,10 +530,10 @@ class DraftRivalNameInstalledTest {
             classifier.ensureIndexed(context)
             val hud = com.example.service.OverlayState().apply {
                 listOf("skarner", "pantheon", "brand", "jinx", "yuumi").forEachIndexed { index, id ->
-                    allies[index] = com.example.model.Champion(id = id)
+                    allies[index] = champion(id)
                 }
                 listOf("darius", null, "mel", "caitlyn", "milio").forEachIndexed { index, id ->
-                    enemies[index] = id?.let { com.example.model.Champion(id = it) }
+                    enemies[index] = id?.let(::champion)
                 }
             }
             val original = (hud.allies + hud.enemies).map { it?.id }
@@ -549,6 +551,8 @@ class DraftRivalNameInstalledTest {
             original.forEachIndexed { index, id ->
                 if (id != null) assertEquals(id, (hud.allies + hud.enemies)[index]?.id)
             }
+            assertEquals(10, (hud.allies + hud.enemies).filterNotNull().map { it.id }.distinct().size)
+            assertEquals(90, hud.enemyConfidences[com.example.model.LaneRole.JUNGLE])
         } finally {
             classifier.reset()
             classifier.setThreshold(originalThreshold, context)

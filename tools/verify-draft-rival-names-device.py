@@ -1,10 +1,13 @@
 """Check real name-band OCR on the installed release, without accepting an OCR fallback."""
 from pathlib import Path
+import argparse
 import subprocess
 import re
 
 TEST_CLASS = 'com.example.DraftRivalNameInstalledTest'
 SOURCE = Path(__file__).resolve().parents[1] / 'app/src/androidTest/java/com/example/DraftRivalNameInstalledTest.kt'
+VI_METHODS = frozenset({'reportedDraftPortraitSelectsViOnInstalledRelease',
+                        'reportedViewerPortraitSelectsViOnInstalledRelease'})
 
 
 def expected_methods(source):
@@ -12,6 +15,14 @@ def expected_methods(source):
     if not methods or len(methods) != len(set(methods)):
         raise ValueError('No se pudo determinar una lista única de pruebas instaladas')
     return set(methods)
+
+
+def select_methods(available, vi_only=False):
+    if not vi_only:
+        return available, TEST_CLASS
+    if not VI_METHODS <= available:
+        raise ValueError('Faltan las dos regresiones instaladas de Vi')
+    return VI_METHODS, ','.join(f'{TEST_CLASS}#{method}' for method in sorted(VI_METHODS))
 
 
 def validate_result(output, returncode, expected):
@@ -48,27 +59,34 @@ def validate_result(output, returncode, expected):
 
 
 def main():
-    expected = expected_methods(SOURCE.read_text())
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--vi-only', action='store_true', help='Ejecutar solo los dos retratos de Vi en fix-error')
+    args = parser.parse_args()
+    expected, selector = select_methods(expected_methods(SOURCE.read_text()), args.vi_only)
     report = Path('app/build/reports/spanish-device')
     report.mkdir(parents=True, exist_ok=True)
     command = ['adb', 'shell', 'am', 'instrument', '-w', '-r', '-e', 'class',
-        TEST_CLASS, 'com.Coach.test/androidx.test.runner.AndroidJUnitRunner']
+        selector, 'com.Coach.test/androidx.test.runner.AndroidJUnitRunner']
+    output_name = 'draft-vi-instrumentation.txt' if args.vi_only else 'draft-rival-name-instrumentation.txt'
     try:
         result = subprocess.run(command, capture_output=True, text=True, timeout=1200)
     except subprocess.TimeoutExpired as failure:
         def decode(value):
             return value.decode(errors='replace') if isinstance(value, bytes) else value or ''
         partial = decode(failure.stdout) + decode(failure.stderr)
-        (report / 'draft-rival-name-instrumentation.txt').write_text(partial)
+        (report / output_name).write_text(partial)
         print(partial[-8000:], flush=True)
         raise
     output = result.stdout + result.stderr
-    (report / 'draft-rival-name-instrumentation.txt').write_text(output)
+    (report / output_name).write_text(output)
     try:
         validate_result(output, result.returncode, expected)
     except ValueError as error:
         raise AssertionError(f'{error}\n{output[-24000:]}') from error
-    print(f'DRAFT_RIVAL_NAME_AUDIT: {len(expected)} installed tests passed; exact allied names and observed lanes survive selection, OCR gaps and champion trades in ES/PT; both Vi portraits fill jungle', flush=True)
+    if args.vi_only:
+        print('DRAFT_VI_AUDIT: both installed Vi portrait regressions passed; jungle and previous nine identities verified', flush=True)
+    else:
+        print(f'DRAFT_RIVAL_NAME_AUDIT: {len(expected)} installed tests passed; exact allied names and observed lanes survive selection, OCR gaps and champion trades in ES/PT; both Vi portraits fill jungle', flush=True)
     for evidence in re.findall(r'(?:DRAFT_FAST_NAME_AUDIT|DRAFT_BAN_8067_AUDIT): [^\r\n]+', output):
         print(evidence, flush=True)
 
