@@ -30,6 +30,9 @@ jobs:
         java-version: '21'
     - name: Ejecutar las mismas comprobaciones previas de validación
       run: |
+        python3 -m pip install --quiet PyYAML==6.0.3
+        python3 -m unittest discover -s .github/scripts -p test_parallel_validation.py
+        python3 -m unittest discover -s .github/scripts -p test_validated_apk.py
         python3 -m unittest discover -s tools -p test_emulator_image.py
         python3 -m unittest discover -s tools -p test_draft_rival_device.py
         python3 -m unittest discover -s tools -p test_account_deletion_device.py

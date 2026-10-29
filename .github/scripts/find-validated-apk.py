@@ -22,7 +22,7 @@ DELIVERY_ONLY_FILES = {
 }
 
 REQUIRED_JOBS = {'catalog-validation', 'security-auth-tests', 'scanner-tests',
-                 'build-apk', 'core-and-rendered', 'installed-audit', 'installed-spanish',
+                 'build-apk', 'core-tests', 'rendered-audit', 'installed-audit', 'installed-spanish',
                  'scanner-sequence-audit', 'build-and-release'}
 REQUIRED_JOBS.add('native-title-preflight')
 
