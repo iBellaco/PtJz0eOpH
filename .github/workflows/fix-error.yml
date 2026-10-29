@@ -113,6 +113,7 @@ jobs:
               'com.example.BannedPortraitScannerTest',
               'com.example.PortraitMatcherTest',
               'com.example.CatalogBalanceTest',
+              'com.example.WildRiftItemsCatalogTest',
               'com.example.PortugueseGeneratedSurfaceTest',
               'com.example.RequiredItemCorrectionsTest',
               'com.example.ChampionBuildsCatalogValidationTest',
