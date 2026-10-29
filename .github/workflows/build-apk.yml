@@ -810,7 +810,7 @@ jobs:
       cancel-in-progress: false
     steps:
     - uses: actions/checkout@v5
-    - name: Keep at most 30 completed runs and 30 releases
+    - name: Keep at least 10 runs per workflow and 30 releases
       uses: actions/github-script@v8
       with:
         script: |

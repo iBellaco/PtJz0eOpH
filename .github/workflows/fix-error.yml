@@ -15,6 +15,7 @@ concurrency:
   cancel-in-progress: true
 
 permissions:
+  actions: write
   contents: read
 
 jobs:
@@ -332,3 +333,18 @@ jobs:
           path: app/build/reports/spanish-device/draft-vi-instrumentation.txt
           if-no-files-found: warn
           retention-days: 14
+
+  cleanup-history:
+    if: always()
+    needs: [catalog-preflight, targeted-last-pick, sponsor-permissions, targeted-red-magic-release, targeted-installed-vi]
+    runs-on: ubuntu-latest
+    concurrency:
+      group: coach-actions-history
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v5
+      - name: Keep at least 10 runs per workflow and 30 releases
+        uses: actions/github-script@v8
+        with:
+          script: |
+            await require('./.github/scripts/cleanup-completed-runs.cjs')({ github, context, core });
