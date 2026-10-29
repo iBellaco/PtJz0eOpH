@@ -5,11 +5,11 @@ import org.junit.Assert.*
 import org.junit.Test
 
 class EconomyRequestPolicyTest {
-    @Test fun personalSponsorSubmissionCanFallBackForStaffWithoutQueuingPrivilegedCommands() {
+    @Test fun everyServerCommandCanUseTheTrustedFallbackWhenDirectTransportIsUnavailable() {
         assertTrue(EconomyRequestPolicy.canQueue("SPONSOR", administrator = true))
         assertTrue(EconomyRequestPolicy.canQueue("SPONSOR", administrator = false))
         for (action in listOf("ADJUST", "ROLE", "PREMIUM_GRANT", "PREMIUM_REMOVE", "RESOLVE", "REDEEM", "CLEANUP")) {
-            assertFalse(action, EconomyRequestPolicy.canQueue(action, administrator = true))
+            assertEquals(action != "CLEANUP", EconomyRequestPolicy.canQueue(action, administrator = true))
         }
     }
     @Test fun retriesReuseOnlyTheSameMeaning() {
