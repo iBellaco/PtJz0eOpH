@@ -258,7 +258,9 @@ jobs:
     needs: [find-validated-apk, security-auth-tests]
     if: needs.find-validated-apk.outputs.run_id == ''
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    # Include setup, lint, the full suite and Gradle post-job cache cleanup.
+    # The previous run passed all tests but crossed 60 minutes during shutdown.
+    timeout-minutes: 75
     steps:
     - *id001
     - *id002
@@ -411,7 +413,7 @@ jobs:
     runs-on: ubuntu-latest
     # Compile, focused regressions and the complete capture matrix share this
     # budget. The full matrix exceeded the old 30-minute job limit; keep every
-    # case and allow the same bounded budget as core-tests.
+    # case and retain a bounded 60-minute budget for the scanner matrix.
     timeout-minutes: 60
     steps:
     - *id001

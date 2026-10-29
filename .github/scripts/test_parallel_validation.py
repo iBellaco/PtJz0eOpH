@@ -31,11 +31,11 @@ class ParallelValidationTest(unittest.TestCase):
         return next(step for step in self.jobs[job]['steps'] if step.get('name') == name)
 
     def test_both_jobs_are_parallel_mandatory_and_have_independent_budgets(self):
-        for name in ['core-tests', 'rendered-audit']:
+        for name, budget in [('core-tests', 75), ('rendered-audit', 60)]:
             job = self.jobs[name]
             self.assertEqual(['find-validated-apk', 'security-auth-tests'], job['needs'])
             self.assertEqual("needs.find-validated-apk.outputs.run_id == ''", job['if'])
-            self.assertEqual(60, job['timeout-minutes'])
+            self.assertEqual(budget, job['timeout-minutes'])
             self.assertEqual('ubuntu-latest', job['runs-on'])
             self.assertFalse(job.get('continue-on-error', False))
             for step in job['steps']:
