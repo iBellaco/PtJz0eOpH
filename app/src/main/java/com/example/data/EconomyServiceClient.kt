@@ -65,7 +65,10 @@ object EconomyServiceClient {
         }
         // The direct service is optional during migration. Keep the private queue as a
         // durable fallback and continue watching it instead of reporting a false success.
-        val ref = FirebaseFirestore.getInstance().collection("economy_requests").document(user.uid)
+        // Sponsorships are independent requests. Do not reuse the legacy
+        // per-user document, because one pending ad must not block later ads.
+        val requestDocument = if (action == "SPONSOR") directId else user.uid
+        val ref = FirebaseFirestore.getInstance().collection("economy_requests").document(requestDocument)
         val submission = try {
             withTimeoutOrNull(15_000L) {
                 FirebaseFirestore.getInstance().runTransaction { tx ->

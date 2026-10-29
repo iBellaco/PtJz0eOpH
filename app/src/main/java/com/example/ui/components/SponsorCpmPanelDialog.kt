@@ -63,7 +63,6 @@ fun SponsorCpmPanelDialog(
     val userEmail = authUser?.email ?: "patrocinador@coach.app"
     val coroutineScope = rememberCoroutineScope()
     var remoteOwnAds by remember(authUser?.uid) { mutableStateOf<List<AppNotice>?>(null) }
-    var queuedTitle by remember(authUser?.uid) { mutableStateOf<String?>(null) }
     DisposableEffect(authUser?.uid) {
         val uid = authUser?.uid
         val db = com.google.firebase.firestore.FirebaseFirestore.getInstance()
@@ -74,17 +73,7 @@ fun SponsorCpmPanelDialog(
                     .map { com.example.data.SponsorReviewPolicy.notice(it.id, it.data.orEmpty()) }
             }
         }
-        val queue = uid?.let { db.collection("economy_requests").document(it)
-            .addSnapshotListener { snapshot, error ->
-                if (error == null) {
-                    val payload = snapshot?.get("payload") as? Map<*, *>
-                    queuedTitle = if (payload?.get("action") == "SPONSOR" && snapshot?.getString("status") in setOf("PENDING", "PROCESSING", "REVIEW"))
-                        (payload?.get("notice") as? Map<*, *>)?.get("title") as? String ?: ""
-                    else null
-                }
-            }
-        }
-        onDispose { ads?.remove(); queue?.remove() }
+        onDispose { ads?.remove() }
     }
 
     val allNotices by AppNoticeManager.notices.collectAsState()
@@ -322,10 +311,6 @@ fun SponsorCpmPanelDialog(
                     .padding(20.dp)
             ) {
             PanelReadControl(com.example.data.NotificationPanel.SPONSOR)
-            queuedTitle?.let { title ->
-                Text(context.getString(com.example.R.string.sponsor_processing_notice, title),
-                    color = HextechGold, modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp))
-            }
                 // Header
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -370,7 +355,7 @@ fun SponsorCpmPanelDialog(
                             durationValueInput = "1"
                             showCreateDialog = true
                         },
-                        enabled = queuedTitle == null,
+                        enabled = true,
                         colors = ButtonDefaults.buttonColors(containerColor = HextechGold),
                         shape = RoundedCornerShape(8.dp)
                     ) {
