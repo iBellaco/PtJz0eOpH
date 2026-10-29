@@ -168,6 +168,20 @@ try {
   const queueRef=db.doc(`economy_requests/${queueUid}`);
   const queued=(id,fields={})=>({userId:queueUid,operationId:id,authTime:Math.floor(Date.now()/1000),status:'PENDING',schema:2,
     createdAt:Timestamp.now(),payload:{action:'PURCHASE',id,plan:'MONTHLY',currency:'BLUE',...fields}});
+  const sponsorUid = 'economy-sponsor-user';
+  await identities.createUser({uid:sponsorUid,email:'sponsor@test.invalid',password:'Isolated-test-password-123'});
+  await db.doc(`users/${sponsorUid}`).set({role:'free',secondaryRole:'patrocinador',blueEssence:100,orangeEssence:0});
+  await test('independent sponsor queue entries both reach moderation', async () => {
+    const notice = {title:'Anuncio de prueba', content:'Contenido de prueba', videoUrl:'', expandedImageUrl:'', externalUrl:'', durationValue:1, durationUnit:'day'};
+    for (const id of ['sponsor_queue_01', 'sponsor_queue_02']) {
+      await db.doc(`economy_requests/${id}`).set({userId:sponsorUid, operationId:id, authTime:Math.floor(Date.now()/1000), status:'PENDING', schema:2,
+        createdAt:Timestamp.now(), payload:{action:'SPONSOR', id, notice, expectedCost:27}});
+    }
+    await processQueue(db, identities);
+    assert.equal((await db.doc('pending_sponsor_ads/sponsor_queue_01').get()).get('isApproved'), false);
+    assert.equal((await db.doc('pending_sponsor_ads/sponsor_queue_02').get()).get('isApproved'), false);
+    assert.equal((await db.doc(`users/${sponsorUid}`).get()).get('blueEssence'), 46);
+  });
   await test('concurrent private workers execute one charge and preserve a private result',async()=>{
     await queueRef.set(queued('queue_concurrent_01'));
     await Promise.all([processQueue(db,identities),processQueue(db,identities)]);

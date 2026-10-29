@@ -46,13 +46,13 @@ export async function processQueue(db, auth, {clock = Date.now, limit = 30, leas
     if (!command) { stats.skipped++; continue; }
     let result, failure;
     try {
-      ensure(command.userId === row.id && command.payload?.id === command.operationId, 'invalid-argument', 'Solicitud no válida');
-      const user = await auth.getUser(row.id);
+      ensure(typeof command.userId === 'string' && command.payload?.id === command.operationId, 'invalid-argument', 'Solicitud no válida');
+      const user = await auth.getUser(command.userId);
       ensure(!user.disabled && user.providerData?.some(provider => provider.providerId !== 'anonymous') && user.email !== 'coach.guest.reader@gmail.com', 'unauthenticated', 'Inicia sesión');
       const revokedAt = Date.parse(user.tokensValidAfterTime ?? '') || 0;
       ensure(Number.isInteger(command.authTime) && command.authTime * 1000 >= revokedAt, 'unauthenticated', 'Inicia sesión');
       // Read current signed claims from Auth, never privileges supplied in the command.
-      result = await executeEconomy(db, {uid: row.id, token: {...user.customClaims, email: user.email ?? '', firebase: {sign_in_provider: 'password'}}}, command.payload, clock, {requestedAtMillis: command.createdAt?.toMillis?.() ?? 0});
+      result = await executeEconomy(db, {uid: command.userId, token: {...user.customClaims, email: user.email ?? '', firebase: {sign_in_provider: 'password'}}}, command.payload, clock, {requestedAtMillis: command.createdAt?.toMillis?.() ?? 0});
     } catch (error) {
       failure = error instanceof EconomyError ? {code: error.code, message: error.message}
         : error.code === 'auth/user-not-found' ? {code: 'unauthenticated', message: 'Inicia sesión'} : null;
@@ -77,7 +77,7 @@ export async function processQueue(db, auth, {clock = Date.now, limit = 30, leas
       const outcome = {operationId: command.operationId, status: failure ? 'FAILED' : 'COMPLETED', result: failure ? null : result,
         error: failure ?? null, completedAt: FieldValue.serverTimestamp()};
       tx.update(row.ref, {...outcome, lease: FieldValue.delete(), leaseUntil: FieldValue.delete()});
-      tx.set(db.doc(`economy_results/${row.id}~${command.operationId}`), {...outcome, userId: row.id, expiresAtMillis: clock() + 86400000});
+      tx.set(db.doc(`economy_results/${command.userId}~${command.operationId}`), {...outcome, userId: command.userId, expiresAtMillis: clock() + 86400000});
     });
     stats[failure ? 'failed' : 'completed']++;
   }

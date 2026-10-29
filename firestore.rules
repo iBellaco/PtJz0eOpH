@@ -270,22 +270,22 @@ service cloud.firestore {
         && id.matches('^' + request.auth.uid + '~[a-zA-Z0-9_-]{8,80}$');
       allow write: if false;
     }
-    match /economy_requests/{userId} {
+    match /economy_requests/{requestId} {
       function validCommand() {
         let d = request.resource.data;
         let p = d.payload;
-        return verifiedSignedIn() && request.auth.uid == userId
+        return verifiedSignedIn() && request.auth.uid == d.userId
           && request.auth.token.get('email', '') != 'coach.guest.reader@gmail.com'
           && request.auth.token.get('firebase', {}).get('sign_in_provider', '') != 'anonymous'
           && d.keys().hasOnly(['userId','operationId','payload','status','schema','createdAt','authTime'])
-          && d.userId == userId && d.status == 'PENDING' && d.schema == 2
+          && d.userId == request.auth.uid && d.status == 'PENDING' && d.schema == 2
           && d.createdAt == request.time && d.authTime == request.auth.token.get('auth_time', 0)
           && d.operationId is string && d.operationId.matches('^[a-zA-Z0-9_-]{8,80}$')
           && p is map && p.size() <= 15 && p.id == d.operationId
           && (p.action in ['PURCHASE','SUBSCRIBE','UNSUBSCRIBE','SPONSOR']
             || (isAdmin() && p.action in ['REDEEM','RESOLVE','ADJUST','PREMIUM_GRANT','PREMIUM_REMOVE','ROLE']));
       }
-      allow read: if signedIn() && request.auth.uid == userId;
+      allow read: if signedIn() && request.auth.uid == resource.data.userId;
       allow create: if validCommand();
       allow update: if validCommand() && resource.data.status in ['COMPLETED','FAILED'];
       allow delete: if false;
