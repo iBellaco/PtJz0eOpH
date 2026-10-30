@@ -129,9 +129,9 @@ fun AdminDashboardDialog(
             title = { Text(tr("Solicitudes")) },
             text = { Text(androidx.compose.ui.res.stringResource(if (checkingPermissions)
                 com.example.R.string.permissions_checking else com.example.R.string.permissions_unavailable)) },
-            confirmButton = { CoachTextButton(onClick = { AuthManager.refreshClaims() }, enabled = !checkingPermissions,
+            confirmButton = { TextButton(onClick = { AuthManager.refreshClaims() }, enabled = !checkingPermissions,
                 modifier = Modifier.heightIn(min = 48.dp).testTag("permissions_retry")) { Text(tr("Reintentar")) } },
-            dismissButton = { CoachTextButton(onClick = onDismiss,
+            dismissButton = { TextButton(onClick = onDismiss,
                 modifier = Modifier.heightIn(min = 48.dp).testTag("permissions_close")) { Text(tr("Cerrar")) } })
         return
     }

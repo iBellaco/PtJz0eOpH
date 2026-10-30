@@ -16,12 +16,13 @@ Para un perfil nuevo pregunta una sola vez: rol y tres campeones principales; ra
 Idioma principal del desarrollador: español latino (es-419). Traduce a portugués únicamente cuando ese sea el idioma seleccionado. Usa siempre H1, H2, H3 y H4/Ulti; nunca Q, W, E, R para las habilidades de Wild Rift.
 
 ### REGLA DE COMMIT MESSAGE Y VERSIÓN DE DEPURADO
-- Siempre que termines una modificación o tarea en el proyecto, debes entregar un mensaje de commit copiable en español.
+- Mantener los mensajes de commit internos en español. Por indicación del propietario del 30 de octubre de 2026, no incluir commits en las respuestas.
 - Además de entregar el commit, debes incrementar/modificar la versión de depurado de la aplicación (en `app/build.gradle.kts` incrementando `versionCode` y `versionName`) para que se actualice la versión que aparece en la parte de abajo derecha de la aplicación.
 - Este archivo es la fuente única de instrucciones. `INSTRUCCIONES_AGENTES.md` mantiene un enlace de compatibilidad.
 
-### REGLA DE REPORTE PARA TESTERS Y RESUMEN COPIABLE (CRÍTICO)
-- Siempre que realices cualquier modificación o tarea en la aplicación, debes entregar directamente un resumen copiable y conciso estructurado para el equipo de pruebas (testers).
+### REGLA DE RESUMEN COPIABLE DE LA APLICACIÓN (CRÍTICO)
+- Por indicación del propietario del 30 de octubre de 2026, la respuesta final debe contener únicamente el texto copiable de la modificación o actualización de Coach. No entregar reportes para testers ni mensajes de commit.
+- No mencionar el repositorio, ramas, flujos, panel de administrador ni roles en las respuestas. Describir únicamente los cambios de la aplicación y distinguir las correcciones implementadas de las que todavía requieren validación.
 - El nombre del proyecto es estrictamente **Coach**.
 - **PROHIBICIÓN DE DATOS SENSIBLES E INFRAESTRUCTURA INTERNA:** Está estrictamente prohibido mencionar términos técnicos internos o sensibles como "panel de administrador", "Firebase", "Firestore", nombres de colecciones o tablas de datos. Refiérete a estas capacidades de forma limpia y orientada al usuario/tester (ej. "sincronización en la nube en tiempo real", "gestor de avisos", "almacenamiento local optimizado").
 - **PROHIBICIÓN DE EMOJIS EN TEXTOS COPIABLES:** Todos los resúmenes, reportes y textos copiables para testers deben redactarse estrictamente SIN emojis.
