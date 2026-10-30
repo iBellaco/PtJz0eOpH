@@ -51,6 +51,7 @@ fun AdminModeratorRequestsDialog(
     var isLoading by remember { mutableStateOf(true) }
     var showPayments by remember { mutableStateOf(false) }
     var showStreamers by remember { mutableStateOf(false) }
+    var showSponsors by remember { mutableStateOf(false) }
     var showHistory by remember { mutableStateOf(false) }
     val reviewScope = rememberCoroutineScope()
     var sponsorBusy by remember { mutableStateOf<Set<String>>(emptySet()) }
@@ -62,7 +63,7 @@ fun AdminModeratorRequestsDialog(
             try {
                 SponsorReviewRepository.resolve(id, approve)
                 com.example.data.AppNoticeManager.syncFromCloud(context)
-                Toast.makeText(context, com.example.util.appTr(if (approve) "Anuncio aprobado y visible en el panel de anuncios" else "Solicitud rechazada"), Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, com.example.util.appTr(if (approve) "Anuncio aprobado y visible en el panel de anuncios" else "Solicitud rechazada y Esencias Azules devueltas"), Toast.LENGTH_SHORT).show()
             } catch (_: Exception) {
                 Toast.makeText(context, context.getString(com.example.R.string.sponsor_review_error), Toast.LENGTH_LONG).show()
             } finally { sponsorBusy = sponsorBusy - id }
@@ -151,6 +152,8 @@ fun AdminModeratorRequestsDialog(
 
     val filtered = requests.filter { req ->
         val status = req["status"] as? String ?: "PENDIENTE"
+        val isSponsor = req["requestType"] == "SPONSOR"
+        if (showSponsors != isSponsor) return@filter false
         if (showHistory) {
             status != "PENDIENTE"
         } else {
@@ -200,8 +203,11 @@ fun AdminModeratorRequestsDialog(
                 Spacer(modifier = Modifier.height(10.dp))
 
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    TextButton(onClick = { showStreamers = false; showPayments = false }) { Text(com.example.util.localizedString(com.example.R.string.streamer_roles), color = if (!showStreamers) HextechGold else TextSecondary) }
-                    TextButton(onClick = { showStreamers = true; showPayments = false }) { Text(com.example.util.localizedString(com.example.R.string.streamer_reviews), color = if (showStreamers) HextechGold else TextSecondary) }
+                    TextButton(onClick = { showStreamers = false; showSponsors = false; showPayments = false }) { Text(com.example.util.localizedString(com.example.R.string.streamer_roles), color = if (!showStreamers && !showSponsors) HextechGold else TextSecondary) }
+                    TextButton(onClick = { showStreamers = true; showSponsors = false; showPayments = false }) { Text(com.example.util.localizedString(com.example.R.string.streamer_reviews), color = if (showStreamers) HextechGold else TextSecondary) }
+                    if (adminClaim) TextButton(onClick = { showStreamers = false; showSponsors = true; showPayments = false }, modifier = Modifier.testTag("admin_sponsor_requests_open")) {
+                        Text(tr("Patrocinios"), color = if (showSponsors) Color(0xFFF97316) else TextSecondary)
+                    }
                 }
                 if (adminClaim) TextButton(onClick = { showPayments = true; showStreamers = false },
                     modifier = Modifier.heightIn(min = 48.dp).testTag("admin_cash_payments_open")) { Text(tr("Pagos USDT")) }
@@ -360,12 +366,17 @@ fun AdminModeratorRequestsDialog(
                                                 fontSize = 11.sp
                                             )
                                             if (type == "SPONSOR") {
-                                                Text(
-                                                    text = newValue.ifBlank { context.getString(com.example.R.string.sponsor_pending_review) },
-                                                    color = TextPrimary,
-                                                    fontSize = 11.sp,
-                                                    maxLines = 3
-                                                )
+                                                Column {
+                                                    Text(
+                                                        text = newValue.ifBlank { context.getString(com.example.R.string.sponsor_pending_review) },
+                                                        color = TextPrimary,
+                                                        fontSize = 11.sp,
+                                                        maxLines = 3
+                                                    )
+                                                    (req["chargedEssence"] as? Number)?.let {
+                                                        Text(tr("Cargo: ${it.toLong()} EA · se devuelve al rechazar"), color = HextechGold, fontSize = 10.sp)
+                                                    }
+                                                }
                                             } else if (type == "VERIFICATION") {
                                                 val verifyVal = newValue.toBoolean()
                                                 Surface(
@@ -436,7 +447,7 @@ fun AdminModeratorRequestsDialog(
                                                 shape = RoundedCornerShape(6.dp),
                                                 contentPadding = PaddingValues(vertical = 6.dp)
                                             ) {
-                                                Text(tr("Rechazar"), fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                                Text(tr(if (type == "SPONSOR") "Rechazar y devolver EA" else "Rechazar"), fontSize = 11.sp, fontWeight = FontWeight.Bold)
                                             }
 
                                             // Approve

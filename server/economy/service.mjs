@@ -2,10 +2,15 @@ import {FieldValue} from 'firebase-admin/firestore';
 import {allowedAccount, balance, cashRedemption, deadline, ensure, fingerprint, hasSponsorRole, integer, premiumPurchase, sponsorPrice, validateInput, DAY} from './policy.mjs';
 
 const serverTime = () => FieldValue.serverTimestamp();
-const adminActions = new Set(['REDEEM', 'RESOLVE', 'ADJUST', 'PREMIUM_GRANT', 'PREMIUM_REMOVE', 'ROLE', 'CLEANUP']);
+const adminActions = new Set(['REDEEM', 'RESOLVE', 'SPONSOR_RESOLVE', 'ADJUST', 'PREMIUM_GRANT', 'PREMIUM_REMOVE', 'ROLE', 'CLEANUP']);
 const receipt = (id, now, source, planName, amount, status = 'Completado', days = 0) => ({id, timestamp: now, durationMillis: days * DAY, source, planName, amount, status});
 function visible(account, uid) {
   return {uid, role: account.role ?? 'free', secondaryRole: account.secondaryRole ?? '', blueEssence: balance(account, 'BLUE'), orangeEssence: balance(account, 'ORANGE'), premiumUntil: deadline(account.premiumUntil), subscriptionPlan: account.subscriptionPlan ?? ''};
+}
+function publicSponsorNotice(id, data) {
+  const allowed = ['title', 'content', 'videoUrl', 'expandedImageUrl', 'externalUrl', 'titleColor', 'contentColor',
+    'budget', 'budgetUnit', 'durationValue', 'durationUnit', 'isApproved', 'isEnabled', 'approvedAtMillis', 'expiresAtMillis'];
+  return Object.fromEntries(allowed.filter(key => data[key] !== undefined).map(key => [key, data[key]]).concat([['id', id], ['tag', 'PUBLICIDAD']]));
 }
 export async function executeEconomy(db, auth, raw, clock = Date.now, {requestedAtMillis} = {}) {
   ensure(auth && auth.uid && auth.token?.firebase?.sign_in_provider !== 'anonymous' && auth.token?.email !== 'coach.guest.reader@gmail.com', 'unauthenticated', 'Inicia sesión');
@@ -23,11 +28,18 @@ export async function executeEconomy(db, auth, raw, clock = Date.now, {requested
   return db.runTransaction(async tx => {
     const operatorDoc = await tx.get(operator), operatorDeletion = await tx.get(db.doc(`account_deletions/${auth.uid}`));
     allowedAccount(operatorDoc.data(), operatorDeletion.data());
-    let uid = input.uid ?? auth.uid, redemption, requestRef;
+    let uid = input.uid ?? auth.uid, redemption, requestRef, sponsorRequest;
     if (input.action === 'RESOLVE') {
       ensure(typeof input.redemptionId === 'string' && /^[a-zA-Z0-9_-]{8,80}$/.test(input.redemptionId) && typeof input.paid === 'boolean', 'invalid-argument', 'Solicitud no válida');
       requestRef = db.doc(`cash_redemptions/${input.redemptionId}`); redemption = (await tx.get(requestRef)).data();
       ensure(redemption && /^[a-zA-Z0-9_-]{1,128}$/.test(redemption.userId), 'not-found', 'Solicitud no disponible'); uid = redemption.userId;
+    }
+    if (input.action === 'SPONSOR_RESOLVE') {
+      ensure(typeof input.sponsorId === 'string' && /^[a-zA-Z0-9_-]{8,80}$/.test(input.sponsorId) && typeof input.approved === 'boolean', 'invalid-argument', 'Solicitud no válida');
+      requestRef = db.doc(`pending_sponsor_ads/${input.sponsorId}`);
+      sponsorRequest = (await tx.get(requestRef)).data();
+      ensure(sponsorRequest && /^[a-zA-Z0-9_-]{1,128}$/.test(sponsorRequest.userId ?? ''), 'not-found', 'Solicitud no disponible');
+      uid = sponsorRequest.userId;
     }
     const profile = db.doc(`users/${uid}`), accountDoc = uid === auth.uid ? operatorDoc : await tx.get(profile);
     const account = accountDoc.data(); ensure(account, 'not-found', 'Usuario no disponible');
@@ -42,7 +54,42 @@ export async function executeEconomy(db, auth, raw, clock = Date.now, {requested
       return {ok: true, account: visible(account, uid)};
     }
     const updates = {}, writes = []; let record, metadata = {};
-    if (input.action === 'PURCHASE') {
+    if (input.action === 'SPONSOR_RESOLVE') {
+      const current = sponsorRequest;
+      const settled = current.isApproved === true || current.status === 'REFUNDED' || Number(current.refundedAtMillis ?? 0) > 0;
+      if (settled) {
+        ensure(input.approved === current.isApproved, 'failed-precondition', 'La solicitud ya fue resuelta');
+        return {ok: true, account: visible(account, uid)};
+      }
+      const registry = await tx.get(db.doc('system_config/app_notices'));
+      const notices = (registry.get('notices') ?? []).filter(n => n && n.id !== input.sponsorId);
+      if (input.approved) {
+        const unit = (current.durationUnit ?? 'day').toString().toLowerCase();
+        const unitMillis = {hour: 60 * 60 * 1000, day: DAY, week: 7 * DAY, month: 30 * DAY}[unit] ?? DAY;
+        const maximum = {hour: 12, day: 3, week: 2, month: 6}[unit] ?? 3;
+        const changes = {isApproved: true, isEnabled: true, status: 'APROBADA', approvedAtMillis: now,
+          expiresAtMillis: now + unitMillis * integer(current.durationValue, 1, maximum)};
+        tx.update(requestRef, changes);
+        tx.set(db.doc('system_config/app_notices'), {notices: [...notices, publicSponsorNotice(input.sponsorId, {...current, ...changes})]}, {merge: true});
+        record = receipt(input.id, now, 'SPONSOR_APPROVAL', 'Anuncio patrocinado aprobado', '0 EA');
+        metadata = {kind: 'SPONSOR_RESOLUTION', sponsorId: input.sponsorId, approved: true, refunded: 0};
+      } else {
+        const refund = integer(current.chargedEssence, 1);
+        const charge = (await tx.get(profile.collection('economy_operations').doc(input.sponsorId))).data();
+        ensure(charge?.kind === 'SPONSOR' && integer(charge.cost) === refund, 'failed-precondition', 'No se pudo verificar el cargo del anuncio');
+        const refundId = `sponsor_refund_${input.sponsorId}`;
+        const refundOperation = profile.collection('economy_operations').doc(refundId);
+        ensure(!(await tx.get(refundOperation)).exists, 'already-exists', 'El reembolso ya fue aplicado');
+        const refundRecord = receipt(refundId, now, 'SPONSOR_REFUND', 'Anuncio patrocinado rechazado y reembolsado', `+${refund} EA`);
+        updates.blueEssence = integer(balance(account, 'BLUE') + refund);
+        tx.create(refundOperation, {id: refundId, userId: uid, actorUid: auth.uid, kind: 'SPONSOR_REFUND', cost: refund, receipt: refundRecord, createdAt: serverTime(), timestamp: now});
+        tx.set(profile.collection('subscription_history').doc(refundId), refundRecord);
+        tx.update(requestRef, {status: 'REJECTED', isApproved: false, isEnabled: false, refundedAtMillis: now});
+        tx.set(db.doc('system_config/app_notices'), {notices}, {merge: true});
+        record = receipt(input.id, now, 'SPONSOR_REJECTION', 'Anuncio patrocinado rechazado y reembolsado', `+${refund} EA`);
+        metadata = {kind: 'SPONSOR_RESOLUTION', sponsorId: input.sponsorId, approved: false, refunded: refund};
+      }
+    } else if (input.action === 'PURCHASE') {
       const result = premiumPurchase(account, input.plan, input.currency, now, admin);
       updates[input.currency === 'BLUE' ? 'blueEssence' : 'orangeEssence'] = result.remaining;
       updates.premiumUntil = result.until;

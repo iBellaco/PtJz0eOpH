@@ -238,7 +238,6 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser? = nul
     var showSupportPanel by remember { mutableStateOf(false) }
     var showSponsorPanel by remember { mutableStateOf(false) }
     var showBuyEssenceDialog by remember { mutableStateOf(false) }
-    var showRedemptionDialog by remember { mutableStateOf(false) }
     var showSignOutConfirm by remember { mutableStateOf(false) }
     val activeProfile by com.example.data.AccountProfileManager.activeProfile.collectAsState()
 
@@ -246,7 +245,6 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser? = nul
     val effectiveEmail = user?.email ?: "coach@example.invalid"
 
 
-    if (showRedemptionDialog) { com.example.ui.components.OrangeEssenceRedemptionDialog { showRedemptionDialog = false } }
 
     if (showAvatarDialog) {
         com.example.ui.components.AvatarSelectionBottomSheet(
@@ -342,9 +340,7 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser? = nul
             ) {
                 // Top-Left: Inbox button
                 com.example.ui.components.CircularPanelNotificationButton(
-                    notifications.count(com.example.data.NotificationPanel.INBOX) +
-                        if (notifications.events[com.example.data.NotificationPanel.INBOX].orEmpty().any { it.startsWith("economy_pending_") }) 0
-                        else com.example.ui.components.EconomyPendingInboxCount(), com.example.data.NotificationPanel.INBOX,
+                    notifications.count(com.example.data.NotificationPanel.INBOX), com.example.data.NotificationPanel.INBOX,
                     inboxLabel, Icons.Default.Message) { showInboxDialog = true }
 
                 // Top-Center: Blue Essence & Orange Essence side-by-side badges
@@ -451,11 +447,6 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser? = nul
             }
 
             Spacer(modifier = Modifier.height(8.dp))
-
-            val redemptionBalance by SubscriptionManager.orangeEssence.collectAsState()
-            if (redemptionBalance > 0L && com.example.model.RolePanelAccess.canRedeemEssence(userRole, secondaryRole, adminClaim)) {
-                com.example.ui.components.OrangeEssenceRedemptionEntry(redemptionBalance) { showRedemptionDialog = true }
-            }
 
             AuthHeader(
                 title = "Perfil de Invocador",

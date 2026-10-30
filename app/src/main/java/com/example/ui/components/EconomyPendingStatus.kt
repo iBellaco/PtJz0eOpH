@@ -90,7 +90,10 @@ fun EconomyPendingInboxCount(): Int {
     val user = AuthManager.getAuth()?.currentUser ?: return 0
     if (AuthManager.isGuestOrUnauthenticated(user)) return 0
     val state = observeRequest()
-    return state.requests.count { it["status"] in setOf("PENDING", "PROCESSING", "REVIEW") }
+    return state.requests.count {
+        it["status"] in setOf("PENDING", "PROCESSING", "REVIEW") &&
+            (it["payload"] as? Map<*, *>)?.get("action") != "SPONSOR"
+    }
 }
 
 @Composable

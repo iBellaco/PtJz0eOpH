@@ -85,7 +85,7 @@ export function validateInput(input) {
     PURCHASE: ['plan', 'currency', 'language'], REDEEM: ['amount', 'network', 'wallet', 'binanceEmail', 'expectedFee'],
     RESOLVE: ['redemptionId', 'paid'], ADJUST: ['uid', 'amount', 'currency', 'addition', 'notify', 'title', 'customBody'],
     PREMIUM_GRANT: ['uid', 'days', 'extend'], PREMIUM_REMOVE: ['uid'], ROLE: ['uid', 'role'],
-    SPONSOR: ['notice', 'expectedCost'], SUBSCRIBE: ['creatorUid'], UNSUBSCRIBE: ['creatorUid'], CLEANUP: []
+    SPONSOR: ['notice', 'expectedCost'], SPONSOR_RESOLVE: ['sponsorId', 'approved'], SUBSCRIBE: ['creatorUid'], UNSUBSCRIBE: ['creatorUid'], CLEANUP: []
   };
   ensure(fields[input.action] && Object.keys(input).every(k => ['action', 'id', ...fields[input.action]].includes(k)), 'invalid-argument', 'Operación no válida');
   ensure(typeof input.id === 'string' && /^[a-zA-Z0-9_-]{8,80}$/.test(input.id), 'invalid-argument', 'Identificador no válido');

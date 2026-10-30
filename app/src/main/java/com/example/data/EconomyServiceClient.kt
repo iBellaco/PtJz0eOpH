@@ -19,7 +19,7 @@ import kotlin.coroutines.resumeWithException
 
 /** Only a private command is submitted here. The trusted worker owns every balance and receipt. */
 class EconomyPendingException : IllegalStateException(appTr(
-    "Tienes una solicitud pendiente. Se procesará automáticamente; consulta tu bandeja de entrada."))
+    "Tienes una solicitud pendiente. Se procesará automáticamente."))
 class EconomyReviewException : IllegalStateException(appTr(
     "Tu solicitud requiere revisión. Contacta con Soporte; no la repitas."))
 class EconomyUnconfirmedException : IllegalStateException(com.google.firebase.FirebaseApp.getInstance()

@@ -283,7 +283,7 @@ service cloud.firestore {
           && d.operationId is string && d.operationId.matches('^[a-zA-Z0-9_-]{8,80}$')
           && p is map && p.size() <= 15 && p.id == d.operationId
           && (p.action in ['PURCHASE','SUBSCRIBE','UNSUBSCRIBE','SPONSOR']
-            || (isAdmin() && p.action in ['REDEEM','RESOLVE','ADJUST','PREMIUM_GRANT','PREMIUM_REMOVE','ROLE']));
+          || (isAdmin() && p.action in ['REDEEM','RESOLVE','SPONSOR_RESOLVE','ADJUST','PREMIUM_GRANT','PREMIUM_REMOVE','ROLE']));
       }
       // Transactions must be able to read an absent document in their own namespace.
       // Existing documents and queries always remain restricted to their actual owner.
