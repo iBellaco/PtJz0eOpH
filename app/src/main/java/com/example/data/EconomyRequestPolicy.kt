@@ -2,8 +2,18 @@ package com.example.data
 
 /** Reuse the outstanding command only when its meaning is identical, not just its action. */
 object EconomyRequestPolicy {
-    /** Personal ads use the same trusted queue regardless of the account's staff claim. */
-    fun canQueue(action: String, administrator: Boolean): Boolean = !administrator || action == "SPONSOR"
+    /**
+     * The private worker is also the durable fallback for staff operations.
+     * The server still checks the signed administrator claim before executing
+     * any privileged command; this only avoids a false connection error when
+     * the optional callable transport is unavailable.
+     */
+    private val queueableActions = setOf(
+        "PURCHASE", "SUBSCRIBE", "UNSUBSCRIBE", "SPONSOR",
+        "REDEEM", "RESOLVE", "ADJUST", "PREMIUM_GRANT", "PREMIUM_REMOVE", "ROLE"
+    )
+
+    fun canQueue(action: String, administrator: Boolean): Boolean = action in queueableActions
 
     fun sameCommand(existing: Map<*, *>, requested: Map<*, *>): Boolean =
         canonical(existing.filterKeys { it != "id" }) == canonical(requested.filterKeys { it != "id" })
