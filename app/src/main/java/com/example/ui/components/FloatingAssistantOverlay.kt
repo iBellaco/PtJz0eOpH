@@ -74,18 +74,20 @@ fun FloatingAssistantOverlay(
 
     Box(
         modifier = modifier
-            .fillMaxSize()
-            .pointerInput(Unit) {
-                detectDragGestures { change, dragAmount ->
-                    change.consume()
-                    offsetX += dragAmount.x
-                    offsetY += dragAmount.y
-                }
-            }
+            .wrapContentSize()
     ) {
         Box(
             modifier = Modifier
                 .offset { IntOffset(offsetX.roundToInt(), offsetY.roundToInt()) }
+                // El gesto se limita al contenido visible. El contenedor raíz no
+                // intercepta toda la pantalla ni retrasa los toques del juego.
+                .pointerInput(Unit) {
+                    detectDragGestures { change, dragAmount ->
+                        change.consume()
+                        offsetX += dragAmount.x
+                        offsetY += dragAmount.y
+                    }
+                }
         ) {
             if (!isExpanded) {
                 // Minimized bubble

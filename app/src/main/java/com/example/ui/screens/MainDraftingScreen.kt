@@ -209,8 +209,27 @@ fun MainDraftingScreen(
             SystemPermissionHelper.startFloatingService(context)
             isAssistantActive = true
         } else {
-            // Permiso de captura denegado
-            isAssistantActive = false
+            // La cancelación no debe dejar un token pendiente ni apagar un overlay
+            // que ya estaba funcionando. Se comunica el estado para que el usuario
+            // pueda reintentar desde el banner del asistente.
+            ScreenCaptureManager.clearPendingMediaProjection()
+            if (SystemPermissionHelper.isServiceRunning(context)) {
+                try {
+                    context.startService(
+                        Intent(context, com.example.service.FloatingAssistantService::class.java).apply {
+                            action = com.example.service.FloatingAssistantService.ACTION_CAPTURE_AUTH_CANCELLED
+                        }
+                    )
+                } catch (_: Exception) {}
+                isAssistantActive = true
+            } else {
+                isAssistantActive = false
+            }
+            Toast.makeText(
+                context,
+                com.example.util.appTr("Captura cancelada. Puedes autorizarla nuevamente cuando quieras."),
+                Toast.LENGTH_LONG
+            ).show()
         }
     }
 

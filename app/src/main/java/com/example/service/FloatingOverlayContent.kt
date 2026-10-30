@@ -1122,7 +1122,12 @@ internal fun FloatingOverlayContent(
                                     .background(HextechSurface)
                                     .border(1.dp, HextechCyan.copy(alpha = 0.5f), RoundedCornerShape(6.dp))
                                     .clickable {
-                                        if (scanNoticeMessage?.contains("Permiso", ignoreCase = true) == true) {
+                                        val captureRecoveryNeeded = scanNoticeMessage?.let {
+                                            it.contains("Permiso", ignoreCase = true) ||
+                                                it.contains("captura", ignoreCase = true) ||
+                                                it.contains("autorización", ignoreCase = true)
+                                        } == true
+                                        if (captureRecoveryNeeded) {
                                             try {
                                                 val intent = Intent(context, com.example.MainActivity::class.java).apply {
                                                     addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP)
