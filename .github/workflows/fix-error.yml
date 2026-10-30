@@ -10,6 +10,10 @@ on:
         type: boolean
         default: false
 
+concurrency:
+  group: coach-fix-error-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   actions: write
   contents: read

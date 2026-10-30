@@ -227,7 +227,7 @@ fun MainDraftingScreen(
             }
             Toast.makeText(
                 context,
-                com.example.util.appTr("Captura cancelada. Puedes autorizarla nuevamente cuando quieras."),
+                context.getString(com.example.R.string.capture_cancelled_recovery),
                 Toast.LENGTH_LONG
             ).show()
         }

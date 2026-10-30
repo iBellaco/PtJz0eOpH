@@ -33,6 +33,7 @@
   <string name="catalogo">Catálogo</string>
   <string name="usuario">Usuario</string>
   <string name="cancelar">Cancelar</string>
+  <string name="capture_cancelled_recovery">Captura cancelada. Puedes autorizarla nuevamente cuando quieras.</string>
   <string name="confirmar">Confirmar</string>
   <string name="suscribirse">Suscribirse</string>
   <string name="error_connection">Error de conexión. Intenta de nuevo.</string>
