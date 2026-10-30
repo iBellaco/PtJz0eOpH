@@ -26,11 +26,13 @@ class InboxSynchronizationTest {
         assertTrue(InboxNotificationPolicy.unreadKeys(listOf(observed + ("isRead" to true))).isEmpty())
     }
     @Test fun retryingAnUnconfirmedDirectActionDoesNotIssueAnotherOperation() {
-        assertEquals("first", AdminDirectOperationIds.reserve("admin-grant", "first"))
-        assertEquals("first", AdminDirectOperationIds.reserve("admin-grant", "second"))
-        AdminDirectOperationIds.complete("admin-grant")
-        assertEquals("third", AdminDirectOperationIds.reserve("admin-grant", "third"))
-        AdminDirectOperationIds.complete("admin-grant")
+        val disk = mutableMapOf<String, String>()
+        fun process() = PendingOperationIds({ disk[it] }, { key, value -> disk[key] = value; true }, { disk.remove(it); true })
+        assertEquals("first", process().reserve("admin-grant", "first"))
+        assertEquals("first", process().reserve("admin-grant", "second"))
+        process().complete("admin-grant")
+        assertEquals("third", process().reserve("admin-grant", "third"))
+        process().complete("admin-grant")
     }
     @Test fun directPremiumRemovalDemotesOnlyPremiumAndPreservesEveryOtherRole() {
         for (role in listOf("premium", "moderador", "streamer", "creador", "patrocinador")) {

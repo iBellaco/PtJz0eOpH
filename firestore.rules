@@ -285,9 +285,17 @@ service cloud.firestore {
           && (p.action in ['PURCHASE','SUBSCRIBE','UNSUBSCRIBE','SPONSOR']
             || (isAdmin() && p.action in ['REDEEM','RESOLVE','ADJUST','PREMIUM_GRANT','PREMIUM_REMOVE','ROLE']));
       }
-      allow read: if signedIn() && request.auth.uid == resource.data.userId;
+      // Transactions must be able to read an absent document in their own namespace.
+      // Existing documents and queries always remain restricted to their actual owner.
+      allow get: if signedIn() && (request.auth.uid == resource.data.userId
+        || (!exists(/databases/$(database)/documents/economy_requests/$(requestId))
+          && (requestId == request.auth.uid
+            || (request.auth.uid.matches('^[a-zA-Z0-9_-]{1,128}$')
+              && requestId.matches('^' + request.auth.uid + '~[a-zA-Z0-9_-]{8,80}$')))));
+      allow list: if signedIn() && request.auth.uid == resource.data.userId;
       allow create: if validCommand();
-      allow update: if validCommand() && resource.data.status in ['COMPLETED','FAILED'];
+      allow update: if validCommand() && resource.data.userId == request.auth.uid
+        && resource.data.status in ['COMPLETED','FAILED'];
       allow delete: if false;
     }
     match /cash_redemptions/{id} {
@@ -296,7 +304,12 @@ service cloud.firestore {
     }
     match /pending_sponsor_ads/{id} {
       allow read: if isAdmin() || (signedIn() && resource.data.get('userId', '') == request.auth.uid);
-      allow update: if isAdmin() && resource.data.get('refundedAtMillis', 0) == 0 && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['isApproved','isEnabled','approvedAtMillis','expiresAtMillis']);
+      allow update: if isAdmin() && resource.data.get('refundedAtMillis', 0) == 0
+        && !(resource.data.get('status', '') in ['REFUNDED','REJECTED'])
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['isApproved','isEnabled','approvedAtMillis','expiresAtMillis','status'])
+        && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['status'])
+          || (request.resource.data.status == 'REJECTED' && request.resource.data.isApproved == false
+            && request.resource.data.isEnabled == false));
       allow create: if false;
       allow delete: if isAdmin();
     }

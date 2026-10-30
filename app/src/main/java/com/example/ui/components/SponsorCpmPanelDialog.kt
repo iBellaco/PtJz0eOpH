@@ -37,6 +37,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -63,17 +65,56 @@ fun SponsorCpmPanelDialog(
     val userEmail = authUser?.email ?: "patrocinador@coach.app"
     val coroutineScope = rememberCoroutineScope()
     var remoteOwnAds by remember(authUser?.uid) { mutableStateOf<List<AppNotice>?>(null) }
+    var remoteStatuses by remember(authUser?.uid) { mutableStateOf(emptyMap<String, String>()) }
+    var adsUnavailable by remember(authUser?.uid) { mutableStateOf(false) }
+    var adsCached by remember(authUser?.uid) { mutableStateOf(false) }
+    val outbox = remember(authUser?.uid) { com.example.data.SponsorSubmissionStore(context, authUser?.uid.orEmpty()) }
+    var unconfirmed by remember(authUser?.uid) { mutableStateOf(outbox.read()) }
+    var sendingIds by remember(authUser?.uid) { mutableStateOf(emptySet<String>()) }
+    var submissionMessage by remember(authUser?.uid) { mutableStateOf<String?>(null) }
+    val canSubmit = sessionPanelAccess(com.example.model.RolePanel.SPONSOR)
+    fun submit(submission: com.example.data.SponsorSubmission): Boolean {
+        if (submission.notice.id in sendingIds) return false
+        if (!outbox.save(submission)) {
+            submissionMessage = context.getString(com.example.R.string.operation_storage_failed)
+            return false
+        }
+        unconfirmed = outbox.read()
+        sendingIds = sendingIds + submission.notice.id
+        coroutineScope.launch {
+            try {
+                AppNoticeManager.submitPendingSponsorNotice(context, submission.notice, submission.expectedCost)
+                outbox.complete(submission.notice.id)
+                unconfirmed = outbox.read()
+                submissionMessage = context.getString(com.example.R.string.sponsor_review_confirmed)
+            } catch (error: kotlinx.coroutines.CancellationException) { throw error }
+            catch (error: Exception) {
+                submissionMessage = error.message ?: com.example.util.appTr("No se pudo completar la operación. Vuelve a intentarlo.")
+            } finally { sendingIds = sendingIds - submission.notice.id }
+        }
+        return true
+    }
     DisposableEffect(authUser?.uid) {
         val uid = authUser?.uid
         val db = com.google.firebase.firestore.FirebaseFirestore.getInstance()
         val ads = uid?.let { db.collection("pending_sponsor_ads").whereEqualTo("userId", it)
-            .addSnapshotListener { snapshot, error ->
-                if (error == null) remoteOwnAds = snapshot?.documents.orEmpty()
-                    .filter { it.getString("status") != "REFUNDED" }
-                    .map { com.example.data.SponsorReviewPolicy.notice(it.id, it.data.orEmpty()) }
+            .addSnapshotListener(com.google.firebase.firestore.MetadataChanges.INCLUDE) { snapshot, error ->
+                adsUnavailable = error != null
+                adsCached = snapshot?.metadata?.isFromCache == true
+                if (error == null) {
+                    val rows = snapshot?.documents.orEmpty()
+                    remoteOwnAds = rows.map { com.example.data.SponsorReviewPolicy.notice(it.id, it.data.orEmpty()) }
+                    remoteStatuses = rows.associate { it.id to it.getString("status").orEmpty() }
+                }
             }
         }
         onDispose { ads?.remove() }
+    }
+    LaunchedEffect(remoteOwnAds, adsCached) {
+        if (!adsCached) {
+            remoteOwnAds.orEmpty().forEach { outbox.complete(it.id) }
+            unconfirmed = outbox.read()
+        }
     }
 
     val allNotices by AppNoticeManager.notices.collectAsState()
@@ -355,7 +396,8 @@ fun SponsorCpmPanelDialog(
                             durationValueInput = "1"
                             showCreateDialog = true
                         },
-                        enabled = true,
+                        enabled = canSubmit,
+                        modifier = Modifier.heightIn(min = 48.dp).testTag("sponsor_new_ad"),
                         colors = ButtonDefaults.buttonColors(containerColor = HextechGold),
                         shape = RoundedCornerShape(8.dp)
                     ) {
@@ -366,9 +408,27 @@ fun SponsorCpmPanelDialog(
                 }
 
                 Spacer(modifier = Modifier.height(12.dp))
+                EconomyPendingStatus(alwaysVisible = true)
+                if (adsUnavailable || adsCached) Text(stringResource(com.example.R.string.sponsor_unavailable),
+                    color = HextechGold, modifier = Modifier.testTag("sponsor_sync_error"))
+                submissionMessage?.let { Text(it, color = HextechGold, modifier = Modifier.testTag("sponsor_submission_status")) }
+                if (unconfirmed.isNotEmpty()) {
+                    Column(Modifier.heightIn(max = 160.dp).verticalScroll(rememberScrollState())) {
+                        unconfirmed.forEach { submission ->
+                            Text(submission.notice.title + " · " + tr("Estado: por confirmar"), color = TextSecondary)
+                            TextButton(onClick = { submit(submission) }, enabled = canSubmit && submission.notice.id !in sendingIds,
+                                modifier = Modifier.heightIn(min = 48.dp).testTag("sponsor_check_${submission.notice.id}")) {
+                                Text(if (submission.notice.id in sendingIds) tr("Consultando solicitud…")
+                                    else stringResource(com.example.R.string.sponsor_check_submission))
+                            }
+                        }
+                    }
+                }
 
                 // List of notices
-                if (myNotices.isEmpty()) {
+                if (remoteOwnAds == null && !adsUnavailable) {
+                    Text(stringResource(com.example.R.string.sponsor_loading), modifier = Modifier.testTag("sponsor_loading"))
+                } else if (myNotices.isEmpty() && !adsUnavailable && !adsCached && unconfirmed.isEmpty()) {
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -390,7 +450,7 @@ fun SponsorCpmPanelDialog(
                         verticalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
                         items(myNotices, key = { it.id }) { notice ->
-                            SponsorNoticeCard(notice = notice, onDelete = {
+                            SponsorNoticeCard(notice = notice, serverStatus = remoteStatuses[notice.id].orEmpty(), onDelete = {
                                 noticeToDelete = notice
                             })
                         }
@@ -864,7 +924,6 @@ fun SponsorCpmPanelDialog(
                 Button(
                     onClick = {
                         showConfirmReviewDialog = false
-                        showCreateDialog = false
 
                         val newPendingNotice = AppNotice(
                             id = UUID.randomUUID().toString(),
@@ -884,39 +943,7 @@ fun SponsorCpmPanelDialog(
                             sponsorEmail = userEmail
                         )
 
-                        coroutineScope.launch {
-                            runCatching { AppNoticeManager.submitPendingSponsorNotice(context, newPendingNotice, requiredEssences) }
-                                .onSuccess {
-                        val updatedLocalList = localPendingAds + newPendingNotice
-                        localPendingAds = updatedLocalList
-
-                        val jsonArray = org.json.JSONArray()
-                        updatedLocalList.forEach { n ->
-                            val obj = org.json.JSONObject()
-                            obj.put("id", n.id)
-                            obj.put("title", n.title)
-                            obj.put("content", n.content)
-                            obj.put("videoUrl", n.videoUrl)
-                            obj.put("expandedImageUrl", n.expandedImageUrl)
-                            obj.put("externalUrl", n.externalUrl)
-                            obj.put("tag", n.tag)
-                            obj.put("titleColor", n.titleColor)
-                            obj.put("budget", n.budget)
-                            obj.put("budgetUnit", n.budgetUnit)
-                            obj.put("durationValue", n.durationValue)
-                            obj.put("durationUnit", n.durationUnit)
-                            obj.put("approvedAtMillis", n.approvedAtMillis)
-                            obj.put("expiresAtMillis", n.expiresAtMillis)
-                            obj.put("isApproved", n.isApproved)
-                            obj.put("isEnabled", n.isEnabled)
-                            obj.put("sponsorEmail", n.sponsorEmail)
-                            jsonArray.put(obj)
-                        }
-                        prefs.edit().putString("pending_ads", jsonArray.toString()).apply()
-
-                        Toast.makeText(context, com.example.util.appTr("Anuncio enviado a revisión. Se descontaron $requiredEssences EA."), Toast.LENGTH_LONG).show()
-                                }.onFailure { Toast.makeText(context, it.message, Toast.LENGTH_LONG).show() }
-                        }
+                        if (submit(com.example.data.SponsorSubmission(newPendingNotice, requiredEssences))) showCreateDialog = false
 
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFEF4444))
@@ -1005,6 +1032,7 @@ fun SponsorCpmPanelDialog(
 @Composable
 fun SponsorNoticeCard(
     notice: AppNotice,
+    serverStatus: String = "",
     onDelete: () -> Unit
 ) {
     val context = LocalContext.current
@@ -1012,11 +1040,15 @@ fun SponsorNoticeCard(
     val isExpired = notice.expiresAtMillis > 0L && now >= notice.expiresAtMillis
 
     val statusText = when {
+        serverStatus == "REJECTED" -> stringResource(com.example.R.string.sponsor_rejected)
+        serverStatus == "REFUNDED" -> stringResource(com.example.R.string.sponsor_refunded)
         isExpired -> "Finalizado"
-        notice.isApproved -> "Aprobado y Activo"
+        notice.isApproved && notice.isEnabled -> "Aprobado y Activo"
+        notice.isApproved -> stringResource(com.example.R.string.sponsor_paused)
         else -> "Pendiente de Aprobación"
     }
     val statusColor = when {
+        serverStatus in setOf("REJECTED", "REFUNDED") -> Color(0xFFEF4444)
         isExpired -> Color(0xFFEF4444)
         notice.isApproved -> Color(0xFF10B981)
         else -> Color(0xFFF59E0B)

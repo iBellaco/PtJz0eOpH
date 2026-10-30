@@ -4,8 +4,7 @@ import com.example.model.Champion
 import com.example.model.LaneRole
 
 object CoachingGenerator {
-    private data class AdviceKey(val id: String, val name: String, val advice: String,
-        val skills: List<com.example.model.ChampionSkill>, val role: LaneRole, val language: String)
+    private data class AdviceKey(val champion: Champion, val role: LaneRole, val language: String, val enemy: Champion?)
     private val adviceCache = object : LinkedHashMap<AdviceKey, String>(640, 0.75f, true) {
         override fun removeEldestEntry(eldest: MutableMap.MutableEntry<AdviceKey, String>?): Boolean = size > 640
     }
@@ -43,25 +42,15 @@ object CoachingGenerator {
         return ChampionMatchupCoaching.championPlan(champion, activeRole, lang)
     }
 
-    fun generateTacticalAdvice(champion: Champion, activeRole: LaneRole, lang: String): String {
+    fun generateTacticalAdvice(champion: Champion, activeRole: LaneRole, lang: String, enemy: Champion? = null): String {
         val language = AppLanguage.normalize(lang)
-        val key = AdviceKey(champion.id, champion.name, champion.tacticalAdvice, champion.skills, activeRole, language)
+        val key = AdviceKey(champion, activeRole, language, enemy)
         synchronized(adviceCache) { adviceCache[key]?.let { return it } }
-        val pt = language == "pt"
-        val me = champion.getLocalizedName(language)
-        val h1 = champion.skills.firstOrNull { it.slot == "1" }
-        val h4 = champion.skills.firstOrNull { it.slot == "4" }
-        val detail = listOfNotNull(h1, h4).joinToString(" ") {
-            "H${it.slot} · ${it.getLocalizedName(language)}: ${it.getLocalizedDescription(language).substringBefore(". ")}."
-        }
-        val specific = trStr(language, champion.tacticalAdvice)
-        val rawResult = if (pt) "Diagnóstico do erro/situação: $me · ${activeRole.getLocalizedName(language)}; confirme recursos e recargas antes de comprometer a troca.\n" +
-            "Decisão Soberano: $specific\nMicro e Macro detalhe: $detail\n" +
-            "Regra aplicável: resolva a onda ou o campo antes de rotacionar; sem prioridade, troque a pressão para o lado oposto."
-        else "Diagnóstico del error/situación: $me · ${activeRole.getLocalizedName(language)}; confirma recursos y enfriamientos antes de comprometer el intercambio.\n" +
-            "Decisión Soberano: $specific\nMicro y Macro detalle: $detail\n" +
-            "Regla aplicable: resuelve la oleada o el campamento antes de rotar; sin prioridad, intercambia presión hacia el lado opuesto."
-        val result = DraftRecommendationText.clean(rawResult)
+        val rawResult = ChampionMatchupCoaching.sovereignFeedback(champion, activeRole, language, enemy)
+        val uncertainty = if (language == "pt")
+            "Plano condicionado à seleção: não observamos vida, ouro, ondas nem recargas. Confirme a rota estimada do rival antes de aplicar o confronto."
+        else "Plan condicionado al draft: no observamos vida, oro, oleadas ni enfriamientos. Confirma la línea estimada del rival antes de aplicar el enfrentamiento."
+        val result = DraftRecommendationText.clean(rawResult + "\n" + uncertainty)
         synchronized(adviceCache) { adviceCache[key] = result }
         return result
     }

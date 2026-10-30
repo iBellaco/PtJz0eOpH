@@ -98,6 +98,7 @@ fun ChampionBuildCreatorDialog(
     val userRole by SubscriptionManager.userRole.collectAsStateWithLifecycle()
     val secondaryRole by SubscriptionManager.secondaryRole.collectAsStateWithLifecycle()
     val adminClaim by AuthManager.isAdminClaim.collectAsStateWithLifecycle()
+    val isSessionAdmin = sessionPanelAccess()
     val authUser = remember { com.google.firebase.auth.FirebaseAuth.getInstance().currentUser }
 
     var selectedChampion by remember {
@@ -1372,7 +1373,7 @@ fun ChampionBuildCreatorDialog(
                                 creatorName = existingRecord?.creatorName ?: if (creatorName.isBlank()) "Creador Oficial" else creatorName,
                                 creatorAvatarId = existingRecord?.creatorAvatarId ?: currentAvatarId,
                                 creatorRankBorder = existingRecord?.creatorRankBorder ?: currentRankBorder,
-                                creatorIsAdmin = existingRecord?.creatorIsAdmin ?: (userRole == "admin" || AuthManager.isCurrentUserAdmin()),
+                                creatorIsAdmin = existingRecord?.creatorIsAdmin ?: isSessionAdmin,
                                 creatorUserId = existingRecord?.creatorUserId ?: (authUser?.uid ?: "")
                             )
 

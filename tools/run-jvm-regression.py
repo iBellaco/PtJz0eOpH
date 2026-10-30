@@ -35,7 +35,10 @@ def report_failures(suites=None):
 
 
 def verify(suites):
-    command = [str(ROOT / 'gradlew'), ':app:testDebugUnitTest']
+    # Android puede montar el repositorio sobre almacenamiento compartido con
+    # la bandera noexec; invocar el script mediante bash evita depender del
+    # permiso de ejecución del archivo gradlew.
+    command = ['bash', str(ROOT / 'gradlew'), ':app:testDebugUnitTest']
     for suite in suites:
         report = ROOT / f'app/build/test-results/testDebugUnitTest/TEST-{suite}.xml'
         report.unlink(missing_ok=True)

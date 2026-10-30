@@ -38,6 +38,8 @@ jobs:
         python3 -m unittest discover -s tools -p test_draft_rival_device.py
         python3 -m unittest discover -s tools -p test_account_deletion_device.py
         python3 -m unittest discover -s .github/scripts -p test_localized_resources.py
+        python3 -m unittest discover -s .github/scripts -p test_session_dialog.py
+        python3 -m unittest discover -s .github/scripts -p test_no_realtime_cooldown_tracker.py
         python3 .github/scripts/validate-localized-resources.py
         python3 .github/scripts/validate-patch-content.py
         python3 -m unittest discover -s .github/scripts -p test_patch_content.py
@@ -126,6 +128,10 @@ jobs:
               'com.example.DraftSlotVisibilityTest',
               'com.example.SponsorReviewPolicyTest',
               'com.example.EconomyRequestPolicyTest',
+              'com.example.AppReliabilityTest',
+              'com.example.SponsorSubmissionStoreTest',
+              'com.example.InboxSynchronizationTest',
+              'com.example.CoachingGeneratorLocalizationTest',
               'com.example.RuntimeBehaviorTest',
           ])
           PY
@@ -161,7 +167,7 @@ jobs:
 
   sponsor-permissions:
     needs: catalog-preflight
-    name: Aprobar y rechazar anuncios con las reglas reales
+    name: Solicitudes, esencias y moderación con las reglas reales
     runs-on: ubuntu-latest
     timeout-minutes: 12
     steps:
@@ -175,9 +181,12 @@ jobs:
           java-version: '21'
       - run: npm ci --no-audit --no-fund
         working-directory: tests/firestore
-      - name: Comprobar únicamente el flujo de patrocinio en emulador
+      - run: npm ci --no-audit --no-fund
+        working-directory: server/economy
+      - run: node --test server/economy/test/*.test.mjs
+      - name: Comprobar envíos, moderación e idempotencia en emulador aislado
         working-directory: tests/firestore
-        run: npx firebase emulators:exec --only firestore --project demo-coach-tests --config ../../firebase.json 'node sponsor-review.test.mjs'
+        run: npx firebase emulators:exec --only firestore,auth --project demo-coach-tests --config ../../firebase.json 'node economy-submission.test.mjs && node sponsor-review.test.mjs && node ../../server/economy/test/emulator.integration.mjs'
 
   targeted-red-magic-release:
     if: github.event_name == 'workflow_dispatch' && inputs.scanner_regressions

@@ -27,6 +27,14 @@ import java.nio.ByteBuffer
  */
 class ScreenCaptureManager(private val context: Context) {
 
+    enum class ProjectionFailure {
+        NONE,
+        USER_CANCELLED,
+        SECURITY_EXCEPTION,
+        INVALID_CONSENT,
+        INITIALIZATION_ERROR
+    }
+
     companion object {
         private const val TAG = "ScreenCaptureManager"
         private const val VIRTUAL_DISPLAY_NAME = "WildRiftDraftCapture"
@@ -34,6 +42,11 @@ class ScreenCaptureManager(private val context: Context) {
         // Cache global temporal para transferir el intent de MediaProjection entre Activity y Service
         var pendingMediaProjectionData: Intent? = null
         var pendingMediaProjectionResultCode: Int = 0
+
+        fun clearPendingMediaProjection() {
+            pendingMediaProjectionData = null
+            pendingMediaProjectionResultCode = 0
+        }
     }
 
     private var mediaProjection: MediaProjection? = null
@@ -80,6 +93,10 @@ class ScreenCaptureManager(private val context: Context) {
     private val projectionLock = Any()
     private var lastFrame: Bitmap? = null
 
+    @Volatile
+    var lastProjectionFailure: ProjectionFailure = ProjectionFailure.NONE
+        private set
+
     private fun processImageToBitmap(img: Image): Bitmap? {
         return try {
             val plane = img.planes.firstOrNull() ?: return null
@@ -100,6 +117,7 @@ class ScreenCaptureManager(private val context: Context) {
     @SuppressLint("WrongConstant")
     fun initializeProjection(resultCode: Int, data: Intent): Boolean {
         synchronized(projectionLock) {
+            lastProjectionFailure = ProjectionFailure.NONE
             try {
                 clearProjection(stop = true)
                 val projectionManager = context.getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
@@ -108,6 +126,7 @@ class ScreenCaptureManager(private val context: Context) {
 
                 if (mediaProjection == null) {
                     AppLogger.e(TAG, "MediaProjection no pudo ser creado a partir del Intent.")
+                    lastProjectionFailure = ProjectionFailure.INVALID_CONSENT
                     return false
                 }
 
@@ -164,11 +183,26 @@ class ScreenCaptureManager(private val context: Context) {
 
                 AppLogger.d(TAG, "MediaProjection y VirtualDisplay inicializados exitosamente ($captureWidth x $captureHeight).")
                 return true
+            } catch (e: SecurityException) {
+                // Android 14+ invalida tokens reutilizados o sesiones iniciadas sin el
+                // tipo correcto de foreground service. Se trata como un estado recuperable,
+                // no como un fallo silencioso ni como una excepción genérica.
+                lastProjectionFailure = ProjectionFailure.SECURITY_EXCEPTION
+                clearProjection(stop = true)
+                AppLogger.e(TAG, "Android rechazó la sesión de MediaProjection por seguridad.", e)
+                return false
             } catch (e: Throwable) {
+                lastProjectionFailure = ProjectionFailure.INITIALIZATION_ERROR
                 clearProjection(stop = true)
                 AppLogger.e(TAG, "Fallo al inicializar captura de pantalla", e)
                 return false
             }
+        }
+    }
+
+    fun markAuthorizationCancelled() {
+        synchronized(projectionLock) {
+            lastProjectionFailure = ProjectionFailure.USER_CANCELLED
         }
     }
 

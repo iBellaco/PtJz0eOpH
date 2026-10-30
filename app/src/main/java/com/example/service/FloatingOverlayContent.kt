@@ -130,8 +130,7 @@ internal fun FloatingOverlayContent(
     val detectedBans by DraftVisionScanner.bannedChampionIdsFlow.collectAsStateWithLifecycle()
     val banSlots by DraftVisionScanner.banSlotsFlow.collectAsStateWithLifecycle()
     val bannedIds = detectedBans
-    val currentAuthEmail = remember { com.example.util.AuthManager.getAuth()?.currentUser?.email }
-    val isAdmin = userRole == "admin" || userRole == "moderador" || (currentAuthEmail != null && currentAuthEmail.contains("barbadiego", ignoreCase = true)) || com.example.util.AuthManager.isCurrentUserAdmin()
+    val isAdmin = com.example.ui.components.sessionPanelAccess(com.example.model.RolePanel.MODERATION)
     val context = LocalContext.current
     val haptic = LocalHapticFeedback.current
     val currentLang = com.example.util.currentAppLanguage()
@@ -511,7 +510,8 @@ internal fun FloatingOverlayContent(
                                                 com.example.util.UserPreferences.setActiveDraftRole(context, result.userExplicitlyDetectedRole)
                                                 scanNoticeMessage = "Auto-Scan: Tu rol detectado (${result.userExplicitlyDetectedRole.shortName})"
                                             } else if (isDraftFullyConfirmed) {
-                                                scanNoticeMessage = "10/10 Campeones confirmados"
+                                                scanNoticeMessage = context.getString(if (state.completedDraftLocked)
+                                                    com.example.R.string.draft_confirmed else com.example.R.string.draft_provisional)
                                                 AppLogger.i("FloatingService", if(autoScanEnabled) "Último retrato visible: esperando cierre de selección." else "10/10 confirmados: escáner automático detenido.")
                                             } else if (result.isPreparationPhase && (finalAlliesPicked < 5 || finalEnemiesPicked < 5)) {
                                                 scanNoticeMessage = "Fase de Preparación: completando selección ($finalAlliesPicked/5 vs $finalEnemiesPicked/5)..."
@@ -619,7 +619,7 @@ internal fun FloatingOverlayContent(
                         }
                         val totalDetected = allies.filterNotNull().size + enemies.filterNotNull().size
                         scanNoticeMessage = if (allies.filterNotNull().size == 5 && enemies.filterNotNull().size == 5) {
-                            "10/10 Campeones confirmados"
+                            context.getString(com.example.R.string.draft_collecting)
                         } else {
                             "Escaneo exitoso ($totalDetected picks" +
                                 (if (result.detectedRole != null) ", tu rol: ${result.detectedRole.shortName})" else ")")
@@ -1122,7 +1122,12 @@ internal fun FloatingOverlayContent(
                                     .background(HextechSurface)
                                     .border(1.dp, HextechCyan.copy(alpha = 0.5f), RoundedCornerShape(6.dp))
                                     .clickable {
-                                        if (scanNoticeMessage?.contains("Permiso", ignoreCase = true) == true) {
+                                        val captureRecoveryNeeded = scanNoticeMessage?.let {
+                                            it.contains("Permiso", ignoreCase = true) ||
+                                                it.contains("captura", ignoreCase = true) ||
+                                                it.contains("autorización", ignoreCase = true)
+                                        } == true
+                                        if (captureRecoveryNeeded) {
                                             try {
                                                 val intent = Intent(context, com.example.MainActivity::class.java).apply {
                                                     addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP)
@@ -1162,6 +1167,18 @@ internal fun FloatingOverlayContent(
                             } else {
                                 when (overlayHubTab) {
                                     OverlayHubTab.DRAFT -> {
+                                        val certainty = com.example.model.DraftCertaintyPolicy.selection(state.completedDraftLocked,
+                                            state.trackedLastPick != null, (allies + enemies + state.unassignedAllies)
+                                                .filterNotNull().map { it.id }.distinct().size)
+                                        Text(androidx.compose.ui.res.stringResource(when (certainty) {
+                                            com.example.model.DraftCertainty.CONFIRMED -> com.example.R.string.draft_confirmed
+                                            com.example.model.DraftCertainty.PROVISIONAL -> com.example.R.string.draft_provisional
+                                            com.example.model.DraftCertainty.COLLECTING -> com.example.R.string.draft_collecting
+                                        }), fontSize = 11.sp, color = HextechGold, modifier = Modifier.testTag("draft_certainty"))
+                                        if (enemies.indices.any { enemies[it] != null && state.manualLockedEnemySlots[it] != true }) {
+                                            Text(androidx.compose.ui.res.stringResource(com.example.R.string.draft_roles_estimated),
+                                                fontSize = 11.sp, color = TextSecondary, modifier = Modifier.testTag("draft_estimated_roles"))
+                                        }
                                         FloatingDraftCoachView(
                                             banSlots = banSlots,
                                             isLandscapeMode = isLandscapeMode,

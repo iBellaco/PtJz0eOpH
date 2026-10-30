@@ -26,6 +26,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -42,7 +44,8 @@ fun AdminGiveEssenceDialog(
     onBalancesUpdated: (Map<String, Any>) -> Unit = {}
 ) {
     val scope = rememberCoroutineScope()
-    var failed by remember { mutableStateOf(false) }
+    var operationError by remember { mutableStateOf<String?>(null) }
+    var pending by remember { mutableStateOf(false) }
     var amount by remember { mutableStateOf("") }
     var selectedCurrency by remember { mutableStateOf("BLUE") } // "BLUE" or "ORANGE"
     var isAddition by remember { mutableStateOf(true) } // true: Añadir (+), false: Descontar (-)
@@ -73,7 +76,7 @@ fun AdminGiveEssenceDialog(
 
     val activeColor = if (selectedCurrency == "BLUE") Color(0xFF0EA5E9) else Color(0xFFFF9E1B)
 
-    Dialog(onDismissRequest = { if (!isProcessing) onDismiss() }) {
+    Dialog(onDismissRequest = onDismiss) {
         Surface(
             shape = RoundedCornerShape(16.dp),
             color = Color(0xFF0F172A),
@@ -369,15 +372,18 @@ fun AdminGiveEssenceDialog(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                if (failed) Text(tr("No se pudo completar la operación. Comprueba tu conexión y vuelve a intentarlo."), color = Color(0xFFEF4444))
+                if (isProcessing) Text(stringResource(R.string.operation_sending), modifier = Modifier.testTag("essence_sending"))
+                operationError?.let { Text(it, color = if (pending) Color(0xFFFFD700) else Color(0xFFEF4444),
+                    modifier = Modifier.testTag("essence_operation_status")) }
+                EconomyPendingStatus(alwaysVisible = true)
 
                 // Actions buttons
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.End
                 ) {
-                    TextButton(onClick = onDismiss, enabled = !isProcessing) {
-                        Text(tr("Cancelar"), color = Color.Gray)
+                    TextButton(onClick = onDismiss, modifier = Modifier.heightIn(min = 48.dp).testTag("essence_close")) {
+                        Text(tr("Cerrar"), color = Color.Gray)
                     }
                     Spacer(modifier = Modifier.width(8.dp))
                     Button(
@@ -385,17 +391,23 @@ fun AdminGiveEssenceDialog(
                             val parsed = amount.toLongOrNull()
                             if (parsed != null && parsed > 0) {
                                 isProcessing = true
-                                failed = false
+                                operationError = null
                                 scope.launch {
                                     runCatching { com.example.data.AdminEssenceAdjustment.apply(userUid, parsed, selectedCurrency,
                                         isAddition, notifyUser, effectiveTitle, if (isCustomMessage) effectiveBody else null) }
                                         .onSuccess { updated -> onBalancesUpdated(updated); onSuccess(); onDismiss() }
-                                        .onFailure { failed = true }
+                                        .onFailure {
+                                            if (it is kotlinx.coroutines.CancellationException) throw it
+                                            pending = it is com.example.data.EconomyPendingException || it is com.example.data.EconomyReviewException ||
+                                                it is com.example.data.EconomyUnconfirmedException
+                                            operationError = it.message ?: com.example.util.appTr("No se pudo completar la operación. Vuelve a intentarlo.")
+                                        }
                                     isProcessing = false
                                 }
                             }
                         },
-                        enabled = !isProcessing && amount.isNotEmpty(),
+                        enabled = !isProcessing && !pending && (amount.toLongOrNull() ?: 0L) > 0L,
+                        modifier = Modifier.heightIn(min = 48.dp).testTag("essence_submit"),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = activeColor
                         ),

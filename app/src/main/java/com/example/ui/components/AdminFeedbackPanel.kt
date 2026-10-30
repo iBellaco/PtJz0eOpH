@@ -260,7 +260,7 @@ fun AdminFeedbackBottomSheet(
         onDispose { job.cancel(); registration?.remove() }
     }
 
-    val isAdmin = userRole == "admin" || com.example.util.AuthManager.isCurrentUserAdmin()
+    val isAdmin = sessionPanelAccess()
 
     // Reportes visibles según el rol del usuario (Los reportes de Patrocinador son exclusivos del Administrador)
     val visibleReports = remember(reports, isAdmin) {

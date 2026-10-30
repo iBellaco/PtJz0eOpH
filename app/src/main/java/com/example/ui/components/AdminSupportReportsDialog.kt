@@ -167,7 +167,7 @@ fun AdminSupportReportsDialog(
     val authUser = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser
     val userEmail = authUser?.email ?: ""
     val userRole by com.example.util.SubscriptionManager.userRole.collectAsState()
-    val isAdmin = userRole == "admin" || com.example.util.AuthManager.isCurrentUserAdmin()
+    val isAdmin = sessionPanelAccess()
 
     var loadError by remember { mutableStateOf(false) }
 

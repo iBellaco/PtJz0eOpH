@@ -67,11 +67,9 @@ import androidx.lifecycle.LifecycleRegistry
 import androidx.lifecycle.ViewModelStore
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.setViewTreeLifecycleOwner
-import androidx.lifecycle.setViewTreeViewModelStoreOwner
 import androidx.savedstate.SavedStateRegistry
 import androidx.savedstate.SavedStateRegistryController
 import androidx.savedstate.SavedStateRegistryOwner
-import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import com.example.MainActivity
 import com.example.R
 import com.example.data.WildRiftRepository
@@ -94,6 +92,31 @@ enum class OverlayHubTab { DRAFT, TIER_LIST, CHAMPIONS }
 
 private const val TAG = "FloatingAssistantService"
 
+/**
+ * Lifecycle independiente para cada ComposeView alojado directamente en WindowManager.
+ * El servicio no debe ser el dueño del ciclo de vida de una ventana que puede desaparecer
+ * mientras el servicio sigue vivo.
+ */
+private class FloatingWindowLifecycleOwner : LifecycleOwner {
+    private val registry = LifecycleRegistry(this)
+
+    override val lifecycle: Lifecycle
+        get() = registry
+
+    init {
+        registry.handleLifecycleEvent(Lifecycle.Event.ON_CREATE)
+        registry.handleLifecycleEvent(Lifecycle.Event.ON_START)
+        registry.handleLifecycleEvent(Lifecycle.Event.ON_RESUME)
+    }
+
+    fun destroy() {
+        if (registry.currentState == Lifecycle.State.DESTROYED) return
+        registry.handleLifecycleEvent(Lifecycle.Event.ON_PAUSE)
+        registry.handleLifecycleEvent(Lifecycle.Event.ON_STOP)
+        registry.handleLifecycleEvent(Lifecycle.Event.ON_DESTROY)
+    }
+}
+
 class FloatingAssistantService : Service(), LifecycleOwner, ViewModelStoreOwner, SavedStateRegistryOwner, ComponentCallbacks2 {
     private val overlayState = OverlayState()
     private var screenCaptureManager: ScreenCaptureManager? = null
@@ -101,11 +124,14 @@ class FloatingAssistantService : Service(), LifecycleOwner, ViewModelStoreOwner,
 
     private var windowManager: WindowManager? = null
     private var floatingComposeView: ComposeView? = null
+    private var floatingWindowLifecycleOwner: FloatingWindowLifecycleOwner? = null
 
     // Estado para la orientación de la pantalla real
     private val isDeviceLandscape = androidx.compose.runtime.mutableStateOf(false)
     private var closeTargetComposeView: ComposeView? = null
+    private var closeTargetLifecycleOwner: FloatingWindowLifecycleOwner? = null
     private var debugOverlayView: ComposeView? = null
+    private var debugOverlayLifecycleOwner: FloatingWindowLifecycleOwner? = null
     private var isDebugOverlayAttached = false
     private var floatingParams: WindowManager.LayoutParams? = null
     private var isOverlayExpanded: Boolean = false
@@ -114,6 +140,48 @@ class FloatingAssistantService : Service(), LifecycleOwner, ViewModelStoreOwner,
     private val store = ViewModelStore()
     private val savedStateRegistryController = SavedStateRegistryController.create(this)
     private val serviceScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
+
+    private fun configureWindowComposeView(
+        view: ComposeView,
+        owner: FloatingWindowLifecycleOwner
+    ) {
+        view.setViewTreeLifecycleOwner(owner)
+        view.setViewCompositionStrategy(
+            androidx.compose.ui.platform.ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed
+        )
+    }
+
+    private fun disposeWindowComposeView(
+        view: ComposeView?,
+        owner: FloatingWindowLifecycleOwner?,
+        wm: WindowManager?
+    ) {
+        if (view == null) {
+            owner?.destroy()
+            return
+        }
+        owner?.destroy()
+        try {
+            if (view.isAttachedToWindow && wm != null) {
+                wm.removeViewImmediate(view)
+            }
+        } catch (_: Throwable) {
+            // La vista puede haber sido retirada por el sistema u otro callback.
+        } finally {
+            // Fuerza la liberación aunque la ventana ya no siga adjunta.
+            try { view.disposeComposition() } catch (_: Throwable) {}
+        }
+    }
+
+    private fun interactiveOverlayFlags(): Int =
+        WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
+            WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or
+            WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED
+
+    private fun passiveOverlayFlags(): Int =
+        WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
+            WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE or
+            WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED
 
     private fun syncDebugOverlay(show: Boolean) {
         try {
@@ -142,11 +210,10 @@ class FloatingAssistantService : Service(), LifecycleOwner, ViewModelStoreOwner,
                     }
                 }
                 if (debugOverlayView == null) {
+                    val lifecycleOwner = FloatingWindowLifecycleOwner()
+                    debugOverlayLifecycleOwner = lifecycleOwner
                     debugOverlayView = ComposeView(this).apply {
-                        setViewTreeLifecycleOwner(this@FloatingAssistantService)
-                        setViewTreeViewModelStoreOwner(this@FloatingAssistantService)
-                        setViewTreeSavedStateRegistryOwner(this@FloatingAssistantService)
-                        setViewCompositionStrategy(androidx.compose.ui.platform.ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+                        configureWindowComposeView(this, lifecycleOwner)
 
                         setContent {
                             val overlayLanguage by com.example.util.AppLanguage.current.collectAsStateWithLifecycle()
@@ -168,11 +235,11 @@ class FloatingAssistantService : Service(), LifecycleOwner, ViewModelStoreOwner,
                     AppLogger.d("FloatingService", "DebugOverlayView agregado dinámicamente")
                 }
             } else if (!show && isDebugOverlayAttached) {
-                debugOverlayView?.let { view ->
-                    try { wm.removeViewImmediate(view) } catch (_: Throwable) {}
-                    isDebugOverlayAttached = false
-                    AppLogger.d("FloatingService", "DebugOverlayView retirado para liberar compositor")
-                }
+                disposeWindowComposeView(debugOverlayView, debugOverlayLifecycleOwner, wm)
+                debugOverlayView = null
+                debugOverlayLifecycleOwner = null
+                isDebugOverlayAttached = false
+                AppLogger.d("FloatingService", "DebugOverlayView retirado para liberar compositor")
             }
         } catch (e: Throwable) {
             AppLogger.w("FloatingService", "Error sincronizando debug overlay: ${e.message}")
@@ -262,13 +329,7 @@ class FloatingAssistantService : Service(), LifecycleOwner, ViewModelStoreOwner,
                 } catch (_: Exception) {}
             }
 
-            if (ScreenCaptureManager.pendingMediaProjectionData != null) {
-                screenCaptureManager?.initializeProjection(
-                    ScreenCaptureManager.pendingMediaProjectionResultCode,
-                    ScreenCaptureManager.pendingMediaProjectionData!!
-                )
-                ScreenCaptureManager.pendingMediaProjectionData = null
-            }
+            initializePendingProjection()
 
             // La política administrativa oculta botones opcionales del Hub;
             // nunca debe bloquear el overlay ni el escáner completo.
@@ -282,6 +343,11 @@ class FloatingAssistantService : Service(), LifecycleOwner, ViewModelStoreOwner,
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         if (intent?.action == ACTION_STOP) {
             stopSelf()
+            return START_NOT_STICKY
+        }
+        if (intent?.action == ACTION_CAPTURE_AUTH_CANCELLED) {
+            screenCaptureManager?.markAuthorizationCancelled()
+            overlayState.scanNoticeMessage = "Captura cancelada. Puedes reintentar desde Auto-Scan."
             return START_NOT_STICKY
         }
         if (ScreenCaptureManager.pendingMediaProjectionData != null) {
@@ -309,16 +375,32 @@ class FloatingAssistantService : Service(), LifecycleOwner, ViewModelStoreOwner,
                 AppLogger.w("FloatingService", "Error asegurando tipo FGS: ${e.message}")
             }
 
-            val success = screenCaptureManager?.initializeProjection(
-                ScreenCaptureManager.pendingMediaProjectionResultCode,
-                ScreenCaptureManager.pendingMediaProjectionData!!
-            )
+            val success = initializePendingProjection()
             if (success == true) {
                 AppLogger.d("FloatingService", "ScreenCaptureManager initialized from pending intent.")
             }
-            ScreenCaptureManager.pendingMediaProjectionData = null
         }
         return START_NOT_STICKY
+    }
+
+    private fun initializePendingProjection(): Boolean {
+        val data = ScreenCaptureManager.pendingMediaProjectionData ?: return false
+        val resultCode = ScreenCaptureManager.pendingMediaProjectionResultCode
+        val success = screenCaptureManager?.initializeProjection(resultCode, data) == true
+        val failure = screenCaptureManager?.lastProjectionFailure
+        ScreenCaptureManager.clearPendingMediaProjection()
+
+        if (!success) {
+            overlayState.scanNoticeMessage = when (failure) {
+                ScreenCaptureManager.ProjectionFailure.SECURITY_EXCEPTION ->
+                    "Android bloqueó la captura. Toca aquí para autorizarla de nuevo."
+                ScreenCaptureManager.ProjectionFailure.INVALID_CONSENT ->
+                    "La autorización de captura expiró. Toca aquí para solicitarla otra vez."
+                else ->
+                    "No se pudo iniciar la captura. Toca aquí para intentarlo de nuevo."
+            }
+        }
+        return success
     }
 
     private fun updateOverlayRect(params: WindowManager.LayoutParams, isExpanded: Boolean) {
@@ -476,9 +558,7 @@ class FloatingAssistantService : Service(), LifecycleOwner, ViewModelStoreOwner,
             WindowManager.LayoutParams.WRAP_CONTENT,
             WindowManager.LayoutParams.WRAP_CONTENT,
             layoutType,
-            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
-                WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE or
-                WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED,
+            passiveOverlayFlags(),
             PixelFormat.TRANSLUCENT
         ).apply {
             gravity = Gravity.BOTTOM or Gravity.CENTER_HORIZONTAL
@@ -491,11 +571,10 @@ class FloatingAssistantService : Service(), LifecycleOwner, ViewModelStoreOwner,
         var isCloseTargetVisible by mutableStateOf(false)
         var isCloseTargetHovered by mutableStateOf(false)
 
+        val closeTargetOwner = FloatingWindowLifecycleOwner()
+        closeTargetLifecycleOwner = closeTargetOwner
         closeTargetComposeView = ComposeView(this).apply {
-            setViewTreeLifecycleOwner(this@FloatingAssistantService)
-            setViewTreeViewModelStoreOwner(this@FloatingAssistantService)
-            setViewTreeSavedStateRegistryOwner(this@FloatingAssistantService)
-            setViewCompositionStrategy(androidx.compose.ui.platform.ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+            configureWindowComposeView(this, closeTargetOwner)
 
             setContent {
                 val overlayLanguage by com.example.util.AppLanguage.current.collectAsStateWithLifecycle()
@@ -527,9 +606,7 @@ class FloatingAssistantService : Service(), LifecycleOwner, ViewModelStoreOwner,
             WindowManager.LayoutParams.WRAP_CONTENT,
             WindowManager.LayoutParams.WRAP_CONTENT,
             layoutType,
-            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
-                WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or
-                WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED,
+            interactiveOverlayFlags(),
             PixelFormat.TRANSLUCENT
         ).apply {
             gravity = Gravity.TOP or Gravity.START
@@ -541,11 +618,10 @@ class FloatingAssistantService : Service(), LifecycleOwner, ViewModelStoreOwner,
         }
         floatingParams = params
 
+        val floatingOwner = FloatingWindowLifecycleOwner()
+        floatingWindowLifecycleOwner = floatingOwner
         floatingComposeView = ComposeView(this).apply {
-            setViewTreeLifecycleOwner(this@FloatingAssistantService)
-            setViewTreeViewModelStoreOwner(this@FloatingAssistantService)
-            setViewTreeSavedStateRegistryOwner(this@FloatingAssistantService)
-            setViewCompositionStrategy(androidx.compose.ui.platform.ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+            configureWindowComposeView(this, floatingOwner)
 
             setContent {
                 val selectedLanguage by com.example.util.AppLanguage.current.collectAsState()
@@ -644,14 +720,11 @@ class FloatingAssistantService : Service(), LifecycleOwner, ViewModelStoreOwner,
                                 isCloseTargetVisible = false
                                 isCloseTargetHovered = false
 
-                                if (expanded) {
-                                    params.flags = (params.flags and WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE.inv()) or
-                                        WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
-                                } else {
-                                    params.flags = params.flags or
-                                        WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
-                                        WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
-                                }
+                                // La ventana interactiva nunca se vuelve focusable ni touchable
+                                // para el juego. NOT_TOUCH_MODAL permite que los toques fuera de
+                                // sus límites lleguen a Wild Rift sin cambiar el modo de entrada
+                                // durante la expansión, evitando latencia o pérdida de eventos.
+                                params.flags = interactiveOverlayFlags()
                                 if (expanded) {
                                     if (params.x + cardWidthPx > currentScreenWidth - marginPx) {
                                         params.x = (currentScreenWidth - cardWidthPx - marginPx).coerceAtLeast(marginPx)
@@ -699,22 +772,19 @@ class FloatingAssistantService : Service(), LifecycleOwner, ViewModelStoreOwner,
     }
 
     private fun removeFloatingOverlay() {
-        try {
-            val wm = windowManager ?: return
-            floatingComposeView?.let { view ->
-                try { wm.removeViewImmediate(view) } catch (_: Exception) {}
-            }
-            floatingComposeView = null
-            closeTargetComposeView?.let { view ->
-                try { wm.removeViewImmediate(view) } catch (_: Exception) {}
-            }
-            closeTargetComposeView = null
-            debugOverlayView?.let { view ->
-                try { wm.removeViewImmediate(view) } catch (_: Exception) {}
-            }
-            debugOverlayView = null
-            isDebugOverlayAttached = false
-        } catch (_: Exception) {}
+        val wm = windowManager
+        disposeWindowComposeView(floatingComposeView, floatingWindowLifecycleOwner, wm)
+        floatingComposeView = null
+        floatingWindowLifecycleOwner = null
+
+        disposeWindowComposeView(closeTargetComposeView, closeTargetLifecycleOwner, wm)
+        closeTargetComposeView = null
+        closeTargetLifecycleOwner = null
+
+        disposeWindowComposeView(debugOverlayView, debugOverlayLifecycleOwner, wm)
+        debugOverlayView = null
+        debugOverlayLifecycleOwner = null
+        isDebugOverlayAttached = false
     }
 
     private var lastScreenWidth = 0
@@ -780,6 +850,7 @@ class FloatingAssistantService : Service(), LifecycleOwner, ViewModelStoreOwner,
     companion object {
         const val ACTION_START = "ACTION_START_FLOATING_ASSISTANT"
         const val ACTION_STOP = "ACTION_STOP_FLOATING_ASSISTANT"
+        const val ACTION_CAPTURE_AUTH_CANCELLED = "ACTION_CAPTURE_AUTH_CANCELLED"
         const val CHANNEL_ID = "wildrift_overlay_channel"
         const val NOTIFICATION_ID = 2001
     }

@@ -40,8 +40,8 @@ object AdminPremiumRepository {
         val actor = AuthManager.getAuth()?.currentUser ?: error(appTr("Inicia sesión"))
         val token = withTimeoutOrNull(10_000L) { actor.getIdToken(true).await() }
         check(token?.claims?.get("admin") == true && !AuthManager.isGuestOrUnauthenticated(actor)) { appTr("No tienes permisos para esta operación") }
-        val key = "${actor.uid}:premium:$uid:$days:$extend"
-        val id = AdminDirectOperationIds.reserve(key, UUID.randomUUID().toString())
+        val key = EconomyRequestPolicy.operationKey(actor.uid, "PREMIUM_DIRECT", mapOf("uid" to uid, "days" to days, "extend" to extend))
+        val id = AccountOperationIds.reserve(key, UUID.randomUUID().toString())
         val result = withTimeoutOrNull(15_000L) {
             val db = FirebaseFirestore.getInstance()
             db.runTransaction { tx ->
@@ -56,9 +56,9 @@ object AdminPremiumRepository {
                 tx.update(ref, patch + stamps)
                 account + patch + ("uid" to uid)
             }.await()
-        } ?: error(appTr("No se pudo completar la operación. Vuelve a intentarlo."))
+        } ?: throw EconomyUnconfirmedException()
         check(AuthManager.getAuth()?.currentUser?.uid == actor.uid) { appTr("Inicia sesión") }
-        AdminDirectOperationIds.complete(key)
+        AccountOperationIds.complete(key)
         return result
     }
 }
