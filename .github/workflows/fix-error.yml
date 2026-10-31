@@ -152,6 +152,7 @@ jobs:
         run: |
           ./gradlew :app:testDebugUnitTest \
             --tests 'com.example.DraftMultiDeviceAuditTest.smallCapturePreservesJhinWhenPortraitsAndBansChange' \
+            --tests 'com.example.data.OverlayAccessSnapshotTest' \
             --stacktrace --no-daemon --max-workers=1
 
       - name: Conservar la regresión de la captura reducida
