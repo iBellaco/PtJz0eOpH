@@ -214,6 +214,7 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser? = nul
     val userRole by SubscriptionManager.userRole.collectAsState()
     val secondaryRole by SubscriptionManager.secondaryRole.collectAsState()
     val adminClaim by AuthManager.isAdminClaim.collectAsState()
+    val redemptionBalance by SubscriptionManager.orangeEssence.collectAsState()
     val premiumUntil by SubscriptionManager.premiumUntil.collectAsState()
     val savedUserName by SubscriptionManager.userName.collectAsState()
     val currentAvatarId by SubscriptionManager.currentAvatarId.collectAsState()
@@ -238,6 +239,7 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser? = nul
     var showSupportPanel by remember { mutableStateOf(false) }
     var showSponsorPanel by remember { mutableStateOf(false) }
     var showBuyEssenceDialog by remember { mutableStateOf(false) }
+    var showRedemptionDialog by remember { mutableStateOf(false) }
     var showSignOutConfirm by remember { mutableStateOf(false) }
     val activeProfile by com.example.data.AccountProfileManager.activeProfile.collectAsState()
 
@@ -308,6 +310,12 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser? = nul
         com.example.ui.components.BlueEssenceStoreDialog(
             profileId = activeProfile.id,
             onDismiss = { showBuyEssenceDialog = false }
+        )
+    }
+
+    if (showRedemptionDialog) {
+        com.example.ui.components.OrangeEssenceRedemptionDialog(
+            onDismiss = { showRedemptionDialog = false }
         )
     }
 
@@ -453,6 +461,10 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser? = nul
                 subtitle = "Sesión iniciada correctamente",
                 compact = true
             )
+
+            if (redemptionBalance > 0L && com.example.model.RolePanelAccess.canRedeemEssence(userRole, secondaryRole, adminClaim)) {
+                com.example.ui.components.OrangeEssenceRedemptionEntry(redemptionBalance) { showRedemptionDialog = true }
+            }
 
             Spacer(modifier = Modifier.height(if (hasRoleFrame) 2.dp else 8.dp))
 
