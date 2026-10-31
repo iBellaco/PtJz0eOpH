@@ -19,6 +19,7 @@ import kotlinx.coroutines.launch
 fun AdminOverlayAccessDialog(onDismiss: () -> Unit) {
     val scope = rememberCoroutineScope()
     var visible by remember { mutableStateOf(true) }
+    var activationEnabled by remember { mutableStateOf(true) }
     var allowed by remember { mutableStateOf<Set<String>>(emptySet()) }
     var accounts by remember { mutableStateOf<List<Map<String, Any>>>(emptyList()) }
     var loading by remember { mutableStateOf(true) }
@@ -28,6 +29,7 @@ fun AdminOverlayAccessDialog(onDismiss: () -> Unit) {
         val result = runCatching { OverlayAccessPolicy.load() }
         result.onSuccess { snapshot ->
             visible = snapshot.hubButtonsVisible
+            activationEnabled = snapshot.activationButtonEnabled
             allowed = snapshot.allowedAccountIds.ifEmpty { snapshot.allowedUserUids }
         }
             .onFailure { error = true }
@@ -44,6 +46,10 @@ fun AdminOverlayAccessDialog(onDismiss: () -> Unit) {
                 Text(tr("Controla los botones del visor dentro del Hub. El overlay flotante seguirá funcionando."), color = TextSecondary)
                 if (loading) LinearProgressIndicator(Modifier.fillMaxWidth())
                 SwitchRow(tr("Mostrar botones del visor en el Hub"), visible, Modifier.testTag("overlay_access_buttons_visible")) { visible = it }
+                SwitchRow(androidx.compose.ui.res.stringResource(com.example.R.string.overlay_activation_admin_switch), activationEnabled,
+                    Modifier.testTag("overlay_activation_admin_switch")) { activationEnabled = it }
+                Text(androidx.compose.ui.res.stringResource(com.example.R.string.overlay_activation_admin_description), color = TextSecondary,
+                    style = MaterialTheme.typography.bodySmall)
                 Text(tr("Cuentas autorizadas (vacío = todas las cuentas)"), color = TextSecondary, style = MaterialTheme.typography.labelLarge)
                 LazyColumn(Modifier.fillMaxWidth().heightIn(max = 240.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     items(accounts, key = { it["uid"].toString() }) { account ->
@@ -63,7 +69,8 @@ fun AdminOverlayAccessDialog(onDismiss: () -> Unit) {
                     Button(onClick = {
                         saving = true; error = false
                         scope.launch {
-                            runCatching { OverlayAccessPolicy.save(OverlayAccessSnapshot(visible, allowedAccountIds = allowed)) }
+                            runCatching { OverlayAccessPolicy.save(OverlayAccessSnapshot(hubButtonsVisible = visible, allowedAccountIds = allowed,
+                                activationButtonEnabled = activationEnabled)) }
                                 .onFailure { error = true }.onSuccess { onDismiss() }
                             saving = false
                         }
