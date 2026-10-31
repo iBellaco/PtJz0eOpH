@@ -23,6 +23,7 @@ Idioma principal del desarrollador: español latino (es-419). Traduce a portugu�
 ### REGLA DE RESUMEN COPIABLE DE LA APLICACIÓN (CRÍTICO)
 - Por indicación del propietario del 30 de octubre de 2026, la respuesta final debe contener únicamente el texto copiable de la modificación o actualización de Coach. No entregar reportes para testers ni mensajes de commit.
 - No mencionar el repositorio, ramas, flujos, panel de administrador ni roles en las respuestas. Describir únicamente los cambios de la aplicación y distinguir las correcciones implementadas de las que todavía requieren validación.
+- Al finalizar cada validación, entregar un único texto copiable para testers que enumere las correcciones, eliminaciones, ajustes y cualquier otra acción necesaria en Coach. Omitir siempre referencias al repositorio, ramas, flujos, administración, permisos internos, cuentas, correos, credenciales y cualquier otro dato sensible.
 - El nombre del proyecto es estrictamente **Coach**.
 - **PROHIBICIÓN DE DATOS SENSIBLES E INFRAESTRUCTURA INTERNA:** Está estrictamente prohibido mencionar términos técnicos internos o sensibles como "panel de administrador", "Firebase", "Firestore", nombres de colecciones o tablas de datos. Refiérete a estas capacidades de forma limpia y orientada al usuario/tester (ej. "sincronización en la nube en tiempo real", "gestor de avisos", "almacenamiento local optimizado").
 - **PROHIBICIÓN DE EMOJIS EN TEXTOS COPIABLES:** Todos los resúmenes, reportes y textos copiables para testers deben redactarse estrictamente SIN emojis.
