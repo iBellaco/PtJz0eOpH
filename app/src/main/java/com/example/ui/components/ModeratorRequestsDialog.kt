@@ -63,7 +63,7 @@ fun AdminModeratorRequestsDialog(
             try {
                 SponsorReviewRepository.resolve(id, approve)
                 com.example.data.AppNoticeManager.syncFromCloud(context)
-                Toast.makeText(context, com.example.util.appTr(if (approve) "Anuncio aprobado y visible en el panel de anuncios" else "Solicitud rechazada y Esencias Azules devueltas"), Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, com.example.util.appTr(if (approve) "Anuncio aprobado y visible en el panel de anuncios" else "Solicitação recusada e Essências Azuis devolvidas"), Toast.LENGTH_SHORT).show()
             } catch (_: Exception) {
                 Toast.makeText(context, context.getString(com.example.R.string.sponsor_review_error), Toast.LENGTH_LONG).show()
             } finally { sponsorBusy = sponsorBusy - id }
@@ -374,7 +374,7 @@ fun AdminModeratorRequestsDialog(
                                                         maxLines = 3
                                                     )
                                                     (req["chargedEssence"] as? Number)?.let {
-                                                        Text(tr("Cargo: ${it.toLong()} EA · se devuelve al rechazar"), color = HextechGold, fontSize = 10.sp)
+                                                        Text(tr("Taxa: ${it.toLong()} EA · devolvida em caso de recusa"), color = HextechGold, fontSize = 10.sp)
                                                     }
                                                 }
                                             } else if (type == "VERIFICATION") {
@@ -447,7 +447,7 @@ fun AdminModeratorRequestsDialog(
                                                 shape = RoundedCornerShape(6.dp),
                                                 contentPadding = PaddingValues(vertical = 6.dp)
                                             ) {
-                                                Text(tr(if (type == "SPONSOR") "Rechazar y devolver EA" else "Rechazar"), fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                                Text(tr(if (type == "SPONSOR") "Recusar e devolver EA" else "Rechazar"), fontSize = 11.sp, fontWeight = FontWeight.Bold)
                                             }
 
                                             // Approve
