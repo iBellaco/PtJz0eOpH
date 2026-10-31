@@ -452,6 +452,11 @@ service cloud.firestore {
       allow read: if signedIn();
       allow write: if false;
     }
+    // Únicamente el interruptor global de activación es público; los UID del visor siguen protegidos.
+    match /system_config/overlay_activation {
+      allow get: if true;
+      allow write: if isAdmin();
+    }
     match /system_config/{document} {
       allow read: if signedIn();
       allow write: if !(document in ['streamer_live','economy_service','account_deletion_service']) && isAdmin();

@@ -114,14 +114,20 @@ object SystemPermissionHelper {
     /**
      * Inicia el servicio en primer plano para la superposición flotante sobre el juego.
      */
-    fun startFloatingService(context: Context) {
+    fun startFloatingService(context: Context): Boolean {
         val intent = Intent(context, FloatingAssistantService::class.java).apply {
             action = FloatingAssistantService.ACTION_START
         }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            ContextCompat.startForegroundService(context, intent)
-        } else {
-            context.startService(intent)
+        return try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                ContextCompat.startForegroundService(context, intent)
+            } else {
+                context.startService(intent)
+            }
+            true
+        } catch (e: RuntimeException) {
+            com.example.util.AppLogger.e("SystemPermissionHelper", "Android rechazó el inicio del servicio", e)
+            false
         }
     }
 
@@ -129,10 +135,8 @@ object SystemPermissionHelper {
      * Detiene el servicio en primer plano de la superposición flotante.
      */
     fun stopFloatingService(context: Context) {
-        val intent = Intent(context, FloatingAssistantService::class.java).apply {
-            action = FloatingAssistantService.ACTION_STOP
-        }
-        context.startService(intent)
+        // stopService no intenta lanzar un servicio desde segundo plano en Android 12+.
+        context.stopService(Intent(context, FloatingAssistantService::class.java))
     }
 
     /**

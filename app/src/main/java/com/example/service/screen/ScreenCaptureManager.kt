@@ -181,6 +181,7 @@ class ScreenCaptureManager(private val context: Context) {
                     handler
                 )
 
+                check(virtualDisplay != null) { "Android no pudo crear el VirtualDisplay." }
                 AppLogger.d(TAG, "MediaProjection y VirtualDisplay inicializados exitosamente ($captureWidth x $captureHeight).")
                 return true
             } catch (e: SecurityException) {
