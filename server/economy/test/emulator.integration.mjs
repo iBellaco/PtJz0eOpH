@@ -166,7 +166,8 @@ try {
     assert.ok((await db.doc(`pending_sponsor_ads/${id}`).get()).get('refundedAtMillis'));
     assert.equal((await profile.get()).get('blueEssence'),before + 27);
     assert.equal((await profile.collection('economy_operations').doc(`sponsor_refund_${id}`).get()).get('cost'),27);
-    await assert.rejects(call('SPONSOR_RESOLVE', 'sponsor_reject_history_retry', {sponsorId:id, approved:false}, admin), /resuelta|reembolso/);
+    const retry = await call('SPONSOR_RESOLVE', 'sponsor_reject_history_retry', {sponsorId:id, approved:false}, admin);
+    assert.equal(retry.ok, true); // Repeating the same settlement is idempotent and must not refund twice.
     assert.equal((await profile.get()).get('blueEssence'),before + 27);
   });
   await test('retention removes expired resolved requests and preserves pending money', async () => {
