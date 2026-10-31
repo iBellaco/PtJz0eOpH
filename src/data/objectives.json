@@ -1,0 +1,47 @@
+[
+  {
+    "id": "infernal_dragon",
+    "name": "Dragón Infernal",
+    "spawnTime": "5:00",
+    "respawnTime": "5:00",
+    "buffDescription": "Otorga +7% de daño de ataque y poder de habilidad adaptativo a todo el equipo.",
+    "tacticalPriority": "CRÍTICA",
+    "iconUrl": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/champion-icons/103.png"
+  },
+  {
+    "id": "ocean_dragon",
+    "name": "Dragón de los Océanos",
+    "spawnTime": "5:00",
+    "respawnTime": "5:00",
+    "buffDescription": "Otorga +8% de omnivampirismo físico y mágico a todo el equipo.",
+    "tacticalPriority": "ALTA",
+    "iconUrl": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/champion-icons/103.png"
+  },
+  {
+    "id": "mountain_dragon",
+    "name": "Dragón de las Montañas",
+    "spawnTime": "5:00",
+    "respawnTime": "5:00",
+    "buffDescription": "Otorga un escudo persistente tras 5 segundos de no recibir daño.",
+    "tacticalPriority": "ALTA",
+    "iconUrl": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/champion-icons/103.png"
+  },
+  {
+    "id": "rift_herald",
+    "name": "Heraldo de la Grieta",
+    "spawnTime": "6:00",
+    "respawnTime": "Único (Desaparece al 11:30)",
+    "buffDescription": "Invocable para embestir y derribar al menos 2 placas o destruir una torreta enemiga.",
+    "tacticalPriority": "MUY ALTA",
+    "iconUrl": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/champion-icons/103.png"
+  },
+  {
+    "id": "baron_nashor",
+    "name": "Barón Nashor / T-Hex",
+    "spawnTime": "12:00",
+    "respawnTime": "4:00",
+    "buffDescription": "Otorga Mano del Barón (+Daño adaptable, potenciación a súbditos y retorno acelerado a base).",
+    "tacticalPriority": "DECISIVA",
+    "iconUrl": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/champion-icons/103.png"
+  }
+]

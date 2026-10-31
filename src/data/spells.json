@@ -1,0 +1,44 @@
+[
+  {
+    "id": "flash",
+    "name": "Destello",
+    "cooldown": 150,
+    "description": "Teletransporta a tu campeón una corta distancia hacia la dirección del cursor o apuntada.",
+    "iconUrl": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/summoner-spells/4.png"
+  },
+  {
+    "id": "ignite",
+    "name": "Prender",
+    "cooldown": 90,
+    "description": "Inflige daño verdadero a lo largo de 5 segundos, reduce la curación del objetivo e inflige Heridas Graves.",
+    "iconUrl": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/summoner-spells/14.png"
+  },
+  {
+    "id": "smite",
+    "name": "Castigo",
+    "cooldown": 45,
+    "description": "Inflige daño verdadero masivo a monstruos de la jungla o súbditos y restaura vida. Evoluciona con campamentos.",
+    "iconUrl": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/summoner-spells/11.png"
+  },
+  {
+    "id": "barrier",
+    "name": "Barrera",
+    "cooldown": 90,
+    "description": "Otorga un escudo temporal a tu campeón durante 2 segundos que absorbe daño entrante.",
+    "iconUrl": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/summoner-spells/21.png"
+  },
+  {
+    "id": "exhaust",
+    "name": "Extenuación",
+    "cooldown": 105,
+    "description": "Reduce la velocidad de movimiento de un campeón enemigo en un 60% y reduce su daño infligido un 40% durante 2.5 segundos.",
+    "iconUrl": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/summoner-spells/3.png"
+  },
+  {
+    "id": "ghost",
+    "name": "Fantasma",
+    "cooldown": 90,
+    "description": "Aumenta la velocidad de movimiento y permite atravesar unidades durante 8 segundos. Los derribos prolongan su duración.",
+    "iconUrl": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/summoner-spells/6.png"
+  }
+]

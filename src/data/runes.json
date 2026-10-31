@@ -1,0 +1,386 @@
+[
+  {
+    "id": "conqueror",
+    "name": "Conquistador",
+    "tree": "Precisión / Dominación",
+    "type": "Clave",
+    "description": "Acumula hasta 6 cargas de fuerza adaptable al golpear campeones enemigos. Con el máximo de cargas, otorga vampirismo físico y mágico adicional.",
+    "iconUrl": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/perk-images/styles/precision/conqueror/conqueror.png"
+  },
+  {
+    "id": "electrocute",
+    "name": "Electrocutar",
+    "tree": "Dominación",
+    "type": "Clave",
+    "description": "Alcanzar a un campeón con 3 ataques o habilidades individuales en 3 s inflige 60-210 de daño adaptable adicional.",
+    "iconUrl": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/perk-images/styles/domination/electrocute/electrocute.png"
+  },
+  {
+    "id": "fortalecimiento",
+    "name": "Fortalecimiento",
+    "tree": "Precisión",
+    "type": "Clave",
+    "description": "Daño adicional contra campeones\n\nAl asestar 3 ataques consecutivos a un campeón enemigo, le inflige daño adaptable adicional y potencia el daño que infliges un 8% hasta que abandonas el combate con campeones.\nDaño adaptable: 40–165\nEnfriamiento: 4 s\nLa amplificación de daño solo surtirá efecto contra campeones.",
+    "iconUrl": "file:///android_asset/runes/fortalecimiento.webp"
+  },
+  {
+    "id": "lethal_tempo",
+    "name": "Compás Letal",
+    "tree": "Precisión",
+    "type": "Clave",
+    "description": "Velocidad de ataque y daño adaptable al impacto\n\nAl asestar ataques básicos a campeones enemigos, obtienes velocidad de ataque acumulable: 8% (cuerpo a cuerpo) o 6,4% (a distancia) durante 6 s (hasta 6 acumulaciones).\nCon el máximo de acumulaciones, los ataques disparan un proyectil que inflige de 9 a 30 (cuerpo a cuerpo) o de 6 a 24 (a distancia) de daño adaptable adicional al impacto.\nEscalado: El daño adaptable aumenta un 1% por cada 1% de velocidad de ataque adicional (cuerpo a cuerpo) o un 0,67% por cada 1% de velocidad de ataque adicional (a distancia).",
+    "iconUrl": "file:///android_asset/runes/lethal_tempo.png"
+  },
+  {
+    "id": "summon_aery",
+    "name": "Invocar a Aery",
+    "tree": "Brujería",
+    "type": "Clave",
+    "description": "Tus ataques y habilidades envían a Aery hacia un objetivo para dañar enemigos o poner un escudo protector de 20-100 a tus aliados.",
+    "iconUrl": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/perk-images/styles/sorcery/summongaery/summongaery.png"
+  },
+  {
+    "id": "aftershock",
+    "name": "Réplica",
+    "tree": "Valor",
+    "type": "Clave",
+    "description": "Inmovilizar a un campeón enemigo otorga armadura y resistencia mágica masiva por 2.5s, detonando luego una explosión que inflige daño mágico.",
+    "iconUrl": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/perk-images/styles/resolve/veteranaftershock/veteranaftershock.png"
+  },
+  {
+    "id": "arcane_comet",
+    "name": "Cometa Arcano",
+    "tree": "Brujería",
+    "type": "Clave",
+    "description": "Dañar a un campeón con una habilidad dispara un cometa hacia su posición que inflige daño mágico adaptativo en área.",
+    "iconUrl": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/perk-images/styles/sorcery/arcanecomet/arcanecomet.png"
+  },
+  {
+    "id": "brutal",
+    "name": "Brutal",
+    "tree": "Precisión",
+    "type": "Secundaria",
+    "description": "Los ataques infligen (5 + 6% AD adicional + 3% AP) de daño adaptable adicional a los campeones enemigos.",
+    "iconUrl": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/perk-images/styles/precision/presstheattack/presstheattack.png"
+  },
+  {
+    "id": "triumph",
+    "name": "Triunfo",
+    "tree": "Precisión",
+    "type": "Secundaria",
+    "description": "Las eliminaciones de campeones restauran un 10% de la vida perdida y un 10% del maná y la energía máximos. Además, otorga 35 de velocidad de movimiento durante 2 s.",
+    "iconUrl": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/perk-images/styles/precision/triumph.png"
+  },
+  {
+    "id": "battle_fervor",
+    "name": "Fervor de Batalla",
+    "tree": "Precisión",
+    "type": "Secundaria",
+    "description": "Obtienes un 1,4% de amplificación de daño de las habilidades básicas acumulable cada 1 s mientras estás en combate con un campeón. Se acumula hasta 3 veces y solo tiene efecto contra campeones enemigos.",
+    "iconUrl": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/perk-images/styles/precision/conqueror/conqueror.png"
+  },
+  {
+    "id": "last_stand",
+    "name": "Último Esfuerzo",
+    "tree": "Precisión",
+    "type": "Secundaria",
+    "description": "Cuando tu vida está por debajo del 60%, los ataques asestados a campeones enemigos infligen un 5%–11% de daño adicional. Otorga el daño adicional máximo cuando la vida es inferior al 30%.",
+    "iconUrl": "https://i.postimg.cc/mgHKQKFV/last-stand.webp"
+  },
+  {
+    "id": "cut_down",
+    "name": "Derribado",
+    "tree": "Precisión",
+    "type": "Secundaria",
+    "description": "Tus ataques infligen un 6,5% de daño adicional a campeones enemigos con más del 60% de vida.",
+    "iconUrl": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/perk-images/styles/precision/cutdown/cutdown.png"
+  },
+  {
+    "id": "coup_de_grace",
+    "name": "Golpe de Gracia",
+    "tree": "Precisión",
+    "type": "Secundaria",
+    "description": "Inflige un 8% de daño adicional a campeones enemigos con menos del 40% de vida.",
+    "iconUrl": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/perk-images/styles/precision/coupdegrace/coupdegrace.png"
+  },
+  {
+    "id": "legend_alacrity",
+    "name": "Leyenda: Presteza",
+    "tree": "Precisión",
+    "type": "Secundaria",
+    "description": "Otorga un 3% de velocidad de ataque adicional. Derrotar monstruos, campeones enemigos o súbditos otorga bonificaciones de velocidad de ataque adicionales hasta un 18%.",
+    "iconUrl": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/perk-images/styles/precision/legendalacrity/legendalacrity.png"
+  },
+  {
+    "id": "legend_haste",
+    "name": "Leyenda: Velocidad",
+    "tree": "Precisión",
+    "type": "Secundaria",
+    "description": "Otorga 0 de velocidad de habilidades al principio de la partida. Derrotar monstruos, campeones enemigos o súbditos otorga bonificaciones de velocidad de habilidades adicionales. La bonificación total tiene un límite de 15 de velocidad de habilidades.",
+    "iconUrl": "https://wr-meta.com/uploads/posts/2026-09/1790113533_9105.webp"
+  },
+  {
+    "id": "legend_bloodline",
+    "name": "Leyenda: Linaje",
+    "tree": "Precisión",
+    "type": "Secundaria",
+    "description": "Otorga un 1% de omnisucción. Asesina a monstruos, súbditos y campeones enemigos o consigue asistencias para obtener hasta un 7% de omnisucción.",
+    "iconUrl": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/perk-images/styles/precision/legendbloodline/legendbloodline.png"
+  },
+  {
+    "id": "cheap_shot",
+    "name": "Golpe Bajo",
+    "tree": "Dominación",
+    "type": "Secundaria",
+    "description": "Inflige de 10 a 45 de daño verdadero adicional a enemigos con movimiento reducido. Enfriamiento: 5 s.",
+    "iconUrl": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/perk-images/styles/domination/cheapshot/cheapshot.png"
+  },
+  {
+    "id": "sudden_impact",
+    "name": "Impacto Repentino",
+    "tree": "Dominación",
+    "type": "Secundaria",
+    "description": "Tras un deslizamiento, salto, teleportación instantánea, teleportación o al salir del sigilo, tu siguiente ataque o habilidad contra un enemigo en 4 s inflige de 15 a 65 de daño verdadero adicional (15 s de enfriamiento). Este efecto se potencia al subir de nivel:\nNivel 5: Inflige 5 de daño verdadero adicional.\nNivel 9: Inflige 5 de daño verdadero adicional y otorga un 10% de velocidad de movimiento durante 1,5 s tras infligir daño.",
+    "iconUrl": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/perk-images/styles/domination/suddenimpact/suddenimpact.png"
+  },
+  {
+    "id": "empowered_attack",
+    "name": "Ataque Potenciado",
+    "tree": "Dominación",
+    "type": "Secundaria",
+    "description": "Cada 8 s, potencia tu siguiente ataque, que infligirá 20-60 de daño adaptable adicional a campeones enemigos. 80 % para campeones a distancia.",
+    "iconUrl": "https://i.postimg.cc/WbZCqmwX/empowered-attack.webp"
+  },
+  {
+    "id": "chain_assault",
+    "name": "Asalto Encadenado",
+    "tree": "Dominación",
+    "type": "Secundaria",
+    "description": "Infligir daño a un campeón enemigo con una habilidad activa le aplica una marca, lo que provoca que los 2 próximos ataques o habilidades activas contra dicho campeón inflijan daño adaptable adicional (12–38 + 3% AD adicional + 1,5% AP) (15 s de enfriamiento).",
+    "iconUrl": "https://i.postimg.cc/wTNZR5Qw/chain-assault.webp"
+  },
+  {
+    "id": "tyrant",
+    "name": "Tirano",
+    "tree": "Dominación",
+    "type": "Secundaria",
+    "description": "Al infligir daño a un campeón con menos de un 50% de vida, infliges (20-70 + 6% AD adicional + 3% AP) de daño adaptable adicional (10 s de enfriamiento).",
+    "iconUrl": "https://i.postimg.cc/J4XvH35K/tyrant.webp"
+  },
+  {
+    "id": "hubris",
+    "name": "Soberbia",
+    "tree": "Dominación",
+    "type": "Secundaria",
+    "description": "Las eliminaciones de campeones enemigos en 3 s tras infligirles daño otorgan (5 + 1 por eliminación de campeón conseguida) de fuerza adaptable durante 30 s.",
+    "iconUrl": "https://i.postimg.cc/5NzTQ5S7/hubris.webp"
+  },
+  {
+    "id": "eyeball_collection",
+    "name": "Colección de Globos Oculares",
+    "tree": "Dominación",
+    "type": "Secundaria",
+    "description": "Otorga 1,5 de daño de ataque o 3 de poder de habilidad al participar en eliminaciones de campeones o monstruos épicos, lo que se acumula hasta 8 veces.",
+    "iconUrl": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/perk-images/styles/domination/eyeballcollection/eyeballcollection.png"
+  },
+  {
+    "id": "ingenious_hunter",
+    "name": "Cazador Ingenioso",
+    "tree": "Dominación",
+    "type": "Secundaria",
+    "description": "Otorga 20 de velocidad de objetos. Por cada eliminación de un campeón o monstruo épico que consigas, otorga 5 de velocidad de objetos. Se acumula hasta 5 veces.",
+    "iconUrl": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/perk-images/styles/domination/ingenioushunter/ingenioushunter.png"
+  },
+  {
+    "id": "relentless_hunter",
+    "name": "Cazador Incesante",
+    "tree": "Dominación",
+    "type": "Secundaria",
+    "description": "Otorga 10 de velocidad de movimiento fuera de combate. Por cada eliminación de un campeón o monstruo épico que consigas, otorga 2 de velocidad de movimiento fuera de combate. Se acumula hasta 5 veces.",
+    "iconUrl": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/perk-images/styles/domination/relentlesshunter/relentlesshunter.png"
+  },
+  {
+    "id": "zombie_ward",
+    "name": "Guardián Zombi",
+    "tree": "Dominación",
+    "type": "Secundaria",
+    "description": "Las eliminaciones de guardianes enemigos crean un guardián zombi en su lugar, lo que otorga visión del área circundante durante 120 s. Otorga 3 de daño de ataque o 6 de poder de habilidad adicional (máximo: 5 acumulaciones). (Las asistencias de los guardianes enemigos también otorgan acumulaciones y crean guardianes zombi).",
+    "iconUrl": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/perk-images/styles/domination/zombieward/zombieward.png"
+  },
+  {
+    "id": "manaflow_band",
+    "name": "Banda de Maná",
+    "tree": "Brujería",
+    "type": "Secundaria",
+    "description": "Golpear a un campeón enemigo con una habilidad o ataque potenciado aumenta permanentemente tu maná máximo en 30, hasta 300 de maná.",
+    "iconUrl": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/perk-images/styles/sorcery/manaflowband/manaflowband.png"
+  },
+  {
+    "id": "axiomatic_arcologist",
+    "name": "Arcanólogo Axiomático",
+    "tree": "Brujería",
+    "type": "Secundaria",
+    "description": "Tu habilidad definitiva obtiene un 10% de daño, curación y escudos adicionales. El aumento del daño en área se reduce un 5%. Participar en el asesinato de un campeón enemigo reduce un 7% el enfriamiento restante de la definitiva.",
+    "iconUrl": "https://i.postimg.cc/3xN03H02/axiom-arcanist.webp"
+  },
+  {
+    "id": "transcendence",
+    "name": "Trascendencia",
+    "tree": "Brujería",
+    "type": "Secundaria",
+    "description": "Otorga una bonificación al alcanzar los siguientes niveles:\nEn el nivel 1, otorga 5 de velocidad de habilidades.\nEn el nivel 5, otorga 5 de velocidad de habilidades.\nEn el nivel 9, reduce un 8% el enfriamiento de las habilidades básicas cuando golpeen a un objetivo (8 s de enfriamiento).",
+    "iconUrl": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/perk-images/styles/sorcery/transcendence/transcendence.png"
+  },
+  {
+    "id": "celerity",
+    "name": "Celeridad",
+    "tree": "Brujería",
+    "type": "Secundaria",
+    "description": "Obtiene un 2% de velocidad de movimiento. Aumentan un 7% todas las bonificaciones de velocidad de movimiento que recibas.",
+    "iconUrl": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/perk-images/styles/sorcery/celerity/celeritytemp.png"
+  },
+  {
+    "id": "absolute_focus",
+    "name": "Concentración Absoluta",
+    "tree": "Brujería",
+    "type": "Secundaria",
+    "description": "Con más del 65% de la vida, obtienes 2-20 de daño de ataque o 4-40 de poder de habilidad adicional (adaptable).",
+    "iconUrl": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/perk-images/styles/sorcery/absolutefocus/absolutefocus.png"
+  },
+  {
+    "id": "nimbus_cloak",
+    "name": "Capa del Nimbo",
+    "tree": "Brujería",
+    "type": "Secundaria",
+    "description": "Tras usar un hechizo (Destello, Prender, etc.), obtienes un 10-40% de velocidad de movimiento adicional durante 3 s. La eficacia de esta mejora depende del enfriamiento del hechizo utilizado.",
+    "iconUrl": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/perk-images/styles/sorcery/nimbuscloak/6361.png"
+  },
+  {
+    "id": "scorch",
+    "name": "Piroláser",
+    "tree": "Brujería",
+    "type": "Secundaria",
+    "description": "Infligir daño a un campeón enemigo con una habilidad lo quema y le inflige entre 21 y 49 de daño mágico adicional (según el nivel) tras 1 s (8 s de enfriamiento).",
+    "iconUrl": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/perk-images/styles/sorcery/scorch/scorch.png"
+  },
+  {
+    "id": "gathering_storm",
+    "name": "Se Avecina Tormenta",
+    "tree": "Brujería",
+    "type": "Secundaria",
+    "description": "Tras 6 min de partida, otorga 2 de daño de ataque o 4 de poder de habilidad (adaptable), que aumentan cada 3 minutos a 5 o 10, 9 o 18, 14 o 28, etc.",
+    "iconUrl": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/perk-images/styles/sorcery/gatheringstorm/gatheringstorm.png"
+  },
+  {
+    "id": "botanist",
+    "name": "Botanista",
+    "tree": "Brujería",
+    "type": "Secundaria",
+    "description": "Cuando destruyes una planta, obtienes 10 de oro y efectos potenciados de la planta.\nFrutos de miel: Cuando se consumen, aumenta el efecto curativo un 20%.\nFlor del adivino: Cuando se destruye, la visión que otorga dura un 20% más.\nPiña explosiva: Tras el empujón, otorga un 40% de velocidad de movimiento durante 2,5 s.",
+    "iconUrl": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/perk-images/styles/inspiration/sweettooth/sweettooth.png"
+  },
+  {
+    "id": "hextech_flashtraption",
+    "name": "Hextello",
+    "tree": "Brujería",
+    "type": "Secundaria",
+    "description": "Cuando Destello está en enfriamiento, se reemplaza por Hextello. Tras una canalización de hasta 2 s, te trasladas a una ubicación nueva. La distancia varía en función el tiempo de canalización (18 s de enfriamiento).\nPasa a 6 s de enfriamiento al entrar en combate con campeones.",
+    "iconUrl": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/perk-images/styles/inspiration/hextechflashtraption/hextechflashtraption.png"
+  },
+  {
+    "id": "ixtali_seedjar",
+    "name": "Semillero Ixtalí",
+    "tree": "Brujería",
+    "type": "Secundaria",
+    "description": "Al destruir una planta, obtienes una semilla al instante que reemplaza tu talismán durante 60 s. La semilla madura y se autodestruye poco después tras plantarla en la ubicación objetivo. (Cuando un aliado destruye una planta, también aparecerán semillas que puedes recoger).\nLas semillas están disponibles a partir del minuto 2 de la partida.\nCada planta tiene un enfriamiento de 30 s.\nLas piñas explosivas que plantes te lanzan más lejos al detonar.",
+    "iconUrl": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/items/icons2d/4403_support_ixtaliseedjar.png"
+  },
+  {
+    "id": "font_of_life",
+    "name": "Fuente de Vida",
+    "tree": "Valor",
+    "type": "Secundaria",
+    "description": "Cuando tus ataques o habilidades golpean a un campeón enemigo, te curas a ti y al campeón aliado cercano con menos vida.\nAliado: Se cura un 1,5% de tu ♥ máx. + 5% de tu 🪄.\nTú: Te curas un 1% de tu ♥ máx. + 5% de tu 🪄.\nEnfriamiento: 20 s\nLa curación tiene un 130% de efectividad si eres un campeón cuerpo a cuerpo. (No se activa si tú o algún aliado cercano tenéis la vida al máximo o si no hay aliados cerca).",
+    "iconUrl": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/perk-images/styles/resolve/fontoflife/fontoflife.png"
+  },
+  {
+    "id": "courage_of_the_colossus",
+    "name": "Coraje del Coloso",
+    "tree": "Valor",
+    "type": "Secundaria",
+    "description": "Otorga un escudo que absorbe de 25 a 45 (🔺) + 1% del daño por vida máxima ♥ durante 3 s al inmovilizar a un campeón enemigo (18 s de enfriamiento).",
+    "iconUrl": "https://i.postimg.cc/MZmsgySX/courage-of-the-colossus.webp"
+  },
+  {
+    "id": "nullifying_orb",
+    "name": "Orbe Anulador",
+    "tree": "Valor",
+    "type": "Secundaria",
+    "description": "Si un campeón te inflige daño suficiente para hacerte bajar del 35% de tu vida máxima, obtienes un escudo que absorbe de 60 a 180 (🔺) de daño durante 4 s (60 s de enfriamiento).",
+    "iconUrl": "https://i.postimg.cc/3JrLhd8h/nullifying-orb.webp"
+  },
+  {
+    "id": "bone_plating",
+    "name": "Revestimiento de Huesos",
+    "tree": "Valor",
+    "type": "Secundaria",
+    "description": "Al recibir daño de un campeón, el ataque o habilidad actual y los 3 siguientes ataques o habilidades de campeones que te golpeen en los próximos 1,5 s te infligen 30 - 60 (🔺) menos de daño (40 s de enfriamiento).",
+    "iconUrl": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/perk-images/styles/resolve/boneplating/boneplating.png"
+  },
+  {
+    "id": "second_wind",
+    "name": "Fuerzas Renovadas",
+    "tree": "Valor",
+    "type": "Secundaria",
+    "description": "Otorga 5 de vida ♥ cada 5 s.\nAl recibir daño de un campeón enemigo, regenera 3 + (un 1,5% de la vida que te falte) ♥ durante 5 s. Este efecto se duplica para los campeones cuerpo a cuerpo.",
+    "iconUrl": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/perk-images/styles/resolve/secondwind/secondwind.png"
+  },
+  {
+    "id": "unflinching",
+    "name": "Inquebrantable",
+    "tree": "Valor",
+    "type": "Secundaria",
+    "description": "Obtienes un 3% de armadura y de resistencia mágica. Por cada 1 campeones enemigos cercanos, otorga un 2% de armadura y resistencia mágica adicionales. Si el máximo de campeones enemigos está cerca (máximo: 3), también otorga un 20% de resistencia a ralentizaciones.",
+    "iconUrl": "https://i.postimg.cc/mZydKQsk/unshakeable.webp"
+  },
+  {
+    "id": "overgrowth",
+    "name": "Sobrecrecimiento",
+    "tree": "Valor",
+    "type": "Secundaria",
+    "description": "Por cada 3 súbditos enemigos o 3 monstruo(s) asesinados cerca, otorga 3 de vida máxima permanentemente. Así, la vida máxima puede aumentar indefinidamente. Otorga un 3% de vida máxima adicional al conseguir 30 acumulaciones.",
+    "iconUrl": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/perk-images/styles/resolve/overgrowth/overgrowth.png"
+  },
+  {
+    "id": "revitalize",
+    "name": "Revitalizar",
+    "tree": "Valor",
+    "type": "Secundaria",
+    "description": "Amplifica un 5% las curaciones y escudos. Si la vida del objetivo es inferior a un 40%, este efecto se amplifica un 10% adicional.",
+    "iconUrl": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/perk-images/styles/resolve/revitalize/revitalize.png"
+  },
+  {
+    "id": "perseverance",
+    "name": "Perseverancia",
+    "tree": "Valor",
+    "type": "Secundaria",
+    "description": "Otorga 10% de tenacidad. Otorga de 10 a 15 de armadura y resistencia mágica (🔺) durante 1,5 s cuando te inmovilizan. La duración se reinicia cuando te inmovilizan múltiples veces.",
+    "iconUrl": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/perk-images/styles/resolve/perseverance/perseverance.png"
+  },
+  {
+    "id": "demolish",
+    "name": "Demoler",
+    "tree": "Valor",
+    "type": "Secundaria",
+    "description": "Al estar a 550 de distancia de una torreta enemiga, obtienes una carga cada 0,5 s, hasta un máximo de 6 veces. Con el máximo de cargas, el siguiente ataque que asestes a la torreta inflige (100 + 22% de la vida máxima ♥) de daño físico adicional (30 s de enfriamiento).",
+    "iconUrl": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/perk-images/styles/resolve/demolish/demolish.png"
+  },
+  {
+    "id": "grasp_undying",
+    "name": "Garras del Inmortal",
+    "tree": "Valor",
+    "type": "Clave",
+    "description": "Cada 3 s en combate, tu siguiente ataque contra un campeón inflige 3% de tu vida máxima como daño mágico, cura y otorga 8 de vida permanente.",
+    "iconUrl": "file:///android_asset/runes/grasp_undying.png"
+  }
+]

@@ -1,8 +1,0 @@
-{
-  "name": "coach-account-deletion",
-  "private": true,
-  "type": "module",
-  "scripts": {"test": "node --test test/*.test.mjs", "preflight": "node preflight.mjs", "process": "node worker.mjs", "cleanup-unverified": "node cleanup-unverified.mjs --apply"},
-  "dependencies": {"firebase-admin": "13.5.0"},
-  "engines": {"node": ">=20"}
-}
