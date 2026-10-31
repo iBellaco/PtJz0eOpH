@@ -1,0 +1,1154 @@
+{
+  "reviewedAt": "2026-10-01",
+  "note": "Reviewed unchanged phrases: identical Portuguese wording, shared item/rune names, proper names, version/number templates, and common game abbreviations. This inventory is not a device UI test.",
+  "phrases": [
+    {
+      "paths": [
+        "app/src/main/java/com/example/MainActivity.kt",
+        "app/src/main/java/com/example/ui/screens/MetaAndDraftScreen.kt",
+        "app/src/main/java/com/example/ui/screens/DraftHistoryScreen.kt",
+        "app/src/main/java/com/example/service/FloatingAssistantService.kt"
+      ],
+      "text": "Tier List"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/MainActivity.kt",
+        "app/src/main/java/com/example/ui/screens/MetaAndDraftScreen.kt"
+      ],
+      "text": "Catálogo"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/screens/MainDraftingScreen.kt"
+      ],
+      "text": "« Coach »"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/screens/MainDraftingScreen.kt"
+      ],
+      "text": "© 2026 Diego Barba Chavez"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/screens/MainDraftingScreen.kt"
+      ],
+      "text": "Alfa v{0} ({1})"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/screens/MainDraftingScreen.kt",
+        "app/src/main/java/com/example/ui/screens/MetaAndDraftScreen.kt",
+        "app/src/main/java/com/example/ui/screens/DraftHistoryScreen.kt",
+        "app/src/main/java/com/example/ui/auth/AuthScreen.kt",
+        "app/src/main/java/com/example/ui/components/SubscriptionPlansBottomSheet.kt",
+        "app/src/main/java/com/example/ui/components/ExitConfirmationDialog.kt",
+        "app/src/main/java/com/example/ui/components/AdminPrivateMessageDialog.kt",
+        "app/src/main/java/com/example/ui/components/SaveDraftDialog.kt",
+        "app/src/main/java/com/example/ui/components/AdminFeedbackPanel.kt",
+        "app/src/main/java/com/example/ui/components/CustomBuildDetailDialog.kt",
+        "app/src/main/java/com/example/ui/components/ModeratorDashboardDialog.kt",
+        "app/src/main/java/com/example/ui/components/AdminSupportReportsDialog.kt",
+        "app/src/main/java/com/example/ui/components/AdminCpmAnalyticsDialog.kt",
+        "app/src/main/java/com/example/ui/components/ChampionBuildCreatorDialog.kt",
+        "app/src/main/java/com/example/ui/components/SponsorCpmPanelDialog.kt",
+        "app/src/main/java/com/example/ui/components/AdminCreatorBuildsDialog.kt",
+        "app/src/main/java/com/example/ui/components/AdminSponsorModerationDialog.kt",
+        "app/src/main/java/com/example/ui/components/AdminDashboardDialog.kt",
+        "app/src/main/java/com/example/ui/components/AdminGiveEssenceDialog.kt"
+      ],
+      "text": "Cancelar"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/screens/MainDraftingScreen.kt"
+      ],
+      "text": "Português"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/screens/MainDraftingScreen.kt"
+      ],
+      "text": "Português Oficial (Brasil)"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/screens/MainDraftingScreen.kt"
+      ],
+      "text": "Patrocinado"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/screens/FAQScreen.kt",
+        "app/src/main/java/com/example/ui/screens/ChampionDetailSheet.kt",
+        "app/src/main/java/com/example/ui/auth/AuthScreen.kt",
+        "app/src/main/java/com/example/ui/components/ThemeCustomizationDialog.kt",
+        "app/src/main/java/com/example/ui/components/GlobalAnnouncementDialog.kt",
+        "app/src/main/java/com/example/ui/components/AppUpdateDialog.kt"
+      ],
+      "text": "Entendido"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/screens/ChampionDetailSheet.kt",
+        "app/src/main/java/com/example/ui/screens/MetaAndDraftScreen.kt",
+        "app/src/main/java/com/example/ui/components/AdminFeedbackPanel.kt",
+        "app/src/main/java/com/example/service/FloatingAssistantService.kt"
+      ],
+      "text": "Tier {0}"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/screens/ChampionDetailSheet.kt"
+      ],
+      "text": "Flex"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/screens/ChampionDetailSheet.kt"
+      ],
+      "text": "Habilidades de"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/screens/ChampionDetailSheet.kt",
+        "app/src/main/java/com/example/ui/screens/MetaAndDraftScreen.kt"
+      ],
+      "text": "Runas"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/screens/ChampionDetailSheet.kt"
+      ],
+      "text": "PRO 12"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/screens/ChampionDetailSheet.kt"
+      ],
+      "text": "Sinergia"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/screens/PersonalTierListView.kt"
+      ],
+      "text": "Filtros / Buscar"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/screens/PersonalTierListView.kt",
+        "app/src/main/java/com/example/ui/screens/MetaAndDraftScreen.kt"
+      ],
+      "text": "Expandir filtros"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/screens/PersonalTierListView.kt",
+        "app/src/main/java/com/example/service/FloatingAssistantService.kt"
+      ],
+      "text": "Tiers"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/screens/PersonalTierListView.kt"
+      ],
+      "text": "partidas"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/screens/PersonalTierListView.kt",
+        "app/src/main/java/com/example/ui/screens/MetaAndDraftScreen.kt",
+        "app/src/main/java/com/example/ui/components/MatchupPreviewDialog.kt",
+        "app/src/main/java/com/example/service/FloatingAssistantService.kt"
+      ],
+      "text": "WR: {0}%"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/screens/PersonalTierListView.kt"
+      ],
+      "text": "Minimizar"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/screens/PersonalTierListView.kt",
+        "app/src/main/java/com/example/ui/components/AdminFeedbackPanel.kt"
+      ],
+      "text": "Expandir"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/screens/PersonalTierListView.kt"
+      ],
+      "text": "part."
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/screens/PersonalTierListView.kt"
+      ],
+      "text": "{0}% ({1}V-{2}D)"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/screens/PersonalTierListView.kt"
+      ],
+      "text": "TIER {0} ({1}%)"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/screens/PersonalTierListView.kt"
+      ],
+      "text": "Tier {0} • {1}"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/screens/PersonalTierListView.kt"
+      ],
+      "text": "vs {0}"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/screens/MetaAndDraftScreen.kt"
+      ],
+      "text": "Favoritos"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/screens/MetaAndDraftScreen.kt",
+        "app/src/main/java/com/example/ui/screens/DraftHistoryScreen.kt",
+        "app/src/main/java/com/example/ui/components/AdminFeedbackPanel.kt",
+        "app/src/main/java/com/example/service/FloatingAssistantService.kt"
+      ],
+      "text": "Todos"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/screens/MetaAndDraftScreen.kt"
+      ],
+      "text": "{0} WR: {1}"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/screens/MetaAndDraftScreen.kt"
+      ],
+      "text": "Principal: {0} • {1}"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/screens/MetaAndDraftScreen.kt"
+      ],
+      "text": "Flex: "
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/screens/MetaAndDraftScreen.kt",
+        "app/src/main/java/com/example/ui/screens/DraftHistoryScreen.kt",
+        "app/src/main/java/com/example/ui/components/AdminCreatorBuildsDialog.kt"
+      ],
+      "text": "Todas"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/screens/MetaAndDraftScreen.kt"
+      ],
+      "text": "WR: {0}"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/screens/MetaAndDraftScreen.kt"
+      ],
+      "text": "Pick: {0} • Ban: {1}"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/screens/MetaAndDraftScreen.kt"
+      ],
+      "text": "Pick: {0}"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/screens/MetaAndDraftScreen.kt"
+      ],
+      "text": "WR: {0} • Ban: {1}"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/screens/MetaAndDraftScreen.kt"
+      ],
+      "text": "Ban: {0}"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/screens/MetaAndDraftScreen.kt"
+      ],
+      "text": "WR: {0} • Pick: {1}"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/screens/MetaAndDraftScreen.kt"
+      ],
+      "text": "BÁSICO"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/screens/MetaAndDraftScreen.kt"
+      ],
+      "text": "{0} G"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/screens/MetaAndDraftScreen.kt"
+      ],
+      "text": " {0} G"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/screens/MetaAndDraftScreen.kt"
+      ],
+      "text": "CD {0}"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/screens/MetaAndDraftScreen.kt",
+        "app/src/main/java/com/example/ui/components/ChampionBuildCreatorDialog.kt"
+      ],
+      "text": "CD: {0}"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/screens/MetaAndDraftScreen.kt"
+      ],
+      "text": "Adaptativo"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/screens/MetaAndDraftScreen.kt"
+      ],
+      "text": "{0}: vs {1}"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/screens/MetaAndDraftScreen.kt",
+        "app/src/main/java/com/example/ui/screens/DraftHistoryScreen.kt",
+        "app/src/main/java/com/example/ui/components/SaveDraftDialog.kt"
+      ],
+      "text": "{0}% WR"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/screens/MetaAndDraftScreen.kt"
+      ],
+      "text": "partidas registradas"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/screens/MetaAndDraftScreen.kt",
+        "app/src/main/java/com/example/ui/screens/DraftHistoryScreen.kt"
+      ],
+      "text": "Físico"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/screens/MetaAndDraftScreen.kt",
+        "app/src/main/java/com/example/ui/screens/DraftHistoryScreen.kt"
+      ],
+      "text": "Mágico"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/screens/MetaAndDraftScreen.kt"
+      ],
+      "text": "Sinergia / Combo:"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/screens/InfoScreen.kt"
+      ],
+      "text": "Coach"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/screens/InfoScreen.kt"
+      ],
+      "text": "v{0} (Build {1}) • {2}"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/screens/DraftHistoryScreen.kt"
+      ],
+      "text": "partidas guardadas"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/screens/DraftHistoryScreen.kt"
+      ],
+      "text": "Expandir barra"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/screens/DraftHistoryScreen.kt"
+      ],
+      "text": "Minimizar barra"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/screens/DraftHistoryScreen.kt"
+      ],
+      "text": "Partidas"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/screens/DraftHistoryScreen.kt"
+      ],
+      "text": "🌐 Todas (%d)"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/screens/DraftHistoryScreen.kt",
+        "app/src/main/java/com/example/ui/components/AdminFeedbackPanel.kt"
+      ],
+      "text": "Editar"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/screens/DraftHistoryScreen.kt"
+      ],
+      "text": "Derrotas"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/screens/DraftHistoryScreen.kt",
+        "app/src/main/java/com/example/ui/components/SaveDraftDialog.kt",
+        "app/src/main/java/com/example/service/FloatingAssistantService.kt"
+      ],
+      "text": "Derrota"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/screens/DraftHistoryScreen.kt",
+        "app/src/main/java/com/example/ui/components/SaveDraftDialog.kt",
+        "app/src/main/java/com/example/service/FloatingAssistantService.kt"
+      ],
+      "text": "Normal"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/screens/DraftHistoryScreen.kt"
+      ],
+      "text": "Principal"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/auth/AuthComponents.kt"
+      ],
+      "text": "Logo"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/auth/AuthScreen.kt",
+        "app/src/main/java/com/example/ui/components/ModeratorDashboardDialog.kt"
+      ],
+      "text": "Verificado"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/components/ThemeCustomizationDialog.kt",
+        "app/src/main/java/com/example/ui/components/AvatarSelectionDialog.kt"
+      ],
+      "text": "PREMIUM"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/components/ThemeCustomizationDialog.kt"
+      ],
+      "text": "Sinergia S+ / Tier Soberano"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/components/ThemeCustomizationDialog.kt"
+      ],
+      "text": "Aplicado"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/components/ThemeCustomizationDialog.kt"
+      ],
+      "text": "Aplicar"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/components/SupportReportDialog.kt"
+      ],
+      "text": "Patrocinador"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/components/SupportReportDialog.kt"
+      ],
+      "text": "• Foto {0}: {1}"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/components/SupportReportDialog.kt",
+        "app/src/main/java/com/example/ui/components/AdminSupportReportsDialog.kt"
+      ],
+      "text": "{0} x {1} ({2})"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/components/DraftWomboSynergyCard.kt"
+      ],
+      "text": "💥 Sinergia Letal"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/components/DonationDialog.kt",
+        "app/src/main/java/com/example/ui/components/AdminFeedbackPanel.kt",
+        "app/src/main/java/com/example/ui/components/AdminSupportReportsDialog.kt",
+        "app/src/main/java/com/example/ui/components/AdminSponsorModerationDialog.kt"
+      ],
+      "text": "Copiar"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/components/DonationDialog.kt"
+      ],
+      "text": "QR Code e Pix Copia e Cola"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/components/DonationDialog.kt"
+      ],
+      "text": "Pix QR Code"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/components/DonationDialog.kt"
+      ],
+      "text": "Pix (Brasil)"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/components/DonationDialog.kt"
+      ],
+      "text": "Valor:"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/components/GlobalAnnouncementDialog.kt"
+      ],
+      "text": "Emitido: {0}"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/components/AdminPrivateMessageDialog.kt",
+        "app/src/main/java/com/example/ui/components/UserInboxDialog.kt"
+      ],
+      "text": "Enviar"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/components/SupportReplyDialog.kt"
+      ],
+      "text": "Responder"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/components/UserInboxDialog.kt"
+      ],
+      "text": "Enviado por:"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/components/PurchaseHistoryDialog.kt"
+      ],
+      "text": "ID: {0}"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/components/BlueEssenceStoreDialog.kt"
+      ],
+      "text": "Saldo: {0} {1}"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/components/BlueEssenceStoreDialog.kt",
+        "app/src/main/java/com/example/ui/components/AdminCpmAnalyticsDialog.kt",
+        "app/src/main/java/com/example/ui/components/SponsorCpmPanelDialog.kt"
+      ],
+      "text": "${0} USD"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/components/AvatarSelectionDialog.kt"
+      ],
+      "text": "Avatares"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/components/AvatarSelectionDialog.kt"
+      ],
+      "text": "Buscar avatar..."
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/components/AvatarSelectionDialog.kt"
+      ],
+      "text": "Administrador"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/components/AvatarSelectionDialog.kt"
+      ],
+      "text": "Moderador"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/components/AvatarSelectionDialog.kt"
+      ],
+      "text": "Streamer"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/components/AvatarSelectionDialog.kt"
+      ],
+      "text": "Esmeralda"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/components/AvatarSelectionDialog.kt"
+      ],
+      "text": "Diamante"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/components/AvatarSelectionDialog.kt"
+      ],
+      "text": "Soberano"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/components/AdminFeedbackPanel.kt"
+      ],
+      "text": "Captura"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/components/AdminFeedbackPanel.kt"
+      ],
+      "text": "Respondido por:"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/components/AdminFeedbackPanel.kt"
+      ],
+      "text": " Dispositivo copiado"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/components/AdminFeedbackPanel.kt"
+      ],
+      "text": "Dispositivo:"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/components/AdminFeedbackPanel.kt"
+      ],
+      "text": "UUID: {0}"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/components/LiteRTEngineViewerDialog.kt"
+      ],
+      "text": "• {0} ms"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/components/LiteRTEngineViewerDialog.kt"
+      ],
+      "text": "Peso relativo: {0}%"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/components/CustomBuildDetailDialog.kt"
+      ],
+      "text": "({0} votos)"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/components/CustomBuildDetailDialog.kt"
+      ],
+      "text": "Publicado por {0}"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/components/CustomBuildDetailDialog.kt",
+        "app/src/main/java/com/example/ui/components/SubscriptionHistoryDialog.kt",
+        "app/src/main/java/com/example/ui/components/SponsorCpmPanelDialog.kt",
+        "app/src/main/java/com/example/ui/components/AdminDashboardDialog.kt"
+      ],
+      "text": "{0} EA"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/components/CustomBuildDetailDialog.kt"
+      ],
+      "text": "[Botas N2] {0}"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/components/CustomBuildDetailDialog.kt",
+        "app/src/main/java/com/example/ui/components/SubscriptionHistoryDialog.kt",
+        "app/src/main/java/com/example/ui/components/AdminCreatorBuildsDialog.kt",
+        "app/src/main/java/com/example/ui/components/AdminDashboardDialog.kt"
+      ],
+      "text": "{0} EN"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/components/CooldownTrackerPanel.kt"
+      ],
+      "text": "restante"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/components/CooldownTrackerPanel.kt"
+      ],
+      "text": "Base:"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/components/CooldownTrackerPanel.kt"
+      ],
+      "text": "{0}s"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/components/SubscriptionHistoryDialog.kt",
+        "app/src/main/java/com/example/ui/components/AdminSponsorModerationDialog.kt"
+      ],
+      "text": "Todos ({0})"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/components/SubscriptionHistoryDialog.kt"
+      ],
+      "text": "Vence: {0}"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/components/DraftCalibrationPanel.kt"
+      ],
+      "text": "BARRA SUPERIOR"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/components/DraftCalibrationPanel.kt"
+      ],
+      "text": "Calibrando: {0}"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/components/DraftCalibrationPanel.kt"
+      ],
+      "text": "R{0}"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/components/AdminSupportReportsDialog.kt"
+      ],
+      "text": "De: {0}"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/components/AdminCpmAnalyticsDialog.kt"
+      ],
+      "text": "${0} / 1k"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/components/AdminCpmAnalyticsDialog.kt"
+      ],
+      "text": "👁️ {0} imp."
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/components/AdminCpmAnalyticsDialog.kt"
+      ],
+      "text": "Gasto: ${0} USD"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/components/AdminCpmAnalyticsDialog.kt"
+      ],
+      "text": "{0}% consumido"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/components/ChampionBuildCreatorDialog.kt"
+      ],
+      "text": "Sit. {0}. {1}"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/components/ChampionBuildCreatorDialog.kt"
+      ],
+      "text": "Buscar..."
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/components/ChampionBuildCreatorDialog.kt"
+      ],
+      "text": "Buscar runa..."
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/components/BuyEssenceDialog.kt"
+      ],
+      "text": "Comprar {0}"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/components/SponsorCpmPanelDialog.kt"
+      ],
+      "text": "• Tarifa base justa (%s): USD %s"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/components/SponsorCpmPanelDialog.kt"
+      ],
+      "text": "Máximo permitido: {0}"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/components/AdminCreatorBuildsDialog.kt"
+      ],
+      "text": "👥 {0} subs"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/components/AdminCreatorBuildsDialog.kt"
+      ],
+      "text": "{0} ({1} votos)"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/components/AdminCreatorBuildsDialog.kt"
+      ],
+      "text": "Oficial"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/components/AdminSponsorModerationDialog.kt"
+      ],
+      "text": "Abrir"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/components/AdminSponsorModerationDialog.kt"
+      ],
+      "text": "Patrocinador: {0}"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/components/AdminDashboardDialog.kt"
+      ],
+      "text": "Avisos"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/components/AdminDashboardDialog.kt"
+      ],
+      "text": "Horizontal"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/components/AdminDashboardDialog.kt"
+      ],
+      "text": "Vertical"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/components/AdminDashboardDialog.kt"
+      ],
+      "text": "{0} • {1} (Expirado)"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/components/AdminDashboardDialog.kt"
+      ],
+      "text": "Editar URL vertical manualmente"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/components/AdminDashboardDialog.kt"
+      ],
+      "text": "Sincronizando..."
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/components/AdminDashboardDialog.kt"
+      ],
+      "text": "Revisar"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/components/AdminDashboardDialog.kt"
+      ],
+      "text": "UID copiado"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/components/AdminDashboardDialog.kt"
+      ],
+      "text": "UID: {0}..."
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/components/AdminDashboardDialog.kt"
+      ],
+      "text": "{0} avatares"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/components/AdminDashboardDialog.kt"
+      ],
+      "text": "Estado: {0}"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/components/AdminDashboardDialog.kt"
+      ],
+      "text": "Remover"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/components/AdminDashboardDialog.kt"
+      ],
+      "text": "Confirmar"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/components/AdminDashboardDialog.kt"
+      ],
+      "text": "{0} de {1} exclusivos desbloqueados"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/components/AdminDashboardDialog.kt"
+      ],
+      "text": "✓ Desbloqueado"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/components/AdminDashboardDialog.kt"
+      ],
+      "text": "{0} ms"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/components/AdminDashboardDialog.kt"
+      ],
+      "text": "Para: {0}"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/components/AdminDashboardDialog.kt"
+      ],
+      "text": "ESTADO: {0}"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/components/AdAvailabilityCalendarPanel.kt"
+      ],
+      "text": "Prog: {0} {1}"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/components/AppUpdateDialog.kt"
+      ],
+      "text": "v{0}"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/components/AdminGiveEssenceDialog.kt"
+      ],
+      "text": "Azul (EA)"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/components/AdminGiveEssenceDialog.kt"
+      ],
+      "text": "- Descontar"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/components/MatchupPreviewDialog.kt"
+      ],
+      "text": "Difícil"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/components/NoticeMediaViewer.kt"
+      ],
+      "text": "Ampliar"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/components/NoticeMediaViewer.kt"
+      ],
+      "text": "Modo Vertical"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/ui/components/HextechOrbButton.kt"
+      ],
+      "text": "INICIAR"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/service/FloatingAssistantService.kt"
+      ],
+      "text": "COACH"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/service/FloatingAssistantService.kt"
+      ],
+      "text": "Manual"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/service/FloatingAssistantService.kt"
+      ],
+      "text": "Draft"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/service/FloatingAssistantService.kt"
+      ],
+      "text": "Mostrar barra"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/service/FloatingAssistantService.kt"
+      ],
+      "text": " vs "
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/service/FloatingAssistantService.kt"
+      ],
+      "text": "W:{0}%"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/service/FloatingAssistantService.kt"
+      ],
+      "text": "B:{0}%"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/service/FloatingAssistantService.kt"
+      ],
+      "text": "P:{0}%"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/service/FloatingAssistantService.kt"
+      ],
+      "text": "FLEX ({0})"
+    },
+    {
+      "paths": [
+        "app/src/main/java/com/example/service/FloatingAssistantService.kt"
+      ],
+      "text": "+ Rival"
+    },
+    {
+      "paths": [
+        "app/src/main/assets/champions_creator_builds.json"
+      ],
+      "text": "Eclipse"
+    },
+    {
+      "paths": [
+        "app/src/main/assets/champions_creator_builds.json"
+      ],
+      "text": "Conquistador"
+    },
+    {
+      "paths": [
+        "app/src/main/assets/champions_creator_builds.json"
+      ],
+      "text": "Triunfo"
+    },
+    {
+      "paths": [
+        "app/src/main/assets/champions_creator_builds.json"
+      ],
+      "text": "Eco de Luden"
+    },
+    {
+      "paths": [
+        "app/src/main/assets/champions_creator_builds.json"
+      ],
+      "text": "Impacto Repentino"
+    },
+    {
+      "paths": [
+        "app/src/main/assets/champions_creator_builds.json"
+      ],
+      "text": "Tirano"
+    },
+    {
+      "paths": [
+        "app/src/main/assets/champions_creator_builds.json"
+      ],
+      "text": "Orbe Anulador"
+    },
+    {
+      "paths": [
+        "app/src/main/assets/champions_creator_builds.json"
+      ],
+      "text": "Revitalizar"
+    },
+    {
+      "paths": [
+        "app/src/main/assets/champions_creator_builds.json"
+      ],
+      "text": "Curar"
+    },
+    {
+      "paths": [
+        "app/src/main/assets/champions_creator_builds.json"
+      ],
+      "text": "Brutal"
+    },
+    {
+      "paths": [
+        "app/src/main/assets/champions_creator_builds.json"
+      ],
+      "text": "Armadura de Warmog"
+    },
+    {
+      "paths": [
+        "app/src/main/assets/champions_creator_builds.json"
+      ],
+      "text": "Tormento de Liandry"
+    },
+    {
+      "paths": [
+        "app/src/main/assets/champions_creator_builds.json"
+      ],
+      "text": "Cometa Arcano"
+    },
+    {
+      "paths": [
+        "app/src/main/assets/champions_creator_builds.json"
+      ],
+      "text": "Manamune"
+    }
+  ]
+}

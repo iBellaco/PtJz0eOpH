@@ -1,0 +1,211 @@
+package com.example
+
+import android.app.Application
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.height
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.semantics.SemanticsActions
+import androidx.compose.runtime.*
+import androidx.compose.material3.Text
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.test.*
+import androidx.compose.ui.test.junit4.createComposeRule
+import com.example.util.*
+import com.example.data.WildRiftRepository
+import com.example.data.sync.*
+import com.example.ui.components.FormattedWildRiftText
+import com.example.ui.screens.FAQScreen
+import com.example.ui.screens.InfoScreen
+import com.example.ui.screens.LanguageSelectionScreen
+import com.example.ui.components.PrivacyPolicyDialog
+import org.junit.*
+import org.junit.Assert.*
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.RuntimeEnvironment
+import org.robolectric.annotation.Config
+
+@RunWith(RobolectricTestRunner::class)
+@Config(sdk = [34], application = Application::class)
+class LocalizationSurfaceTest {
+    @get:Rule val compose = createComposeRule()
+    private val context get() = RuntimeEnvironment.getApplication()
+    @Before fun prepare() {
+        DynamicTranslations.loadSync(context)
+        AppLanguage.select(context, "es")
+    }
+    @Test fun `asset image accessibility exposes full names across language changes`() {
+        compose.setContent {
+            com.example.ui.components.AppAssetImage(
+                url = "file:///android_asset/missing-localization-test.png",
+                contentDescription = "Destello",
+                fallbackText = "Destello"
+            )
+        }
+        compose.onNodeWithContentDescription("Destello").assertExists()
+        compose.onNodeWithText("DE").assertDoesNotExist()
+        compose.runOnIdle { AppLanguage.select(context, "pt-BR") }
+        compose.onNodeWithContentDescription("Flash").assertExists()
+        compose.onNodeWithContentDescription("Destello").assertDoesNotExist()
+        compose.onNodeWithText("FL").assertDoesNotExist()
+        compose.onNodeWithText("DE").assertDoesNotExist()
+        compose.runOnIdle { AppLanguage.select(context, "es") }
+        compose.onNodeWithContentDescription("Destello").assertExists()
+        compose.onNodeWithText("DE").assertDoesNotExist()
+    }
+    @Test fun `empty asset exposes full localized name without reading decorative initials`() {
+        compose.setContent { com.example.ui.components.AppAssetImage(url = "", contentDescription = "Destello", fallbackText = "Destello") }
+        compose.onNodeWithContentDescription("Destello").assertExists()
+        compose.onNodeWithText("DE").assertDoesNotExist()
+        compose.runOnIdle { AppLanguage.select(context, "pt-BR") }
+        compose.onNodeWithContentDescription("Flash").assertExists()
+        compose.onNodeWithContentDescription("Destello").assertDoesNotExist()
+        compose.onNodeWithText("FL").assertDoesNotExist()
+        compose.runOnIdle { AppLanguage.select(context, "es-419") }
+        compose.onNodeWithContentDescription("Destello").assertExists()
+    }
+    @Test fun `styled sentence translates as a complete sentence in both directions`() {
+        val original = "Curación y Escudos"
+        compose.setContent {
+            Column {
+                FormattedWildRiftText(original)
+                Text(tr(AnnotatedString(original, spanStyles = listOf(AnnotatedString.Range(SpanStyle(fontWeight = FontWeight.Bold), 0, 8)))))
+            }
+        }
+        compose.onAllNodesWithText(original).assertCountEquals(2)
+        compose.runOnIdle { AppLanguage.select(context, "pt") }
+        compose.onAllNodesWithText("Curação e Escudos").assertCountEquals(2)
+        compose.onAllNodesWithText(original).assertCountEquals(0)
+        compose.runOnIdle { AppLanguage.select(context, "es") }
+        compose.onAllNodesWithText(original).assertCountEquals(2)
+        compose.onAllNodesWithText("Curação e Escudos").assertCountEquals(0)
+    }
+    @Test fun `avatar catalog follows language changes without reopening`() {
+        compose.setContent { com.example.ui.theme.MyApplicationTheme { com.example.ui.components.AvatarSelectionBottomSheet({}, {}) } }
+        compose.onNodeWithText("Avatares Exclusivos de League of Legends").assertExists()
+        compose.runOnIdle { AppLanguage.select(context, "pt-BR") }
+        compose.onNodeWithText("Avatares exclusivos de League of Legends").assertExists()
+        compose.onNodeWithText("Poro Guardião").assertExists()
+        compose.runOnIdle { AppLanguage.select(context, "es-419") }
+        compose.onNodeWithText("Avatares Exclusivos de League of Legends").assertExists()
+        compose.onNodeWithText("Poro Guardián").assertExists()
+    }
+
+    @Test fun `theme catalog follows language changes without reopening`() {
+        compose.setContent { com.example.ui.theme.MyApplicationTheme { com.example.ui.components.ThemeCustomizationBottomSheet(onDismiss = {}) } }
+        compose.onNodeWithText("Personalización de Temas").assertExists()
+        compose.runOnIdle { AppLanguage.select(context, "pt") }
+        compose.onNodeWithText("Personalização de Temas").assertExists()
+        compose.onNodeWithText("Personalización de Temas").assertDoesNotExist()
+        compose.runOnIdle { AppLanguage.select(context, "es") }
+        compose.onNodeWithText("Personalización de Temas").assertExists()
+    }
+
+    @Test fun `FAQ screen updates its actual questions and headings immediately`() {
+        compose.setContent {
+            val language by AppLanguage.current.collectAsState()
+            CompositionLocalProvider(LocalLanguage provides language) { FAQScreen(onNavigateBack = {}) }
+        }
+        compose.onNodeWithText("Preguntas Frecuentes").assertExists()
+        compose.runOnIdle { AppLanguage.select(context, "pt") }
+        compose.onNodeWithText("Perguntas Frequentes").assertExists()
+        compose.onNodeWithText("Como funciona o overlay flutuante durante a partida?").assertExists()
+        compose.onNodeWithText("¿Cómo funciona el overlay flotante durante la partida?").assertDoesNotExist()
+        compose.runOnIdle { AppLanguage.select(context, "es") }
+        compose.onNodeWithText("Preguntas Frecuentes").assertExists()
+        compose.onNodeWithText("Perguntas Frequentes").assertDoesNotExist()
+    }
+    @Test fun `legacy region resolves to Global without a selector`() {
+        assertEquals("GLOBAL", com.example.data.sync.MetaRegion.normalize("CN"))
+        assertEquals(listOf("GLOBAL"), com.example.data.sync.MetaRegion.available)
+    }
+
+    @Test fun `standalone catalog fields and cached advice follow both language switches`() {
+        val champion = com.example.model.Champion(name = "Hwei", skills = listOf(
+            com.example.model.ChampionSkill(slot = "1", name = "Desastre", namePt = "Desastre")
+        ))
+        compose.setContent {
+            val language = currentAppLanguage()
+            val analysis = remember(language) {
+                CoachingGenerator.generateTacticalAnalysis(champion, com.example.model.LaneRole.MID, language)
+            }
+            Column {
+                Text(com.example.model.LaneRole.MID.getLocalizedName(language))
+                Text(analysis)
+            }
+        }
+        compose.onNodeWithText("Línea Central").assertExists()
+        compose.runOnIdle { AppLanguage.select(context, "pt-BR") }
+        compose.onNodeWithText("Rota do Meio").assertExists()
+        compose.onNodeWithText("sua H1 (Desastre)", substring = true).assertExists()
+        compose.onNodeWithText("Línea Central", substring = true).assertDoesNotExist()
+        compose.runOnIdle { AppLanguage.select(context, "es") }
+        compose.onNodeWithText("Línea Central").assertExists()
+        compose.onNodeWithText("su H1 (Desastre)", substring = true).assertExists()
+        compose.onNodeWithText("Rota do Meio", substring = true).assertDoesNotExist()
+    }
+
+    @Test fun `Portuguese locale variants are normalized for model fields`() {
+        compose.setContent {
+            CompositionLocalProvider(LocalLanguage provides "pt-BR") {
+                Text(com.example.model.LaneRole.MID.getLocalizedName(currentAppLanguage()))
+            }
+        }
+        compose.onNodeWithText("Rota do Meio").assertExists()
+        compose.onNodeWithText("Línea Central").assertDoesNotExist()
+    }
+
+    @Test fun `initial Portuguese selection opens the complete information panel in Portuguese`() {
+        compose.setContent {
+            var selected by remember { mutableStateOf(false) }
+            Box(Modifier.width(360.dp).height(640.dp)) {
+            if (selected) {
+                InfoScreen(onNavigateBack = {}, onNavigateToFAQ = {})
+            } else {
+                LanguageSelectionScreen { language ->
+                    AppLanguage.select(context, language)
+                    selected = true
+                }
+            }
+            }
+        }
+        compose.onNodeWithText("Portugués").performSemanticsAction(SemanticsActions.OnClick) { it() }
+        compose.onNodeWithText("Continuar em Português").performSemanticsAction(SemanticsActions.OnClick) { it() }
+        compose.runOnIdle { assertEquals("pt", AppLanguage.current.value) }
+        compose.onNodeWithText("Informação").assertExists()
+        compose.onNodeWithText("Información").assertDoesNotExist()
+        compose.onNodeWithText("1. Compatibilidade e informações da atualização").performScrollTo().assertExists()
+        compose.onNodeWithText("Passo 1: Configure suas Rotas de Jogo").performScrollTo().assertExists()
+        compose.onNodeWithText("Passo 4: Consulta de Builds e Runas").performScrollTo().assertExists()
+        compose.onNodeWithText("Informações Legais e Privacidade").performScrollTo().assertExists()
+        compose.onNodeWithText("Todos os direitos reservados.", substring = true).performScrollTo().assertExists()
+        compose.onAllNodesWithText("Compilação", substring = true).assertCountEquals(2)
+
+        compose.runOnIdle { AppLanguage.select(context, "es") }
+        compose.onNodeWithText("Información").assertExists()
+        compose.onNodeWithText("Paso 1: Configura tus Líneas de Juego").performScrollTo().assertExists()
+        compose.onNodeWithText("Passo 1: Configure suas Rotas de Jogo").assertDoesNotExist()
+        compose.runOnIdle { AppLanguage.select(context, "pt-BR") }
+        compose.onNodeWithText("Passo 1: Configure suas Rotas de Jogo").assertExists()
+        compose.onNodeWithText("Paso 1: Configura tus Líneas de Juego").assertDoesNotExist()
+    }
+
+    @Test fun `mandatory legal information starts in Portuguese on every tab`() {
+        AppLanguage.select(context, "pt")
+        compose.setContent { PrivacyPolicyDialog(isMandatoryAcceptance = true, onDismiss = {}) }
+        compose.onNodeWithText("Informações Legais").assertIsDisplayed()
+        compose.onNodeWithText("1. Quais dados coletamos e por quê").assertExists()
+        compose.onNodeWithText("Termos").performClick()
+        compose.onNodeWithText("1. Aceitação dos Termos").assertExists()
+        compose.onNodeWithText("Terceiros").performClick()
+        compose.onNodeWithText("1. Projeto independente da Riot Games").assertExists()
+        compose.onNodeWithText("Aceitar e Entrar").assertIsDisplayed()
+        compose.onNodeWithText("Aceptar y Entrar").assertDoesNotExist()
+    }
+
+}

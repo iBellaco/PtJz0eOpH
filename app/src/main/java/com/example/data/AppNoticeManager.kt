@@ -645,108 +645,13 @@ object AppNoticeManager {
     }
 
     /**
-     * Aprueba un anuncio de patrocinador:
-     * Calcula su fecha de expiración según la duración especificada,
-     * lo marca como aprobado y habilitado, y lo sincroniza inmediatamente en Firestore.
-     */
-    fun approveSponsorNotice(context: Context, noticeId: String) {
-        val appContext = context.applicationContext
-        val current = _notices.value.toMutableList()
-        val index = current.indexOfFirst { it.id == noticeId }
-        val now = System.currentTimeMillis()
-        var expiresAt = 0L
-
-        if (index >= 0) {
-            val cur = current[index]
-            expiresAt = calculateExpirationMillis(now, cur.durationValue, cur.durationUnit)
-            val approved = cur.copy(
-                isApproved = true,
-                isEnabled = true,
-                approvedAtMillis = now,
-                expiresAtMillis = expiresAt
-            )
-            current[index] = approved
-            _notices.value = current
-            saveNoticesToPrefs(appContext, current)
-            pushNoticesToFirestore(appContext, current)
-        } else {
-            // Si no estaba en la lista local, intentar sincronizar primero
-            syncFromCloud(appContext)
-        }
-
-        // Actualizar en la colección pending_sponsor_ads
-        try {
-            val db = FirebaseFirestore.getInstance()
-            val updateMap = hashMapOf<String, Any>(
-                "isApproved" to true,
-                "isEnabled" to true,
-                "approvedAt" to now,
-                "approvedAtMillis" to now,
-                "expiresAtMillis" to if (expiresAt > 0L) expiresAt else (now + 24 * 3600 * 1000L)
-            )
-            db.collection("pending_sponsor_ads").document(noticeId)
-                .set(updateMap, SetOptions.merge())
-        } catch (_: Exception) {}
-
-        // Actualizar también en el almacenamiento local del patrocinador si está en este dispositivo
-        try {
-            val prefs = appContext.getSharedPreferences("sponsor_ads_prefs", Context.MODE_PRIVATE)
-            val jsonStr = prefs.getString("pending_ads", null)
-            if (!jsonStr.isNullOrBlank()) {
-                val array = org.json.JSONArray(jsonStr)
-                for (i in 0 until array.length()) {
-                    val obj = array.getJSONObject(i)
-                    if (obj.optString("id") == noticeId) {
-                        obj.put("isApproved", true)
-                        obj.put("isEnabled", true)
-                        obj.put("approvedAtMillis", now)
-                        obj.put("expiresAtMillis", expiresAt)
-                    }
-                }
-                prefs.edit().putString("pending_ads", array.toString()).apply()
-            }
-        } catch (_: Exception) {}
-    }
-
-    /**
-     * Rechaza un anuncio de patrocinador eliminándolo de los anuncios del sistema.
-     */
-    fun rejectSponsorNotice(context: Context, noticeId: String) {
-        val appContext = context.applicationContext
-        val current = _notices.value.filter { it.id != noticeId }
-        _notices.value = current
-        saveNoticesToPrefs(appContext, current)
-        pushNoticesToFirestore(appContext, current)
-
-        try {
-            val db = FirebaseFirestore.getInstance()
-            db.collection("pending_sponsor_ads").document(noticeId).delete()
-        } catch (_: Exception) {}
-
-        try {
-            val prefs = appContext.getSharedPreferences("sponsor_ads_prefs", Context.MODE_PRIVATE)
-            val jsonStr = prefs.getString("pending_ads", null)
-            if (!jsonStr.isNullOrBlank()) {
-                val array = org.json.JSONArray(jsonStr)
-                val newArray = org.json.JSONArray()
-                for (i in 0 until array.length()) {
-                    val obj = array.getJSONObject(i)
-                    if (obj.optString("id") != noticeId) {
-                        newArray.put(obj)
-                    }
-                }
-                prefs.edit().putString("pending_ads", newArray.toString()).apply()
-            }
-        } catch (_: Exception) {}
-    }
-
-    /**
      * Sincroniza anuncios de patrocinadores pendientes desde colecciones alternativas
      * (pending_sponsor_ads y SharedPreferences locales).
      */
     suspend fun syncPendingSponsors(context: Context) = withContext(Dispatchers.IO) {
         val appContext = context.applicationContext
         val listToAdd = mutableListOf<AppNotice>()
+        val rejectedIds = mutableSetOf<String>()
 
         // 1. Cargar desde SharedPreferences locales de patrocinador
         try {
@@ -756,6 +661,7 @@ object AppNoticeManager {
                 val array = org.json.JSONArray(jsonStr)
                 for (i in 0 until array.length()) {
                     val obj = array.getJSONObject(i)
+                    if (obj.optString("status").uppercase() in setOf("REJECTED", "REFUNDED") || obj.optLong("refundedAtMillis", 0L) > 0L) continue
                     listToAdd.add(
                         AppNotice(
                             id = obj.optString("id", UUID.randomUUID().toString()),
@@ -788,6 +694,10 @@ object AppNoticeManager {
                 else pending.whereEqualTo("userId", uid)).get().await()
             for (doc in snap.documents) {
                 val id = doc.getString("id") ?: doc.id
+                if (doc.getString("status") in setOf("REJECTED", "REFUNDED") || (doc.getLong("refundedAtMillis") ?: 0L) > 0L) {
+                    rejectedIds += id
+                    continue
+                }
                 val title = doc.getString("title") ?: "Publicidad"
                 val content = doc.getString("content") ?: ""
                 val videoUrl = doc.getString("videoUrl") ?: ""
@@ -826,6 +736,27 @@ object AppNoticeManager {
                 )
             }
         } catch (_: Exception) {}
+
+        if (rejectedIds.isNotEmpty()) {
+            val current = _notices.value.filterNot { it.id in rejectedIds }
+            if (current.size != _notices.value.size) {
+                _notices.value = current
+                saveNoticesToPrefs(appContext, current)
+            }
+            runCatching {
+                val prefs = appContext.getSharedPreferences("sponsor_ads_prefs", Context.MODE_PRIVATE)
+                val raw = prefs.getString("pending_ads", null)
+                if (!raw.isNullOrBlank()) {
+                    val source = org.json.JSONArray(raw)
+                    val clean = org.json.JSONArray()
+                    for (i in 0 until source.length()) {
+                        val obj = source.getJSONObject(i)
+                        if (obj.optString("id") !in rejectedIds) clean.put(obj)
+                    }
+                    prefs.edit().putString("pending_ads", clean.toString()).apply()
+                }
+            }
+        }
 
         if (listToAdd.isNotEmpty()) {
             val current = _notices.value.toMutableList()

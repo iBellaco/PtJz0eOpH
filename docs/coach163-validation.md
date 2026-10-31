@@ -1,0 +1,13 @@
+# Coach 1.1.10.163 / 879
+
+Las tarjetas de ventajas, debilidades y sinergias usan las listas completas del perfil de línea, con límites de 3 para invitados, 6 para cuentas iniciadas y 12 para premium. La clasificación combina las referencias editoriales existentes con 100 páginas adicionales disponibles de BestBuildWR, priorizando la línea elegida y después los encuentros en el mapa. Las fuentes no equivalen a estadísticas de duelos. El registro de procedencia está en `expanded-matchup-reference-audit.json`.
+
+Cada apertura correcta de un canal crea una operación persistente con un identificador único. La operación y el incremento del recuento se confirman juntos; los reintentos conservan el mismo identificador. Las aperturas no dependen del ciclo de vida de la pantalla. Se muestran los últimos datos conocidos durante una desconexión, indicando que no son un recuento en vivo. La aprobación ya no puede completarse silenciosamente sin acceso al contador. Los clics antiguos que no llegaron a almacenarse no pueden reconstruirse.
+
+La selección de botas permanece al abrir y cerrar sus detalles. Asignar Gratis retira el premium temporal y registra la retirada; los otros cambios de rol conservan el tiempo. El canje se restringe a los roles autorizados en la interfaz, la operación y las reglas. El gestor abre el historial real de la cuenta seleccionada sin marcar notificaciones del gestor como leídas. Los contactos y las respuestas ocultan correos a los moderadores; las respuestas nuevas no copian el correo del staff a la conversación compartida.
+
+El flujo compila y ofrece un APK de revisión antes de las revisiones de pantallas e instalación, que se ejecutan en paralelo. La publicación final sigue requiriendo las dos revisiones, la compilación y una firma persistente. Un APK de revisión con firma temporal no actualiza una instalación firmada con otra clave.
+
+Validación local: 142 campeones, 300 perfiles con 12 nombres únicos por categoría; 44 escenarios de permisos, concurrencia e idempotencia; catálogo e iconos locales sin cambios; política de firma verificada. Las revisiones renderizadas y del APK instalado se completan en GitHub antes de fusionar.
+
+Activación de clics en la nube: requiere desplegar las reglas y activar la retención de operaciones mediante `tools/activate-streamer-retention.sh` con una identidad autorizada. Este entorno no contiene esa identidad. Las pruebas con el emulador no se presentan como una comprobación de la nube real. La publicación actualizable necesita la clave original y su huella, según `persistent-apk-signing.md`; la integración disponible no puede escribir secretos ni variables de GitHub.
