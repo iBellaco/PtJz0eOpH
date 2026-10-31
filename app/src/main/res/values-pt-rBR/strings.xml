@@ -1,4 +1,6 @@
 <resources>
+    <string name="password_requirements_error">Use pelo menos 8 caracteres, uma letra maiúscula, uma minúscula, um número e um caractere especial, sem espaços.</string>
+    <string name="registration_created_retry_verification">Sua conta já foi criada, mas não foi possível concluir o envio de verificação. Entre para solicitar o link; não se cadastre novamente.</string>
     <string name="sponsor_rejected">Rejeitado</string>
     <string name="sponsor_refunded">Não publicado: essências reembolsadas</string>
     <string name="sponsor_paused">Aprovado, publicação pausada</string>

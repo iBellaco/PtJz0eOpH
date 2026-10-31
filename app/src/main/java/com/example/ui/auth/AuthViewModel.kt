@@ -149,6 +149,7 @@ class AuthViewModel : ViewModel() {
     }
 
     fun register() {
+        if (_uiState.value.isLoading) return
         if (_email.value.isBlank() || _password.value.isBlank() || _username.value.isBlank()) {
             _uiState.update { it.copy(error = "Por favor, completa todos los campos.") }
             return
@@ -165,8 +166,8 @@ class AuthViewModel : ViewModel() {
             _uiState.update { it.copy(error = "La contraseña debe tener mínimo 8 caracteres.") }
             return
         }
-        if (calculatePasswordStrength(_password.value) != PasswordStrength.STRONG) {
-            _uiState.update { it.copy(error = "Contraseña débil. Debe contener al menos 3 de: mayúsculas, minúsculas, números, caracteres especiales.") }
+        if (!PasswordPolicy.accepts(_password.value)) {
+            _uiState.update { it.copy(error = authText(com.example.R.string.password_requirements_error)) }
             return
         }
 
@@ -177,34 +178,27 @@ class AuthViewModel : ViewModel() {
 
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null, deletionCancelled = false) }
+            var accountCreated = false
             try {
                 val result = auth.createUserWithEmailAndPassword(_email.value.trim(), _password.value).await()
-                val firebaseUser = result.user
+                val firebaseUser = checkNotNull(result.user)
+                accountCreated = true
                 val profileUpdates = com.google.firebase.auth.UserProfileChangeRequest.Builder()
                     .setDisplayName(_username.value.trim())
                     .build()
-                firebaseUser?.updateProfile(profileUpdates)?.await()
-                firebaseUser?.sendEmailVerification()?.await()
-
-                if (firebaseUser != null) {
-                    val db = com.google.firebase.firestore.FirebaseFirestore.getInstance()
-                    val userDocRef = db.collection("users").document(firebaseUser.uid)
-                    val userData = mapOf(
-                        "uid" to firebaseUser.uid,
-                        "email" to (firebaseUser.email ?: _email.value.trim()),
-                        "name" to _username.value.trim(),
-                        "role" to "free",
-                        "createdAt" to System.currentTimeMillis(),
-                        "blueEssence" to 0L,
-                        "orangeEssence" to 0L,
-                        "last_active" to System.currentTimeMillis(),
-                        "is_online" to false
-                    )
-                    userDocRef.set(userData, com.google.firebase.firestore.SetOptions.merge()).await()
-                }
+                firebaseUser.updateProfile(profileUpdates).await()
+                firebaseUser.sendEmailVerification().await()
+                // The verified login creates the profile. Unverified accounts cannot write it.
 
                 _uiState.update { it.copy(isLoading = false, isSuccess = true) }
             } catch (e: Exception) {
+                if (e is kotlinx.coroutines.CancellationException) throw e
+                if (accountCreated) {
+                    auth.signOut()
+                    _uiState.update { it.copy(isLoading = false, authScreen = AuthScreenType.LOGIN,
+                        error = authText(com.example.R.string.registration_created_retry_verification)) }
+                    return@launch
+                }
                 val rawMsg = e.localizedMessage ?: ""
                 val errorMsg = when {
                     rawMsg.contains("email address is already in use", ignoreCase = true) || rawMsg.contains("already in use", ignoreCase = true) -> "Este correo electrónico ya está registrado. Evita crear múltiples cuentas con el mismo correo."
@@ -264,6 +258,11 @@ class AuthViewModel : ViewModel() {
         }
     }
 
+    private fun authText(id: Int): String = com.google.firebase.FirebaseApp.getInstance().applicationContext
+        .createConfigurationContext(android.content.res.Configuration().apply {
+            setLocale(com.example.util.AppLanguage.locale(com.example.util.AppLanguage.current.value))
+        }).getString(id)
+
     private fun calculatePasswordStrength(password: String): PasswordStrength {
         if (password.isEmpty()) return PasswordStrength.NONE
         if (password.length < 6) return PasswordStrength.WEAK
@@ -283,7 +282,7 @@ class AuthViewModel : ViewModel() {
         val points = listOf(hasUpper, hasLower, hasDigit, hasSpecial).count { it }
         
         return when {
-            password.length >= 8 && points >= 3 -> PasswordStrength.STRONG
+            PasswordPolicy.accepts(password) -> PasswordStrength.STRONG
             points >= 2 -> PasswordStrength.MEDIUM
             else -> PasswordStrength.WEAK
         }
