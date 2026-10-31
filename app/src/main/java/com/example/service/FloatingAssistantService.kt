@@ -365,6 +365,7 @@ class FloatingAssistantService : Service(), LifecycleOwner, ViewModelStoreOwner,
             return START_NOT_STICKY
         }
         if (ScreenCaptureManager.pendingMediaProjectionData != null) {
+            var mediaProjectionForegroundReady = false
             try {
                 val notification = buildForegroundNotification()
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
@@ -373,7 +374,7 @@ class FloatingAssistantService : Service(), LifecycleOwner, ViewModelStoreOwner,
                         NOTIFICATION_ID,
                         notification,
                         android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE or
-                        android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PROJECTION
+                            android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PROJECTION
                     )
                 } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                     androidx.core.app.ServiceCompat.startForeground(
@@ -385,13 +386,20 @@ class FloatingAssistantService : Service(), LifecycleOwner, ViewModelStoreOwner,
                 } else {
                     startForeground(NOTIFICATION_ID, notification)
                 }
+                mediaProjectionForegroundReady = true
             } catch (e: Exception) {
-                AppLogger.w("FloatingService", "Error asegurando tipo FGS: ${e.message}")
+                AppLogger.e("FloatingService", "Error asegurando tipo FGS para reintento de captura: ${e.message}", e)
             }
 
-            val success = initializePendingProjection()
-            if (success == true) {
-                AppLogger.d("FloatingService", "ScreenCaptureManager initialized from pending intent.")
+            if (mediaProjectionForegroundReady) {
+                val success = initializePendingProjection()
+                if (success) {
+                    AppLogger.d("FloatingService", "ScreenCaptureManager initialized from pending intent.")
+                }
+            } else {
+                ScreenCaptureManager.clearPendingMediaProjection()
+                overlayState.scanNoticeMessage =
+                    "Android no permitió activar la captura. El overlay sigue disponible; vuelve a autorizar la captura."
             }
         }
         return START_NOT_STICKY
