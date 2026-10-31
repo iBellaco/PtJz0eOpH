@@ -179,6 +179,40 @@ fun MainDraftingScreen(
 
     val lifecycleOwner = LocalLifecycleOwner.current
     var isAssistantActive by remember { mutableStateOf(SystemPermissionHelper.isServiceRunning(context)) }
+    var activationPolicyLoaded by remember { mutableStateOf(false) }
+    var activationButtonEnabled by remember { mutableStateOf(false) }
+    var serviceStartPending by remember { mutableStateOf(false) }
+    DisposableEffect(Unit) {
+        val registration = com.example.data.OverlayAccessPolicy.observeActivation { enabled ->
+            activationButtonEnabled = enabled
+            activationPolicyLoaded = true
+        }
+        onDispose { registration.remove() }
+    }
+    LaunchedEffect(activationPolicyLoaded, activationButtonEnabled) {
+        if (activationPolicyLoaded && !activationButtonEnabled) {
+            serviceStartPending = false
+            ScreenCaptureManager.clearPendingMediaProjection()
+            if (SystemPermissionHelper.isServiceRunning(context)) {
+                SystemPermissionHelper.stopFloatingService(context)
+            }
+            isAssistantActive = false
+        }
+    }
+    LaunchedEffect(serviceStartPending) {
+        if (serviceStartPending) {
+            repeat(12) {
+                kotlinx.coroutines.delay(250)
+                if (SystemPermissionHelper.isServiceRunning(context)) {
+                    isAssistantActive = true
+                    serviceStartPending = false
+                    return@LaunchedEffect
+                }
+            }
+            serviceStartPending = false
+            Toast.makeText(context, com.example.R.string.overlay_activation_start_failed, Toast.LENGTH_LONG).show()
+        }
+    }
     var showPermissionDialog by remember { mutableStateOf(false) }
     var showThemeDialog by remember { mutableStateOf(false) }
     var showPlansDialog by remember { mutableStateOf(false) }
@@ -203,11 +237,17 @@ fun MainDraftingScreen(
     val mediaProjectionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
     ) { result ->
-        if (result.resultCode == Activity.RESULT_OK && result.data != null) {
+        if (result.resultCode == Activity.RESULT_OK && result.data != null &&
+            activationPolicyLoaded && activationButtonEnabled) {
             ScreenCaptureManager.pendingMediaProjectionResultCode = result.resultCode
             ScreenCaptureManager.pendingMediaProjectionData = result.data
-            SystemPermissionHelper.startFloatingService(context)
-            isAssistantActive = true
+            if (SystemPermissionHelper.startFloatingService(context)) {
+                serviceStartPending = true
+            } else {
+                ScreenCaptureManager.clearPendingMediaProjection()
+                isAssistantActive = SystemPermissionHelper.isServiceRunning(context)
+                Toast.makeText(context, com.example.R.string.overlay_activation_start_failed, Toast.LENGTH_LONG).show()
+            }
         } else {
             // La cancelación no debe dejar un token pendiente ni apagar un overlay
             // que ya estaba funcionando. Se comunica el estado para que el usuario
@@ -259,6 +299,7 @@ fun MainDraftingScreen(
     }
 
     val toggleAssistant: () -> Unit = {
+        if (activationPolicyLoaded && activationButtonEnabled && !serviceStartPending) {
         com.example.ui.components.NoticeMediaUtils.pauseAndMuteAll()
         if (isAssistantActive) {
             SystemPermissionHelper.stopFloatingService(context)
@@ -269,6 +310,7 @@ fun MainDraftingScreen(
             } else {
                 showCaptureDisclosure = true
             }
+        }
         }
     }
 
@@ -688,13 +730,15 @@ fun MainDraftingScreen(
                 HextechOrbButton(
                     isActive = isAssistantActive,
                     onToggle = toggleAssistant,
-                    enabled = true
+                    enabled = activationPolicyLoaded && activationButtonEnabled && !serviceStartPending
                 )
 
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Text(
-                    text = com.example.util.tr(if (isAssistantActive) tr("Asistente Hextech Activo • Toca la cámara flotante")
+                    text = if (activationPolicyLoaded && !activationButtonEnabled)
+                        androidx.compose.ui.res.stringResource(com.example.R.string.overlay_activation_disabled)
+                    else com.example.util.tr(if (isAssistantActive) tr("Asistente Hextech Activo • Toca la cámara flotante")
                            else tr("Presiona ACTIVAR para iniciar el Asistente Flotante")),
                     color = if (isAssistantActive) HextechCyan else TextMuted,
                     fontSize = 12.sp,
@@ -802,12 +846,18 @@ fun MainDraftingScreen(
                 confirmButton = {
                     Button(onClick = {
                         showCaptureDisclosure = false
-                        val manager = context.getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
-                        // Android 14+ puede autorizar una aplicación concreta o toda la
-                        // pantalla. No se fuerza el display completo para conservar ambas opciones.
-                        val captureIntent = manager.createScreenCaptureIntent()
-                        mediaProjectionLauncher.launch(captureIntent)
-                    }, modifier = Modifier.heightIn(min = 48.dp).testTag("capture_disclosure_continue")) {
+                        if (activationPolicyLoaded && activationButtonEnabled) {
+                            try {
+                                val manager = context.getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
+                                // Android 14+ permite capturar una aplicación o toda la pantalla.
+                                mediaProjectionLauncher.launch(manager.createScreenCaptureIntent())
+                            } catch (e: RuntimeException) {
+                                com.example.util.AppLogger.e("MainDraftingScreen", "No se pudo pedir captura", e)
+                                Toast.makeText(context, com.example.R.string.overlay_activation_start_failed, Toast.LENGTH_LONG).show()
+                            }
+                        }
+                    }, enabled = activationPolicyLoaded && activationButtonEnabled,
+                        modifier = Modifier.heightIn(min = 48.dp).testTag("capture_disclosure_continue")) {
                         Text(com.example.util.localizedString(com.example.R.string.legal_capture_continue))
                     }
                 },

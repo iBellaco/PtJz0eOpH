@@ -265,8 +265,10 @@ class FloatingAssistantService : Service(), LifecycleOwner, ViewModelStoreOwner,
             createNotificationChannel()
             val notification = buildForegroundNotification()
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-                val fgsType = android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE or
-                    (if (hasPendingCapture) android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PROJECTION else 0)
+                // Algunos fabricantes rechazan combinar ambos tipos. Captura requiere solo MEDIA_PROJECTION.
+                val fgsType = if (hasPendingCapture)
+                    android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PROJECTION
+                else android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE
                 androidx.core.app.ServiceCompat.startForeground(this, NOTIFICATION_ID, notification, fgsType)
                 mediaProjectionForegroundReady = true
             } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && hasPendingCapture) {
@@ -373,8 +375,7 @@ class FloatingAssistantService : Service(), LifecycleOwner, ViewModelStoreOwner,
                         this,
                         NOTIFICATION_ID,
                         notification,
-                        android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE or
-                            android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PROJECTION
+                        android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PROJECTION
                     )
                 } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                     androidx.core.app.ServiceCompat.startForeground(
