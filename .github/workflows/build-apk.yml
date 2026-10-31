@@ -1,7 +1,7 @@
 name: Build and Release APK
 concurrency:
   group: coach-apk-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 permissions:
   actions: write
   contents: write
@@ -643,7 +643,7 @@ jobs:
         retention-days: 14
   scanner-sequence-audit:
     needs: native-name-sequence
-    if: always() && needs.native-name-sequence.result != 'skipped'
+    if: always() && needs.native-name-sequence.result != 'skipped' && needs.native-name-sequence.result != 'cancelled'
     runs-on: ubuntu-latest
     steps:
     - *id001
@@ -853,6 +853,7 @@ jobs:
   push:
     branches:
     - main
+    - coach-validacion
   pull_request:
     branches:
     - main

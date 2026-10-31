@@ -1,0 +1,10 @@
+# Auditoría Coach 1.1.10.264
+
+- Build: 980.
+- Selecciones 1–9: una imagen compuesta reúne diez franjas de títulos con separadores y máscaras locales. Una sola lectura sustituye diez lecturas secuenciales; el recorrido rápido omite la pantalla completa, hechizos y retratos. Conserva dos muestras y las validaciones de títulos para evitar seleccionar nombres de jugadores o líneas.
+- Sincronización adicional: se programa 1.500 ms después de terminar la lectura completa; las lecturas rápidas no quedan relegadas por la duración de los recorridos anteriores.
+- Décima selección: diferencia un retrato estable provisional de la selección definitiva. La vista previa puede reemplazarse; la confirmación definitiva detiene Auto-Scan. La desaparición exige dos fotogramas sin los slots y no acepta un único círculo residual como una pantalla de draft. Una novena confirmación tardía también arma este cierre.
+- Baneos: cada identidad confirmada permanece hasta Vaciar. Cambios de imagen, muestras vacías, reanudación y calibración conservan los baneos; nuevos candidatos que ya son selecciones se descartan antes de confirmarlos.
+- Pruebas: cierre automático con nueve selecciones, sustitución de vista previa, diez identidades diferentes y confirmación definitiva; cierre tardío y pantalla real con un solo círculo residual; persistencia de baneos entre muestras y calibraciones. La prueba instalada compara lectura completa y rápida sobre la captura real de Poco y conserva las mismas expectativas de nombres, posiciones y recortes. Verifica el cierre del HUD tras el último retrato en Red Magic.
+- Archivos: DraftNameAtlas, DraftVisionScanner, DraftSyncCadence, DraftSlotLifecycle, LiteRTVisionClassifier, BannedPortraitScanner, OverlayState, ConfirmedLastPickHud, FloatingOverlayContent, pruebas/fixture, selectores tempranos, comprobación instalada y versión Gradle.
+- Validación de entrega: exige pruebas unitarias, lint, pantallas ES/PT y APK release instalado ES/PT, firma persistente y ofuscación R8 antes de fusionar. Las capturas automatizadas no sustituyen la comprobación física en los teléfonos.

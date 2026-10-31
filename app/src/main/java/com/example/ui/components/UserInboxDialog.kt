@@ -120,8 +120,10 @@ fun UserInboxDialog(
         listeners += db.collection("economy_requests").document(userUid).addSnapshotListener { snapshot, error ->
             if (error == null) {
                 val status = snapshot?.getString("status")
+                val payload = snapshot?.get("payload") as? Map<*, *>
+                val isSponsor = payload?.get("action") == "SPONSOR"
                 val operationId = snapshot?.getString("operationId").orEmpty()
-                economyPendingMessage = if (status in setOf("PENDING", "PROCESSING", "REVIEW") && operationId.isNotBlank())
+                economyPendingMessage = if (!isSponsor && status in setOf("PENDING", "PROCESSING", "REVIEW") && operationId.isNotBlank())
                     mapOf("id" to "economy_pending_$operationId", "title" to if (status == "REVIEW") "Solicitud requiere revisión" else "Solicitud pendiente",
                         "content" to if (status == "REVIEW") "Tu solicitud requiere revisión. Contacta con Soporte; no la repitas."
                             else "Tienes una solicitud pendiente. Se procesa automáticamente; no debes enviarla otra vez.",
@@ -262,6 +264,12 @@ fun UserInboxDialog(
     fun deleteMessage(id: String) {
         if (!com.example.data.SupportTicketAccess.isAdmin()) return
         val message = messages.find { it["id"] == id } ?: return
+        if (id.startsWith("economy_pending_")) {
+            deletedIds = deletedIds + id
+            inboxPrefs.edit().putStringSet("deleted_ids", deletedIds).apply()
+            economyPendingMessage = null
+            return
+        }
         if (FeedbackRepository.isSupportMessage(message)) return
         val reportId = (message["reportId"] as? String).orEmpty()
         coroutineScope.launch {

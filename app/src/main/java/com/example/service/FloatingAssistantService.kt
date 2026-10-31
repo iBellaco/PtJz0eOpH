@@ -254,14 +254,68 @@ class FloatingAssistantService : Service(), LifecycleOwner, ViewModelStoreOwner,
 
     override fun onCreate() {
         super.onCreate()
+
+        // Android 8+ exige promover rápidamente el servicio iniciado con
+        // startForegroundService(). Hacerlo antes de inicializar ML Kit,
+        // Firestore o el escáner evita que Android 16/OEM cierre el servicio
+        // durante un arranque lento.
+        val hasPendingCapture = ScreenCaptureManager.pendingMediaProjectionData != null
+        var mediaProjectionForegroundReady = !hasPendingCapture
+        try {
+            createNotificationChannel()
+            val notification = buildForegroundNotification()
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                val fgsType = android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE or
+                    (if (hasPendingCapture) android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PROJECTION else 0)
+                androidx.core.app.ServiceCompat.startForeground(this, NOTIFICATION_ID, notification, fgsType)
+                mediaProjectionForegroundReady = true
+            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && hasPendingCapture) {
+                androidx.core.app.ServiceCompat.startForeground(
+                    this,
+                    NOTIFICATION_ID,
+                    notification,
+                    android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PROJECTION
+                )
+                mediaProjectionForegroundReady = true
+            } else {
+                startForeground(NOTIFICATION_ID, notification)
+                mediaProjectionForegroundReady = Build.VERSION.SDK_INT < Build.VERSION_CODES.Q || !hasPendingCapture
+            }
+        } catch (e: Exception) {
+            AppLogger.e("FloatingService", "No se pudo iniciar el tipo foreground requerido: ${e.message}", e)
+            // Mantener el overlay disponible sin captura si el fabricante rechaza
+            // el tipo mediaProjection. Nunca pedir getMediaProjection sin haber
+            // promovido correctamente el servicio con ese tipo.
+            try {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                    androidx.core.app.ServiceCompat.startForeground(
+                        this,
+                        NOTIFICATION_ID,
+                        buildForegroundNotification(),
+                        android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE
+                    )
+                } else {
+                    startForeground(NOTIFICATION_ID, buildForegroundNotification())
+                }
+            } catch (fallbackError: Exception) {
+                AppLogger.e("FloatingService", "También falló el foreground de respaldo", fallbackError)
+                ScreenCaptureManager.clearPendingMediaProjection()
+                stopSelf()
+                return
+            }
+            mediaProjectionForegroundReady = false
+            ScreenCaptureManager.clearPendingMediaProjection()
+        }
+
         com.example.data.sync.GlobalMetaSyncService.startLive(this, "overlay")
         serviceScope.launch {
             com.example.util.AppUpdateManager.updateInfo.collect { update ->
                 if (update?.isMandatory == true && update.isUpdateAvailable) stopSelf()
             }
         }
+
         try {
-            // Desactivar visor de depuración por defecto al iniciar o reabrir el overlay
+            // Desactivar visor de depuración por defecto al iniciar o reabrir el overlay.
             com.example.service.screen.DraftVisionScanner.showCalibrationBoxes.value = false
             com.example.service.screen.DraftVisionScanner.initCalibration(applicationContext)
             serviceScope.launch(kotlinx.coroutines.Dispatchers.Default) {
@@ -282,54 +336,13 @@ class FloatingAssistantService : Service(), LifecycleOwner, ViewModelStoreOwner,
                         .notify(NOTIFICATION_ID, buildForegroundNotification())
                 }
             }
-            createNotificationChannel()
-            val notification = buildForegroundNotification()
-            val hasPendingCapture = ScreenCaptureManager.pendingMediaProjectionData != null
-            try {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-                    val fgsType = if (hasPendingCapture) {
-                        android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE or
-                        android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PROJECTION
-                    } else {
-                        android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE
-                    }
-                    androidx.core.app.ServiceCompat.startForeground(
-                        this,
-                        NOTIFICATION_ID,
-                        notification,
-                        fgsType
-                    )
-                } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                    if (hasPendingCapture) {
-                        androidx.core.app.ServiceCompat.startForeground(
-                            this,
-                            NOTIFICATION_ID,
-                            notification,
-                            android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PROJECTION
-                        )
-                    } else {
-                        startForeground(NOTIFICATION_ID, notification)
-                    }
-                } else {
-                    startForeground(NOTIFICATION_ID, notification)
-                }
-            } catch (e: Exception) {
-                AppLogger.w("FloatingService", "Fallback foreground service start: ${e.message}")
-                try {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-                        androidx.core.app.ServiceCompat.startForeground(
-                            this,
-                            NOTIFICATION_ID,
-                            notification,
-                            android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE
-                        )
-                    } else {
-                        startForeground(NOTIFICATION_ID, notification)
-                    }
-                } catch (_: Exception) {}
-            }
 
-            initializePendingProjection()
+            if (hasPendingCapture && mediaProjectionForegroundReady) {
+                initializePendingProjection()
+            } else if (hasPendingCapture) {
+                overlayState.scanNoticeMessage =
+                    "Android no permitió activar la captura. El overlay sigue disponible; vuelve a autorizar la captura."
+            }
 
             // La política administrativa oculta botones opcionales del Hub;
             // nunca debe bloquear el overlay ni el escáner completo.
@@ -337,6 +350,7 @@ class FloatingAssistantService : Service(), LifecycleOwner, ViewModelStoreOwner,
             registerComponentCallbacks(this@FloatingAssistantService)
         } catch (e: Exception) {
             AppLogger.e("FloatingService", "Error starting floating service", e)
+            stopSelf()
         }
     }
 
@@ -351,6 +365,7 @@ class FloatingAssistantService : Service(), LifecycleOwner, ViewModelStoreOwner,
             return START_NOT_STICKY
         }
         if (ScreenCaptureManager.pendingMediaProjectionData != null) {
+            var mediaProjectionForegroundReady = false
             try {
                 val notification = buildForegroundNotification()
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
@@ -359,7 +374,7 @@ class FloatingAssistantService : Service(), LifecycleOwner, ViewModelStoreOwner,
                         NOTIFICATION_ID,
                         notification,
                         android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE or
-                        android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PROJECTION
+                            android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PROJECTION
                     )
                 } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                     androidx.core.app.ServiceCompat.startForeground(
@@ -371,13 +386,20 @@ class FloatingAssistantService : Service(), LifecycleOwner, ViewModelStoreOwner,
                 } else {
                     startForeground(NOTIFICATION_ID, notification)
                 }
+                mediaProjectionForegroundReady = true
             } catch (e: Exception) {
-                AppLogger.w("FloatingService", "Error asegurando tipo FGS: ${e.message}")
+                AppLogger.e("FloatingService", "Error asegurando tipo FGS para reintento de captura: ${e.message}", e)
             }
 
-            val success = initializePendingProjection()
-            if (success == true) {
-                AppLogger.d("FloatingService", "ScreenCaptureManager initialized from pending intent.")
+            if (mediaProjectionForegroundReady) {
+                val success = initializePendingProjection()
+                if (success) {
+                    AppLogger.d("FloatingService", "ScreenCaptureManager initialized from pending intent.")
+                }
+            } else {
+                ScreenCaptureManager.clearPendingMediaProjection()
+                overlayState.scanNoticeMessage =
+                    "Android no permitió activar la captura. El overlay sigue disponible; vuelve a autorizar la captura."
             }
         }
         return START_NOT_STICKY
