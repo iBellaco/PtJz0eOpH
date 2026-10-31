@@ -266,7 +266,7 @@ class FloatingAssistantService : Service(), LifecycleOwner, ViewModelStoreOwner,
             val notification = buildForegroundNotification()
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
                 val fgsType = android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE or
-                    if (hasPendingCapture) android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PROJECTION else 0
+                    (if (hasPendingCapture) android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PROJECTION else 0)
                 androidx.core.app.ServiceCompat.startForeground(this, NOTIFICATION_ID, notification, fgsType)
                 mediaProjectionForegroundReady = true
             } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && hasPendingCapture) {
@@ -279,7 +279,7 @@ class FloatingAssistantService : Service(), LifecycleOwner, ViewModelStoreOwner,
                 mediaProjectionForegroundReady = true
             } else {
                 startForeground(NOTIFICATION_ID, notification)
-                mediaProjectionForegroundReady = !hasPendingCapture
+                mediaProjectionForegroundReady = Build.VERSION.SDK_INT < Build.VERSION_CODES.Q || !hasPendingCapture
             }
         } catch (e: Exception) {
             AppLogger.e("FloatingService", "No se pudo iniciar el tipo foreground requerido: ${e.message}", e)
