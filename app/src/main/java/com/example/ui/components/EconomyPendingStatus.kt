@@ -47,6 +47,7 @@ private fun observeRequest(): RequestView {
                 if (error != null) state = state.copy(loading = false, unavailable = true)
                 else {
                     val requests = snapshot?.documents.orEmpty().mapNotNull { it.data }
+                        .filter { it["status"] in setOf("PENDING", "PROCESSING", "REVIEW") }
                         .sortedWith(compareByDescending<Map<String, Any>> { it["status"] in setOf("PENDING", "PROCESSING", "REVIEW") }
                             .thenByDescending { (it["createdAt"] as? Timestamp)?.toDate()?.time ?: 0L })
                     state = RequestView(requests.firstOrNull(), false,
