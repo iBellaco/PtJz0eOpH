@@ -202,6 +202,47 @@ internal fun FloatingOverlayContent(
     var autoScanEnabled by state::autoScanEnabled
     var scanNoticeMessage by state::scanNoticeMessage
 
+    val geometryPreviewVisible by DraftVisionScanner.showCalibrationBoxes.collectAsStateWithLifecycle()
+    val previewConfiguration = androidx.compose.ui.platform.LocalConfiguration.current
+    // Refresh the shared geometry even when recognition is paused. A bounded pair
+    // of fresh frames also preserves the two-frame confirmation rule for bans.
+    // No device identity is used, and capture returns to its idle state afterwards.
+    LaunchedEffect(geometryPreviewVisible, autoScanEnabled, screenCaptureManager,
+        previewConfiguration.screenWidthDp, previewConfiguration.screenHeightDp) {
+        val previewCapture = screenCaptureManager ?: return@LaunchedEffect
+        if (!geometryPreviewVisible || autoScanEnabled || !previewCapture.isReady())
+            return@LaunchedEffect
+        withContext(Dispatchers.Default) {
+            val previewJob = kotlin.coroutines.coroutineContext[kotlinx.coroutines.Job]!!
+            repeat(2) {
+                if (!previewJob.isActive || state.autoScanEnabled || state.isScanning) return@withContext
+                val bitmap = kotlinx.coroutines.withTimeoutOrNull(800L) {
+                    var frame = previewCapture.captureCurrentFrame()
+                    while (frame == null) {
+                        delay(60L)
+                        frame = previewCapture.captureCurrentFrame()
+                    }
+                    frame
+                } ?: return@withContext
+                try {
+                    val pickedIds = (state.allies + state.enemies).filterNotNull().map { it.id }.toSet()
+                    val banFrame = DraftVisionScanner.captureBanFrame(bitmap, pickedIds)
+                    try {
+                        DraftVisionScanner.processBanFrame(banFrame, context) {
+                            previewJob.isActive && !state.autoScanEnabled && !state.isScanning &&
+                                DraftVisionScanner.showCalibrationBoxes.value
+                        }
+                    } finally { banFrame.bitmap.recycle() }
+                } catch (cancelled: kotlinx.coroutines.CancellationException) {
+                    throw cancelled
+                } catch (error: Exception) {
+                    AppLogger.w("DraftPreview", "Preview unavailable: ${error.javaClass.simpleName}")
+                } finally { bitmap.recycle() }
+                delay(300L)
+            }
+        }
+    }
+
     var isDraggingBubble by state::isDraggingBubble
     var dragAccumulatedY by state::dragAccumulatedY
     var isNearCloseThreshold by state::isNearCloseThreshold

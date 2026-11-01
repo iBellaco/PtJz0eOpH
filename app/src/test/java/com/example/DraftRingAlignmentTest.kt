@@ -17,6 +17,43 @@ import org.robolectric.annotation.GraphicsMode
 @Config(sdk=[34], application=Application::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class DraftRingAlignmentTest {
+    @Test fun insetColumnsAndHudSizesAreMeasuredWithoutModelCoordinates() {
+        // Synthetic rings, not a physical-device test or the tester's original capture.
+        for ((w, h) in listOf(1280 to 587, 1280 to 720, 1600 to 720, 1920 to 864)) {
+            for (hudScale in listOf(.8f, 1.2f)) {
+                val image = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
+                try {
+                    val canvas = android.graphics.Canvas(image)
+                    canvas.drawColor(android.graphics.Color.rgb(10, 15, 30))
+                    val paint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG)
+                    val base = VisionCalibrationConfig()
+                    for (ally in listOf(true, false)) for (slot in 0..4) {
+                        val x = w * if (ally) .125f else .906f
+                        val y = h * (if (ally) base.allySlotYRatios else base.enemySlotYRatios)[slot]
+                        val radius = h * .055f * hudScale
+                        paint.style = android.graphics.Paint.Style.FILL
+                        paint.color = android.graphics.Color.WHITE
+                        canvas.drawCircle(x, y, radius * .35f, paint)
+                        paint.style = android.graphics.Paint.Style.STROKE
+                        paint.strokeWidth = h * .006f
+                        paint.color = if (ally) android.graphics.Color.rgb(30,190,220)
+                            else android.graphics.Color.rgb(220,40,60)
+                        canvas.drawCircle(x, y, radius, paint)
+                    }
+                    val aligned = DraftRingAlignment.align(image, base, null)
+                    for (slot in 0..4) {
+                        assertEquals("$w x $h scale=$hudScale ally", .125f, aligned.getAllySlotX(slot), .008f)
+                        assertEquals("$w x $h scale=$hudScale rival", .906f, aligned.getEnemySlotX(slot), .008f)
+                        // Both renderer and recognizer consume these same measured circles.
+                        for (ally in listOf(true, false)) {
+                            val rect = com.example.service.screen.AdaptiveScreenLayoutEngine.calculateSlotCropRect(w,h,ally,slot,aligned)
+                            assertTrue(rect.left >= 0 && rect.right <= w && rect.top >= 0 && rect.bottom <= h)
+                        }
+                    }
+                } finally { image.recycle() }
+            }
+        }
+    }
     @Test fun twoIncoherentRingsCannotRescaleOrTranslateTheWholeColumn() {
         val ys = VisionCalibrationConfig().enemySlotYRatios
         assertEquals(ys, DraftRingAlignment.alignRows(ys,579,32,listOf(0 to 87,3 to 343)))
