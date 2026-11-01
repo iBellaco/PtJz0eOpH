@@ -18,7 +18,8 @@ import org.robolectric.Shadows.shadowOf
 import android.os.Looper
 
 @RunWith(RobolectricTestRunner::class)
-@Config(sdk = [34])
+// Exercise Android window/capture lifecycles without starting production sync workers.
+@Config(sdk = [34], application = android.app.Application::class)
 class FloatingWindowLifecycleTest {
     @Test fun captureStopsProducingWhileIdleAndResumesWithoutNewConsent() {
         val context = androidx.test.core.app.ApplicationProvider.getApplicationContext<android.content.Context>()
