@@ -47,6 +47,9 @@ class LiteRTViewerNavigationTest {
         AppLanguage.select(RuntimeEnvironment.getApplication(), language)
         renderOverlay(state)
         compose.onNodeWithTag("draft_unassigned_allies").assertIsDisplayed().assertTextEquals(expected)
+        val notice = compose.onNodeWithTag("draft_certainty").fetchSemanticsNode().boundsInRoot
+        val pending = compose.onNodeWithTag("draft_unassigned_allies").fetchSemanticsNode().boundsInRoot
+        assertTrue("The draft content must be below the notice, not painted underneath it", pending.top >= notice.bottom)
     }
 
     @Test fun `Spanish capture shortcuts preserve paused scan and detected draft`() = exerciseShortcuts("es", false)
@@ -99,12 +102,18 @@ class LiteRTViewerNavigationTest {
         }
     }
 
-    private fun renderOverlay(state: com.example.service.OverlayState) {
+    @Test fun `unavailable viewer policy hides capture shortcuts`() {
+        renderOverlay(overlayState(false), viewerAllowed = false)
+        compose.waitForIdle()
+        compose.onNodeWithTag("btn_live_vision_toggle").assertDoesNotExist()
+    }
+
+    private fun renderOverlay(state: com.example.service.OverlayState, viewerAllowed: Boolean = true) {
         compose.setContent {
             com.example.ui.theme.MyApplicationTheme {
                 com.example.service.FloatingOverlayContent(state, isLandscapeMode = false,
                     screenCaptureManager = null, onClose = {}, onDragDelta = { _, _, _, _ -> },
-                    onExpandedChange = {}, onCompactModeChange = {})
+                    onExpandedChange = {}, onCompactModeChange = {}, loadViewerAccess = { viewerAllowed })
             }
         }
     }

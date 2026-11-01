@@ -6,6 +6,10 @@ import org.junit.Assert.*
 import org.junit.Test
 
 class CoachRoutineRegressionTest {
+    @Test fun `last selections never wait for metadata even when overdue`() {
+        for (count in 8..10) assertFalse(DraftSyncCadence.metadataDue(60000, 0, count))
+        assertTrue(DraftSyncCadence.metadataDue(60000, 0, 7))
+    }
     @Test fun `metadata leaves time for fast title frames even after a slow scan`() {
         assertFalse(DraftSyncCadence.metadataDue(1000,1000))
         assertFalse(DraftSyncCadence.metadataDue(2499,1000))

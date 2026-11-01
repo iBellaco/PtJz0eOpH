@@ -156,6 +156,8 @@ jobs:
             --tests 'com.example.PasswordPolicyTest' \
             --tests 'com.example.PatchTierMovementTest' \
             --tests 'com.example.TierMovementRegressionTest' \
+            --tests 'com.example.CoachRoutineRegressionTest' \
+            --tests 'com.example.LiteRTViewerNavigationTest' \
             --tests 'com.example.service.FloatingWindowLifecycleTest' \
             --stacktrace --no-daemon --max-workers=1
 
@@ -191,7 +193,7 @@ jobs:
       - run: node --test server/economy/test/*.test.mjs
       - name: Comprobar envíos, moderación e idempotencia en emulador aislado
         working-directory: tests/firestore
-        run: npx firebase emulators:exec --only firestore,auth --project demo-coach-tests --config ../../firebase.json 'node economy-submission.test.mjs && node sponsor-review.test.mjs && node ../../server/economy/test/emulator.integration.mjs'
+        run: npx firebase emulators:exec --only firestore,auth --project demo-coach-tests --config ../../firebase.json 'node rules.test.mjs && node economy-submission.test.mjs && node sponsor-review.test.mjs && node ../../server/economy/test/emulator.integration.mjs'
 
   targeted-red-magic-release:
     if: github.event_name == 'workflow_dispatch' && inputs.scanner_regressions
