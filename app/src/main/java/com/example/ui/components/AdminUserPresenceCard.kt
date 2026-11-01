@@ -50,6 +50,9 @@ import com.example.ui.theme.TextPrimary
 import com.example.util.tr
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.delay
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 private data class PresenceMetrics(
     val registered: Int = 0,
@@ -108,6 +111,31 @@ fun AdminUserPresenceCard(modifier: Modifier = Modifier) {
         val active = (user["last_active"] as? Number)?.toLong()
             ?: (user["lastActiveTimestamp"] as? Number)?.toLong() ?: 0L
         return ((user["is_online"] as? Boolean) == true) && active > 0L && now - active in 0 until 10 * 60 * 1000L
+    }
+    fun lastActive(user: Map<String, Any>): Long = when (val value = user["last_active"] ?: user["lastActiveTimestamp"]) {
+        is Number -> value.toLong()
+        is com.google.firebase.Timestamp -> value.toDate().time
+        is Date -> value.time
+        is String -> value.toLongOrNull() ?: 0L
+        else -> 0L
+    }
+    @Composable
+    fun presenceLabel(user: Map<String, Any>): String {
+        if (online(user)) return tr("En línea")
+        val last = lastActive(user)
+        if (last <= 0L) return tr("Última conexión: sin registro")
+        val elapsed = (now - last).coerceAtLeast(0L)
+        val minute = 60_000L
+        val hour = 60 * minute
+        val day = 24 * hour
+        val relative = when {
+            elapsed < minute -> tr("hace menos de un minuto")
+            elapsed < hour -> tr("hace {0} min").replace("{0}", (elapsed / minute).toString())
+            elapsed < day -> tr("hace {0} h").replace("{0}", (elapsed / hour).toString())
+            elapsed < 7 * day -> tr("hace {0} d").replace("{0}", (elapsed / day).toString())
+            else -> SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault()).format(Date(last))
+        }
+        return tr("Última conexión: {0}").replace("{0}", relative)
     }
     fun countRole(role: String) = users.count { role in roles(it) }
     fun countRoleOnline(role: String) = users.count { role in roles(it) && online(it) }
@@ -188,7 +216,7 @@ fun AdminUserPresenceCard(modifier: Modifier = Modifier) {
             onDismissRequest = { selectedRole = null },
             title = { Text(title, color = HextechGold) },
             text = {
-                if (selectedUsers.isEmpty()) Text(tr("No hay usuarios conectados en esta sección."), color = TextMuted)
+                if (selectedUsers.isEmpty()) Text(tr("No hay usuarios en esta sección."), color = TextMuted)
                 else LazyColumn(modifier = Modifier.fillMaxWidth().fillMaxHeight(0.45f)) {
                     items(selectedUsers, key = { it["uid"]?.toString().orEmpty() }) { user ->
                         val displayName = (user["name"] ?: user["username"] ?: user["displayName"] ?: "Usuario").toString()
@@ -211,7 +239,7 @@ fun AdminUserPresenceCard(modifier: Modifier = Modifier) {
                                 (user["email"] as? String)?.takeIf { it.isNotBlank() }?.let {
                                     Text(it, color = TextMuted, fontSize = 10.sp)
                                 }
-                                Text(tr(if (isOnline) "En línea" else "Desconectado"),
+                                Text(presenceLabel(user),
                                     color = if (isOnline) HextechGreen else TextMuted, fontSize = 9.sp)
                             }
                             Icon(Icons.Default.ChevronRight, null, tint = HextechCyan, modifier = Modifier.size(18.dp))

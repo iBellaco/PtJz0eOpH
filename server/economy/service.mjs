@@ -103,6 +103,23 @@ export async function executeEconomy(db, auth, raw, clock = Date.now, {requested
       }
       const registry = await tx.get(db.doc('system_config/app_notices'));
       const notices = (registry.get('notices') ?? []).filter(n => n && n.id !== input.sponsorId);
+      // A direct moderation call can resolve an ad that was first submitted
+      // through the durable queue. Close that original row in this transaction
+      // so the sponsor does not keep seeing a stale request.
+      const sourceRows = await tx.get(db.collection('economy_requests')
+        .where('operationId', '==', input.sponsorId).limit(20));
+      const sourceOutcome = {operationId: input.sponsorId, status: 'COMPLETED',
+        result: {ok: true, resolvedByModeration: true, approved: input.approved},
+        completedAt: serverTime()};
+      for (const source of sourceRows.docs) {
+        const sourceData = source.data();
+        if (sourceData.userId && sourceData.payload?.action === 'SPONSOR' &&
+            ['PENDING', 'PROCESSING', 'REVIEW'].includes(sourceData.status)) {
+          tx.update(source.ref, {...sourceOutcome, lease: FieldValue.delete(), leaseUntil: FieldValue.delete()});
+          tx.set(db.doc(`economy_results/${sourceData.userId}~${input.sponsorId}`),
+            {...sourceOutcome, userId: sourceData.userId});
+        }
+      }
       if (input.approved) {
         const unit = (current.durationUnit ?? 'day').toString().toLowerCase();
         const unitMillis = {hour: 60 * 60 * 1000, day: DAY, week: 7 * DAY, month: 30 * DAY}[unit] ?? DAY;
