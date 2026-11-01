@@ -1,21 +1,47 @@
 package com.example
 
 import android.app.Application
+import androidx.room.Room
 import com.example.data.backup.BackupRestoreManager
 import com.example.data.local.AppDatabase
 import com.example.data.local.entity.SavedDraftEntity
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.*
+import org.junit.After
+import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
+import org.robolectric.annotation.SQLiteMode
 
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [34], application = Application::class)
+@SQLiteMode(SQLiteMode.Mode.NATIVE)
 class PersonalBackupRoundTripTest {
+    private lateinit var database: AppDatabase
+    private val instanceField get() = AppDatabase::class.java.getDeclaredField("INSTANCE").apply {
+        isAccessible = true
+    }
+
+    @Before fun createIsolatedDatabase() {
+        // Robolectric resets SQLite between methods, but Kotlin singletons survive.
+        // Give the production repository the same fresh database used by this test.
+        database = Room.inMemoryDatabaseBuilder(RuntimeEnvironment.getApplication(), AppDatabase::class.java)
+            .build()
+        instanceField.set(null, database)
+    }
+
+    @After fun closeIsolatedDatabase() {
+        try {
+            if (::database.isInitialized) database.close()
+        } finally {
+            instanceField.set(null, null)
+        }
+    }
+
     @Test fun rejectedBackupLeavesExistingHistoryUntouched() = runBlocking {
         val context = RuntimeEnvironment.getApplication()
         val dao = AppDatabase.getDatabase(context).draftDao()
