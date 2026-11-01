@@ -796,25 +796,6 @@ jobs:
            --title "$RELEASE_NAME" \
            --target "${{ github.sha }}" \
            --notes-file release_notes.md
-  cleanup-history:
-    if: always()
-    needs:
-    - build-apk
-    - core-tests
-    - rendered-audit
-    - installed-audit
-    - build-and-release
-    runs-on: ubuntu-latest
-    concurrency:
-      group: coach-actions-history
-      cancel-in-progress: false
-    steps:
-    - uses: actions/checkout@v5
-    - name: Keep at least 10 runs per workflow and 30 releases
-      uses: actions/github-script@v8
-      with:
-        script: |
-          await require('./.github/scripts/cleanup-completed-runs.cjs')({ github, context, core });
   workflow-report:
     if: always()
     needs:

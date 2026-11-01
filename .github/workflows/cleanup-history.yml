@@ -1,0 +1,29 @@
+name: Cleanup workflow history
+
+on:
+  workflow_run:
+    workflows:
+      - Build and Release APK
+    types:
+      - completed
+  workflow_dispatch:
+
+permissions:
+  actions: write
+  contents: write
+
+concurrency:
+  group: coach-actions-history
+  cancel-in-progress: false
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+      - name: Keep at least 10 runs per workflow and 30 releases
+        uses: actions/github-script@v8
+        with:
+          script: |
+            await require('./.github/scripts/cleanup-completed-runs.cjs')({ github, context, core });

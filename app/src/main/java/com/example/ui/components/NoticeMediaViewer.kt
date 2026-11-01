@@ -4,6 +4,7 @@ import com.example.ui.components.CoachButton as Button
 import com.example.ui.components.CoachIconButton as IconButton
 
 import com.example.util.tr
+import com.example.util.WebMediaPolicy
 
 import android.app.Activity
 import android.content.Context
@@ -74,6 +75,11 @@ object NoticeMediaUtils {
         if (url.isBlank()) return null
         val trimmed = url.trim()
 
+        if (trimmed.matches(Regex("^[a-zA-Z0-9_-]{11}$"))) return trimmed
+        if (!listOf("youtube.com", "youtube-nocookie.com", "youtu.be").any {
+                WebMediaPolicy.matches(trimmed, it)
+            }) return null
+
         // 1. Extracción mediante Uri nativo de Android
         try {
             val uri = Uri.parse(trimmed)
@@ -130,8 +136,8 @@ object NoticeMediaUtils {
 
     fun isYouTubeUrl(url: String): Boolean {
         val trimmed = url.trim()
-        return trimmed.contains("youtube.com", ignoreCase = true) ||
-               trimmed.contains("youtu.be", ignoreCase = true) ||
+        return WebMediaPolicy.matches(trimmed, "youtube.com") ||
+               WebMediaPolicy.matches(trimmed, "youtu.be") ||
                extractYouTubeVideoId(trimmed) != null
     }
 
@@ -141,10 +147,10 @@ object NoticeMediaUtils {
      */
     fun isWebVideoUrl(url: String): Boolean {
         val trimmed = url.trim().lowercase()
-        return trimmed.contains("vimeo.com") ||
-               trimmed.contains("streamable.com") ||
-               trimmed.contains("dailymotion.com") ||
-               trimmed.contains("twitch.tv") ||
+        return WebMediaPolicy.matches(trimmed, "vimeo.com") ||
+               WebMediaPolicy.matches(trimmed, "streamable.com") ||
+               WebMediaPolicy.matches(trimmed, "dailymotion.com") ||
+               WebMediaPolicy.matches(trimmed, "twitch.tv") ||
                (isYouTubeUrl(url) && extractYouTubeVideoId(url) == null)
     }
 
@@ -190,7 +196,7 @@ object NoticeMediaUtils {
         if (url.isBlank()) return true
         val trimmed = url.trim()
         if (trimmed.startsWith("content://") || trimmed.startsWith("file://") || trimmed.startsWith("data:image/") || trimmed.startsWith("data:video/")) return true
-        if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) return true
+        if (WebMediaPolicy.host(trimmed) != null) return true
         if (isYouTubeUrl(trimmed) || isWebVideoUrl(trimmed)) return true
         return false
     }
@@ -503,17 +509,17 @@ fun NoticeMediaViewer(
                                 mediaPlaybackRequiresUserGesture = false
                                 loadWithOverviewMode = true
                                 useWideViewPort = true
-                                allowFileAccess = true
-                                allowContentAccess = true
+                                allowFileAccess = false
+                                allowContentAccess = false
                                 setSupportZoom(false)
-                                mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
+                                mixedContentMode = WebSettings.MIXED_CONTENT_NEVER_ALLOW
                                 // Fixing YouTube Error 153: Emulate standard mobile Chrome browser
                                 userAgentString = "Mozilla/5.0 (Linux; Android 14; Mobile) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.6668.70 Mobile Safari/537.36"
                             }
                             webChromeClient = WebChromeClient()
                             webViewClient = object : WebViewClient() {
                                 override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
-                                    return false
+                                    return !WebMediaPolicy.allowsNavigation("https://www.youtube-nocookie.com", request?.url?.toString().orEmpty())
                                 }
                             }
                             val html = """
@@ -727,10 +733,10 @@ fun NoticeWebVideoPlayer(
                         mediaPlaybackRequiresUserGesture = false
                         loadWithOverviewMode = true
                         useWideViewPort = true
-                        allowFileAccess = true
-                        allowContentAccess = true
+                        allowFileAccess = false
+                        allowContentAccess = false
                         setSupportZoom(false)
-                        mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
+                        mixedContentMode = WebSettings.MIXED_CONTENT_NEVER_ALLOW
                         userAgentString = "Mozilla/5.0 (Linux; Android 14; Mobile) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.6668.70 Mobile Safari/537.36"
                     }
                     webChromeClient = object : WebChromeClient() {
@@ -739,11 +745,13 @@ fun NoticeWebVideoPlayer(
                         }
                     }
                     webViewClient = object : WebViewClient() {
+                        override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean =
+                            !WebMediaPolicy.allowsNavigation(webUrl, request?.url?.toString().orEmpty())
                         override fun onPageFinished(view: WebView?, url: String?) {
                             isBuffering = false
                         }
                     }
-                    loadUrl(webUrl)
+                    if (WebMediaPolicy.allowsVideo(webUrl)) loadUrl(webUrl)
                     webViewInstance = this
                 }
             },
