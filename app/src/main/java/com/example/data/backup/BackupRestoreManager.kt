@@ -2,6 +2,10 @@ package com.example.data.backup
 
 import android.content.Context
 import android.net.Uri
+import androidx.room.withTransaction
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import com.example.data.AccountProfile
 import com.example.data.AccountProfileManager
 import com.example.data.local.AppDatabase
@@ -70,9 +74,28 @@ data class ImportResult(
 
 object BackupRestoreManager {
 
+    internal const val MAX_BACKUP_BYTES = 8 * 1024 * 1024
+    private val restoreMutex = Mutex()
+
+    internal fun validatePayload(payload: WrTierListBackupPayload) {
+        require(payload.version == 1 && payload.app == "WildRiftCoach")
+        require(payload.profiles.size <= 100 && payload.drafts.size <= 10_000)
+        require(payload.profiles.map { it.id }.distinct().size == payload.profiles.size)
+        require(payload.profiles.all { it.id.isNotBlank() && it.id.length <= 256 && it.name.length <= 256 })
+        val ids = payload.drafts.filter { it.id != 0L }.map { it.id }
+        require(ids.distinct().size == ids.size)
+        require(payload.drafts.all {
+            it.id >= 0 && it.timestamp >= 0 && it.estimatedWinrate.isFinite() &&
+                it.estimatedWinrate in 0.0..100.0 && it.notes.length <= 100_000 &&
+                it.allyPicksJson.length <= 100_000 && it.enemyPicksJson.length <= 100_000 &&
+                json.parseToJsonElement(it.allyPicksJson) is kotlinx.serialization.json.JsonArray &&
+                json.parseToJsonElement(it.enemyPicksJson) is kotlinx.serialization.json.JsonArray
+        })
+    }
+
     private val json = Json {
         ignoreUnknownKeys = true
-        isLenient = true
+        isLenient = false
         encodeDefaults = true
         prettyPrint = true
     }
@@ -142,10 +165,14 @@ object BackupRestoreManager {
      *              If false, replaces all current profiles and drafts with the backup data.
      */
     suspend fun restoreFromJson(context: Context, rawJson: String, merge: Boolean = true): ImportResult = withContext(Dispatchers.IO) {
+        restoreMutex.withLock {
         try {
+            require(rawJson.length <= MAX_BACKUP_BYTES)
+            require(rawJson.toByteArray(Charsets.UTF_8).size <= MAX_BACKUP_BYTES)
             val payload = json.decodeFromString<WrTierListBackupPayload>(rawJson)
+            validatePayload(payload)
             if (payload.profiles.isEmpty() && payload.drafts.isEmpty()) {
-                return@withContext ImportResult(false, 0, 0, "El archivo no contiene perfiles ni historiales válidos.")
+                return@withLock ImportResult(false, 0, 0, "El archivo no contiene perfiles ni historiales válidos.")
             }
 
             AccountProfileManager.init(context)
@@ -164,23 +191,22 @@ object BackupRestoreManager {
                 if (payload.profiles.isNotEmpty()) payload.profiles else currentProfiles
             }
 
-            AccountProfileManager.importProfiles(context, finalProfiles, payload.activeProfileId)
-
             // 2. Process drafts
             val db = AppDatabase.getDatabase(context)
             val draftDao = db.draftDao()
 
+            var draftsAddedCount = 0
+            db.withTransaction {
             if (!merge) {
                 draftDao.clearAllDrafts()
             }
 
             val existingDrafts = draftDao.getAllDrafts().firstOrNull() ?: emptyList()
-            var draftsAddedCount = 0
+            val known = existingDrafts.map { Triple(it.timestamp, it.myChampionName, it.userRole) }.toMutableSet()
 
             payload.drafts.forEach { item ->
-                val alreadyExists = merge && existingDrafts.any { 
-                    it.timestamp == item.timestamp && it.myChampionName == item.myChampionName && it.userRole == item.userRole 
-                }
+                val key = Triple(item.timestamp, item.myChampionName, item.userRole)
+                val alreadyExists = merge && !known.add(key)
 
                 if (!alreadyExists) {
                     val entity = SavedDraftEntity(
@@ -215,6 +241,8 @@ object BackupRestoreManager {
                     draftsAddedCount++
                 }
             }
+            }
+            AccountProfileManager.importProfiles(context, finalProfiles, payload.activeProfileId)
 
             ImportResult(
                 success = true,
@@ -222,11 +250,14 @@ object BackupRestoreManager {
                 draftsImported = draftsAddedCount,
                 message = "Restauración completada con éxito."
             )
+        } catch (cancelled: CancellationException) {
+            throw cancelled
         } catch (e: Exception) {
             ImportResult(
                 success = false,
-                message = "Error al procesar el archivo JSON: ${e.localizedMessage ?: "Formato inválido"}"
+                message = "No se pudo restaurar el respaldo. Comprueba su formato, versión y tamaño."
             )
+        }
         }
     }
 
@@ -237,7 +268,17 @@ object BackupRestoreManager {
         val inputStream = context.contentResolver.openInputStream(uri) 
             ?: throw IllegalStateException("No se pudo abrir el archivo.")
         BufferedReader(InputStreamReader(inputStream, Charsets.UTF_8)).use { reader ->
-            reader.readText()
+            val content = StringBuilder()
+            val buffer = CharArray(8192)
+            while (true) {
+                val count = reader.read(buffer)
+                if (count < 0) break
+                require(content.length + count <= MAX_BACKUP_BYTES) { "El respaldo supera el tamaño permitido." }
+                content.append(buffer, 0, count)
+            }
+            content.toString().also {
+                require(it.toByteArray(Charsets.UTF_8).size <= MAX_BACKUP_BYTES) { "El respaldo supera el tamaño permitido." }
+            }
         }
     }
 

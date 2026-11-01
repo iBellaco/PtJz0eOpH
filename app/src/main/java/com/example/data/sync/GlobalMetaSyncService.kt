@@ -17,6 +17,11 @@ object GlobalMetaSyncService {
     private val liveScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
     private val liveOwners = mutableSetOf<String>()
     private var liveJob: Job? = null
+    private val syncMutex = kotlinx.coroutines.sync.Mutex()
+
+    @Synchronized private fun pollInterval(): Long =
+        if (liveOwners.isNotEmpty() && liveOwners.all { it == "overlay" }) 5 * 60_000L
+        else MetaFreshness.POLL_INTERVAL_MS
 
     /** One shared poller for the activity and floating hub. Stops when both close. */
     @Synchronized fun startLive(context: Context, owner: String) {
@@ -28,9 +33,9 @@ object GlobalMetaSyncService {
             while (isActive) {
                 val cycleStarted = android.os.SystemClock.elapsedRealtime()
                 // Version verification is independent of source latency/failure.
-                launch { com.example.util.AppUpdateManager.checkForUpdates(app) }
+                com.example.util.AppUpdateManager.checkForUpdates(app)
                 syncGlobalMeta(app, forceRefresh = true)
-                delay((MetaFreshness.POLL_INTERVAL_MS - (android.os.SystemClock.elapsedRealtime() - cycleStarted)).coerceAtLeast(1_000L))
+                delay((pollInterval() - (android.os.SystemClock.elapsedRealtime() - cycleStarted)).coerceAtLeast(1_000L))
             }
         }
     }
@@ -68,6 +73,8 @@ object GlobalMetaSyncService {
     }
 
     suspend fun syncGlobalMeta(context: Context, forceRefresh: Boolean = false) {
+        if (!syncMutex.tryLock()) return
+        try {
         _syncState.value = MetaSyncState.Syncing
         val requestedRegion = _currentRegion.value
         BestBuildWrScraper.syncGlobalTierList(context, requestedRegion, force = forceRefresh)
@@ -75,6 +82,7 @@ object GlobalMetaSyncService {
         _syncState.value = if (BestBuildWrScraper.isLastSyncSuccess.value)
             MetaSyncState.Success(BestBuildWrScraper.lastSyncFormattedTime.value)
         else MetaSyncState.Error("No se pudo actualizar; usando los últimos datos guardados.")
+        } finally { syncMutex.unlock() }
     }
 
     fun getLastSyncInfo(context: Context): Pair<String, String> {

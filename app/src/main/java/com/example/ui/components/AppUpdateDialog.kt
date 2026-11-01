@@ -24,14 +24,14 @@ fun AppUpdateDialog(updateInfo: AppUpdateInfo, onDismiss: () -> Unit) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     var checking by remember { mutableStateOf(false) }
-    Dialog(onDismissRequest = {}, properties = DialogProperties(
-        dismissOnBackPress = false, dismissOnClickOutside = false)) {
+    Dialog(onDismissRequest = { if (!updateInfo.isMandatory) onDismiss() }, properties = DialogProperties(
+        dismissOnBackPress = !updateInfo.isMandatory, dismissOnClickOutside = !updateInfo.isMandatory)) {
         Surface(Modifier.fillMaxWidth().testTag("app_update_dialog"),
             color = HextechDarkBg, shape = androidx.compose.foundation.shape.RoundedCornerShape(20.dp)) {
             Column(Modifier.verticalScroll(rememberScrollState()).padding(24.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                Text(tr("Actualización obligatoria"), style = MaterialTheme.typography.titleLarge, color = HextechGold)
-                Text(tr("La versión que estás usando es antigua. Actualiza Coach para continuar."), color = TextPrimary)
+                Text(if (updateInfo.isMandatory) tr("Actualización obligatoria") else context.getString(com.example.R.string.update_recommended), style = MaterialTheme.typography.titleLarge, color = HextechGold)
+                Text(if (updateInfo.isMandatory) tr("La versión que estás usando es antigua. Actualiza Coach para continuar.") else context.getString(com.example.R.string.update_can_wait), color = TextPrimary)
                 Text(tr("Versión instalada") + ": " + BuildConfig.VERSION_NAME + "\n" +
                     tr("Versión disponible") + ": " + updateInfo.latestVersionName, color = HextechCyan)
                 Text(tr("Instala la nueva versión desde el mismo lugar donde recibiste Coach y vuelve a abrir la aplicación."), color = TextSecondary)
@@ -43,6 +43,10 @@ fun AppUpdateDialog(updateInfo: AppUpdateInfo, onDismiss: () -> Unit) {
                     }
                 }, enabled = !checking, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)
                     .testTag("recheck_app_version")) { Text(tr(if (checking) "Comprobando versión..." else "Volver a comprobar")) }
+                if (!updateInfo.isMandatory) {
+                    CoachButton(onClick = onDismiss, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)
+                        .testTag("defer_app_update")) { Text(context.getString(com.example.R.string.update_later)) }
+                }
             }
         }
     }

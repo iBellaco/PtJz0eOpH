@@ -44,12 +44,15 @@ object AppUpdateManager {
     private val _verificationEnabled = MutableStateFlow(true)
     val verificationEnabled = _verificationEnabled.asStateFlow()
     private var settingLoaded = false
+    private var minimumSupportedCode = 0
+    private var dismissedVersionCode = -1
     private val client = OkHttpClient.Builder().connectTimeout(10, TimeUnit.SECONDS)
         .readTimeout(10, TimeUnit.SECONDS).callTimeout(20, TimeUnit.SECONDS).build()
 
     fun restore(context: Context) {
         if (!_verificationEnabled.value) return
         val prefs = context.getSharedPreferences(PREFS, 0)
+        minimumSupportedCode = prefs.getInt("minimum_supported_code", 0).coerceAtLeast(0)
         val version = PublishedAppVersion.parse(prefs.getString("tag", "").orEmpty()) ?: return
         val checkedAt = prefs.getLong("last_success", 0L)
         _checkStatus.value = VersionCheckStatus(checkedAt, checkedAt, version.name)
@@ -58,14 +61,21 @@ object AppUpdateManager {
 
     private fun publish(version: PublishedAppVersion) {
         if (!_verificationEnabled.value) { _updateInfo.value = null; return }
+        if (version.code == dismissedVersionCode && BuildConfig.VERSION_CODE >= minimumSupportedCode) {
+            _updateInfo.value = null
+            return
+        }
         _updateInfo.value = if (version.newerThan(BuildConfig.VERSION_NAME, BuildConfig.VERSION_CODE))
-            AppUpdateInfo(true, version.code, version.name, isMandatory = true) else null
+            AppUpdateInfo(true, version.code, version.name,
+                isMandatory = BuildConfig.VERSION_CODE < minimumSupportedCode) else null
     }
 
     suspend fun checkForUpdates(context: Context, forceManualCheck: Boolean = false): AppUpdateInfo = withContext(Dispatchers.IO) {
         mutex.lock()
         try {
             refreshVerificationSetting()
+            context.getSharedPreferences(PREFS, 0).edit()
+                .putInt("minimum_supported_code", minimumSupportedCode).apply()
             if (!_verificationEnabled.value) {
                 _updateInfo.value = null
                 _verificationFinished.value = true
@@ -106,8 +116,14 @@ object AppUpdateManager {
     }
 
     suspend fun refreshVerificationSetting(): Boolean {
-        val snapshot = runCatching { FirebaseFirestore.getInstance().collection("system_config")
-            .document("app_update_verification").get().await() }.getOrNull()
+        val snapshot = try { FirebaseFirestore.getInstance().collection("system_config")
+            .document("app_update_verification").get().await()
+        } catch (cancelled: CancellationException) { throw cancelled
+        } catch (_: Exception) { null }
+        snapshot?.let {
+            minimumSupportedCode = (it.getLong("minimumSupportedVersionCode") ?: 0L)
+                .coerceIn(0L, Int.MAX_VALUE.toLong()).toInt()
+        }
         val enabled = snapshot?.getBoolean("enabled")
             ?: if (settingLoaded) _verificationEnabled.value else true
         settingLoaded = true
@@ -128,5 +144,10 @@ object AppUpdateManager {
         if (!enabled) _updateInfo.value = null else checkForUpdates(context, forceManualCheck = true)
     }
 
-    fun dismissAlert() { if (_updateInfo.value?.isMandatory != true) _updateInfo.value = null }
+    fun dismissAlert() {
+        if (_updateInfo.value?.isMandatory != true) {
+            dismissedVersionCode = _updateInfo.value?.latestVersionCode ?: dismissedVersionCode
+            _updateInfo.value = null
+        }
+    }
 }
