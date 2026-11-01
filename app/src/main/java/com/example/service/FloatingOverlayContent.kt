@@ -582,8 +582,17 @@ internal fun FloatingOverlayContent(
         isScanning = true
         scanNoticeMessage = "Escaneando selección en directo..."
         coroutineScope.launch(Dispatchers.IO) {
-            val bitmap = screenCaptureManager?.captureCurrentFrame()
+            try {
+            val bitmap = kotlinx.coroutines.withTimeoutOrNull(800L) {
+                var frame = screenCaptureManager?.captureCurrentFrame()
+                while (frame == null) {
+                    delay(60L)
+                    frame = screenCaptureManager?.captureCurrentFrame()
+                }
+                frame
+            }
             if (bitmap != null) {
+                try {
                 val result = DraftVisionScanner.scanDraftFromBitmap(bitmap, context, if (state.isFirstPickManuallySelected) isFirstPick else null, activeRole, confirmedHudPicks(), detectBannedPortraits = true)
                 withContext(Dispatchers.Main) {
                     if (result.isSuccessful) {
@@ -637,11 +646,19 @@ internal fun FloatingOverlayContent(
                     }
                     isScanning = false
                 }
+                } finally { bitmap.recycle() }
             } else {
                 withContext(Dispatchers.Main) {
                     scanNoticeMessage = "No hay frame de captura disponible"
                     isScanning = false
                 }
+            }
+            } catch (cancelled: kotlinx.coroutines.CancellationException) {
+                throw cancelled
+            } catch (_: Exception) {
+                withContext(Dispatchers.Main) { scanNoticeMessage = "No hay frame de captura disponible" }
+            } finally {
+                withContext(kotlinx.coroutines.NonCancellable + Dispatchers.Main) { isScanning = false }
             }
             delay(3500)
             scanNoticeMessage = null
@@ -672,6 +689,7 @@ internal fun FloatingOverlayContent(
                                 detectDragGestures(
                                     onDragStart = {
                                         isDraggingBubble = true
+                                        onDragDelta(0, 0, true, false)
                                     },
                                     onDrag = { change, dragAmount ->
                                         change.consume()
@@ -679,7 +697,7 @@ internal fun FloatingOverlayContent(
                                     },
                                     onDragEnd = {
                                         isDraggingBubble = false
-                                        onDragDelta(0, 0, false, false)
+                                        onDragDelta(0, 0, false, true)
                                     },
                                     onDragCancel = {
                                         isDraggingBubble = false

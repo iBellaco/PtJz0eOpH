@@ -157,6 +157,7 @@ class FloatingAssistantService : Service(), LifecycleOwner, ViewModelStoreOwner,
     private val store = ViewModelStore()
     private val savedStateRegistryController = SavedStateRegistryController.create(this)
     private val serviceScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
+    private var bubbleSnapAnimator: ValueAnimator? = null
 
     private fun configureWindowComposeView(
         view: ComposeView,
@@ -470,6 +471,7 @@ class FloatingAssistantService : Service(), LifecycleOwner, ViewModelStoreOwner,
     override fun onDestroy() {
         if (isDestroyed) return
         isDestroyed = true
+        removeFloatingOverlay()
         com.example.data.sync.GlobalMetaSyncService.stopLive("overlay")
         overlayState.clearDraftAndCrops(this)
 
@@ -671,6 +673,8 @@ class FloatingAssistantService : Service(), LifecycleOwner, ViewModelStoreOwner,
                             screenCaptureManager = screenCaptureManager,
                             onClose = { stopSelf() },
                             onDragDelta = { dx, dy, isDragging, isEnded ->
+                                bubbleSnapAnimator?.cancel()
+                                bubbleSnapAnimator = null
                                 val currentMetrics = resources.displayMetrics
                                 val currentScreenWidth = currentMetrics.widthPixels
                                 val currentScreenHeight = currentMetrics.heightPixels
@@ -689,29 +693,40 @@ class FloatingAssistantService : Service(), LifecycleOwner, ViewModelStoreOwner,
                                     if (isDragging) {
                                         isCloseTargetVisible = true
                                         // Centro de la burbuja flotante
-                                        val bubbleCenterX = params.x + bubbleSizePx / 2
-                                        val bubbleCenterY = params.y + bubbleSizePx / 2
+                                        val bubbleLocation = IntArray(2)
+                                        this@apply.getLocationOnScreen(bubbleLocation)
+                                        val bubbleCenterX = bubbleLocation[0] + dx + this@apply.width / 2
+                                        val bubbleCenterY = bubbleLocation[1] + dy + this@apply.height / 2
 
                                         // Centro del target circular inferior
-                                        val targetCenterX = currentScreenWidth / 2
-                                        val targetCenterY = currentScreenHeight - (24 * density).toInt() - (32 * density).toInt()
+                                        val targetLocation = IntArray(2)
+                                        closeTargetComposeView?.getLocationOnScreen(targetLocation)
+                                        val targetCenterX = targetLocation[0] + (closeTargetComposeView?.width ?: 0) / 2
+                                        val targetCenterY = targetLocation[1] + (closeTargetComposeView?.height ?: 0) / 2
 
                                         val dist = kotlin.math.hypot(
                                             (bubbleCenterX - targetCenterX).toDouble(),
                                             (bubbleCenterY - targetCenterY).toDouble()
                                         )
 
-                                        val isOver = dist < (72 * density) || (
-                                            params.y >= currentScreenHeight - bubbleSizePx - (45 * density).toInt() &&
-                                            kotlin.math.abs(bubbleCenterX - targetCenterX) < (80 * density).toInt()
-                                        )
+                                        val isOver = (closeTargetComposeView?.height ?: 0) > 0 && dist < (72 * density)
                                         isCloseTargetHovered = isOver
                                     } else {
-                                        val shouldClose = isCloseTargetHovered
+                                        // Re-evaluate at release using the positions actually displayed.
+                                        val releasedBubble = IntArray(2)
+                                        val releasedTarget = IntArray(2)
+                                        this@apply.getLocationOnScreen(releasedBubble)
+                                        closeTargetComposeView?.getLocationOnScreen(releasedTarget)
+                                        val releaseDistance = kotlin.math.hypot(
+                                            (releasedBubble[0] + this@apply.width / 2 - releasedTarget[0] - (closeTargetComposeView?.width ?: 0) / 2).toDouble(),
+                                            (releasedBubble[1] + this@apply.height / 2 - releasedTarget[1] - (closeTargetComposeView?.height ?: 0) / 2).toDouble())
+                                        val shouldClose = isEnded && (closeTargetComposeView?.height ?: 0) > 0 && releaseDistance < 72 * density
                                         isCloseTargetVisible = false
                                         isCloseTargetHovered = false
 
                                         if (shouldClose) {
+                                            this@apply.visibility = android.view.View.GONE
+                                            closeTargetComposeView?.visibility = android.view.View.GONE
                                             stopSelf()
                                         } else {
                                             // AUTO-SNAP: Cuando se suelta en forma de burbuja, pegarlo al borde lateral con animación fluida
@@ -719,6 +734,7 @@ class FloatingAssistantService : Service(), LifecycleOwner, ViewModelStoreOwner,
                                             val targetY = params.y
 
                                             val animator = ValueAnimator.ofFloat(0f, 1f)
+                                            bubbleSnapAnimator = animator
                                             animator.duration = 250 // ms
                                             animator.interpolator = DecelerateInterpolator()
 
@@ -809,6 +825,8 @@ class FloatingAssistantService : Service(), LifecycleOwner, ViewModelStoreOwner,
     }
 
     private fun removeFloatingOverlay() {
+        bubbleSnapAnimator?.cancel()
+        bubbleSnapAnimator = null
         val wm = windowManager
         disposeWindowComposeView(floatingComposeView, floatingWindowLifecycleOwner, wm)
         floatingComposeView = null
