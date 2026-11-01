@@ -60,6 +60,40 @@ class ScreenCaptureManager(private val context: Context) {
     // Hilo secundario dedicado para procesamiento de fotogramas sin bloquear el hilo principal (UI)
     private val captureThread = HandlerThread("ScreenCaptureThread").apply { start() }
     private val handler = Handler(captureThread.looper)
+    private var surfaceAttached = false
+    private val idleCapture = Runnable {
+        synchronized(projectionLock) {
+            try {
+                virtualDisplay?.surface = null
+                surfaceAttached = false
+            } catch (_: Exception) { }
+        }
+    }
+
+    /** Suspend the producer when nobody requests frames, retaining the same consent session. */
+    private fun requestCapture(): Boolean = synchronized(projectionLock) {
+        val display = virtualDisplay ?: return@synchronized false
+        val power = context.getSystemService(Context.POWER_SERVICE) as android.os.PowerManager
+        if (!power.isInteractive) {
+            handler.removeCallbacks(idleCapture)
+            handler.post(idleCapture)
+            return@synchronized false
+        }
+        try {
+            if (!surfaceAttached) {
+                // Drop pre-pause pixels; they must not confirm a new selection.
+                synchronized(frameLock) { imageReader?.acquireLatestImage()?.close() }
+                display.surface = imageReader?.surface
+                surfaceAttached = true
+                handler.removeCallbacks(idleCapture)
+                handler.postDelayed(idleCapture, 1500L)
+                return@synchronized false
+            }
+            handler.removeCallbacks(idleCapture)
+            handler.postDelayed(idleCapture, 1500L)
+            true
+        } catch (_: Exception) { false }
+    }
 
     init {
         updateScreenDimensions()
@@ -182,6 +216,8 @@ class ScreenCaptureManager(private val context: Context) {
                 )
 
                 check(virtualDisplay != null) { "Android no pudo crear el VirtualDisplay." }
+                surfaceAttached = true
+                handler.postDelayed(idleCapture, 1500L)
                 AppLogger.d(TAG, "MediaProjection y VirtualDisplay inicializados exitosamente ($captureWidth x $captureHeight).")
                 return true
             } catch (e: SecurityException) {
@@ -231,6 +267,7 @@ class ScreenCaptureManager(private val context: Context) {
      * Si no hay fotograma nuevo disponible, retorna null permitiendo la estrategia de frame skipping.
      */
     fun captureCurrentFrame(): Bitmap? {
+        if (!requestCapture()) return null
         synchronized(frameLock) {
             val reader = imageReader ?: return null
             var image: Image? = null
@@ -260,6 +297,8 @@ class ScreenCaptureManager(private val context: Context) {
 
     /** Call under projectionLock; detach references before stop can dispatch its callback. */
     private fun clearProjection(stop: Boolean) {
+        handler.removeCallbacks(idleCapture)
+        surfaceAttached = false
         val previous = mediaProjection
         mediaProjection = null
         synchronized(frameLock) {
