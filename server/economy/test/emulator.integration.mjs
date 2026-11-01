@@ -162,7 +162,11 @@ try {
       createdAt:now - 8 * 86400000,chargedEssence:27});
     await profile.collection('economy_operations').doc(id).set({kind:'SPONSOR',cost:27});
     await db.doc(`pending_sponsor_ads/${id}`).update({status:'PENDING'});
+    const source = db.doc(`economy_requests/${owner.uid}~${id}`);
+    await source.set({userId:owner.uid, operationId:id, status:'REVIEW', payload:{action:'SPONSOR',id}});
     await call('SPONSOR_RESOLVE', 'sponsor_reject_history_resolve', {sponsorId:id, approved:false}, admin);
+    assert.equal((await source.get()).get('status'), 'COMPLETED');
+    assert.equal((await db.doc(`economy_results/${owner.uid}~${id}`).get()).get('result.approved'), false);
     assert.equal((await db.doc(`pending_sponsor_ads/${id}`).get()).get('status'),'REJECTED');
     assert.ok((await db.doc(`pending_sponsor_ads/${id}`).get()).get('refundedAtMillis'));
     assert.equal((await profile.get()).get('blueEssence'),before + 27);

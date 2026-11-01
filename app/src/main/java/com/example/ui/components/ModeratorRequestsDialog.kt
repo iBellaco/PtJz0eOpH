@@ -62,9 +62,18 @@ fun AdminModeratorRequestsDialog(
         reviewScope.launch {
             try {
                 SponsorReviewRepository.resolve(id, approve, requests.firstOrNull { it["id"] == id }?.get("queuedRequestId") as? String)
-                com.example.data.AppNoticeManager.syncFromCloud(context)
+                // The committed decision remains successful even if refreshing the feed fails.
+                try { com.example.data.AppNoticeManager.syncFromCloud(context) }
+                catch (cancelled: kotlinx.coroutines.CancellationException) { throw cancelled }
+                catch (_: Exception) { }
                 Toast.makeText(context, if (approve) com.example.util.appTr("Anuncio aprobado y visible en el panel de anuncios")
                     else context.getString(com.example.R.string.sponsor_rejection_done), Toast.LENGTH_SHORT).show()
+            } catch (cancelled: kotlinx.coroutines.CancellationException) {
+                throw cancelled
+            } catch (pending: com.example.data.EconomyPendingException) {
+                Toast.makeText(context, pending.message, Toast.LENGTH_LONG).show()
+            } catch (review: com.example.data.EconomyReviewException) {
+                Toast.makeText(context, review.message, Toast.LENGTH_LONG).show()
             } catch (_: Exception) {
                 Toast.makeText(context, context.getString(com.example.R.string.sponsor_review_error), Toast.LENGTH_LONG).show()
             } finally { sponsorBusy = sponsorBusy - id }
