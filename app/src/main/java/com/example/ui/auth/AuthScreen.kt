@@ -214,7 +214,6 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser? = nul
     val userRole by SubscriptionManager.userRole.collectAsState()
     val secondaryRole by SubscriptionManager.secondaryRole.collectAsState()
     val adminClaim by AuthManager.isAdminClaim.collectAsState()
-    val redemptionBalance by SubscriptionManager.orangeEssence.collectAsState()
     val premiumUntil by SubscriptionManager.premiumUntil.collectAsState()
     val savedUserName by SubscriptionManager.userName.collectAsState()
     val currentAvatarId by SubscriptionManager.currentAvatarId.collectAsState()
@@ -239,7 +238,6 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser? = nul
     var showSupportPanel by remember { mutableStateOf(false) }
     var showSponsorPanel by remember { mutableStateOf(false) }
     var showBuyEssenceDialog by remember { mutableStateOf(false) }
-    var showRedemptionDialog by remember { mutableStateOf(false) }
     var showSignOutConfirm by remember { mutableStateOf(false) }
     val activeProfile by com.example.data.AccountProfileManager.activeProfile.collectAsState()
 
@@ -313,11 +311,6 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser? = nul
         )
     }
 
-    if (showRedemptionDialog) {
-        com.example.ui.components.OrangeEssenceRedemptionDialog(
-            onDismiss = { showRedemptionDialog = false }
-        )
-    }
 
     Card(
         modifier = Modifier
@@ -462,9 +455,6 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser? = nul
                 compact = true
             )
 
-            if (redemptionBalance > 0L && com.example.model.RolePanelAccess.canRedeemEssence(userRole, secondaryRole, adminClaim)) {
-                com.example.ui.components.OrangeEssenceRedemptionEntry(redemptionBalance) { showRedemptionDialog = true }
-            }
 
             Spacer(modifier = Modifier.height(if (hasRoleFrame) 2.dp else 8.dp))
 
@@ -906,6 +896,7 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser? = nul
 
             Spacer(modifier = Modifier.height(10.dp))
 
+            Column(Modifier.fillMaxWidth().testTag("profile_actions"), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             // Animated button for Plans
             com.example.ui.components.HextechAnimatedButton(
                 onClick = { showPlansDialog = true },
@@ -943,8 +934,6 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser? = nul
                 Spacer(Modifier.width(8.dp))
                 com.example.ui.components.PanelNotificationBadge(notifications.count(com.example.data.NotificationPanel.PLANS), com.example.data.NotificationPanel.PLANS)
             }
-
-            Spacer(modifier = Modifier.height(10.dp))
 
             // Botón Creador (Panel de Usuario)
             com.example.ui.components.HextechAnimatedButton(
@@ -990,8 +979,6 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser? = nul
                 )
             }
 
-            Spacer(modifier = Modifier.height(14.dp))
-
             if (com.example.model.RolePanelAccess.canOpen(com.example.model.RolePanel.STREAMER, userRole, secondaryRole, adminClaim)) {
                 com.example.ui.components.HextechAnimatedButton(
                     onClick = { showStreamerPanel = true },
@@ -1006,7 +993,6 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser? = nul
                     Spacer(Modifier.width(8.dp))
                     com.example.ui.components.PanelNotificationBadge(notifications.count(com.example.data.NotificationPanel.STREAMER), com.example.data.NotificationPanel.STREAMER)
                 }
-                Spacer(Modifier.height(10.dp))
             }
 
             if (isAdminUser) {
@@ -1041,11 +1027,8 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser? = nul
                     Spacer(Modifier.width(8.dp))
                     com.example.ui.components.PanelNotificationBadge(notifications.count(com.example.data.NotificationPanel.ADMINISTRATION), com.example.data.NotificationPanel.ADMINISTRATION)
                 }
-                Spacer(modifier = Modifier.height(10.dp))
 
             }
-
-            Spacer(Modifier.height(12.dp))
             if (com.example.model.RolePanelAccess.canOpen(com.example.model.RolePanel.MODERATION, userRole, secondaryRole, adminClaim)) {
                 // Panel de Soporte y Moderación Exclusivo de Moderadores
                 com.example.ui.components.HextechAnimatedButton(
@@ -1078,7 +1061,6 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser? = nul
                     Spacer(Modifier.width(8.dp))
                     com.example.ui.components.PanelNotificationBadge(notifications.count(com.example.data.NotificationPanel.SUPPORT), com.example.data.NotificationPanel.SUPPORT)
                 }
-                Spacer(modifier = Modifier.height(10.dp))
             }
 
             if (com.example.model.RolePanelAccess.canOpen(com.example.model.RolePanel.SPONSOR, userRole, secondaryRole, adminClaim)) {
@@ -1102,7 +1084,6 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser? = nul
                     Spacer(Modifier.width(8.dp))
                     com.example.ui.components.PanelNotificationBadge(notifications.count(com.example.data.NotificationPanel.SPONSOR), com.example.data.NotificationPanel.SPONSOR)
                 }
-                Spacer(modifier = Modifier.height(12.dp))
             }
 
             com.example.ui.components.AccountDeletionCard(
@@ -1118,7 +1099,6 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser? = nul
                     onSignOut()
                 }
             )
-            Spacer(Modifier.height(12.dp))
 
             Button(
                 onClick = { showSignOutConfirm = true },
@@ -1128,6 +1108,7 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser? = nul
                 Icon(Icons.Default.ExitToApp, contentDescription = null, tint = Color.White)
                 Spacer(Modifier.width(8.dp))
                 Text(tr("Cerrar Sesión"), color = Color.White, fontWeight = FontWeight.Bold)
+            }
             }
         }
     }

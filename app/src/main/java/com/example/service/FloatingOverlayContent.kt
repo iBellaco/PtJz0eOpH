@@ -117,7 +117,8 @@ internal fun FloatingOverlayContent(
     onClose: () -> Unit,
     onDragDelta: (dx: Int, dy: Int, isDragging: Boolean, isEnded: Boolean) -> Unit,
     onExpandedChange: (Boolean) -> Unit,
-    onCompactModeChange: (Boolean) -> Unit
+    onCompactModeChange: (Boolean) -> Unit,
+    loadViewerAccess: suspend (String?) -> Boolean = { com.example.data.OverlayAccessPolicy.load().hubButtonsVisibleFor(it) }
 ) {
     val coroutineScope = rememberCoroutineScope()
     var isExpanded by state::isExpanded
@@ -137,12 +138,12 @@ internal fun FloatingOverlayContent(
     var activeRole by state::activeRole
 
     val sharedPrefs = remember { context.getSharedPreferences("app_prefs", android.content.Context.MODE_PRIVATE) }
-    var hubViewerButtonsVisible by remember { mutableStateOf(true) }
+    var hubViewerButtonsVisible by remember { mutableStateOf(false) }
     val accountId = remember { runCatching { com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid }.getOrNull() }
     LaunchedEffect(accountId) {
         hubViewerButtonsVisible = runCatching {
-            com.example.data.OverlayAccessPolicy.load().hubButtonsVisibleFor(accountId)
-        }.getOrDefault(true)
+            loadViewerAccess(accountId)
+        }.getOrDefault(false)
     }
 
     LaunchedEffect(Unit) {
@@ -174,7 +175,8 @@ internal fun FloatingOverlayContent(
 
     val syncEnemyHud: (com.example.service.screen.DraftScanResult) -> Int = { state.syncScannedEnemies(it) }
 
-    val confirmedHudPicks = { (allies.toList() + enemies.toList()).filterNotNull().takeIf { it.size == 9 }.orEmpty() }
+    val confirmedHudPicks = { (allies.toList() + enemies.toList() + state.unassignedAllies.toList())
+        .filterNotNull().distinctBy { it.id }.takeIf { it.size == 9 }.orEmpty() }
     val commitLastPickToHud: (com.example.service.screen.DraftScanResult) -> Unit = { result ->
         state.applyConfirmedLastPick(result)
     }
@@ -350,7 +352,7 @@ internal fun FloatingOverlayContent(
                 try {
                     DraftVisionScanner.isVisionEngineBusy.value = true
 
-                    val confirmedPicksCount = allies.count { it != null } + enemies.count { it != null }
+                    val confirmedPicksCount = (allies + enemies + state.unassignedAllies).filterNotNull().map { it.id }.distinct().size
                     val tentativeFirstPick = isFirstPick ?: true
                     val sequence = DraftVisionScanner.getDraftPickSequence(tentativeFirstPick)
                     val unresolvedTurns = DraftVisionScanner.computeActiveSelectionTurns(
@@ -365,7 +367,7 @@ internal fun FloatingOverlayContent(
                     val isTenthPickActive = activeTurns.any { it.turnNumber == 10 } || confirmedPicksCount >= 8
                     // La navegación y las cajas de diagnóstico no cambian la cadencia del escaneo.
                     val isGlobalSyncCycle = com.example.service.screen.DraftSyncCadence.metadataDue(
-                        android.os.SystemClock.elapsedRealtime(),lastGlobalSyncFinishedAt) && quickReadCount>=2
+                        android.os.SystemClock.elapsedRealtime(),lastGlobalSyncFinishedAt, confirmedPicksCount) && quickReadCount>=2
 
 
                     val dynamicLoopDelay = when {
@@ -387,7 +389,7 @@ internal fun FloatingOverlayContent(
                             DraftVisionScanner.recordFrameSkipped()
                         } else {
                             try {
-                                banWorker.offer(android.os.SystemClock.elapsedRealtime()) {
+                                if (confirmedPicksCount < 8) banWorker.offer(android.os.SystemClock.elapsedRealtime()) {
                                     DraftVisionScanner.captureBanFrame(bitmap,confirmedHudPicks().map { it.id }.toSet())
                                 }
                                 val slotObservation = DraftVisionScanner.observeSelectionSlots(bitmap, confirmedPicksCount)
@@ -414,13 +416,19 @@ internal fun FloatingOverlayContent(
                                     quickReadCount++
                                     val result=DraftVisionScanner.scanDraftFromBitmap(bitmap,context,
                                         if(state.isFirstPickManuallySelected) isFirstPick else null,activeRole,
-                                        confirmedHudPicks(),namesOnly=true,quickTitlePass=true)
+                                        confirmedHudPicks(),namesOnly=true,quickTitlePass=quickReadCount % 8 != 0)
                                     if(result.isSuccessful) withContext(Dispatchers.Main) {
                                         if(!autoScanEnabled) return@withContext
                                         state.observeFirstPick(result.detectedFirstPick)
                                         syncAlliedHud(result)
                                         syncEnemyHud(result)
                                         commitLastPickToHud(result)
+                                    }
+                                    // Start observing the tenth portrait on the frame that confirms title nine.
+                                    // The classifier still requires another distinct frame before confirming it.
+                                    if ((allies + enemies + state.unassignedAllies).filterNotNull().map { it.id }.distinct().size == 9 && state.isFirstPickKnown) {
+                                        DraftVisionScanner.scanActiveSlotDirectly(bitmap,
+                                            DraftVisionScanner.getDraftPickSequence(isFirstPick).last(), context, confirmedHudPicks())
                                     }
                                 } else if (!isGlobalSyncCycle && hasActiveTurns) {
                                     quickReadCount++
@@ -1167,6 +1175,7 @@ internal fun FloatingOverlayContent(
                             } else {
                                 when (overlayHubTab) {
                                     OverlayHubTab.DRAFT -> {
+                                        Column(Modifier.fillMaxSize()) {
                                         val certainty = com.example.model.DraftCertaintyPolicy.selection(state.completedDraftLocked,
                                             state.trackedLastPick != null, (allies + enemies + state.unassignedAllies)
                                                 .filterNotNull().map { it.id }.distinct().size)
@@ -1239,6 +1248,7 @@ internal fun FloatingOverlayContent(
                                                 showLiteRTViewer = true
                                             }
                                         )
+                                        }
                                     }
                                     OverlayHubTab.TIER_LIST -> {
                                         com.example.ui.screens.TierListTab(

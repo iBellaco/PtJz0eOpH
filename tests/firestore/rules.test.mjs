@@ -720,7 +720,7 @@ try {
     }
     await env.withSecurityRulesDisabled(async context=>{await deleteDoc(doc(context.firestore(),'economy_requests/admin'));});
     const command={userId:'admin',operationId:'cash_admin_only',payload:{action:'REDEEM',id:'cash_admin_only',amount:10},status:'PENDING',schema:2,createdAt:serverTimestamp(),authTime:0};
-    await assertSucceeds(setDoc(doc(admin,'economy_requests/admin'),command));
+    await assertFails(setDoc(doc(admin,'economy_requests/admin'),command));
     await env.withSecurityRulesDisabled(async context=>{await deleteDoc(doc(context.firestore(),'economy_requests/admin'));});
     await assertFails(setDoc(doc(admin,'economy_requests/admin'),{...command,payload:{action:'CLEANUP',id:'cash_admin_only'}}));
   });

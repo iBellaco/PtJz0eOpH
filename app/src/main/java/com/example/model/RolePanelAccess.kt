@@ -11,8 +11,7 @@ object RolePanelAccess {
     }
 
     fun canRedeemEssence(role: String, secondaryRole: String = "", adminClaim: Boolean = false): Boolean =
-        normalize(role) != "banned" && normalize(secondaryRole) != "banned" &&
-            adminClaim
+        false // Retired globally, including privileged sessions and older navigation paths.
 
 
     fun isAdministrator(role: String, adminClaim: Boolean = false): Boolean =

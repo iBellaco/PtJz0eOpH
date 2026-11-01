@@ -854,7 +854,4 @@ jobs:
     branches:
     - main
     - coach-validacion
-  pull_request:
-    branches:
-    - main
   workflow_dispatch: null

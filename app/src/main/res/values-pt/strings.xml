@@ -1,4 +1,5 @@
 <resources>
+    <string name="sponsor_rejection_done">Solicitação recusada. Se houve cobrança de essências, elas foram devolvidas ao saldo.</string>
     <string name="password_requirements_error">Use pelo menos 8 caracteres, uma letra maiúscula, uma minúscula, um número e um caractere especial, sem espaços.</string>
     <string name="registration_created_retry_verification">Sua conta já foi criada, mas não foi possível concluir o envio de verificação. Entre para solicitar o link; não se cadastre novamente.</string>
     <string name="sponsor_rejected">Rejeitado</string>
@@ -72,7 +73,7 @@
     <string name="streamer_metrics_error">Não foi possível ativar o contador de cliques. A aprovação não foi concluída. Verifique a sincronização na nuvem.</string>
     <string name="streamer_clicks_cached">Última contagem salva; aguardando conexão ao vivo.</string>
     <string name="legal_economy_title">Operações de essências e solicitações de pagamento</string>
-    <string name="legal_economy_body">O serviço verifica sua sessão, as permissões, o saldo, o preço e a taxa antes de confirmar uma operação. O movimento e seu comprovante são registrados. Repetir a mesma solicitação não deve gerar outra cobrança. As trocas por USDT são analisadas e pagas manualmente; enviar uma solicitação não realiza uma transferência nem garante sua aceitação. Confira o destino e o total antes de confirmar. Não envie chaves de carteiras, senhas nem códigos. Os direitos sobre Wild Rift e as fontes consultadas pertencem a seus titulares; a publicação do Coach não comprova autorização desses terceiros. A confirmação pode levar vários minutos; enquanto a solicitação estiver pendente, não a repita. O processamento programado utiliza infraestrutura do GitHub, sem publicar solicitações ou destinos de pagamento no repositório.</string>
+    <string name="legal_economy_body">O serviço verifica sua sessão, o saldo e o preço antes de confirmar uma operação. O movimento e seu comprovante são registrados. Repetir a mesma solicitação não deve gerar outra cobrança. Se um anúncio for recusado, as essências cobradas serão devolvidas. Nunca envie senhas nem códigos.</string>
     <string name="overlay_restricted_help">O interruptor está cinza e indica que é controlado por configurações restritas? Abra Informações do app → menu ⋮ → Permitir configurações restritas, se disponível. Depois volte a «Exibir sobre outros apps» e ative o Coach. Faça isso apenas se confiar na origem do APK. A opção depende do Android e do fabricante; uma política do administrador do dispositivo pode impedir a alteração. O Coach não pode conceder essa permissão a si mesmo.</string>
     <string name="overlay_app_settings">Abrir informações do Coach</string>
     <string name="overlay_activation_admin_switch">Permitir o botão de ativação na tela inicial</string>

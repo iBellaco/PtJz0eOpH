@@ -82,7 +82,11 @@ object BestBuildWrScraper {
     @Synchronized fun initialize(context: Context) {
         if (initialized) return
         initialized = true
+        PatchTierMovementStore.initialize(context)
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        if (prefs.getString("patch", null) != com.example.data.GamePatch.VERSION) {
+            prefs.edit().clear().putString("patch", com.example.data.GamePatch.VERSION).apply()
+        }
         for (region in MetaRegion.available) {
             try {
                 val saved = prefs.getString("snapshot_$region", null) ?: continue
@@ -92,7 +96,8 @@ object BestBuildWrScraper {
                 val roleStats = decodeRoleStats(prefs.getString(ROLE_STATS_SNAPSHOT_PREFIX + region, null))
                 val at = prefs.getLong("timestamp_$region", 0)
                 WildRiftRepository.applyRegionalTierList(region, tiers, stats, roleStats = roleStats,
-                    checkedAt = at, history = decodeHistory(prefs.getString("rate_history_v2", null)))
+                    checkedAt = at, history = decodeHistory(prefs.getString("rate_history_v2", null)),
+                    patchMovements = PatchTierMovementStore.snapshot())
                 _freshness.value = MetaFreshness(
                     tiersCheckedAt = prefs.getLong("tiers_checked", 0),
                     ratesCheckedAt = prefs.getLong("rates_checked", 0),
@@ -252,6 +257,7 @@ object BestBuildWrScraper {
                         .putLong("rates_checked", _freshness.value.ratesCheckedAt)
                         .putLong("last_changed", _freshness.value.lastChangedAt)
                         .putInt("unchanged_checks", _freshness.value.unchangedChecks).apply()
+                    PatchTierMovementStore.update(previousTiers, merged)
                     WildRiftRepository.applyRegionalTierList(
                         "GLOBAL",
                         merged,
@@ -259,7 +265,7 @@ object BestBuildWrScraper {
                         roleStats = mergedRoleStats,
                         previousRoleStats = previousRoleStats,
                         previousStats = previousStats, previousTiers = previousTiers,
-                        checkedAt = started, history = history
+                        checkedAt = started, history = history, patchMovements = PatchTierMovementStore.snapshot()
                     )
                     cache = JSONObject(merged)
                     statsCache = encodeStats(mergedStats)

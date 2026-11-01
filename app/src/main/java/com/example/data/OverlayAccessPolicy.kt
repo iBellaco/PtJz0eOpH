@@ -30,12 +30,12 @@ object OverlayAccessPolicy {
             ?.map(String::trim)?.filter(String::isNotBlank)?.toSet().orEmpty()
     )
 
-    suspend fun load(): OverlayAccessSnapshot = runCatching {
+    suspend fun load(): OverlayAccessSnapshot {
         val db = FirebaseFirestore.getInstance().collection(COLLECTION)
         val viewer = viewerSnapshot(db.document(DOCUMENT).get().await().data.orEmpty())
-        viewer.copy(activationButtonEnabled =
+        return viewer.copy(activationButtonEnabled =
             db.document(ACTIVATION_DOCUMENT).get().await().getBoolean("enabled") ?: true)
-    }.getOrDefault(OverlayAccessSnapshot())
+    }
 
     /** Se actualiza en tiempo real; al faltar conexión, el botón permanece bloqueado hasta la primera lectura. */
     fun observeActivation(onChange: (Boolean) -> Unit): ListenerRegistration =
