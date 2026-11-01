@@ -370,11 +370,11 @@ internal fun FloatingOverlayContent(
                         android.os.SystemClock.elapsedRealtime(),lastGlobalSyncFinishedAt, confirmedPicksCount) && quickReadCount>=2
 
 
-                    val dynamicLoopDelay = when {
-                        !isGlobalSyncCycle && hasActiveTurns -> 50L
-                        isTenthPickActive -> 60L
-                        else -> 120L
-                    }
+                    val dynamicLoopDelay = com.example.service.screen.DraftSyncCadence.scanDelayMs(
+                        hasActiveTurns = hasActiveTurns,
+                        tenthPickActive = isTenthPickActive,
+                        metadataCycle = isGlobalSyncCycle
+                    )
 
                     if (screenCaptureManager == null || !screenCaptureManager.isReady()) {
                         withContext(Dispatchers.Main) {

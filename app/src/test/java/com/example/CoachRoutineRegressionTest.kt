@@ -21,6 +21,11 @@ class CoachRoutineRegressionTest {
         assertFalse(DraftSyncCadence.metadataDue(6500,5000))
         assertTrue(DraftSyncCadence.metadataDue(11000,5000))
     }
+    @Test fun `scan cadence backs off when the draft is idle`() {
+        assertEquals(100L, DraftSyncCadence.scanDelayMs(true, false, false))
+        assertEquals(90L, DraftSyncCadence.scanDelayMs(false, true, false))
+        assertEquals(220L, DraftSyncCadence.scanDelayMs(false, false, false))
+    }
     @Test fun `CPM respects thousands fractional rates and invalid inputs`() {
         assertEquals(3.75, CpmPolicy.revenue(1500, 2.50), 0.0001)
         assertEquals(9.375, CpmPolicy.revenue(1500, 2.50, 2.5), 0.0001)
