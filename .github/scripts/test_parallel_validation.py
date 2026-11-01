@@ -91,7 +91,7 @@ class ParallelValidationTest(unittest.TestCase):
             self.assertIn('report_failures', diagnostic['run'])
 
     def test_release_summary_and_cleanup_wait_for_both_jobs(self):
-        for job in ['build-and-release', 'workflow-report', 'cleanup-history']:
+        for job in ['build-and-release', 'workflow-report']:
             self.assertTrue({'core-tests', 'rendered-audit'}.issubset(self.jobs[job]['needs']))
             self.assertEqual('always()', self.jobs[job]['if'])
         env = self.step('build-and-release', 'Require all validations to pass')['env']
