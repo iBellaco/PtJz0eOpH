@@ -8,6 +8,15 @@ spec.loader.exec_module(module)
 
 
 class PatchContentTest(unittest.TestCase):
+    def test_cache_patch_reference_does_not_change_source_validation(self):
+        sources = '\n'.join(f'GlobalScrapingSource("{name}", "label", "url", "display", com.example.data.GamePatch.VERSION)'
+                            for name in ['wildriftfire', 'wildriftcore'])
+        self.assertTrue(module.valid_source_patch_bindings(sources))
+        self.assertTrue(module.valid_source_patch_bindings(sources + '\nprefs.putString("patch", com.example.data.GamePatch.VERSION)'))
+        self.assertFalse(module.valid_source_patch_bindings(sources.replace('com.example.data.GamePatch.VERSION', '"7.2"', 1)))
+        self.assertFalse(module.valid_source_patch_bindings(sources.splitlines()[0]))
+        self.assertFalse(module.valid_source_patch_bindings(sources + '\n' + sources.splitlines()[0]))
+
     def test_source_evidence_keeps_its_real_historical_version(self):
         self.assertTrue(module.valid_evidence_patches(['7.3c'], '7.3d'))
         self.assertTrue(module.valid_evidence_patches(['7.3d'], '7.3d'))
