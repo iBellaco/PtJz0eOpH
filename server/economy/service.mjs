@@ -108,6 +108,12 @@ export async function executeEconomy(db, auth, raw, clock = Date.now, {requested
       // so the sponsor does not keep seeing a stale request.
       const sourceRows = await tx.get(db.collection('economy_requests')
         .where('operationId', '==', input.sponsorId).limit(20));
+      // Firestore requires every read before the first write, including queue reconciliation.
+      const chargeSnapshot = !input.approved
+        ? await tx.get(profile.collection('economy_operations').doc(input.sponsorId)) : null;
+      const refundId = `sponsor_refund_${input.sponsorId}`;
+      const refundOperation = profile.collection('economy_operations').doc(refundId);
+      const refundSnapshot = !input.approved ? await tx.get(refundOperation) : null;
       const sourceOutcome = {operationId: input.sponsorId, status: 'COMPLETED',
         result: {ok: true, resolvedByModeration: true, approved: input.approved},
         completedAt: serverTime()};
@@ -132,11 +138,9 @@ export async function executeEconomy(db, auth, raw, clock = Date.now, {requested
         metadata = {kind: 'SPONSOR_RESOLUTION', sponsorId: input.sponsorId, approved: true, refunded: 0};
       } else {
         const refund = integer(current.chargedEssence, 1);
-        const charge = (await tx.get(profile.collection('economy_operations').doc(input.sponsorId))).data();
+        const charge = chargeSnapshot.data();
         ensure(charge?.kind === 'SPONSOR' && integer(charge.cost) === refund, 'failed-precondition', 'No se pudo verificar el cargo del anuncio');
-        const refundId = `sponsor_refund_${input.sponsorId}`;
-        const refundOperation = profile.collection('economy_operations').doc(refundId);
-        ensure(!(await tx.get(refundOperation)).exists, 'already-exists', 'El reembolso ya fue aplicado');
+        ensure(!refundSnapshot.exists, 'already-exists', 'El reembolso ya fue aplicado');
         const refundRecord = receipt(refundId, now, 'SPONSOR_REFUND', 'Anuncio patrocinado rechazado y reembolsado', `+${refund} EA`);
         updates.blueEssence = integer(balance(account, 'BLUE') + refund);
         tx.create(refundOperation, {id: refundId, userId: uid, actorUid: auth.uid, kind: 'SPONSOR_REFUND', cost: refund, receipt: refundRecord, createdAt: serverTime(), timestamp: now});
