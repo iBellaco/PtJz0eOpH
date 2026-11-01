@@ -1,4 +1,7 @@
 <resources>
+    <string name="update_recommended">Atualização recomendada</string>
+    <string name="update_can_wait">Há uma nova versão do Coach. Você pode atualizar quando terminar de jogar.</string>
+    <string name="update_later">Mais tarde</string>
     <string name="sponsor_rejection_done">Solicitação recusada. Se houve cobrança de essências, elas foram devolvidas ao saldo.</string>
     <string name="password_requirements_error">Use pelo menos 8 caracteres, uma letra maiúscula, uma minúscula, um número e um caractere especial, sem espaços.</string>
     <string name="registration_created_retry_verification">Sua conta já foi criada, mas não foi possível concluir o envio de verificação. Entre para solicitar o link; não se cadastre novamente.</string>

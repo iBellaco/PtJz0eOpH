@@ -77,7 +77,7 @@ object TenthPickDiagnosticManager {
 
     private val scope = CoroutineScope(Dispatchers.IO)
 
-    private val _isDiagnosticModeEnabled = MutableStateFlow(true)
+    private val _isDiagnosticModeEnabled = MutableStateFlow(false)
     val isDiagnosticModeEnabled: StateFlow<Boolean> = _isDiagnosticModeEnabled.asStateFlow()
 
     private val _savedFramesFlow = MutableStateFlow<List<DiagnosticCropInfo>>(emptyList())

@@ -111,6 +111,9 @@ jobs:
           from importlib.machinery import SourceFileLoader
           runner = SourceFileLoader('regression', 'tools/run-jvm-regression.py').load_module()
           runner.verify([
+              'com.example.SecurityPrioritiesTest',
+              'com.example.PersonalBackupRoundTripTest',
+              'com.example.RequiredVersionRegressionTest',
               'com.example.DraftAutoStopTest',
               'com.example.TenthPickRegressionTest',
               'com.example.EnemyRoleInferenceTest',

@@ -823,15 +823,7 @@ fun ImageViewerDialog(
                         .background(Color(0xFF0F172A), RoundedCornerShape(12.dp))
                         .padding(8.dp)
                 ) {
-                    val bitmap = remember(photoBase64) {
-                        try {
-                            val cleanBase64 = if (photoBase64.contains(",")) photoBase64.substringAfter(",") else photoBase64
-                            val decodedBytes = android.util.Base64.decode(cleanBase64, android.util.Base64.DEFAULT)
-                            android.graphics.BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.size)
-                        } catch (_: Exception) {
-                            null
-                        }
-                    }
+                    val bitmap = rememberAttachment(photoBase64).value
                     if (bitmap != null) {
                         androidx.compose.foundation.Image(
                             bitmap = bitmap.asImageBitmap(),
@@ -839,13 +831,15 @@ fun ImageViewerDialog(
                             modifier = Modifier.fillMaxSize(),
                             contentScale = androidx.compose.ui.layout.ContentScale.Fit
                         )
-                    } else {
+                    } else if (com.example.util.WebMediaPolicy.host(photoBase64) != null) {
                         coil.compose.AsyncImage(
                             model = photoBase64,
                             contentDescription = com.example.util.tr("Imagen adjunta"),
                             modifier = Modifier.fillMaxSize(),
                             contentScale = androidx.compose.ui.layout.ContentScale.Fit
                         )
+                    } else {
+                        Icon(Icons.Default.Image, contentDescription = com.example.util.tr("Imagen adjunta"), tint = Color.White)
                     }
                 }
                 Spacer(modifier = Modifier.height(16.dp))
@@ -1082,13 +1076,7 @@ fun UserSupportThreadCard(
                             .coachClickable { selectedPhotoToView = photoStr },
                         contentAlignment = Alignment.Center
                     ) {
-                        val thumbBitmap = remember(photoStr) {
-                            try {
-                                val clean = if (photoStr.contains(",")) photoStr.substringAfter(",") else photoStr
-                                val bytes = android.util.Base64.decode(clean, android.util.Base64.DEFAULT)
-                                android.graphics.BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
-                            } catch (_: Exception) { null }
-                        }
+                        val thumbBitmap = rememberAttachment(photoStr, maxDimension = 256).value
                         if (thumbBitmap != null) {
                             androidx.compose.foundation.Image(
                                 bitmap = thumbBitmap.asImageBitmap(),

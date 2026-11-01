@@ -688,9 +688,9 @@ fun DraftingApp() {
             return@CompositionLocalProvider
         }
 
-        activeUpdateInfo?.takeIf { it.isUpdateAvailable && it.isMandatory }?.let { update ->
-            AppUpdateDialog(updateInfo = update, onDismiss = {})
-            return@CompositionLocalProvider
+        activeUpdateInfo?.takeIf { it.isUpdateAvailable }?.let { update ->
+            AppUpdateDialog(updateInfo = update, onDismiss = { com.example.util.AppUpdateManager.dismissAlert() })
+            if (update.isMandatory) return@CompositionLocalProvider
         }
 
         if (!versionVerified) {
