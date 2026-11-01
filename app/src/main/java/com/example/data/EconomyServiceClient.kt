@@ -26,6 +26,11 @@ class EconomyUnconfirmedException : IllegalStateException(com.google.firebase.Fi
     .applicationContext.getString(com.example.R.string.operation_unconfirmed))
 
 object EconomyServiceClient {
+    /** Keep administrative resolutions independent from the legacy user queue slot. */
+    private fun usesIndependentRequestDocument(action: String): Boolean = action in setOf(
+        "SPONSOR", "SPONSOR_RESOLVE", "RESOLVE", "ADJUST", "PREMIUM_GRANT", "PREMIUM_REMOVE", "ROLE"
+    )
+
     private inline fun <T> withOperationStorage(block: () -> T): T = try { block() }
     catch (error: IllegalStateException) {
         throw IllegalStateException(com.google.firebase.FirebaseApp.getInstance().applicationContext
@@ -50,7 +55,7 @@ object EconomyServiceClient {
             if (action == "SPONSOR") fields + ("publicationId" to id) else fields)
         var directId = withOperationStorage { operations.reserve(commandKey, id) }
         val queued = try {
-            val document = if (action == "SPONSOR") "${user.uid}~$directId" else user.uid
+            val document = if (usesIndependentRequestDocument(action)) "${user.uid}~$directId" else user.uid
             withTimeoutOrNull(5_000L) { FirebaseFirestore.getInstance().collection("economy_requests")
                 .document(document).get(Source.SERVER).await() }
         } catch (error: CancellationException) { throw error }
@@ -123,7 +128,7 @@ object EconomyServiceClient {
         // durable fallback and continue watching it instead of reporting a false success.
         // Sponsorships are independent requests. Do not reuse the legacy
         // per-user document, because one pending ad must not block later ads.
-        val requestDocument = if (action == "SPONSOR") "${user.uid}~$directId" else user.uid
+        val requestDocument = if (usesIndependentRequestDocument(action)) "${user.uid}~$directId" else user.uid
         val ref = FirebaseFirestore.getInstance().collection("economy_requests").document(requestDocument)
         val submission = try {
             withTimeoutOrNull(15_000L) {

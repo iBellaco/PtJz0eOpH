@@ -42,6 +42,13 @@
   "Avatares y marcos exclusivos": "Avatares e molduras exclusivos",
   "El Auto-Scan requiere una suscripción Premium.": "O Auto-Scan requer uma assinatura Premium.",
   "No hay usuarios conectados en esta sección.": "Não há usuários conectados nesta seção.",
+  "No hay usuarios en esta sección.": "Não há usuários nesta seção.",
+  "Última conexión: sin registro": "Última conexão: sem registro",
+  "Última conexión: {0}": "Última conexão: {0}",
+  "hace menos de un minuto": "há menos de um minuto",
+  "hace {0} min": "há {0} min",
+  "hace {0} h": "há {0} h",
+  "hace {0} d": "há {0} d",
   "Copiar usuario": "Copiar usuário",
   "Copiar todos": "Copiar todos",
   "Copiado": "Copiado"
