@@ -119,6 +119,7 @@ fun AdminUserPresenceCard(modifier: Modifier = Modifier) {
         is String -> value.toLongOrNull() ?: 0L
         else -> 0L
     }
+    @Composable
     fun presenceLabel(user: Map<String, Any>): String {
         if (online(user)) return tr("En línea")
         val last = lastActive(user)
