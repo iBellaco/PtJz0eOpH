@@ -206,7 +206,8 @@ object WildRiftRepository {
         previousRoleStats: Map<String, Map<com.example.model.LaneRole, ChampionMetaStats>> = emptyMap(),
         previousTiers: Map<String, String> = emptyMap(),
         checkedAt: Long = 0L,
-        history: Map<String, List<com.example.data.sync.ObservedRate>> = emptyMap()
+        history: Map<String, List<com.example.data.sync.ObservedRate>> = emptyMap(),
+        patchMovements: Map<String, Int>? = null
     ) {
         if (!region.equals(com.example.data.sync.MetaRegion.DEFAULT, ignoreCase = true)) return
         val normalized = com.example.data.sync.MetaRegion.normalize(region)
@@ -256,7 +257,7 @@ object WildRiftRepository {
                 history24hAt = day?.at ?: 0L,
                 history12hAt = halfDay?.at ?: 0L,
                 tier = category,
-                tierMovement = previousTier?.takeIf { it.isNotBlank() }?.let {
+                tierMovement = patchMovements?.get(com.example.data.sync.RegionalTierParser.canonical(champion.id)) ?: if (patchMovements != null) 0 else previousTier?.takeIf { it.isNotBlank() }?.let {
                     when {
                         tierRank(category) > tierRank(it) -> 1
                         tierRank(category) < tierRank(it) -> -1
@@ -294,6 +295,20 @@ object WildRiftRepository {
 
     fun regionalSnapshot(region: String): List<Champion> =
         regionalChampions[com.example.data.sync.MetaRegion.normalize(region)] ?: baseChampions.toList()
+
+    @Synchronized fun applyPatchMovements(movements: Map<String, Int>) {
+        regionalChampions.keys.toList().forEach { region ->
+            regionalChampions[region] = regionalChampions[region].orEmpty().map {
+                it.copy(tierMovement = movements[com.example.data.sync.RegionalTierParser.canonical(it.id)] ?: 0)
+            }
+        }
+        androidx.compose.runtime.snapshots.Snapshot.withMutableSnapshot {
+            regionRevision++
+            val updated = regionalSnapshot(activeRegionName)
+            champions.clear()
+            champions.addAll(updated)
+        }
+    }
 
     @Synchronized
     fun selectMetaRegion(region: String) {

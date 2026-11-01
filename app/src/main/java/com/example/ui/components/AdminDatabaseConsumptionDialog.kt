@@ -21,7 +21,7 @@ import com.example.util.tr
 import kotlinx.coroutines.launch
 
 @Composable
-fun AdminDatabaseConsumptionDialog(onDismiss: () -> Unit, onOpenCashRequests: (() -> Unit)? = null) {
+fun AdminDatabaseConsumptionDialog(onDismiss: () -> Unit) {
     var rows by remember { mutableStateOf<List<SavedDataStatistic>>(emptyList()) }
     var busy by remember { mutableStateOf(false) }
     var failed by remember { mutableStateOf(false) }
@@ -68,7 +68,6 @@ fun AdminDatabaseConsumptionDialog(onDismiss: () -> Unit, onOpenCashRequests: ((
                     Button(onClick = { refresh(forceRefresh = true) }, enabled = !busy, modifier = Modifier.weight(1f).heightIn(min = 48.dp).testTag("refresh_data_summary")) { Text(tr("Actualizar")) }
                     TextButton(onClick = onDismiss, modifier = Modifier.heightIn(min = 48.dp).testTag("close_data_summary")) { Text(tr("Cerrar")) }
                 }
-                if (onOpenCashRequests != null) TextButton(onClick = onOpenCashRequests, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp).testTag("open_cash_requests")) { Text(tr("Solicitudes de canje")) }
             }
         }
     }

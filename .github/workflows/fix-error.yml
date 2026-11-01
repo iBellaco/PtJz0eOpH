@@ -154,6 +154,8 @@ jobs:
             --tests 'com.example.DraftMultiDeviceAuditTest.smallCapturePreservesJhinWhenPortraitsAndBansChange' \
             --tests 'com.example.data.OverlayAccessSnapshotTest' \
             --tests 'com.example.PasswordPolicyTest' \
+            --tests 'com.example.PatchTierMovementTest' \
+            --tests 'com.example.TierMovementRegressionTest' \
             --tests 'com.example.service.FloatingWindowLifecycleTest' \
             --stacktrace --no-daemon --max-workers=1
 

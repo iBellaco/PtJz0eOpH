@@ -65,14 +65,9 @@ object PanelNotificationStore {
                 if (admin) {
                     var roleRequests = emptyMap<String, String>()
                     var streamerRequests = emptyMap<String, String>()
-                    var cashRequests = emptyMap<String, String>()
                     var sponsorRequests = emptyMap<String, String>()
                     fun publishAdministration() = publish(next, NotificationPanel.ADMINISTRATION,
-                        roleRequests + streamerRequests + cashRequests + sponsorRequests)
-                    listeners += EssenceEconomyRepository.redemptions.whereEqualTo("status", "PENDING").addSnapshotListener { snapshot, error ->
-                        cashRequests = if (error == null) snapshot?.documents.orEmpty().associate { "support:payment_${it.id}" to PanelReadRepository.revision(it.data.orEmpty()) } else emptyMap()
-                        publishAdministration()
-                    }
+                        roleRequests + streamerRequests + sponsorRequests)
                     listeners += db.collection("moderator_requests").whereEqualTo("status", "PENDIENTE").addSnapshotListener { snapshot, error ->
                         roleRequests = if (error == null) snapshot?.documents.orEmpty().associate { "support:${it.id}" to PanelReadRepository.revision(it.data.orEmpty()) } else emptyMap()
                         publishAdministration()
@@ -82,12 +77,11 @@ object PanelNotificationStore {
                             .associate { "streamer:${it.id}" to PanelReadRepository.revision(it.data.orEmpty()) } else emptyMap()
                         publishAdministration()
                     }
-                    listeners += db.collection("pending_sponsor_ads").whereEqualTo("isApproved", false).addSnapshotListener { snapshot, error ->
-                        sponsorRequests = if (error == null) snapshot?.documents.orEmpty()
-                            .filter { SponsorReviewPolicy.pending(it.data.orEmpty()) }
-                            .associate { "sponsor:${it.id}" to PanelReadRepository.revision(it.data.orEmpty()) } else emptyMap()
+                    listeners += SponsorReviewRepository.observe(onChange = { rows ->
+                        sponsorRequests = rows.associate { "sponsor:${it["id"]}" to PanelReadRepository.revision(it) }
                         publishAdministration()
-                    }
+                    }, onError = { /* Preserve known pending events until a successful refresh. */ })
+
                 }
             }
         }

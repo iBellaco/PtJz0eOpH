@@ -5,6 +5,7 @@ import com.example.ui.components.CoachOutlinedButton as OutlinedButton
 import com.example.ui.components.CoachTextButton as TextButton
 import com.example.ui.components.CoachIconButton as IconButton
 import com.example.util.tr
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.BorderStroke
 import android.widget.Toast
 import androidx.compose.foundation.border
@@ -49,7 +50,6 @@ fun AdminModeratorRequestsDialog(
     val db = FirebaseFirestore.getInstance()
     var requests by remember { mutableStateOf<List<Map<String, Any>>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
-    var showPayments by remember { mutableStateOf(false) }
     var showStreamers by remember { mutableStateOf(false) }
     var showSponsors by remember { mutableStateOf(false) }
     var showHistory by remember { mutableStateOf(false) }
@@ -61,9 +61,10 @@ fun AdminModeratorRequestsDialog(
         sponsorBusy = sponsorBusy + id
         reviewScope.launch {
             try {
-                SponsorReviewRepository.resolve(id, approve)
+                SponsorReviewRepository.resolve(id, approve, requests.firstOrNull { it["id"] == id }?.get("queuedRequestId") as? String)
                 com.example.data.AppNoticeManager.syncFromCloud(context)
-                Toast.makeText(context, com.example.util.appTr(if (approve) "Anuncio aprobado y visible en el panel de anuncios" else "Solicitação recusada e Essências Azuis devolvidas"), Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, if (approve) com.example.util.appTr("Anuncio aprobado y visible en el panel de anuncios")
+                    else context.getString(com.example.R.string.sponsor_rejection_done), Toast.LENGTH_SHORT).show()
             } catch (_: Exception) {
                 Toast.makeText(context, context.getString(com.example.R.string.sponsor_review_error), Toast.LENGTH_LONG).show()
             } finally { sponsorBusy = sponsorBusy - id }
@@ -124,26 +125,16 @@ fun AdminModeratorRequestsDialog(
     }
 
     DisposableEffect(adminClaim) {
-        val listener = if (!adminClaim) null else db.collection("pending_sponsor_ads")
-            .whereEqualTo("isApproved", false).addSnapshotListener { snap, error ->
-                if (error != null) {
-                    Toast.makeText(context, context.getString(com.example.R.string.sponsor_review_error), Toast.LENGTH_LONG).show()
-                    return@addSnapshotListener
-                }
-                val sponsorRequests = snap?.documents.orEmpty().filter { SponsorReviewPolicy.pending(it.data.orEmpty()) }.map { doc ->
-                    val data = doc.data?.toMutableMap() ?: mutableMapOf()
-                    data["id"] = doc.id
-                    data["requestType"] = "SPONSOR"
-                    data["status"] = "PENDIENTE"
-                    data["targetName"] = data["title"] as? String ?: "Publicidad"
-                    data["targetEmail"] = data["sponsorEmail"] as? String ?: ""
-                    data["newValue"] = data["content"] as? String ?: ""
-                    data["timestamp"] = (data["createdAt"] as? Number)?.toLong() ?: System.currentTimeMillis()
-                    data
-                }
-                requests = requests.filterNot { it["requestType"] == "SPONSOR" } + sponsorRequests
-            }
-        onDispose { listener?.remove() }
+        val listeners = if (!adminClaim) emptyList() else SponsorReviewRepository.observe(onChange = { rows ->
+            val sponsors = rows.map { row -> row + mapOf(
+                "requestType" to "SPONSOR", "status" to "PENDIENTE",
+                "targetName" to (row["title"] ?: ""), "targetEmail" to (row["sponsorEmail"] ?: ""),
+                "newValue" to (row["content"] ?: ""), "timestamp" to (row["createdAt"] ?: 0L)) }
+            requests = requests.filterNot { it["requestType"] == "SPONSOR" } + sponsors
+        }, onError = {
+            Toast.makeText(context, context.getString(com.example.R.string.sponsor_review_error), Toast.LENGTH_LONG).show()
+        })
+        onDispose { listeners.forEach { it.remove() } }
     }
 
     LaunchedEffect(Unit) {
@@ -202,19 +193,14 @@ fun AdminModeratorRequestsDialog(
 
                 Spacer(modifier = Modifier.height(10.dp))
 
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    TextButton(onClick = { showStreamers = false; showSponsors = false; showPayments = false }) { Text(com.example.util.localizedString(com.example.R.string.streamer_roles), color = if (!showStreamers && !showSponsors) HextechGold else TextSecondary) }
-                    TextButton(onClick = { showStreamers = true; showSponsors = false; showPayments = false }) { Text(com.example.util.localizedString(com.example.R.string.streamer_reviews), color = if (showStreamers) HextechGold else TextSecondary) }
-                    if (adminClaim) TextButton(onClick = { showStreamers = false; showSponsors = true; showPayments = false }, modifier = Modifier.testTag("admin_sponsor_requests_open")) {
+                Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    TextButton(onClick = { showStreamers = false; showSponsors = false }) { Text(com.example.util.localizedString(com.example.R.string.streamer_roles), color = if (!showStreamers && !showSponsors) HextechGold else TextSecondary) }
+                    TextButton(onClick = { showStreamers = true; showSponsors = false }) { Text(com.example.util.localizedString(com.example.R.string.streamer_reviews), color = if (showStreamers) HextechGold else TextSecondary) }
+                    if (adminClaim) TextButton(onClick = { showStreamers = false; showSponsors = true }, modifier = Modifier.testTag("admin_sponsor_requests_open")) {
                         Text(tr("Patrocinios"), color = if (showSponsors) Color(0xFFF97316) else TextSecondary)
                     }
                 }
-                if (adminClaim) TextButton(onClick = { showPayments = true; showStreamers = false },
-                    modifier = Modifier.heightIn(min = 48.dp).testTag("admin_cash_payments_open")) { Text(tr("Pagos USDT")) }
                 PanelReadControl(com.example.data.NotificationPanel.ADMINISTRATION)
-                if (showPayments && adminClaim) {
-                    Column(Modifier.weight(1f).fillMaxWidth().verticalScroll(rememberScrollState())) { CashRedemptionReviewPanel() }
-                } else
                 if (showStreamers) {
                     StreamerReviewPanel(Modifier.weight(1f).fillMaxWidth())
                 } else {

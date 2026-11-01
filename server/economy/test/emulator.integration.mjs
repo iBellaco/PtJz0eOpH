@@ -36,12 +36,13 @@ try {
     assert.equal(outcomes.filter(r => r.status === 'fulfilled').length, 1); assert.equal((await db.doc('users/economy-poor').get()).get('orangeEssence'), 1);
   });
   const destination = {amount: 10, network: 'ERC20', wallet: '0x1111111111111111111111111111111111111111', binanceEmail: '', expectedFee: 5};
-  await test('redemption saves the debit, receipt and private conversation together', async () => {
+  await test('retired redemption rejects old clients without debiting', async () => {
     const before = (await db.doc(`users/${owner.uid}`).get()).get('orangeEssence');
-    await call('REDEEM', 'cash_server_ten', destination); await call('REDEEM', 'cash_server_ten', destination);
-    assert.equal((await db.doc(`users/${owner.uid}`).get()).get('orangeEssence'), before - 15);
-    assert.equal((await db.doc('cash_redemptions/cash_server_ten').get()).get('status'), 'PENDING');
-    assert.equal((await db.doc('support_reports/payment_cash_server_ten').get()).get('staffVisible'), false);
+    await assert.rejects(call('REDEEM', 'cash_server_ten', destination), /ya no está disponible/);
+    assert.equal((await db.doc(`users/${owner.uid}`).get()).get('orangeEssence'), before);
+    // Existing liability fixture: retiring new requests must not prevent a legacy refund.
+    await db.doc('cash_redemptions/cash_server_ten').set({userId:owner.uid, status:'PENDING', amount:10, fee:5, totalCost:15});
+    await db.doc(`users/${owner.uid}/subscription_history/cash_server_ten`).set({status:'Pendiente'});
   });
   await test('forged admin fields cannot resolve or credit balances', async () => {
     await db.doc(`users/${other.uid}`).update({admin: true, role: 'admin', rankBorder: 'ADMIN'});
@@ -73,7 +74,7 @@ try {
   await test('server-owned fees reject a stale quote without debiting', async () => {
     await db.doc('app_config/binance_fees').set({ERC20: 7});
     const before = (await db.doc(`users/${owner.uid}`).get()).get('orangeEssence');
-    await assert.rejects(call('REDEEM', 'cash_stale_quote', destination), /comisión/);
+    await assert.rejects(call('REDEEM', 'cash_stale_quote', destination), /ya no está disponible/);
     assert.equal((await db.doc(`users/${owner.uid}`).get()).get('orangeEssence'), before);
     await db.doc('app_config/binance_fees').delete();
   });
@@ -122,9 +123,9 @@ try {
   });
   await test('deletion and suspension block financial operations without recreating accounts', async () => {
     await db.doc(`account_deletions/${owner.uid}`).set({status: 'PENDING'});
-    await assert.rejects(call('REDEEM', 'cash_deleted_user', destination), /eliminación/);
+    await assert.rejects(call('PURCHASE', 'cash_deleted_user', {plan:'MONTHLY',currency:'BLUE'}), /eliminación/);
     await db.doc(`account_deletions/${owner.uid}`).delete(); await db.doc(`users/${owner.uid}`).update({banned: true});
-    await assert.rejects(call('REDEEM', 'cash_banned_user', destination), /suspendida/);
+    await assert.rejects(call('PURCHASE', 'cash_banned_user', {plan:'MONTHLY',currency:'BLUE'}), /suspendida/);
     await call('ROLE', 'role_unban_user', {uid: owner.uid, role: 'creador'}, admin);
     assert.equal((await db.doc(`users/${owner.uid}`).get()).get('banned'), false);
   });
@@ -198,12 +199,40 @@ try {
     assert.equal((await db.doc('pending_sponsor_ads/sponsor_queue_02').get()).get('isApproved'), false);
     assert.equal((await db.doc(`users/${sponsorUid}`).get()).get('blueEssence'), 46);
   });
+  await test('concurrent rejection of an uncharged queued sponsor never debits or invents a refund', async () => {
+    const id='sponsor_queued_review', ref=db.doc(`economy_requests/${sponsorUid}~${id}`);
+    const notice={title:'Review queue',content:'Queued content',videoUrl:'',expandedImageUrl:'',externalUrl:'',durationValue:1,durationUnit:'day'};
+    await ref.set({userId:sponsorUid,operationId:id,authTime:Math.floor(Date.now()/1000),status:'REVIEW',schema:2,createdAt:Timestamp.now(),payload:{action:'SPONSOR',id,notice,expectedCost:27}});
+    const profile=db.doc(`users/${sponsorUid}`), before=(await profile.get()).get('blueEssence');
+    const request={action:'SPONSOR_RESOLVE',id:'queued_review_reject',sponsorId:id,approved:false,queuedRequestId:ref.id};
+    await assert.rejects(executeEconomy(db,other,request,Date.now,{identities}), /permisos/);
+    await Promise.all([1,2].map(()=>executeEconomy(db,admin,request,Date.now,{identities})));
+    assert.equal((await profile.get()).get('blueEssence'),before);
+    assert.equal((await db.doc(`pending_sponsor_ads/${id}`).get()).exists,false);
+    assert.equal((await profile.collection('economy_operations').doc(`sponsor_refund_${id}`).get()).exists,false);
+    assert.equal((await ref.get()).get('status'),'FAILED');
+    await assert.rejects(executeEconomy(db,auth(sponsorUid),(await ref.get()).get('payload')), /rechazada/);
+    await processQueue(db,identities,{manualReview:true});
+    assert.equal((await profile.get()).get('blueEssence'),before);
+  });
   await test('concurrent private workers execute one charge and preserve a private result',async()=>{
     await queueRef.set(queued('queue_concurrent_01'));
     await Promise.all([processQueue(db,identities),processQueue(db,identities)]);
     assert.equal((await db.doc(`users/${queueUid}`).get()).get('blueEssence'),400);
     assert.equal((await queueRef.get()).get('status'),'COMPLETED');
     assert.equal((await db.doc(`economy_results/${queueUid}~queue_concurrent_01`).get()).get('result.ok'),true);
+  });
+  await test('approval publishes a queued advertisement with exactly one charge on retry', async () => {
+    const id='sponsor_queue_approval', ref=db.doc(`economy_requests/${sponsorUid}~${id}`);
+    const notice={title:'Queued approval',content:'Queued content',videoUrl:'',expandedImageUrl:'',externalUrl:'',durationValue:1,durationUnit:'day'};
+    await ref.set({userId:sponsorUid,operationId:id,authTime:Math.floor(Date.now()/1000),status:'PENDING',schema:2,createdAt:Timestamp.now(),payload:{action:'SPONSOR',id,notice,expectedCost:27}});
+    const profile=db.doc(`users/${sponsorUid}`), before=(await profile.get()).get('blueEssence');
+    const request={action:'SPONSOR_RESOLVE',id:'queued_review_approve',sponsorId:id,approved:true,queuedRequestId:ref.id};
+    await executeEconomy(db,admin,request,Date.now,{identities});
+    await executeEconomy(db,admin,request,Date.now,{identities});
+    assert.equal((await profile.get()).get('blueEssence'),before-27);
+    assert.equal((await db.doc(`pending_sponsor_ads/${id}`).get()).get('isApproved'),true);
+    assert.ok((await db.doc('system_config/app_notices').get()).get('notices').some(n=>n.id===id));
   });
   await test('an interrupted worker recovers an expired lease without charging the committed operation again',async()=>{
     const request=queued('queue_lost_commit_01');

@@ -34,6 +34,10 @@ try {
   assert.equal(await assertSucceeds(submit('owner~sponsor_first_0001', 'sponsor_first_0001')), true);
   assert.equal((await assertSucceeds(getDocs(query(collection(owner, 'economy_requests'), where('userId', '==', 'owner'))))).size, 3);
   console.log('PASS independent advertisements coexist with an adjustment and retries reuse the request');
+  assert.equal((await assertSucceeds(getDocs(query(collection(owner, 'economy_requests'), where('payload.action', '==', 'SPONSOR'))))).size, 2);
+  await assertFails(getDocs(query(collection(other, 'economy_requests'), where('payload.action', '==', 'SPONSOR'))));
+  await assertFails(setDoc(doc(owner, 'economy_requests/owner~retired_redeem'), command('retired_redeem', 'REDEEM')));
+  console.log('PASS sponsor reviewers can see queued ads and retired redemptions cannot be submitted');
   await assertFails(getDoc(doc(other, 'economy_requests/owner~missing_0001')));
   await assertFails(getDoc(doc(other, 'economy_requests/owner~sponsor_first_0001')));
   await assertFails(getDocs(collection(other, 'economy_requests')));

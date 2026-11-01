@@ -102,7 +102,7 @@ class RuntimeBehaviorTest {
         println("MATCHUP_ACCESS_AUDIT: ${roster.size} champions; $profiles lane profiles; exact 3/6/24 in every category")
     }
 
-    @Test fun `orange redemption requires the signed administrator claim exclusively`() {
+    @Test fun `retired orange redemption is unavailable for every account`() {
         for (role in listOf("admin", "administrador", "moderador", "streamer", "creador", "creador_lvl2", "creador_lvl3", "creador_lvl4", "creador_lvl5", "free", "premium", "patrocinador", "guest")) {
             assertFalse(RolePanelAccess.canRedeemEssence(role))
             assertFalse(RolePanelAccess.canRedeemEssence("free", role))
@@ -110,8 +110,8 @@ class RuntimeBehaviorTest {
         }
         assertFalse(RolePanelAccess.canRedeemEssence("banned", "streamer", true))
         assertFalse(RolePanelAccess.canRedeemEssence("admin", "banned", true))
-        assertTrue(RolePanelAccess.canRedeemEssence("admin", adminClaim = true))
-        assertEquals(40L, EssenceEconomyPolicy.redeem(mapOf("role" to "admin", "orangeEssence" to 50L), 10L, adminClaim = true))
+        assertFalse(RolePanelAccess.canRedeemEssence("admin", adminClaim = true))
+        assertTrue(runCatching { EssenceEconomyPolicy.redeem(mapOf("role" to "admin", "orangeEssence" to 50L), 10L, adminClaim = true) }.isFailure)
     }
 
     @Test fun `damage profiles and rounding never invent pure true damage`() {
@@ -177,7 +177,7 @@ class RuntimeBehaviorTest {
         val poor = mapOf<String, Any>("role" to "free", "blueEssence" to 99L, "orangeEssence" to 8L)
         assertTrue(runCatching { EssenceEconomyPolicy.purchase(poor, EssencePremiumPlan.MONTHLY, EssenceCurrency.BLUE, now) }.isFailure)
         assertTrue(runCatching { EssenceEconomyPolicy.redeem(poor, 10) }.isFailure)
-        for (amount in listOf(10L, 25L, 50L)) assertEquals(60L - amount, EssenceEconomyPolicy.redeem(poor + mapOf("orangeEssence" to 60L, "role" to "admin"), amount, adminClaim = true))
+        for (amount in listOf(10L, 25L, 50L)) assertTrue(runCatching { EssenceEconomyPolicy.redeem(poor + mapOf("orangeEssence" to 60L, "role" to "admin"), amount, adminClaim = true) }.isFailure)
         assertTrue(runCatching { EssenceEconomyPolicy.redeem(poor + mapOf("orangeEssence" to 100L, "role" to "banned"), 10) }.isFailure)
         assertTrue(runCatching { EssenceEconomyPolicy.redeem(poor + ("orangeEssence" to 100L), 11) }.isFailure)
 
@@ -186,13 +186,13 @@ class RuntimeBehaviorTest {
         // 10 USDT + TRC20 (2 EN fee) = 12 EN needed -> fails with 11 EN
         assertTrue(runCatching { EssenceEconomyPolicy.redeem(userWith11En, 10L, UsdtNetwork.TRC20.feeEn, adminClaim = true) }.isFailure)
         // 10 USDT + BEP20 (1 EN fee) = 11 EN needed -> succeeds, remaining is 0 EN
-        assertEquals(0L, EssenceEconomyPolicy.redeem(userWith11En, 10L, UsdtNetwork.BEP20.feeEn, adminClaim = true))
+        assertTrue(runCatching { EssenceEconomyPolicy.redeem(userWith11En, 10L, UsdtNetwork.BEP20.feeEn, adminClaim = true) }.isFailure)
 
         val userWith55En = mapOf<String, Any>("role" to "creador", "orangeEssence" to 55L)
         // 50 USDT + ERC20 (5 EN fee) = 55 EN needed -> succeeds, remaining is 0 EN
-        assertEquals(0L, EssenceEconomyPolicy.redeem(userWith55En, 50L, UsdtNetwork.ERC20.feeEn, adminClaim = true))
+        assertTrue(runCatching { EssenceEconomyPolicy.redeem(userWith55En, 50L, UsdtNetwork.ERC20.feeEn, adminClaim = true) }.isFailure)
         // 50 USDT + TRC20 (2 EN fee) = 52 EN needed -> succeeds, remaining is 3 EN
-        assertEquals(3L, EssenceEconomyPolicy.redeem(userWith55En, 50L, UsdtNetwork.TRC20.feeEn, adminClaim = true))
+        assertTrue(runCatching { EssenceEconomyPolicy.redeem(userWith55En, 50L, UsdtNetwork.TRC20.feeEn, adminClaim = true) }.isFailure)
     }
 
     @Test fun `same installation and its legacy aliases consume only one slot across repeated logins`() {

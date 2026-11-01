@@ -25,12 +25,14 @@ fun AdminOverlayAccessDialog(onDismiss: () -> Unit) {
     var loading by remember { mutableStateOf(true) }
     var saving by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf(false) }
+    var loaded by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) {
         val result = runCatching { OverlayAccessPolicy.load() }
         result.onSuccess { snapshot ->
             visible = snapshot.hubButtonsVisible
             activationEnabled = snapshot.activationButtonEnabled
             allowed = snapshot.allowedAccountIds.ifEmpty { snapshot.allowedUserUids }
+            loaded = true
         }
             .onFailure { error = true }
         loading = false
@@ -74,7 +76,7 @@ fun AdminOverlayAccessDialog(onDismiss: () -> Unit) {
                                 .onFailure { error = true }.onSuccess { onDismiss() }
                             saving = false
                         }
-                    }, enabled = !loading && !saving, modifier = Modifier.heightIn(min = 48.dp).testTag("overlay_access_save")) {
+                    }, enabled = loaded && !loading && !saving, modifier = Modifier.heightIn(min = 48.dp).testTag("overlay_access_save")) {
                         Text(tr(if (saving) "Guardando…" else "Guardar"))
                     }
                 }

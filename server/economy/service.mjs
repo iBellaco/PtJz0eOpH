@@ -1,4 +1,5 @@
 import {FieldValue} from 'firebase-admin/firestore';
+import {getAuth} from 'firebase-admin/auth';
 import {allowedAccount, balance, cashRedemption, deadline, ensure, fingerprint, hasSponsorRole, integer, premiumPurchase, sponsorPrice, validateInput, DAY} from './policy.mjs';
 
 const serverTime = () => FieldValue.serverTimestamp();
@@ -12,10 +13,49 @@ function publicSponsorNotice(id, data) {
     'budget', 'budgetUnit', 'durationValue', 'durationUnit', 'isApproved', 'isEnabled', 'approvedAtMillis', 'expiresAtMillis'];
   return Object.fromEntries(allowed.filter(key => data[key] !== undefined).map(key => [key, data[key]]).concat([['id', id], ['tag', 'PUBLICIDAD']]));
 }
-export async function executeEconomy(db, auth, raw, clock = Date.now, {requestedAtMillis} = {}) {
+export async function executeEconomy(db, auth, raw, clock = Date.now, {requestedAtMillis, identities, sourceRequestId} = {}) {
   ensure(auth && auth.uid && auth.token?.firebase?.sign_in_provider !== 'anonymous' && auth.token?.email !== 'coach.guest.reader@gmail.com', 'unauthenticated', 'Inicia sesión');
-  const input = validateInput(raw), admin = auth.token?.admin === true;
+  const input = {...validateInput(raw)}, admin = auth.token?.admin === true;
   ensure(!adminActions.has(input.action) || admin, 'permission-denied', 'No tienes permisos para esta operación');
+  // Retired in every client, including older installed versions. Existing settlements remain recoverable.
+  ensure(input.action !== 'REDEEM', 'failed-precondition', 'Esta operación ya no está disponible');
+  if (input.action === 'SPONSOR_RESOLVE' && input.queuedRequestId) {
+    ensure(typeof input.approved === 'boolean' && typeof input.sponsorId === 'string' && /^[a-zA-Z0-9_-]{8,80}$/.test(input.sponsorId),
+      'invalid-argument', 'Solicitud no válida');
+    ensure(typeof input.queuedRequestId === 'string' && /^[a-zA-Z0-9_~-]{8,210}$/.test(input.queuedRequestId), 'invalid-argument', 'Solicitud no válida');
+    const operatorAccount = await db.doc(`users/${auth.uid}`).get();
+    const operatorDeletion = await db.doc(`account_deletions/${auth.uid}`).get();
+    allowedAccount(operatorAccount.data(), operatorDeletion.data());
+    const queued = (await db.doc(`economy_requests/${input.queuedRequestId}`).get()).data();
+    ensure(queued?.payload?.action === 'SPONSOR' && queued.operationId === input.sponsorId && queued.payload.id === input.sponsorId,
+      'invalid-argument', 'Solicitud no válida');
+    if (input.approved === false) {
+      const cancelled = await db.runTransaction(async tx => {
+        const request = db.doc(`economy_requests/${input.queuedRequestId}`);
+        const fresh = await tx.get(request);
+        const ad = await tx.get(db.doc(`pending_sponsor_ads/${input.sponsorId}`));
+        const charge = await tx.get(db.doc(`users/${queued.userId}/economy_operations/${input.sponsorId}`));
+        if (ad.exists || charge.exists) return false;
+        ensure(fresh.get('operationId') === input.sponsorId, 'failed-precondition', 'La solicitud cambió');
+        const outcome = {operationId: input.sponsorId, status: 'FAILED', result: null,
+          error: {code: 'cancelled', message: 'Solicitud rechazada sin cargo'}, completedAt: serverTime()};
+        tx.update(request, {...outcome, lease: FieldValue.delete(), leaseUntil: FieldValue.delete()});
+        tx.set(db.doc(`economy_results/${queued.userId}~${input.sponsorId}`), {...outcome, userId: queued.userId});
+        return true;
+      });
+      if (cancelled) return {ok: true, refunded: 0};
+    }
+    if (!(await db.doc(`pending_sponsor_ads/${input.sponsorId}`).get()).exists) {
+      ensure(['PENDING', 'PROCESSING', 'REVIEW'].includes(queued.status), 'failed-precondition', 'La solicitud ya fue resuelta');
+      const owner = await (identities ?? getAuth()).getUser(queued.userId);
+      ensure(!owner.disabled && owner.providerData.some(p => p.providerId !== 'anonymous'), 'unauthenticated', 'La cuenta no está disponible');
+      ensure(Number.isInteger(queued.authTime) && queued.authTime * 1000 >= (Date.parse(owner.tokensValidAfterTime ?? '') || 0), 'unauthenticated', 'Inicia sesión');
+      // Use the original operation ID: a simultaneous worker or retry cannot charge twice.
+      await executeEconomy(db, {uid: owner.uid, token: {...owner.customClaims, email: owner.email ?? '', firebase: {sign_in_provider: 'password'}}},
+        queued.payload, clock, {requestedAtMillis: queued.createdAt?.toMillis?.() ?? 0, sourceRequestId: input.queuedRequestId});
+    }
+    delete input.queuedRequestId;
+  }
   const now = integer(clock()), digest = fingerprint(input), operator = db.doc(`users/${auth.uid}`);
   if (input.action === 'CLEANUP') {
     const active = await operator.get(), deletion = await db.doc(`account_deletions/${auth.uid}`).get();
@@ -207,6 +247,12 @@ export async function executeEconomy(db, auth, raw, clock = Date.now, {requested
         record = receipt(input.id, now, 'CREATOR_UNSUBSCRIBE', 'Suscripción a Creador retirada', '0 EN');
       }
     } else if (input.action === 'SPONSOR') {
+      // Rejection and an in-flight worker serialize on the same request document.
+      for (const id of new Set([sourceRequestId, `${uid}~${input.id}`, uid].filter(Boolean))) {
+        const queue = await tx.get(db.doc(`economy_requests/${id}`));
+        ensure(!(queue.get('operationId') === input.id && queue.get('status') === 'FAILED'),
+          'failed-precondition', 'La solicitud ya fue rechazada');
+      }
       ensure(hasSponsorRole(account, admin), 'permission-denied', 'Tu cuenta no tiene el rol de patrocinador');
       const registry = await tx.get(db.doc('system_config/app_notices'));
       const active = (registry.get('notices') ?? []).filter(n => ['PUBLICIDAD', 'ADS'].includes((n.tag ?? '').toUpperCase()) && n.isApproved && n.isEnabled && (!n.expiresAtMillis || n.expiresAtMillis > now)).length;

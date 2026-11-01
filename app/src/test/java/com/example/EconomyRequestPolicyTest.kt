@@ -9,7 +9,7 @@ class EconomyRequestPolicyTest {
         assertTrue(EconomyRequestPolicy.canQueue("SPONSOR", administrator = true))
         assertTrue(EconomyRequestPolicy.canQueue("SPONSOR", administrator = false))
         for (action in listOf("ADJUST", "ROLE", "PREMIUM_GRANT", "PREMIUM_REMOVE", "RESOLVE", "REDEEM", "CLEANUP")) {
-            assertEquals(action != "CLEANUP", EconomyRequestPolicy.canQueue(action, administrator = true))
+            assertEquals(action !in setOf("CLEANUP", "REDEEM"), EconomyRequestPolicy.canQueue(action, administrator = true))
         }
     }
     @Test fun retriesReuseOnlyTheSameMeaning() {

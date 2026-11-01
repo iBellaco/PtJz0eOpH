@@ -147,7 +147,6 @@ fun AdminDashboardDialog(
     var showBroadcastDialog by remember { mutableStateOf(false) }
     var showNoticeConfigDialog by remember { mutableStateOf(false) }
     var showCpmAnalyticsDialog by remember { mutableStateOf(false) }
-    var showCashRequests by remember { mutableStateOf(false) }
     var showDatabaseConsumptionDialog by remember { mutableStateOf(false) }
     var showModeratorActivityDialog by remember { mutableStateOf(false) }
     var showSponsorPanelDialog by remember { mutableStateOf(false) }
@@ -202,19 +201,8 @@ fun AdminDashboardDialog(
         AdminCpmAnalyticsDialog(onDismiss = { showCpmAnalyticsDialog = false })
     }
 
-    if (showCashRequests) {
-        Dialog(onDismissRequest = { showCashRequests = false }) {
-            Surface(color = HextechDarkBg, shape = RoundedCornerShape(16.dp)) {
-                Column(Modifier.fillMaxWidth().heightIn(max = 650.dp).verticalScroll(rememberScrollState()).padding(16.dp)) {
-                    PanelReadControl(com.example.data.NotificationPanel.ADMINISTRATION)
-                    CashRedemptionReviewPanel()
-                    TextButton(onClick = { showCashRequests = false }) { Text(tr("Cerrar")) }
-                }
-            }
-        }
-    }
     if (showDatabaseConsumptionDialog) {
-        AdminDatabaseConsumptionDialog(onDismiss = { showDatabaseConsumptionDialog = false }, onOpenCashRequests = { showCashRequests = true })
+        AdminDatabaseConsumptionDialog(onDismiss = { showDatabaseConsumptionDialog = false })
     }
     if (showModeratorActivityDialog) AdminModeratorActivityDialog(onDismiss = { showModeratorActivityDialog = false })
     if (showOverlayAccessDialog) AdminOverlayAccessDialog(onDismiss = { showOverlayAccessDialog = false })

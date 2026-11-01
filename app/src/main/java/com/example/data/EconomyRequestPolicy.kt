@@ -10,7 +10,7 @@ object EconomyRequestPolicy {
      */
     private val queueableActions = setOf(
         "PURCHASE", "SUBSCRIBE", "UNSUBSCRIBE", "SPONSOR",
-        "REDEEM", "RESOLVE", "SPONSOR_RESOLVE", "ADJUST", "PREMIUM_GRANT", "PREMIUM_REMOVE", "ROLE"
+        "RESOLVE", "SPONSOR_RESOLVE", "ADJUST", "PREMIUM_GRANT", "PREMIUM_REMOVE", "ROLE"
     )
 
     fun canQueue(action: String, administrator: Boolean): Boolean = action in queueableActions

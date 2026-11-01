@@ -141,7 +141,7 @@ internal fun FloatingOverlayContent(
     val accountId = remember { runCatching { com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid }.getOrNull() }
     LaunchedEffect(accountId) {
         hubViewerButtonsVisible = runCatching {
-            com.example.data.OverlayAccessPolicy.load().hubButtonsVisibleFor(accountId)
+            runCatching { com.example.data.OverlayAccessPolicy.load().hubButtonsVisibleFor(accountId) }.getOrDefault(false)
         }.getOrDefault(true)
     }
 

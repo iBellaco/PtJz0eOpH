@@ -21,7 +21,7 @@ Idioma principal del desarrollador: español latino (es-419). Traduce a portugu�
 - Este archivo es la fuente única de instrucciones. `INSTRUCCIONES_AGENTES.md` mantiene un enlace de compatibilidad.
 
 ### REGLA DE RESUMEN COPIABLE DE LA APLICACIÓN (CRÍTICO)
-- Por indicación del propietario del 30 de octubre de 2026, la respuesta final debe contener únicamente el texto copiable de la modificación o actualización de Coach. No entregar reportes para testers ni mensajes de commit.
+- La entrega de cada validación debe incluir texto copiable para testers sobre los cambios de Coach, sin reportes técnicos internos ni mensajes de commit. Distinguir lo implementado de lo validado.
 - No mencionar el repositorio, ramas, flujos, panel de administrador ni roles en las respuestas. Describir únicamente los cambios de la aplicación y distinguir las correcciones implementadas de las que todavía requieren validación.
 - Al finalizar cada validación, entregar un único texto copiable para testers que enumere las correcciones, eliminaciones, ajustes y cualquier otra acción necesaria en Coach. Omitir siempre referencias al repositorio, ramas, flujos, administración, permisos internos, cuentas, correos, credenciales y cualquier otro dato sensible.
 - El nombre del proyecto es estrictamente **Coach**.
@@ -50,6 +50,7 @@ El orden jerárquico de los rangos para consejos tácticos es:
 11. Soberano
 
 ### Preferencias autorizadas de entrega
+- Al pasar cambios verificados a `coach-validacion`, crear o actualizar una única solicitud de cambios de `coach-validacion` hacia `main` para la fusión manual del propietario. Evitar duplicar la compilación completa: validar el push de `coach-validacion` y reutilizar ese resultado en la solicitud. No fusionar `main` automáticamente ni monitorizar continuamente; el propietario avisa cuando termine.
 - Mantener únicamente `main`, `coach-validacion` y `fix-error`. Toda modificación empieza en `fix-error` con pruebas del arreglo concreto. Solo después de verde se integra en `coach-validacion` para la validación completa. El propietario hace manualmente el paso a `main`; el agente nunca lo fusiona automáticamente.
 - Conservar como mínimo 10 ejecuciones por cada flujo de GitHub Actions. Cuando un flujo supere 10, eliminar únicamente sus ejecuciones completadas más antiguas hasta conservar 10; nunca borrar ejecuciones activas ni usar el historial de otro flujo para completar el mínimo. Mantener hasta 30 releases finales además del borrador de firma protegido.
 - Mantener español y portugués como únicos idiomas seleccionables. Revisar las pantallas y el contenido generado en portugués antes de entregar.

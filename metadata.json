@@ -1,6 +1,5 @@
 {
   "name": "Coach",
   "description": "Coach profesional de Wild Rift con auditoría de decisiones, microjuego y macrojuego para subir de elo.",
-  "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+  "requestFramePermissions": []
 }

@@ -48,12 +48,12 @@ import org.robolectric.annotation.GraphicsMode
 class RuntimeVisibilityTest(private val screen: String) {
     companion object {
         @JvmStatic @ParameterizedRobolectricTestRunner.Parameters(name = "{0}")
-        fun screens() = listOf("role-change-success-es", "cash-access-admin-es", "cash-access-admin-pt", "cash-access-creador-es", "cash-access-moderador-es", "cash-access-streamer-es", "cash-access-free-es", "cash-access-premium-es", "cash-access-patrocinador-es", "cash-access-fake_admin-es", "cash-review-hidden-es", "economy-details-es", "economy-details-pt", "role-change-failure-es", "role-change-pending-es", "draft-known-first-pick", "draft-empty", "draft-own-only", "draft-rival-only", "draft-both",
+        fun screens() = listOf("role-change-success-es", "cash-access-admin-es", "cash-access-admin-pt", "cash-access-creador-es", "cash-access-moderador-es", "cash-access-streamer-es", "cash-access-free-es", "cash-access-premium-es", "cash-access-patrocinador-es", "cash-access-fake_admin-es", "economy-details-es", "economy-details-pt", "role-change-failure-es", "role-change-pending-es", "draft-known-first-pick", "draft-empty", "draft-own-only", "draft-rival-only", "draft-both",
             "tier-guest", "tier-registered", "tier-registration", "champion-guest", "champion-registered", "champion-premium", "champion-situational-boot", "champion-item-advice", "champion-spell-advice", "champion-rune-advice",
             "user-notification", "user-notification-empty", "streamer", "streamer-admin", "streamer-live", "streamer-feedback", "streamer-history", "streamer-guest-live", "streamer-approved-review", "support-email-mod", "support-email-admin", "support-followup", "support-legacy-followup", "support-closed",
             "matchup-varus", "matchup-jhin", "matchup-garen",
             "draft-placeholder", "draft-placeholder-own", "draft-placeholder-rival",
-            "moderation-admin", "moderation-claim", "moderation-secondary", "premium-editor", "premium-editor-secondary", "profile-admin", "profile-admin-large", "profile-admin-expiring-roles", "profile-admin-expiring-roles-es", "profile-admin-secondary-frame", "profile-admin-secondary-frame-es", "profile-admin-image-frame", "profile-admin-image-frame-es", "premium-editor-admin", "premium-editor-grant", "premium-status-near-expiry", "creator-reader", "premium-editor-occupied", "premium-editor-remove", "profile-admin-notifications", "panel-notification-animation", "streamer-live-name-preserved", "essence-plans-blue", "essence-plans-orange", "essence-plans-insufficient", "cash-redemption-options", "saved-data-statistics", "storage-summary", "storage-summary-partial", "inbox-circle-badge", "premium-purchase-confirm", "usdt-wallet-fields", "support-admin-notification", "cash-redemption-confirm", "sponsor-layout-small", "sponsor-layout-large", "sponsor-read-retry", "managed-user-secondary", "managed-user-balance-live", "history-circle-notification", "redemption-entry-visible", "redemption-entry-hidden", "premium-plans-overview", "history-receipts", "component-catalog-luchador", "component-catalog-asesino", "component-catalog-tirador", "component-catalog-magico", "component-catalog-defensa", "component-catalog-apoyo").map { arrayOf(it) }
+            "moderation-admin", "moderation-claim", "moderation-secondary", "premium-editor", "premium-editor-secondary", "profile-admin", "profile-admin-large", "profile-admin-expiring-roles", "profile-admin-expiring-roles-es", "profile-admin-secondary-frame", "profile-admin-secondary-frame-es", "profile-admin-image-frame", "profile-admin-image-frame-es", "premium-editor-admin", "premium-editor-grant", "premium-status-near-expiry", "creator-reader", "premium-editor-occupied", "premium-editor-remove", "profile-admin-notifications", "panel-notification-animation", "streamer-live-name-preserved", "essence-plans-blue", "essence-plans-orange", "essence-plans-insufficient", "saved-data-statistics", "storage-summary", "storage-summary-partial", "inbox-circle-badge", "premium-purchase-confirm", "support-admin-notification", "sponsor-layout-small", "sponsor-layout-large", "sponsor-read-retry", "managed-user-secondary", "managed-user-balance-live", "history-circle-notification", "premium-plans-overview", "history-receipts", "component-catalog-luchador", "component-catalog-asesino", "component-catalog-tirador", "component-catalog-magico", "component-catalog-defensa", "component-catalog-apoyo").map { arrayOf(it) }
     }
     @get:Rule val compose = createComposeRule()
     private var copiedSummary = ""
@@ -189,11 +189,8 @@ class RuntimeVisibilityTest(private val screen: String) {
                 "secondaryRole" to "aspirante", "blueEssence" to 1L, "orangeEssence" to 2L), {}, {}, {}, {})
             screen == "history-circle-notification" -> CircularPanelNotificationButton(3,com.example.data.NotificationPanel.HISTORY,tr("Historial"),
                 androidx.compose.material.icons.Icons.Filled.History) {}
-            screen.startsWith("redemption-entry") -> OrangeEssenceRedemptionEntry(if (screen.endsWith("hidden")) 0 else 10) { copiedSummary = "opened" }
             screen == "premium-plans-overview" -> Column(Modifier.verticalScroll(rememberScrollState())) { PremiumPlansOverview(1200, 100); EssencePlanOptions(1200, 100) { _, _ -> } }
-            screen == "cash-redemption-confirm" -> CashRedemptionConfirmation(25,com.example.data.UsdtNetwork.ERC20,"0x1111111111111111111111111111111111111111",false,onConfirm={copiedSummary="confirmed"},onDismiss={copiedSummary="cancelled"})
             screen == "premium-purchase-confirm" -> SubscriptionPlansBottomSheet {}
-            screen == "usdt-wallet-fields" -> UsdtWalletFields(com.example.data.UsdtNetwork.ERC20,"0x1111111111111111111111111111111111111111",true,{},{})
             screen == "support-admin-notification" -> {
                 val summary = userPanelNotificationSummary()
                 Column {
@@ -205,7 +202,6 @@ class RuntimeVisibilityTest(private val screen: String) {
                 EssencePlanOptions(if (screen == "essence-plans-insufficient") 99 else 1200,
                     if (screen == "essence-plans-blue") 0 else if (screen == "essence-plans-insufficient") 8 else 100) { plan, currency -> copiedSummary = "${plan.name}:${currency.name}" }
             }
-            screen == "cash-redemption-options" -> CashRedemptionOptions(27) { copiedSummary = it.toString() }
             screen.startsWith("storage-summary") -> StorageConsumptionSummary(com.example.data.StorageConsumption(
                 estimatedBytes = 2_097_152, dailyGrowthBytes = if (screen.endsWith("partial")) null else 1024,
                 sampledAtMillis = fixedGrantNow, complete = !screen.endsWith("partial")))
@@ -254,7 +250,6 @@ class RuntimeVisibilityTest(private val screen: String) {
             screen == "creator-reader" -> AdminCreatorBuildsDialog {}
             screen == "premium-status-near-expiry" -> PremiumStatusCard("premium", until = System.currentTimeMillis() + 65000L, onRenew = { renewed = true })
             screen.startsWith("cash-access-") -> AuthenticatedProfilePanel(onSignOut = {})
-            screen == "cash-review-hidden-es" -> CashRedemptionReviewPanel()
             screen.startsWith("economy-details-") -> EconomyRequestDetails(requestData, targetName = "Test gratis",
                 serviceCheckedAt = System.currentTimeMillis() - 16 * 60_000L,
                 serviceObservedAt = System.currentTimeMillis(), onDismiss = { copiedSummary = "closed" })
@@ -430,17 +425,12 @@ class RuntimeVisibilityTest(private val screen: String) {
                 inspect("applied")
             }
             "cash-access-admin-es", "cash-access-admin-pt" -> {
-                compose.onNodeWithTag("orange_redemption_entry").performScrollTo().assertIsDisplayed()
-                inspect("admin-visible")
+                compose.onNodeWithTag("orange_redemption_entry").assertDoesNotExist()
+                inspect("removed")
             }
             "cash-access-creador-es", "cash-access-moderador-es", "cash-access-streamer-es", "cash-access-free-es", "cash-access-premium-es", "cash-access-patrocinador-es", "cash-access-fake_admin-es" -> {
                 compose.onNodeWithTag("orange_redemption_entry").assertDoesNotExist()
                 inspect("hidden")
-            }
-            "cash-review-hidden-es" -> {
-                compose.onNodeWithText(appTr("Pagos USDT")).assertDoesNotExist()
-                compose.onNodeWithText(appTr("PENDIENTES")).assertDoesNotExist()
-                return
             }
             "role-change-failure-es", "role-change-pending-es" -> {
                 compose.onNode(hasScrollToIndexAction()).performScrollToNode(hasTestTag("managed_role_free"))
@@ -496,14 +486,6 @@ class RuntimeVisibilityTest(private val screen: String) {
                 compose.onNodeWithTag("panel_notification_badge_HISTORY",useUnmergedTree = true).onChildren().onFirst().assertTextEquals("3")
                 compose.onNodeWithTag("panel_notification_icon_HISTORY",useUnmergedTree = true).assertExists()
             }
-            "redemption-entry-visible" -> {
-                compose.onNodeWithTag("orange_redemption_entry").assertIsDisplayed().performClick()
-                Assert.assertEquals("opened",copiedSummary)
-            }
-            "redemption-entry-hidden" -> {
-                compose.onNodeWithTag("orange_redemption_entry").assertDoesNotExist()
-                return
-            }
             "premium-plans-overview" -> {
                 compose.onNodeWithText(appTr("Tu próximo nivel en Coach")).assertIsDisplayed()
                 compose.onNodeWithTag("premium_ANNUAL_ORANGE").performScrollTo().assertIsDisplayed()
@@ -515,12 +497,6 @@ class RuntimeVisibilityTest(private val screen: String) {
                 compose.onNodeWithText(appTr(" #1 RECOMENDACIÓN BLIND PICK")).assertDoesNotExist()
                 compose.onNodeWithText(appTr(" #1 MEJOR ELECCIÓN TÁCTICA")).performScrollTo().assertExists()
             }
-            "cash-redemption-confirm" -> {
-                compose.onNodeWithText(appTr("Confirmar canje")).assertExists()
-                compose.onNodeWithTag("cash_redemption_confirm").assertIsEnabled()
-                compose.onNodeWithTag("cash_redemption_cancel").performClick()
-                Assert.assertEquals("cancelled",copiedSummary)
-            }
 
             "premium-purchase-confirm" -> {
                 compose.onNodeWithTag("premium_MONTHLY_ORANGE").performScrollTo().performClick()
@@ -531,11 +507,6 @@ class RuntimeVisibilityTest(private val screen: String) {
                 compose.onNodeWithText(appTr("Cancelar")).performClick()
                 compose.onNodeWithTag("premium_purchase_confirm").assertDoesNotExist()
                 compose.onNodeWithTag("premium_MONTHLY_ORANGE").assertExists()
-            }
-            "usdt-wallet-fields" -> {
-                compose.onNodeWithTag("binance_email").assertExists()
-                compose.onNodeWithTag("usdt_wallet").assertTextContains("0x1111111111111111111111111111111111111111")
-                compose.onNodeWithText(appTr("Billetera USDT no válida")).assertDoesNotExist()
             }
             "support-admin-notification" -> {
                 compose.waitUntil(10000) { compose.onAllNodesWithTag("panel_notification_badge_SUPPORT",useUnmergedTree=true).fetchSemanticsNodes().isNotEmpty() }
@@ -558,12 +529,6 @@ class RuntimeVisibilityTest(private val screen: String) {
             "essence-plans-insufficient" -> {
                 for (plan in listOf("MONTHLY", "ANNUAL")) for (currency in listOf("BLUE", "ORANGE"))
                     compose.onNodeWithTag("premium_${plan}_$currency").performScrollTo().assertIsNotEnabled()
-            }
-            "cash-redemption-options" -> {
-                compose.onNodeWithTag("cash_redemption_10").assertIsEnabled()
-                compose.onNodeWithTag("cash_redemption_25").assertIsEnabled().performClick()
-                Assert.assertEquals("25", copiedSummary)
-                compose.onNodeWithTag("cash_redemption_50").assertIsNotEnabled()
             }
             "storage-summary", "storage-summary-partial" -> {
                 compose.onNodeWithText(appTr("Tu almacenamiento")).assertIsDisplayed()
