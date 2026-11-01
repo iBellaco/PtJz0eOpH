@@ -42,6 +42,14 @@ class ValidatedApkTest(unittest.TestCase):
     def test_identical_fully_validated_tree_is_reused(self):
         self.assertEqual(('42', 'a' * 40), self.invoke())
 
+    def test_validation_push_and_manual_runs_require_the_same_checks(self):
+        for event in ['push', 'workflow_dispatch']:
+            run = dict(self.fixture_run, event=event)
+            self.assertEqual(('42', 'a' * 40), self.invoke(run=run))
+            self.assertEqual(('', ''), self.invoke(run=run, failed_job='installed-audit'))
+            self.assertEqual(('', ''), self.invoke(run=run, expired=True))
+            self.assertEqual(('', ''), self.invoke(run=run, changed_tree=True))
+
     def test_any_source_change_requires_new_validation(self):
         self.assertEqual(('', ''), self.invoke(changed_tree=True))
 
@@ -108,7 +116,7 @@ class ValidatedApkTest(unittest.TestCase):
         self.assertEqual(('', ''), self.invoke(expired=True))
 
     def test_foreign_or_unfinished_runs_prevent_reuse(self):
-        for change in [{'status': 'in_progress'}, {'conclusion': 'failure'}, {'event': 'push'},
+        for change in [{'status': 'in_progress'}, {'conclusion': 'failure'}, {'event': 'pull_request_target'},
                        {'head_branch': 'other'}, {'head_repository': {'full_name': 'other/coach'}},
                        {'head_sha': 'invalid'}]:
             self.assertEqual(('', ''), self.invoke(run={**self.fixture_run, **change}))

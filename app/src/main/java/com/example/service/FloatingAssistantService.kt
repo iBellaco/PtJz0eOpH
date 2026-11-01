@@ -67,6 +67,8 @@ import androidx.lifecycle.LifecycleRegistry
 import androidx.lifecycle.ViewModelStore
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.setViewTreeLifecycleOwner
+import androidx.lifecycle.setViewTreeViewModelStoreOwner
+import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import androidx.savedstate.SavedStateRegistry
 import androidx.savedstate.SavedStateRegistryController
 import androidx.savedstate.SavedStateRegistryOwner
@@ -97,13 +99,18 @@ private const val TAG = "FloatingAssistantService"
  * El servicio no debe ser el dueño del ciclo de vida de una ventana que puede desaparecer
  * mientras el servicio sigue vivo.
  */
-private class FloatingWindowLifecycleOwner : LifecycleOwner {
+internal class FloatingWindowLifecycleOwner : LifecycleOwner, SavedStateRegistryOwner, ViewModelStoreOwner {
     private val registry = LifecycleRegistry(this)
+    private val savedState = SavedStateRegistryController.create(this)
+    override val savedStateRegistry: SavedStateRegistry get() = savedState.savedStateRegistry
+    override val viewModelStore = ViewModelStore()
 
     override val lifecycle: Lifecycle
         get() = registry
 
     init {
+        savedState.performAttach()
+        savedState.performRestore(null)
         registry.handleLifecycleEvent(Lifecycle.Event.ON_CREATE)
         registry.handleLifecycleEvent(Lifecycle.Event.ON_START)
         registry.handleLifecycleEvent(Lifecycle.Event.ON_RESUME)
@@ -114,6 +121,16 @@ private class FloatingWindowLifecycleOwner : LifecycleOwner {
         registry.handleLifecycleEvent(Lifecycle.Event.ON_PAUSE)
         registry.handleLifecycleEvent(Lifecycle.Event.ON_STOP)
         registry.handleLifecycleEvent(Lifecycle.Event.ON_DESTROY)
+        viewModelStore.clear()
+    }
+
+    fun attach(view: ComposeView) {
+        view.setViewTreeLifecycleOwner(this)
+        view.setViewTreeSavedStateRegistryOwner(this)
+        view.setViewTreeViewModelStoreOwner(this)
+        view.setViewCompositionStrategy(
+            androidx.compose.ui.platform.ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed
+        )
     }
 }
 
@@ -145,10 +162,7 @@ class FloatingAssistantService : Service(), LifecycleOwner, ViewModelStoreOwner,
         view: ComposeView,
         owner: FloatingWindowLifecycleOwner
     ) {
-        view.setViewTreeLifecycleOwner(owner)
-        view.setViewCompositionStrategy(
-            androidx.compose.ui.platform.ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed
-        )
+        owner.attach(view)
     }
 
     private fun disposeWindowComposeView(
