@@ -27,6 +27,15 @@ restringidos: Coach orienta al propietario, nunca elude esa protección.
 
 ## Información que se observa
 
+Regla confirmada el 2 de noviembre de 2026: el escáner automático debe ser
+multidispositivo en Android compatible con Wild Rift. Las medidas proceden de
+la captura y del área visible del juego, sin presets por modelo. Una animación,
+un retrato cambiado o un puesto vacío no deben encoger repetidamente la geometría.
+Cada medición parte de la base del viewport; cambios posteriores de columna se
+confirman temporalmente. Con falta de evidencia se conserva la última geometría.
+Al cambiar dimensiones/viewport o calibración se vuelve a medir. Las pruebas
+físicas de cada dispositivo se documentan aparte de este requisito.
+
 Los cinco slots aliados, cinco rivales y cinco baneos de cada lado conservan
 su distribución lógica. Se transforman respecto de la ventana del juego, no
 respecto de barras negras, recortes o ventanas flotantes. El visor y el escáner

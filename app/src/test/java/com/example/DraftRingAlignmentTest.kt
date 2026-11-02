@@ -17,6 +17,16 @@ import org.robolectric.annotation.GraphicsMode
 @Config(sdk=[34], application=Application::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class DraftRingAlignmentTest {
+    @Test fun missingRingsPreserveMeasuredColumnsInsteadOfRestoringDefaults() {
+        val base = VisionCalibrationConfig()
+        val previous = base.copy(allyAvatarCenterX = .125f, allySlotXRatios = List(5) { .125f },
+            allySlotDiameterRatios = base.allySlotDiameterRatios.map { it * .8f })
+        val image = Bitmap.createBitmap(1280, 590, Bitmap.Config.ARGB_8888)
+        try {
+            assertEquals(previous, DraftRingAlignment.align(image, base, null, previous = previous))
+        } finally { image.recycle() }
+    }
+
     @Test fun insetColumnsAndHudSizesAreMeasuredWithoutModelCoordinates() {
         // Synthetic rings, not a physical-device test or the tester's original capture.
         for ((w, h) in listOf(1280 to 587, 1280 to 590, 1280 to 720, 1600 to 720, 1920 to 864)) {

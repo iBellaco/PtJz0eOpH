@@ -374,6 +374,7 @@ object DraftVisionScanner {
     @Synchronized
     internal fun calibrationReportSnapshot() = CalibrationReportSnapshot(alignedSize.first, alignedSize.second, alignedConfigFlow.value)
     private var lastAlignmentAt = 0L
+    private val geometryStability = DraftGeometryStability()
     private var calibrationContext: android.content.Context? = null
     private var activeCaptureProfile: String? = null
     private var globalCalibrationConfig = VisionCalibrationConfig()
@@ -409,13 +410,18 @@ object DraftVisionScanner {
         val normalized = AdaptiveScreenLayoutEngine.computeAdaptiveConfig(bitmap.width, bitmap.height, calibrationConfig)
         val base = if (manual) normalized else DraftFrameGeometry.forViewport(normalized, activeViewport, bitmap.width, bitmap.height)
         if (alignedBase != base || alignedSize != (bitmap.width to bitmap.height)) {
+            geometryStability.reset()
             alignedConfigFlow.value = base
             alignedBase = base; alignedSize = bitmap.width to bitmap.height
             lastAlignmentAt = 0L
         }
         if (!manual && (refreshGeometry || lastAlignmentAt == 0L || now-lastAlignmentAt >= 2000)) {
-            alignedConfigFlow.value = DraftRingAlignment.align(bitmap, alignedConfigFlow.value,
-                overlayForFrame(bitmap.width, bitmap.height), showCalibrationBoxes.value)
+            // Always measure against the viewport baseline. Feeding the previous
+            // estimate back as the baseline compounds 0.8/1.2 scale corrections.
+            val measured = DraftRingAlignment.align(bitmap, base,
+                overlayForFrame(bitmap.width, bitmap.height), showCalibrationBoxes.value,
+                previous = alignedConfigFlow.value)
+            alignedConfigFlow.value = geometryStability.update(measured)
             lastAlignmentAt = now
         }
         alignedFrameSizeFlow.value = bitmap.width to bitmap.height

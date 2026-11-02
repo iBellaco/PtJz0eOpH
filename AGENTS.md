@@ -61,6 +61,14 @@ El orden jerárquico de los rangos para consejos tácticos es:
 
 ## Continuidad y comprobaciones
 
+El escáner automático es multidispositivo: su ámbito son los dispositivos Android
+compatibles con Wild Rift y con los permisos de captura/superposición disponibles.
+Adaptar por dimensiones reales de captura, viewport y evidencia visual; nunca
+por coordenadas fijas de fabricante/modelo. Mantener estable la geometría entre
+fotogramas: no acumular escalas sobre estimaciones anteriores. Verificar secuencias,
+no solo imágenes aisladas. Este objetivo no equivale a compatibilidad física ya
+comprobada con todos los dispositivos; registrar las pruebas pendientes.
+
 Antes de cambiar el escáner, leer completo `docs/draft-recognition-contract.md`.
 Es el contrato de capturas confirmado por el propietario: nueve selecciones por
 título completo, décima visual en el lado correspondiente y baneos omitidos vacíos.
