@@ -61,6 +61,14 @@ línea primaria de Senna para completar el dato.
 
 ## Secuencia visual de puestos aliados y rivales
 
+Nueva evidencia reportada: Honor Magic 6 Pro, captura compartida de 1280 × 585.
+En ella coexisten símbolos de línea aliados más a la izquierda y retratos
+preseleccionados desplazados a la derecha, mientras los rivales están alineados.
+Es una medida de la imagen compartida, no la resolución física del teléfono.
+No convertir estas posiciones en presets de dispositivo. Medir cada fila en
+el viewport actual y reservar búsqueda de baneos para ambos lados; que el rival
+funcione no demuestra que la geometría o reconocimiento aliado sea correcto.
+
 Aclaración del propietario del 2 de noviembre de 2026, acompañada de tres
 capturas de la misma selección. Debe leerse antes de modificar el seguimiento
 de puestos. Esta descripción registra el comportamiento esperado; no demuestra

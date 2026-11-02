@@ -44,7 +44,8 @@ internal object DraftRingAlignment {
         val w = bitmap.width; val h = bitmap.height
         val pixels = IntArray(w * h)
         bitmap.getPixels(pixels, 0, w, 0, 0, w, h)
-        data class ColumnFit(val xs: List<Float>, val ys: List<Float>, val diameterScale: Float)
+        data class ColumnFit(val xs: List<Float>, val ys: List<Float>, val diameterScale: Float,
+                             val measuredSlots: Set<Int> = (0..4).toSet())
         fun fit(ally: Boolean, diameterScale: Float = 1f): ColumnFit? {
             val ys = if (ally) base.allySlotYRatios else base.enemySlotYRatios
             val fits = mutableListOf<Triple<Int, Pair<Int, Int>, Int>>()
@@ -139,6 +140,17 @@ internal object DraftRingAlignment {
                 }
                 center?.let { if (best > 0) fits += Triple(slot, it, best % 64) }
             }
+            // Allied rows move independently when spells/portraits appear. Never
+            // replace five different states with the median of one column.
+            if (ally) {
+                if (fits.isEmpty() || diameterScale != 1f && fits.size < 3) return null
+                val measured = fits.associateBy { it.first }
+                return ColumnFit(
+                    List(5) { slot -> measured[slot]?.second?.first?.toFloat()?.div(w)
+                        ?: previous.getAllySlotX(slot) },
+                    List(5) { slot -> measured[slot]?.second?.second?.toFloat()?.div(h)
+                        ?: previous.allySlotYRatios[slot] }, diameterScale, measured.keys)
+            }
             if (fits.size < 2) return null
             val medianX = fits.map { it.second.first }.sorted()[fits.size / 2]
             if (fits.count { abs(it.second.first - medianX) <= radius / 3 } < 2) return null
@@ -172,7 +184,8 @@ internal object DraftRingAlignment {
             allyAvatarCenterX = ally?.xs?.first() ?: previous.allyAvatarCenterX,
             allySlotXRatios = ally?.xs ?: previous.allySlotXRatios,
             allySlotYRatios = ally?.ys ?: previous.allySlotYRatios,
-            allySlotDiameterRatios = ally?.let { fit -> base.allySlotDiameterRatios.map { it * fit.diameterScale } }
+            allySlotDiameterRatios = ally?.let { fit -> base.allySlotDiameterRatios.mapIndexed { slot, diameter ->
+                if (slot in fit.measuredSlots) diameter * fit.diameterScale else previous.getSlotDiameter(true, slot) } }
                 ?: previous.allySlotDiameterRatios,
             enemyAvatarCenterX = enemy?.xs?.first() ?: previous.enemyAvatarCenterX,
             enemySlotXRatios = enemy?.xs ?: previous.enemySlotXRatios,

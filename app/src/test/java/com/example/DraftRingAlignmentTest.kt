@@ -17,6 +17,38 @@ import org.robolectric.annotation.GraphicsMode
 @Config(sdk=[34], application=Application::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class DraftRingAlignmentTest {
+    @Test fun mixedAlliedRowsAndOneVisibleRowKeepTheirOwnCentersAcrossDimensions() {
+        for ((w, h) in listOf(1280 to 585, 1600 to 720, 1920 to 1080)) {
+            for (visible in listOf((0..4).toSet(), setOf(3))) {
+                val base = VisionCalibrationConfig()
+                val image = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
+                try {
+                    val canvas = android.graphics.Canvas(image)
+                    canvas.drawColor(android.graphics.Color.rgb(10, 15, 30))
+                    val paint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG)
+                    for (slot in visible) {
+                        val cx = w * if (slot < 3) .09f else .125f
+                        val cy = h * base.allySlotYRatios[slot]
+                        val radius = h * base.getSlotDiameter(true, slot) / 2
+                        paint.style = android.graphics.Paint.Style.FILL
+                        paint.color = android.graphics.Color.WHITE
+                        canvas.drawCircle(cx, cy, radius * .35f, paint)
+                        paint.style = android.graphics.Paint.Style.STROKE
+                        paint.strokeWidth = h * .006f
+                        paint.color = android.graphics.Color.rgb(30, 190, 220)
+                        canvas.drawCircle(cx, cy, radius, paint)
+                    }
+                    val aligned = DraftRingAlignment.align(image, base, null)
+                    for (slot in 0..4) {
+                        val expected = if (slot !in visible) base.getAllySlotX(slot)
+                            else if (slot < 3) .09f else .125f
+                        assertEquals("$w/$h row=$slot visible=$visible", expected, aligned.getAllySlotX(slot), .008f)
+                    }
+                    assertEquals(base.enemySlotXRatios, aligned.enemySlotXRatios)
+                } finally { image.recycle() }
+            }
+        }
+    }
     @Test fun missingRingsPreserveMeasuredColumnsInsteadOfRestoringDefaults() {
         val base = VisionCalibrationConfig()
         val previous = base.copy(allyAvatarCenterX = .125f, allySlotXRatios = List(5) { .125f },

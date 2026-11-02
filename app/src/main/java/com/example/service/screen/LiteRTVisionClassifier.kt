@@ -263,7 +263,12 @@ object LiteRTVisionClassifier {
             }
         }
         val found = mutableListOf<Pair<Proposal, Champion?>>()
-        for (proposal in (proposals.sortedByDescending { it.score }.take(200) + emptyProposals.sortedByDescending { it.score }.take(40)).sortedByDescending { it.score }) {
+        // Preserve the total work budget, but reserve half for each header.
+        // Many high-scoring rival crops must not starve the allied search.
+        fun balanced(source: List<Proposal>, limitPerSide: Int): List<Proposal> =
+            listOf(true, false).flatMap { ally -> source.filter { (it.x < width / 2) == ally }
+                .sortedByDescending { it.score }.take(limitPerSide) }
+        for (proposal in (balanced(proposals, 100) + balanced(emptyProposals, 20)).sortedByDescending { it.score }) {
             if (found.count { (it.first.x < width / 2) == (proposal.x < width / 2) } >= 7) continue
             if (found.any { kotlin.math.abs(it.first.x - proposal.x) < maxOf(it.first.radius, proposal.radius) * 1.4f }) continue
             if (proposal.shortlist.isEmpty()) {
