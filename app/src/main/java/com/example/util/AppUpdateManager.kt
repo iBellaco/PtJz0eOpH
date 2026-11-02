@@ -49,8 +49,14 @@ object AppUpdateManager {
     private val client = OkHttpClient.Builder().connectTimeout(10, TimeUnit.SECONDS)
         .readTimeout(10, TimeUnit.SECONDS).callTimeout(20, TimeUnit.SECONDS).build()
 
+    private val isTestBuild: Boolean
+        get() = AppVersionPolicy.isTestVersion(BuildConfig.VERSION_NAME)
+
     fun restore(context: Context) {
-        if (!_verificationEnabled.value) return
+        if (!_verificationEnabled.value || isTestBuild) {
+            _updateInfo.value = null
+            return
+        }
         val prefs = context.getSharedPreferences(PREFS, 0)
         minimumSupportedCode = prefs.getInt("minimum_supported_code", 0).coerceAtLeast(0)
         val version = PublishedAppVersion.parse(prefs.getString("tag", "").orEmpty()) ?: return
@@ -60,7 +66,7 @@ object AppUpdateManager {
     }
 
     private fun publish(version: PublishedAppVersion) {
-        if (!_verificationEnabled.value) { _updateInfo.value = null; return }
+        if (!_verificationEnabled.value || isTestBuild) { _updateInfo.value = null; return }
         if (version.code == dismissedVersionCode && BuildConfig.VERSION_CODE >= minimumSupportedCode) {
             _updateInfo.value = null
             return
@@ -71,6 +77,11 @@ object AppUpdateManager {
     }
 
     suspend fun checkForUpdates(context: Context, forceManualCheck: Boolean = false): AppUpdateInfo = withContext(Dispatchers.IO) {
+        if (isTestBuild) {
+            _updateInfo.value = null
+            _verificationFinished.value = true
+            return@withContext AppUpdateInfo()
+        }
         mutex.lock()
         try {
             refreshVerificationSetting()
@@ -133,6 +144,12 @@ object AppUpdateManager {
     }
 
     suspend fun setVerificationEnabled(context: Context, enabled: Boolean) {
+        if (isTestBuild) {
+            _verificationEnabled.value = false
+            _updateInfo.value = null
+            _verificationFinished.value = true
+            return
+        }
         FirebaseFirestore.getInstance().collection("system_config")
             .document("app_update_verification")
             .set(mapOf("enabled" to enabled, "updatedAt" to com.google.firebase.Timestamp.now()),
