@@ -158,6 +158,10 @@ internal object DraftRingAlignment {
                     } >= 2
                     val alignedYs = alignRows(ys, h, radius,
                         consistent.map { it.first to it.second.second }, foreignColumn)
+                    if (consistent.size == fits.size) {
+                        return ColumnFit(List(5) { medianX.toFloat() / w }, alignedYs, diameterScale,
+                            coverage = fits.sumOf { it.third })
+                    }
                     val measured = fits.associateBy { it.first }
                     return ColumnFit(
                         List(5) { slot ->
