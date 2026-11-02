@@ -257,12 +257,15 @@ internal object DraftRingAlignment {
             // Compare angular coverage at nearby sizes before accepting a weak fit.
             // Full coverage at the base size needs no extra searches.
             if (nominal?.coverage == 5 * 40) return nominal
-            // Compare coverage per observed ring, not the sum: one extra weak
-            // match must not outvote four better-centred rings at the base size.
-            // Missing rows are deliberately absent from this measurement and
-            // retain their previous geometry rather than forcing a global resize.
-            return listOfNotNull(nominal, fit(true, .8f), fit(true, 1.2f))
-                .maxByOrNull { it.coverage.toFloat() / it.measuredSlots.size }
+            // A sub-sample gain after resampling is not evidence of a 20% size
+            // change. Require four additional angular samples per observed ring
+            // (10% of the 40-sample circumference) before replacing the base size.
+            // Compare averages so an extra weak match cannot outweigh stronger
+            // rings; missing rows still keep their own previous geometry.
+            fun ColumnFit.meanCoverage() = coverage.toFloat() / measuredSlots.size
+            val alternatives = listOfNotNull(fit(true, .8f), fit(true, 1.2f))
+                .filter { nominal == null || it.meanCoverage() >= nominal.meanCoverage() + 4f }
+            return alternatives.maxByOrNull { it.meanCoverage() } ?: nominal
         }
         val ally = fitColumn(true); val enemy = fitColumn(false)
         return base.copy(

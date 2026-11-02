@@ -17,6 +17,48 @@ import org.robolectric.annotation.GraphicsMode
 @Config(sdk=[34], application=Application::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class DraftRingAlignmentTest {
+    @Test fun marginalScaleEvidenceDoesNotReplaceTheNativeResampledPortraits() {
+        val source = javaClass.getResourceAsStream("/portraits/draft-ten-selected.jpg").use {
+            BitmapFactory.decodeStream(it)!!
+        }
+        try {
+            for ((w, h, edgeAnchored) in listOf(Triple(1920, 864, false), Triple(1024, 768, true))) {
+                val frame = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
+                try {
+                    val scale = if (edgeAnchored) h / 579f else minOf(w / 1280f, h / 579f)
+                    val rw = if (edgeAnchored) w else (1280 * scale).toInt()
+                    val rh = if (edgeAnchored) h else (579 * scale).toInt()
+                    val left = (w - rw) / 2
+                    val top = (h - rh) / 2
+                    android.graphics.Canvas(frame).apply {
+                        val paint = android.graphics.Paint(android.graphics.Paint.FILTER_BITMAP_FLAG)
+                        if (edgeAnchored) {
+                            drawColor(android.graphics.Color.rgb(10, 15, 30))
+                            drawBitmap(source, Rect(0, 0, 280, 579), Rect(0, 0, (280 * scale).toInt(), h), paint)
+                            drawBitmap(source, Rect(1040, 0, 1280, 579), Rect(w - (240 * scale).toInt(), 0, w, h), paint)
+                        } else {
+                            drawColor(android.graphics.Color.BLACK)
+                            drawBitmap(source, null, Rect(left, top, left + rw, top + rh), paint)
+                        }
+                    }
+                    val base = com.example.service.screen.DraftFrameGeometry.forViewport(VisionCalibrationConfig(),
+                        com.example.service.screen.DraftFrameGeometry.contentBounds(frame), w, h)
+                    val aligned = DraftRingAlignment.align(frame, base, null)
+                    val ys = listOf(110f, 188f, 265f, 343f, 420f)
+                    for (slot in 0..4) {
+                        val rect = com.example.service.screen.AdaptiveScreenLayoutEngine.calculateSlotCropRect(w, h, true, slot, aligned)
+                        val expectedX = if (edgeAnchored) 92f * scale else left + 92f * rw / 1280
+                        val error = kotlin.math.hypot(rect.exactCenterX() - expectedX,
+                            rect.exactCenterY() - top - ys[slot] * rh / 579) * 579 / rh
+                        assertTrue("$w/$h row=$slot: $error reference pixels", error <= 6f)
+                        assertEquals("$w/$h row=$slot diameter", base.getSlotDiameter(true, slot),
+                            aligned.getSlotDiameter(true, slot), .0001f)
+                    }
+                } finally { frame.recycle() }
+            }
+        } finally { source.recycle() }
+    }
+
     @Test fun anAdditionalWeakRimCannotRescaleBetterCentredAlliedRows() {
         val source = javaClass.getResourceAsStream("/portraits/draft-ten-selected.jpg").use {
             BitmapFactory.decodeStream(it)!!
