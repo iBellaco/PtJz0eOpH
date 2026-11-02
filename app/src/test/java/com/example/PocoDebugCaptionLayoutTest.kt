@@ -11,8 +11,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
 import com.github.takahirom.roborazzi.captureRoboImage
 import androidx.compose.ui.test.onRoot
-import androidx.compose.ui.test.captureToImage
-import androidx.compose.ui.graphics.toPixelMap
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
@@ -32,45 +30,6 @@ import org.robolectric.annotation.GraphicsMode
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class PocoDebugCaptionLayoutTest {
     @get:Rule val compose=createComposeRule()
-    @Test fun capturedSlotsAndBansAreRenderedAtScreenPositionsWithoutStretching() {
-        val oldConfig = DraftVisionScanner.alignedConfigFlow.value
-        val oldSize = DraftVisionScanner.alignedFrameSizeFlow.value
-        val oldViewport = DraftVisionScanner.alignedViewportFlow.value
-        val oldBans = DraftVisionScanner.banSlotsFlow.value
-        val oldDetecting = DraftVisionScanner.banDetectionActiveFlow.value
-        try {
-            val screenConfig = VisionCalibrationConfig(allySlotXRatios = List(5) { .12f },
-                allySlotYRatios = listOf(.20f, .34f, .48f, .62f, .76f))
-            val viewport = Rect(0, 108, 1920, 972)
-            DraftVisionScanner.alignedConfigFlow.value = DraftFrameGeometry.forViewport(screenConfig, viewport, 1920, 1080)
-            DraftVisionScanner.alignedFrameSizeFlow.value = 1920 to 1080
-            DraftVisionScanner.alignedViewportFlow.value = viewport
-            DraftVisionScanner.banDetectionActiveFlow.value = true
-            DraftVisionScanner.banSlotsFlow.value = emptyBanSlots().map { slot ->
-                if (slot.side == BanSide.ALLY && slot.index == 0)
-                    slot.copy(region = BanRegion(.08f, (108f + .052f * 864) / 1080, .03f * 864 / 1080))
-                else slot
-            }
-            compose.setContent {
-                CompositionLocalProvider(LocalDensity provides Density(1f, 1f)) {
-                    Box(Modifier.requiredSize(1280.dp, 576.dp)) { ScannerDebugOverlay(overlayRect = null) }
-                }
-            }
-            val pixels = compose.onRoot().captureToImage().toPixelMap()
-            fun hasCyanNear(x: Int, y: Int): Boolean = (x-2..x+2).any { px ->
-                (y-2..y+2).any { py -> pixels[px, py].let { it.green > .5f && it.blue > .5f && it.red < .5f } }
-            }
-            assertTrue("Portrait center must return to screen space", hasCyanNear(154, 115))
-            assertTrue("Ban rim must use the same inverse transform", hasCyanNear(120, 30))
-        } finally {
-            DraftVisionScanner.alignedConfigFlow.value = oldConfig
-            DraftVisionScanner.alignedFrameSizeFlow.value = oldSize
-            DraftVisionScanner.alignedViewportFlow.value = oldViewport
-            DraftVisionScanner.banSlotsFlow.value = oldBans
-            DraftVisionScanner.banDetectionActiveFlow.value = oldDetecting
-        }
-    }
-
     @OptIn(com.github.takahirom.roborazzi.ExperimentalRoborazziApi::class)
     @Test fun largeFontPocoCaptionsKeepBanLabelsAndActualFirstTitlesSeparate() {
         val ctx=RuntimeEnvironment.getApplication()

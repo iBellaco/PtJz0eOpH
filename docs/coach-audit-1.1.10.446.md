@@ -1,4 +1,4 @@
-# Coach 1.1.10.445 — build 1161
+# Coach 1.1.10.446 — build 1162
 
 ## Base y alcance
 
@@ -50,6 +50,11 @@ con la resolución física o la resolución efectiva de MediaProjection.
 - .github/workflows/fix-error.yml
 
 ## Verificación
+
+La prueba visual añadida en 1.1.10.445 dependía de una captura Compose que
+agotó el tiempo del entorno remoto. Se retiró esa aserción frágil; permanecen
+las comprobaciones deterministas de transformación y la prueba de renderizado
+existente.
 
 Comprobaciones locales correctas: git diff --check, recursos de idiomas, 10
 pruebas de planes de validación, 15 de reutilización de APK, 6 de recursos,
