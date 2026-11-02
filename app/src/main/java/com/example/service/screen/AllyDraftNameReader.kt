@@ -53,6 +53,19 @@ object AllyDraftNameReader {
         return Reading()
     }
 
+    /**
+     * Reads only OCR elements inside the target area of a contextual retry.
+     * The surrounding pixels help ML Kit detect short titles, but their text
+     * must never become the slot identity. A result is accepted only when the
+     * target area contains exactly one complete champion title.
+     */
+    internal fun readContextualElements(elements: List<String>, catalog: List<Champion>): Reading {
+        val candidates = elements.mapNotNull { text ->
+            read(listOf(text), catalog).takeIf { !it.ambiguous && it.champion != null }?.champion
+        }.distinctBy { it.id }
+        return if (candidates.size == 1) Reading(champion = candidates.single()) else Reading()
+    }
+
     fun read(lines: List<String>, catalog: List<Champion>): Reading {
         val names = lines.mapNotNull { ChampionNameResolver.findChampionInNameBand(it, catalog) }.distinctBy { it.id }
         val lanes = (lines + lines.joinToString(" ")).mapNotNull { laneTitle(it) }.distinct()

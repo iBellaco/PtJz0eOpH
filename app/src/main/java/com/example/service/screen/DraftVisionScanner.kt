@@ -730,14 +730,36 @@ object DraftVisionScanner {
                     if (tile.contextual) {
                         val pairs = lines.mapNotNull { line ->
                             val words = line.elements.filter { element ->
-                                element.boundingBox?.let { tile.region.contains(it) } == true
+                                element.boundingBox?.let {
+                                    tile.region.contains(it.centerX(), it.centerY())
+                                } == true
                             }.sortedBy { it.boundingBox!!.left }
                             if (words.isEmpty()) null else words.joinToString(" ") { it.text } to
                                 (words.first().boundingBox!!.centerY()-tile.region.top)
                         }
                         val reading = AllyDraftNameReader.readTitleRows(pairs,0,allChamps,tile.titleMaxY)
+                        // Contextual crops place readable donor text on both
+                        // sides of the target. ML Kit may return the target as
+                        // a separate element (for example VI) while the full
+                        // line is "ORN VI ORNH". The line-level reader must
+                        // reject that mixed line, but the element whose bounds
+                        // are inside the target crop is valid evidence. Accept
+                        // it only when that target region has one complete
+                        // champion title.
+                        val contextualElements = lines.flatMap { line ->
+                            line.elements.filter { element ->
+                                element.boundingBox?.let {
+                                    tile.region.contains(it.centerX(), it.centerY())
+                                } == true
+                            }.map { it.text }
+                        }
+                        val elementReading = AllyDraftNameReader.readContextualElements(contextualElements, allChamps)
+                        val resolvedReading = if (reading.champion == null && reading.lane == null &&
+                            !reading.unpicked && elementReading.champion != null) {
+                            elementReading
+                        } else reading
                         val readings = if(tile.ally) targetedAllyReadings else targetedEnemyReadings
-                        readings[tile.slot] = AllyDraftNameReader.preferOriginal(readings[tile.slot],reading)
+                        readings[tile.slot] = AllyDraftNameReader.preferOriginal(readings[tile.slot],resolvedReading)
                         continue
                     }
                     val selected = lines.filter { line ->

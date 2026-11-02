@@ -60,6 +60,11 @@ class AllyDraftNameReaderTest {
         assertTrue(AllyDraftNameReader.readTitleRows(listOf("JINX" to 0,"YUUMI" to 1),10,catalog).ambiguous)
     }
 
+    @Test fun contextualCropAcceptsOnlyTheSingleTargetElement() {
+        val reading = AllyDraftNameReader.readContextualElements(listOf("ORN", "VI", "ORNH"), catalog)
+        assertEquals("vi", reading.champion?.id)
+    }
+
     @Test fun shortNamesStillRequireAnExactTitleInsideTheTitleRow() {
         for(text in listOf("IA","rVI","XVI","VI7","XCS IA"))
             assertNull(AllyDraftNameReader.readTitleRows(listOf(text to 0),10,catalog,20).champion)
