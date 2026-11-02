@@ -42,7 +42,7 @@ import com.example.data.SponsorReviewRepository
 
 private fun sponsorDecisionRejectLabel(context: android.content.Context, requestType: String): String =
     if (requestType == "SPONSOR") context.getString(com.example.R.string.sponsor_reject_refund_blue)
-    else tr("Rechazar")
+    else context.getString(com.example.R.string.sponsor_reject_generic)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

@@ -4,6 +4,7 @@
     <string name="update_later">Más tarde</string>
     <string name="sponsor_rejection_done">Solicitud rechazada. Si se cobraron esencias, se devolvieron al saldo.</string>
     <string name="sponsor_reject_refund_blue">Rechazar y devolver esencias azules</string>
+    <string name="sponsor_reject_generic">Rechazar</string>
     <string name="sponsor_submission_pending">La solicitud sigue en procesamiento. Actualiza el estado cuando termine; no se creó otro envío.</string>
     <string name="sponsor_review_pending">La decisión sigue en procesamiento. Actualiza la lista cuando termine.</string>
     <string name="password_requirements_error">Usa al menos 8 caracteres, una mayúscula, una minúscula, un número y un carácter especial, sin espacios.</string>
