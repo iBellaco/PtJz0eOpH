@@ -330,7 +330,8 @@ object LiteRTVisionClassifier {
                     BanObservation(BanSide.ENEMY,region,empty=true) else null
             } else null
         } else null
-        val positioned = fillHeaderPositions(observations + listOfNotNull(finalEmpty), width.toFloat() / height) { region ->
+        val positioned = fillHeaderPositions(observations + listOfNotNull(finalEmpty), width.toFloat() / height,
+            hasOuterPortrait = { region -> hasHeaderCircleRing(bitmap, region) }) { region ->
             val cx = region.x * width
             val cy = region.y * height
             val radius = region.radius * height

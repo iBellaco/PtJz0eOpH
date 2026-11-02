@@ -97,7 +97,12 @@ internal object DraftRingAlignment {
                                 val r = (color shr 16) and 255; val g = (color shr 8) and 255; val b = color and 255
                                 val team = if (ally) b > 85 && g > 65 && b > r * 1.25 && g > r * 1.15
                                     else r > 100 && r > g * 1.45 && r > b * 1.15
-                                if (!team) continue
+                                // Selected allies can have a gold rim instead of
+                                // cyan (the portrait visibility check accepts it
+                                // too). Ignoring it favors smaller circles on
+                                // spell artwork and leaves selected rows unlocated.
+                                val selectedAlly = ally && r > 90 && g > 60 && b < g * .8f
+                                if (!team && !selectedAlly) continue
                                 val ox=(x+dx*edgeDistance/radius).coerceIn(0,w-1)
                                 val oy=(y+dy*edgeDistance/radius).coerceIn(0,h-1)
                                 val ix=(x-dx*edgeDistance/radius).coerceIn(0,w-1)

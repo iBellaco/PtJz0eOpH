@@ -124,6 +124,23 @@ class BannedPortraitScannerTest {
         assertFalse(positions.any { it.championId == "lee_sin" })
     }
 
+    @Test fun panoramicRowCompletesAVisibleOuterRingBeforeChoosingFivePositions() {
+        val observations = listOf("lee_sin", "mordekaiser", "syndra", "cho_gath", "hwei").mapIndexed { index, id ->
+            com.example.service.screen.BanObservation(com.example.service.screen.BanSide.ENEMY,
+                com.example.service.screen.BanRegion(.75f + index * .044f, .052f, .028f), id)
+        }
+        val outerX = .97f
+        val completed = com.example.service.screen.fillHeaderPositions(observations, 16f / 9f,
+            hasOuterPortrait = { kotlin.math.abs(it.x - outerX) < .005f }) { true }
+        assertEquals(5, completed.size)
+        assertEquals("mordekaiser", completed.first().championId)
+        assertEquals(outerX, completed.last().region.x, .005f)
+        assertNull("Locating a circle must not invent its identity", completed.last().championId)
+        val withoutRim = com.example.service.screen.fillHeaderPositions(observations, 16f / 9f,
+            hasOuterPortrait = { false }) { true }
+        assertEquals(observations, withoutRim)
+    }
+
     @Test fun tester8067UsesTheFiveActualBansAndNeverBackgroundCaitlyn() {
         val path = listOf(java.io.File("src/androidTest/assets/draft/poco-8067-header.json"),
             java.io.File("app/src/androidTest/assets/draft/poco-8067-header.json")).first { it.isFile }
