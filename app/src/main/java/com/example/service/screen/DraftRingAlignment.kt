@@ -45,7 +45,7 @@ internal object DraftRingAlignment {
         val pixels = IntArray(w * h)
         bitmap.getPixels(pixels, 0, w, 0, 0, w, h)
         data class ColumnFit(val xs: List<Float>, val ys: List<Float>, val diameterScale: Float,
-                             val measuredSlots: Set<Int> = (0..4).toSet())
+                             val measuredSlots: Set<Int> = (0..4).toSet(), val coverage: Int = 0)
         fun fit(ally: Boolean, diameterScale: Float = 1f): ColumnFit? {
             val ys = if (ally) base.allySlotYRatios else base.enemySlotYRatios
             val fits = mutableListOf<Triple<Int, Pair<Int, Int>, Int>>()
@@ -149,7 +149,8 @@ internal object DraftRingAlignment {
                     List(5) { slot -> measured[slot]?.second?.first?.toFloat()?.div(w)
                         ?: previous.getAllySlotX(slot) },
                     List(5) { slot -> measured[slot]?.second?.second?.toFloat()?.div(h)
-                        ?: previous.allySlotYRatios[slot] }, diameterScale, measured.keys)
+                        ?: previous.allySlotYRatios[slot] }, diameterScale, measured.keys,
+                    fits.sumOf { it.third })
             }
             if (fits.size < 2) return null
             val medianX = fits.map { it.second.first }.sorted()[fits.size / 2]
@@ -178,7 +179,17 @@ internal object DraftRingAlignment {
         // Some game layouts change HUD scale as well as capture dimensions. Only
         // try nearby physical sizes when the current size has no coherent column;
         // still require independent, consistent visible rings, never a phone preset.
-        fun fitColumn(ally: Boolean) = fit(ally) ?: fit(ally, .8f) ?: fit(ally, 1.2f)
+        fun fitColumn(ally: Boolean): ColumnFit? {
+            val nominal = fit(ally)
+            if (!ally) return nominal ?: fit(false, .8f) ?: fit(false, 1.2f)
+            // A small off-centre circle can match part of a larger rim. Independent
+            // rows no longer have a column-consistency check to reject that fit.
+            // Compare angular coverage at nearby sizes before accepting a weak fit.
+            // Full coverage at the base size needs no extra searches.
+            if (nominal?.coverage == 5 * 40) return nominal
+            return listOfNotNull(nominal, fit(true, .8f), fit(true, 1.2f))
+                .maxByOrNull { it.coverage }
+        }
         val ally = fitColumn(true); val enemy = fitColumn(false)
         return base.copy(
             allyAvatarCenterX = ally?.xs?.first() ?: previous.allyAvatarCenterX,

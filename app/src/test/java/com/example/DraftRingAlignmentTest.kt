@@ -85,6 +85,8 @@ class DraftRingAlignmentTest {
                     val aligned = DraftRingAlignment.align(image, base, null)
                     for (slot in 0..4) {
                         assertEquals("$w x $h scale=$hudScale ally", .125f, aligned.getAllySlotX(slot), .008f)
+                        assertEquals("$w x $h scale=$hudScale ally diameter", .11f * hudScale,
+                            aligned.getSlotDiameter(true, slot), .006f)
                         assertEquals("$w x $h scale=$hudScale rival", .906f, aligned.getEnemySlotX(slot), .008f)
                         // Both renderer and recognizer consume these same measured circles.
                         for (ally in listOf(true, false)) {
