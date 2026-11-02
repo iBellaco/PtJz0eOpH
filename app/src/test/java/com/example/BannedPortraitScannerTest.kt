@@ -141,6 +141,22 @@ class BannedPortraitScannerTest {
         assertEquals(observations, withoutRim)
     }
 
+    @Test fun outerBanUsesTheObservedRowHeightNotTheLastPortraitCropOffset() {
+        // Reduced-frame measurements: the last template aligns above the rim,
+        // and a weak inner match must not replace the fifth outer ban.
+        val ids = listOf("lee_sin", "mordekaiser", "syndra", "cho_gath", "hwei")
+        val xs = listOf(.7609375f, .784375f, .8296875f, .8765625f, .91875f)
+        val ys = listOf(.058333334f, .05f, .05f, .05f, .047222223f)
+        val observations = ids.indices.map { i -> com.example.service.screen.BanObservation(
+            com.example.service.screen.BanSide.ENEMY,
+            com.example.service.screen.BanRegion(xs[i], ys[i], .031f), ids[i]) }
+        val result = com.example.service.screen.fillHeaderPositions(observations, 640f / 360,
+            hasOuterPortrait = { kotlin.math.abs(it.x - .9640625f) < .003f &&
+                kotlin.math.abs(it.y - .05f) < .001f }) { true }
+        assertEquals(listOf("mordekaiser", "syndra", "cho_gath", "hwei", null), result.map { it.championId })
+        assertEquals(.05f, result.last().region.y, .001f)
+    }
+
     @Test fun tester8067UsesTheFiveActualBansAndNeverBackgroundCaitlyn() {
         val path = listOf(java.io.File("src/androidTest/assets/draft/poco-8067-header.json"),
             java.io.File("app/src/androidTest/assets/draft/poco-8067-header.json")).first { it.isFile }

@@ -17,6 +17,53 @@ import org.robolectric.annotation.GraphicsMode
 @Config(sdk=[34], application=Application::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class DraftRingAlignmentTest {
+    @Test fun anAdditionalWeakRimCannotRescaleBetterCentredAlliedRows() {
+        val source = javaClass.getResourceAsStream("/portraits/draft-ten-selected.jpg").use {
+            BitmapFactory.decodeStream(it)!!
+        }
+        val frame = Bitmap.createScaledBitmap(source, 1920, 868, true)
+        try {
+            val aligned = DraftRingAlignment.align(frame, VisionCalibrationConfig(), null)
+            val ys = listOf(110f, 188f, 265f, 343f, 420f)
+            for (slot in 0..4) {
+                val rect = com.example.service.screen.AdaptiveScreenLayoutEngine.calculateSlotCropRect(1920, 868, true, slot, aligned)
+                val error = kotlin.math.hypot(rect.exactCenterX() - 92f * 1920 / 1280,
+                    rect.exactCenterY() - ys[slot] * 868 / 579) * 579 / 868
+                assertTrue("Resampled ally $slot: $error reference pixels", error <= 6f)
+            }
+        } finally { frame.recycle(); source.recycle() }
+    }
+
+    @Test fun blackBarsDoNotConsumeTheRingMeasurementResolution() {
+        val source = javaClass.getResourceAsStream("/portraits/draft-ten-selected.jpg").use {
+            BitmapFactory.decodeStream(it)!!
+        }
+        val content = Bitmap.createScaledBitmap(source, 1080, 488, true)
+        val square = Bitmap.createBitmap(1080, 1080, Bitmap.Config.ARGB_8888)
+        try {
+            val bounds = Rect(0, 296, 1080, 784)
+            android.graphics.Canvas(square).apply {
+                drawColor(android.graphics.Color.BLACK)
+                drawBitmap(content, null, bounds, android.graphics.Paint())
+            }
+            val base = VisionCalibrationConfig()
+            val direct = DraftRingAlignment.align(content, base, null)
+            val framedBase = com.example.service.screen.DraftFrameGeometry.forViewport(base, bounds, 1080, 1080)
+            val measured = DraftRingAlignment.align(square, framedBase, null)
+            val transformed = com.example.service.screen.DraftFrameGeometry.forViewport(direct, bounds, 1080, 1080)
+            val expectedYs = listOf(110f, 188f, 265f, 343f, 420f)
+            for (slot in 0..4) {
+                assertEquals(transformed.getAllySlotX(slot), measured.getAllySlotX(slot), .002f)
+                assertEquals(transformed.allySlotYRatios[slot], measured.allySlotYRatios[slot], .002f)
+                assertEquals(transformed.getSlotDiameter(true, slot), measured.getSlotDiameter(true, slot), .002f)
+                val error = kotlin.math.hypot(
+                    measured.getAllySlotX(slot) * 1080 - 92f * 1080 / 1280,
+                    measured.allySlotYRatios[slot] * 1080 - 296 - expectedYs[slot] * 488 / 579) * 579 / 488
+                assertTrue("Letterboxed ally $slot: $error reference pixels", error <= 6f)
+            }
+        } finally { square.recycle(); content.recycle(); source.recycle() }
+    }
+
     @Test fun mixedAlliedRowsAndOneVisibleRowKeepTheirOwnCentersAcrossDimensions() {
         for ((w, h) in listOf(1280 to 585, 1600 to 720, 1920 to 1080)) {
             for (visible in listOf((0..4).toSet(), setOf(0, 1, 2, 3), setOf(0, 1), setOf(3))) {

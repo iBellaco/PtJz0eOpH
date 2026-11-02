@@ -331,7 +331,13 @@ object LiteRTVisionClassifier {
             } else null
         } else null
         val positioned = fillHeaderPositions(observations + listOfNotNull(finalEmpty), width.toFloat() / height,
-            hasOuterPortrait = { region -> hasHeaderCircleRing(bitmap, region) }) { region ->
+            // Template crop radii describe different artwork scales. The visible
+            // rim of the next portrait need not equal their mean, especially
+            // after downsampling. Locate a rim at nearby sizes, without relaxing
+            // the identity threshold or treating texture alone as a new position.
+            hasOuterPortrait = { region -> floatArrayOf(1f, .8f, 1.2f).any { scale ->
+                hasHeaderCircleRing(bitmap, region.copy(radius = region.radius * scale))
+            } }) { region ->
             val cx = region.x * width
             val cy = region.y * height
             val radius = region.radius * height

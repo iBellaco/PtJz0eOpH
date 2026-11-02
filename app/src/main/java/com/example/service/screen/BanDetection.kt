@@ -34,6 +34,9 @@ internal fun fillHeaderPositions(observations: List<BanObservation>, aspect: Flo
             .filter { it in nominal * .65f..nominal * 1.4f }.sorted()
         val step = gaps.getOrNull(gaps.size / 2) ?: nominal
         val radius = row.map { it.region.radius }.average().toFloat()
+        // A template can align to artwork a few pixels above the true rim.
+        // Extrapolate the row, not the last champion's individual crop offset.
+        val rowY = row.map { it.region.y }.sorted().let { it[it.size / 2] }
         fun addAt(x: Float, y: Float, outer: Boolean = false): Boolean {
             val region = BanRegion(x, y, radius)
             val sideWidth = banHeaderSideWidthRatio(aspect)
@@ -57,8 +60,15 @@ internal fun fillHeaderPositions(observations: List<BanObservation>, aspect: Flo
         // With explicit rim evidence, complete the row before selecting five;
         // mere texture/status indicators must not extend a full panoramic row.
         val positionLimit = if (hasOuterPortrait != null || banHeaderSideWidthRatio(aspect) > .27f) 7 else 5
-        while (row.size < positionLimit && addAt(row.first().region.x - step, row.first().region.y, outer = true)) { /* visible leading slots */ }
-        while (row.size < positionLimit && addAt(row.last().region.x + step, row.last().region.y, outer = true)) { /* visible trailing slots */ }
+        fun extend(left: Boolean) {
+            while (row.size < positionLimit && addAt(
+                if (left) row.first().region.x - step else row.last().region.x + step,
+                rowY, outer = true)) { /* visible positions only */ }
+        }
+        // Reserve the outward search first, before an inner status/profile icon
+        // can consume the bounded candidate budget.
+        extend(left = side == BanSide.ALLY)
+        extend(left = side != BanSide.ALLY)
     }
     // Template similarity alone can match a textured background outside the row.
     // Select the five circles with consistent spacing before latching identities.
@@ -77,7 +87,8 @@ internal fun fillHeaderPositions(observations: List<BanObservation>, aspect: Flo
       }
       val minimum = windows.minOf { it.second }
       val regular = windows.filter { it.second<=minimum+.02 }
-      // Equally regular adjacent profiles belong toward the centre of the screen.
+      // With equally regular candidates, the ban row is toward the screen edge,
+      // not the adjacent player/profile artwork toward the centre.
       (if(side==BanSide.ALLY) regular.first() else regular.last()).first
     }
 }

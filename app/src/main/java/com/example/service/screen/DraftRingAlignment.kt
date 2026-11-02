@@ -31,6 +31,34 @@ internal object DraftRingAlignment {
 
     fun align(bitmap: Bitmap, base: VisionCalibrationConfig, excluded: Rect?, ignoreDebugRings: Boolean = false,
               previous: VisionCalibrationConfig = base): VisionCalibrationConfig {
+        val bounds = DraftFrameGeometry.contentBounds(bitmap)
+        if (bounds != Rect(0, 0, bitmap.width, bitmap.height)) {
+            // Measure the game content before downsampling. On a square capture,
+            // black bars otherwise consume most of the 720px processing budget
+            // and expand the vertical search into the adjacent spell icons.
+            fun mapSlots(config: VisionCalibrationConfig, toContent: Boolean): VisionCalibrationConfig {
+                fun x(v: Float) = if (toContent) (v * bitmap.width - bounds.left) / bounds.width()
+                    else (bounds.left + v * bounds.width()) / bitmap.width
+                fun y(v: Float) = if (toContent) (v * bitmap.height - bounds.top) / bounds.height()
+                    else (bounds.top + v * bounds.height()) / bitmap.height
+                val scale = if (toContent) bitmap.height.toFloat() / bounds.height()
+                    else bounds.height().toFloat() / bitmap.height
+                return config.copy(
+                    avatarDiameterRatio = config.avatarDiameterRatio * scale,
+                    allyAvatarCenterX = x(config.allyAvatarCenterX), enemyAvatarCenterX = x(config.enemyAvatarCenterX),
+                    allySlotXRatios = config.allySlotXRatios.map(::x), enemySlotXRatios = config.enemySlotXRatios.map(::x),
+                    allySlotYRatios = config.allySlotYRatios.map(::y), enemySlotYRatios = config.enemySlotYRatios.map(::y),
+                    allySlotDiameterRatios = config.allySlotDiameterRatios.map { it * scale },
+                    enemySlotDiameterRatios = config.enemySlotDiameterRatios.map { it * scale })
+            }
+            val content = Bitmap.createBitmap(bitmap, bounds.left, bounds.top, bounds.width(), bounds.height())
+            try {
+                val mask = excluded?.let { Rect(it).takeIf { rect -> rect.intersect(bounds) }
+                    ?.apply { offset(-bounds.left, -bounds.top) } }
+                return mapSlots(align(content, mapSlots(base, true), mask, ignoreDebugRings,
+                    mapSlots(previous, true)), false)
+            } finally { content.recycle() }
+        }
         if (bitmap.width > 1280 || bitmap.height > 720) {
             val scale = minOf(1280f / bitmap.width, 720f / bitmap.height)
             val reduced = Bitmap.createScaledBitmap(bitmap, (bitmap.width * scale).roundToInt().coerceAtLeast(1),
@@ -229,8 +257,12 @@ internal object DraftRingAlignment {
             // Compare angular coverage at nearby sizes before accepting a weak fit.
             // Full coverage at the base size needs no extra searches.
             if (nominal?.coverage == 5 * 40) return nominal
+            // Compare coverage per observed ring, not the sum: one extra weak
+            // match must not outvote four better-centred rings at the base size.
+            // Missing rows are deliberately absent from this measurement and
+            // retain their previous geometry rather than forcing a global resize.
             return listOfNotNull(nominal, fit(true, .8f), fit(true, 1.2f))
-                .maxByOrNull { it.coverage }
+                .maxByOrNull { it.coverage.toFloat() / it.measuredSlots.size }
         }
         val ally = fitColumn(true); val enemy = fitColumn(false)
         return base.copy(
