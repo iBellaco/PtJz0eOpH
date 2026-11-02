@@ -29,7 +29,8 @@ internal object DraftRingAlignment {
         return ys.map { ((it*height*scale+shift)/height).coerceIn(0f,1f) }
     }
 
-    fun align(bitmap: Bitmap, base: VisionCalibrationConfig, excluded: Rect?, ignoreDebugRings: Boolean = false): VisionCalibrationConfig {
+    fun align(bitmap: Bitmap, base: VisionCalibrationConfig, excluded: Rect?, ignoreDebugRings: Boolean = false,
+              previous: VisionCalibrationConfig = base): VisionCalibrationConfig {
         if (bitmap.width > 1280 || bitmap.height > 720) {
             val scale = minOf(1280f / bitmap.width, 720f / bitmap.height)
             val reduced = Bitmap.createScaledBitmap(bitmap, (bitmap.width * scale).roundToInt().coerceAtLeast(1),
@@ -37,7 +38,7 @@ internal object DraftRingAlignment {
             try {
                 val mask = excluded?.let { Rect(floor(it.left * scale).toInt(), floor(it.top * scale).toInt(),
                     ceil(it.right * scale).toInt(), ceil(it.bottom * scale).toInt()) }
-                return align(reduced, base, mask, ignoreDebugRings)
+                return align(reduced, base, mask, ignoreDebugRings, previous)
             } finally { reduced.recycle() }
         }
         val w = bitmap.width; val h = bitmap.height
@@ -64,6 +65,9 @@ internal object DraftRingAlignment {
             for (slot in 0..4) {
                 val nominalY = (ys[slot] * h).toInt()
                 val nominalX = w * (if(ally) base.getAllySlotX(slot) else base.getEnemySlotX(slot))
+                val debugX = w * (if (ally) previous.getAllySlotX(slot) else previous.getEnemySlotX(slot))
+                val debugY = h * (if (ally) previous.allySlotYRatios else previous.enemySlotYRatios)[slot]
+                val debugRadius = h * previous.getSlotDiameter(ally, slot) / 2f
                 val minX = (w * if (ally) .035 else .76).toInt()
                 val maxX = (w * if (ally) .24 else .975).toInt()
                 val minY = max(radius, nominalY - h / 25)
@@ -87,7 +91,7 @@ internal object DraftRingAlignment {
                                 val x = (cx + dx + dx * dr / radius).coerceIn(0,w-1)
                                 val y = (cy + dy + dy * dr / radius).coerceIn(0,h-1)
                                 // Do not use our own diagnostic outline as evidence of a game ring.
-                                if(ignoreDebugRings && abs(hypot(x-nominalX,(y-nominalY).toFloat())-radius)<3f) continue
+                                if(ignoreDebugRings && abs(hypot(x-debugX,y-debugY)-debugRadius)<3f) continue
                                 val color = pixels[y*w+x]
                                 val r = (color shr 16) and 255; val g = (color shr 8) and 255; val b = color and 255
                                 val team = if (ally) b > 85 && g > 65 && b > r * 1.25 && g > r * 1.15
@@ -165,14 +169,16 @@ internal object DraftRingAlignment {
         fun fitColumn(ally: Boolean) = fit(ally) ?: fit(ally, .8f) ?: fit(ally, 1.2f)
         val ally = fitColumn(true); val enemy = fitColumn(false)
         return base.copy(
-            allyAvatarCenterX = ally?.xs?.first() ?: base.allyAvatarCenterX,
-            allySlotXRatios = ally?.xs ?: base.allySlotXRatios,
-            allySlotYRatios = ally?.ys ?: base.allySlotYRatios,
-            allySlotDiameterRatios = base.allySlotDiameterRatios.map { it * (ally?.diameterScale ?: 1f) },
-            enemyAvatarCenterX = enemy?.xs?.first() ?: base.enemyAvatarCenterX,
-            enemySlotXRatios = enemy?.xs ?: base.enemySlotXRatios,
-            enemySlotYRatios = enemy?.ys ?: base.enemySlotYRatios,
-            enemySlotDiameterRatios = base.enemySlotDiameterRatios.map { it * (enemy?.diameterScale ?: 1f) }
+            allyAvatarCenterX = ally?.xs?.first() ?: previous.allyAvatarCenterX,
+            allySlotXRatios = ally?.xs ?: previous.allySlotXRatios,
+            allySlotYRatios = ally?.ys ?: previous.allySlotYRatios,
+            allySlotDiameterRatios = ally?.let { fit -> base.allySlotDiameterRatios.map { it * fit.diameterScale } }
+                ?: previous.allySlotDiameterRatios,
+            enemyAvatarCenterX = enemy?.xs?.first() ?: previous.enemyAvatarCenterX,
+            enemySlotXRatios = enemy?.xs ?: previous.enemySlotXRatios,
+            enemySlotYRatios = enemy?.ys ?: previous.enemySlotYRatios,
+            enemySlotDiameterRatios = enemy?.let { fit -> base.enemySlotDiameterRatios.map { it * fit.diameterScale } }
+                ?: previous.enemySlotDiameterRatios
         )
     }
 }

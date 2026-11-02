@@ -61,6 +61,14 @@ El orden jerárquico de los rangos para consejos tácticos es:
 
 ## Continuidad y comprobaciones
 
+El escáner automático es multidispositivo: su ámbito son los dispositivos Android
+compatibles con Wild Rift y con los permisos de captura/superposición disponibles.
+Adaptar por dimensiones reales de captura, viewport y evidencia visual; nunca
+por coordenadas fijas de fabricante/modelo. Mantener estable la geometría entre
+fotogramas: no acumular escalas sobre estimaciones anteriores. Verificar secuencias,
+no solo imágenes aisladas. Este objetivo no equivale a compatibilidad física ya
+comprobada con todos los dispositivos; registrar las pruebas pendientes.
+
 Antes de cambiar el escáner, leer completo `docs/draft-recognition-contract.md`.
 Es el contrato de capturas confirmado por el propietario: nueve selecciones por
 título completo, décima visual en el lado correspondiente y baneos omitidos vacíos.
@@ -71,6 +79,17 @@ La maestría puede preceder al título. Primero aliado → décimo rival; primer
 Los puestos aliados vacíos pueden desplazarse antes de aparecer los hechizos:
 leer también la banda previa de línea. Al iniciar tarde, cuatro líneas distintas
 permiten deducir la quinta; menos evidencia no permite adivinarla por campeón.
+
+Secuencia confirmada por el propietario: los puestos rivales mantienen su
+posición durante la selección si no cambia el viewport. Los aliados cambian
+de posición individualmente al pasar entre vacío, preselección y selección.
+Avatar de campeón con título de línea todavía visible = preselección, no pick
+confirmado. Nombre completo del campeón reemplazando la línea, junto a su avatar
+= selección, sujeta a la confirmación temporal del contrato. Conservar la línea
+observada de esa misma fila. No mover las cinco filas por el desplazamiento de
+una sola ni confundir desplazamiento real con escalado acumulativo del visor.
+Leer la sección «Secuencia visual de puestos aliados y rivales» del contrato
+antes de modificar localización, estabilización u OCR de puestos.
 
 ## 2. Protocolo de Lectura (Antes de Modificar)
 Antes de generar código o responder a un requerimiento, el agente debe seguir estos pasos de lectura:

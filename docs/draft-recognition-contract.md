@@ -27,6 +27,16 @@ restringidos: Coach orienta al propietario, nunca elude esa protección.
 
 ## Información que se observa
 
+Regla confirmada el 2 de noviembre de 2026: el escáner automático debe ser
+multidispositivo en Android compatible con Wild Rift. Las medidas proceden de
+la captura y del área visible del juego, sin presets por modelo. Una animación,
+un retrato cambiado o un puesto vacío no deben encoger repetidamente la geometría.
+Cada medición parte de la base del viewport. Los cambios se confirman temporalmente
+por puesto; no imponer una única posición horizontal a todos los aliados.
+Con falta de evidencia se conserva la última geometría del puesto correspondiente.
+Al cambiar dimensiones/viewport o calibración se vuelve a medir. Las pruebas
+físicas de cada dispositivo se documentan aparte de este requisito.
+
 Los cinco slots aliados, cinco rivales y cinco baneos de cada lado conservan
 su distribución lógica. Se transforman respecto de la ventana del juego, no
 respecto de barras negras, recortes o ventanas flotantes. El visor y el escáner
@@ -48,6 +58,56 @@ indican Apoyo, Central, Barón y Jungla, la única línea restante es Dragón.
 Inferirla solo cuando hay cuatro líneas distintas y un único puesto pendiente.
 Con menos evidencia o líneas repetidas, conservar la incertidumbre; no usar la
 línea primaria de Senna para completar el dato.
+
+## Secuencia visual de puestos aliados y rivales
+
+Aclaración del propietario del 2 de noviembre de 2026, acompañada de tres
+capturas de la misma selección. Debe leerse antes de modificar el seguimiento
+de puestos. Esta descripción registra el comportamiento esperado; no demuestra
+que el código actual ya implemente todo el seguimiento individual.
+
+En el lado rival, los cinco puestos mantienen sus posiciones durante la
+secuencia, incluidos los vacíos y los ocupados. Cambiar el retrato o el título
+no justifica moverlos. Un cambio real de orientación, resolución o viewport sí
+requiere transformar sus coordenadas. Un retrato rival sin título completo
+todavía no confirma un campeón de las primeras nueve selecciones.
+
+En el lado aliado, cada fila conserva su identidad lógica aunque cambien sus
+coordenadas. Los estados deben distinguirse de la siguiente manera:
+
+| Estado | Evidencia visible | Lectura que debe conservar el escáner |
+|---|---|---|
+| Sin preselección | Símbolo de línea y título de línea | Línea observada de esa fila; sin campeón confirmado |
+| Preselección | Avatar de campeón, pero el título sigue mostrando la línea | Conservar la línea y seguir el desplazamiento de esa fila; no confirmar el avatar |
+| Selección | El título de línea es reemplazado por el nombre completo del campeón y aparece su avatar | Confirmar el título en fotogramas distintos y asociarlo con la línea previamente observada de esa fila |
+
+La aparición de avatar/hechizos puede desplazar el puesto y su banda de texto
+desde la preselección. Los demás aliados pueden permanecer en su posición
+anterior. No deducir el estado por una coordenada fija, por los hechizos, por el
+temporizador ni por el retrato aislado. Leer la banda correspondiente al estado
+visible, conservando la identidad de fila y separando el invocador de debajo.
+Si desaparece la preselección y reaparece el símbolo de línea, recuperar su banda
+previa sin perder la línea observada ni desplazar los otros cuatro puestos.
+
+Las capturas muestran una fila central aliada que pasa de símbolo de línea a
+avatar manteniendo «CALLE CENTRAL»; otra muestra avatar manteniendo «APOYO».
+Ambas son preselecciones según la explicación del propietario. También se ve
+un avatar con «CALLE DEL BARÓN», que tampoco confirma identidad. Del lado rival,
+el primer avatar mantiene su posición y luego aparece el título «DRAVEN».
+La regla del título aliado confirmado procede de la explicación del propietario;
+estas tres capturas no muestran por sí solas toda esa transición final.
+
+La estabilización debe permitir estos desplazamientos legítimos por puesto y
+evitar el encogimiento acumulativo de los recortes. Una mediana horizontal para
+toda la columna aliada no basta cuando coexisten estados distintos. La décima
+selección conserva su excepción visual y sus condiciones descritas más abajo.
+Esta secuencia se aplica por dimensiones y evidencia visual a Android compatible
+con Wild Rift, sin perfiles especiales por fabricante o modelo.
+
+Comprobaciones necesarias al implementar: mezclar puestos vacíos, preseleccionados
+y confirmados; cambiar o retirar una preselección; confirmar su título; ocultar
+una fila; repetir en distintas proporciones. Los rivales y aliados no afectados
+deben conservar su ubicación, y ninguna preselección debe sumar un pick confirmado.
 
 ## Selecciones 1–9: solo texto
 
