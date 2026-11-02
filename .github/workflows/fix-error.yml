@@ -346,7 +346,7 @@ jobs:
       - name: Comprobar retratos y la secuencia exacta pendiente
         uses: reactivecircus/android-emulator-runner@v2
         env:
-          COACH_SEQUENCE_SHARD: '9'
+          COACH_SEQUENCE_SHARD: '0'
           COACH_SEQUENCE_TARGETS: 'sequence-52-ally-first'
           COACH_SEQUENCE_PREFLIGHT: 'false'
         with:

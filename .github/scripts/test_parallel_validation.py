@@ -1,6 +1,7 @@
 """Guard the real Actions graph, commands, evidence and publication gate."""
 from pathlib import Path
 import re
+import json
 import shlex
 import subprocess
 import sys
@@ -22,6 +23,21 @@ EXPECTED_RENDERED_CLASSES = {
 
 
 class ParallelValidationTest(unittest.TestCase):
+    def test_fix_sequence_target_belongs_to_the_selected_shard(self):
+        workflow = yaml.safe_load((WORKFLOWS / 'fix-error.yml').read_text())
+        steps = workflow['jobs']['targeted-installed-vi']['steps']
+        plan = json.loads((WORKFLOWS.parents[1] /
+            'app/src/test/resources/scanner/targeted-sequence-plan.json').read_text())
+        step = next(s for s in steps if 'COACH_SEQUENCE_TARGETS' in s.get('env', {}))
+        env = step['env']
+        targets = set(env['COACH_SEQUENCE_TARGETS'].split(','))
+        self.assertTrue(targets)
+        self.assertEqual('false', env['COACH_SEQUENCE_PREFLIGHT'])
+        selected = {c['id'] for c in plan['cases']
+                    if c['shard'] == int(env['COACH_SEQUENCE_SHARD']) and c['id'] in targets}
+        self.assertEqual(targets, selected,
+            'Todos los casos solicitados deben pertenecer a la partición del plan reducido')
+
     @classmethod
     def setUpClass(cls):
         cls.workflow = yaml.safe_load((WORKFLOWS / 'build-apk.yml').read_text())
