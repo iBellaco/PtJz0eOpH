@@ -19,7 +19,7 @@ import org.robolectric.annotation.GraphicsMode
 class DraftRingAlignmentTest {
     @Test fun insetColumnsAndHudSizesAreMeasuredWithoutModelCoordinates() {
         // Synthetic rings, not a physical-device test or the tester's original capture.
-        for ((w, h) in listOf(1280 to 587, 1280 to 720, 1600 to 720, 1920 to 864)) {
+        for ((w, h) in listOf(1280 to 587, 1280 to 590, 1280 to 720, 1600 to 720, 1920 to 864)) {
             for (hudScale in listOf(.8f, 1.2f)) {
                 val image = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
                 try {
