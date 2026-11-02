@@ -19,6 +19,13 @@ object AllyDraftNameReader {
     internal fun preferOriginal(original: Reading, withoutBadge: Reading): Reading =
         if (original.ambiguous || original.champion != null || original.lane != null || original.unpicked) original else withoutBadge
 
+    /** A complete champion read from the exact contextual target can replace a
+     * lane-only fallback. The fallback comes from a different vertical band;
+     * it must not hide a selected short title such as VI. */
+    internal fun preferContextualTarget(original: Reading, contextual: Reading): Reading =
+        if (!contextual.ambiguous && contextual.champion != null) contextual
+        else preferOriginal(original, contextual)
+
     fun readTitleRows(lines: List<Pair<String, Int>>, rowDistance: Int, catalog: List<Champion>,
         titleMaxCenterY: Int = Int.MAX_VALUE): Reading {
         val titleLines = lines.filter { it.second <= titleMaxCenterY }

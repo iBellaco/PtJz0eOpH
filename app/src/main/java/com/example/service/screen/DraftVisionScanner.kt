@@ -710,6 +710,7 @@ object DraftVisionScanner {
             try {
                 val detectedTitleLines=mutableMapOf<Pair<Boolean,Int>,MutableList<Rect>>()
                 val contextDonors=mutableMapOf<Pair<Boolean,Int>,Rect>()
+                val fallbackLaneSlots=mutableSetOf<Int>()
                 suspend fun readTitles(input: DraftNameAtlas): com.google.mlkit.vision.text.Text {
                 ocrRequestCount++
                 val text = recognizer.process(InputImage.fromBitmap(input.bitmap,0)).await()
@@ -723,8 +724,11 @@ object DraftVisionScanner {
                         }
                         val lane = AllyDraftNameReader.readTitleRows(pairs,
                             (tile.region.height() * .30f).toInt(), emptyList(), tile.titleMaxY).lane
-                        if (lane != null) targetedAllyReadings[tile.slot] = AllyDraftNameReader.preferOriginal(
-                            targetedAllyReadings[tile.slot], AllyDraftNameReader.Reading(lane = lane))
+                        if (lane != null) {
+                            fallbackLaneSlots += tile.slot
+                            targetedAllyReadings[tile.slot] = AllyDraftNameReader.preferOriginal(
+                                targetedAllyReadings[tile.slot], AllyDraftNameReader.Reading(lane = lane))
+                        }
                         continue
                     }
                     if (tile.contextual) {
@@ -759,7 +763,8 @@ object DraftVisionScanner {
                             elementReading
                         } else reading
                         val readings = if(tile.ally) targetedAllyReadings else targetedEnemyReadings
-                        readings[tile.slot] = AllyDraftNameReader.preferOriginal(readings[tile.slot],resolvedReading)
+                        readings[tile.slot] = AllyDraftNameReader.preferContextualTarget(
+                            readings[tile.slot], resolvedReading)
                         continue
                     }
                     val selected = lines.filter { line ->
@@ -955,7 +960,15 @@ object DraftVisionScanner {
                     repeatedShortAlternatives.forEach { if(!it.bitmap.isRecycled) it.bitmap.recycle() }
                     throw error
                 }
-                for ((tile,_) in unresolved) if (tile.ally && unresolvedReading(tile)) {
+                fun needsContextualRecovery(tile: DraftNameAtlas.Tile): Boolean {
+                    val reading = targetedAllyReadings[tile.slot]
+                    return tile.ally && !reading.ambiguous && reading.champion == null && !reading.unpicked &&
+                        (reading.lane == null || tile.slot in fallbackLaneSlots)
+                }
+                val contextualCandidates = (unresolved.map { it.first } + atlas.tiles.filter { tile ->
+                    tile.original && tile.ally && tile.slot in fallbackLaneSlots
+                }).distinctBy { it.ally to it.slot }
+                for (tile in contextualCandidates) if (needsContextualRecovery(tile)) {
                     val donorEntry = contextDonors.entries.filter { it.key != (tile.ally to tile.slot) }
                         .maxByOrNull { it.value.width().toFloat()/it.value.height() } ?: continue
                     val donor = atlas.tiles.single { it.original && it.ally == donorEntry.key.first && it.slot == donorEntry.key.second }
@@ -978,9 +991,9 @@ object DraftVisionScanner {
                             val reading = AllyDraftNameReader.read(listOf(line.text), allChamps)
                             line.boundingBox?.takeIf { reading.champion != null && !reading.ambiguous }
                         }
-                        for ((tile, _) in unresolved) if (tile.ally && unresolvedReading(tile)) {
+                        for (tile in contextualCandidates) if (needsContextualRecovery(tile)) {
                             for ((donor, bounds) in DraftNameAtlas.sceneContextSources(atlas, scene, titleBoxes, tile)) {
-                                if (!unresolvedReading(tile)) break
+                                if (!needsContextualRecovery(tile)) break
                                 val contextual = DraftNameAtlas.contextualTitle(atlas, tile, donor, bounds) ?: continue
                                 try { readTitles(contextual) } finally { contextual.bitmap.recycle() }
                             }

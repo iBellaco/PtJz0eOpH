@@ -65,6 +65,14 @@ class AllyDraftNameReaderTest {
         assertEquals("vi", reading.champion?.id)
     }
 
+    @Test fun contextualChampionReplacesOnlyALaneFallback() {
+        val lane = AllyDraftNameReader.Reading(lane = LaneRole.JUNGLE)
+        val vi = AllyDraftNameReader.Reading(champion = catalog.single { it.id == "vi" })
+        assertEquals("vi", AllyDraftNameReader.preferContextualTarget(lane, vi).champion?.id)
+        assertEquals(lane, AllyDraftNameReader.preferContextualTarget(lane,
+            AllyDraftNameReader.Reading(ambiguous = true)))
+    }
+
     @Test fun shortNamesStillRequireAnExactTitleInsideTheTitleRow() {
         for(text in listOf("IA","rVI","XVI","VI7","XCS IA"))
             assertNull(AllyDraftNameReader.readTitleRows(listOf(text to 0),10,catalog,20).champion)
