@@ -1000,6 +1000,30 @@ object DraftVisionScanner {
                         }
                     } finally { scene.bitmap.recycle() }
                 }
+                // Native OCR evidence on a small capture locates a useful donor
+                // differently from the enlarged scene. Retry those original
+                // pixels only after all existing recoveries failed. Donors are
+                // restricted to complete titles in other calibrated bands;
+                // only the target's central crop can contribute its identity.
+                if (bitmap.width < 1920 && contextualCandidates.any(::needsContextualRecovery)) {
+                    val nativeScene = DraftNameAtlas.sceneTitles(bitmap, calib,
+                        exclusions + listOfNotNull(frameOverlay), nativeSize = true)
+                    try {
+                        ocrRequestCount++
+                        val nativeText = recognizer.process(InputImage.fromBitmap(nativeScene.bitmap, 0)).await()
+                        val titleBoxes = nativeText.textBlocks.flatMap { it.lines }.mapNotNull { line ->
+                            val reading = AllyDraftNameReader.read(listOf(line.text), allChamps)
+                            line.boundingBox?.takeIf { reading.champion != null && !reading.ambiguous }
+                        }
+                        for (tile in contextualCandidates) if (needsContextualRecovery(tile)) {
+                            for ((donor, bounds) in DraftNameAtlas.sceneContextSources(atlas, nativeScene, titleBoxes, tile)) {
+                                if (!needsContextualRecovery(tile)) break
+                                val contextual = DraftNameAtlas.contextualTitle(atlas, tile, donor, bounds) ?: continue
+                                try { readTitles(contextual) } finally { contextual.bitmap.recycle() }
+                            }
+                        }
+                    } finally { nativeScene.bitmap.recycle() }
+                }
                 }
                 for (slot in 0..4) {
                     targetedEnemyChampions[slot] = targetedEnemyReadings[slot].let {

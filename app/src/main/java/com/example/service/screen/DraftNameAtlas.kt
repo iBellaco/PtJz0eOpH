@@ -98,8 +98,9 @@ internal class DraftNameAtlas private constructor(val bitmap: Bitmap, val tiles:
         /** Preserve the original scene for the detector when isolated two-letter
          * titles remain unreadable. Only calibrated TITLE regions are decoded;
          * the centre champion, summoner row and overlays cannot supply identities. */
-        fun sceneTitles(source: Bitmap, config: VisionCalibrationConfig, masks: List<Rect>): DraftNameAtlas {
-            val scale=(1920f/source.width).coerceIn(1f,3f)
+        fun sceneTitles(source: Bitmap, config: VisionCalibrationConfig, masks: List<Rect>,
+                        nativeSize: Boolean = false): DraftNameAtlas {
+            val scale=if (nativeSize) 1f else (1920f/source.width).coerceIn(1f,3f)
             fun low(value:Int)=kotlin.math.floor(value*scale).toInt()
             fun high(value:Int)=kotlin.math.ceil(value*scale).toInt()
             val bitmap=Bitmap.createBitmap(high(source.width),high(source.height),Bitmap.Config.ARGB_8888)
