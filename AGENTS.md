@@ -80,6 +80,17 @@ Los puestos aliados vacíos pueden desplazarse antes de aparecer los hechizos:
 leer también la banda previa de línea. Al iniciar tarde, cuatro líneas distintas
 permiten deducir la quinta; menos evidencia no permite adivinarla por campeón.
 
+Secuencia confirmada por el propietario: los puestos rivales mantienen su
+posición durante la selección si no cambia el viewport. Los aliados cambian
+de posición individualmente al pasar entre vacío, preselección y selección.
+Avatar de campeón con título de línea todavía visible = preselección, no pick
+confirmado. Nombre completo del campeón reemplazando la línea, junto a su avatar
+= selección, sujeta a la confirmación temporal del contrato. Conservar la línea
+observada de esa misma fila. No mover las cinco filas por el desplazamiento de
+una sola ni confundir desplazamiento real con escalado acumulativo del visor.
+Leer la sección «Secuencia visual de puestos aliados y rivales» del contrato
+antes de modificar localización, estabilización u OCR de puestos.
+
 ## 2. Protocolo de Lectura (Antes de Modificar)
 Antes de generar código o responder a un requerimiento, el agente debe seguir estos pasos de lectura:
 

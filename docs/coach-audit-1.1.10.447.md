@@ -42,3 +42,15 @@ Archivos modificados: AGENTS.md, docs/draft-recognition-contract.md,
 app/build.gradle.kts, DraftVisionScanner.kt, DraftRingAlignment.kt,
 DraftGeometryStability.kt, DraftGeometryStabilityTest.kt,
 DraftPreviewAlignmentTest.kt, DraftRingAlignmentTest.kt y fix-error.yml.
+
+## Aclaración documental posterior del propietario
+
+Se incorpora a AGENTS.md y al contrato la secuencia de puestos: rivales estáticos
+en el mismo viewport, aliados desplazables por fila según su estado, avatar con
+título de línea como preselección y título completo de campeón como selección
+sujeta a confirmación temporal. La corrección de escalado de esta versión no
+equivale a implementar ese seguimiento individual; queda explícito para la
+siguiente intervención. Solo se modifica documentación en esta aclaración.
+La sincronización se aplazó mientras el fix estaba ejecutándose para evitar
+cancelarlo mediante otro push. Se incorpora en 1.1.10.448 tras finalizar esa
+ejecución correctamente.
