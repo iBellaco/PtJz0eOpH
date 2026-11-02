@@ -263,7 +263,12 @@ object LiteRTVisionClassifier {
             }
         }
         val found = mutableListOf<Pair<Proposal, Champion?>>()
-        for (proposal in (proposals.sortedByDescending { it.score }.take(200) + emptyProposals.sortedByDescending { it.score }.take(40)).sortedByDescending { it.score }) {
+        // Preserve the total work budget, but reserve half for each header.
+        // Many high-scoring rival crops must not starve the allied search.
+        fun balanced(source: List<Proposal>, limitPerSide: Int): List<Proposal> =
+            listOf(true, false).flatMap { ally -> source.filter { (it.x < width / 2) == ally }
+                .sortedByDescending { it.score }.take(limitPerSide) }
+        for (proposal in (balanced(proposals, 100) + balanced(emptyProposals, 20)).sortedByDescending { it.score }) {
             if (found.count { (it.first.x < width / 2) == (proposal.x < width / 2) } >= 7) continue
             if (found.any { kotlin.math.abs(it.first.x - proposal.x) < maxOf(it.first.radius, proposal.radius) * 1.4f }) continue
             if (proposal.shortlist.isEmpty()) {
@@ -325,7 +330,14 @@ object LiteRTVisionClassifier {
                     BanObservation(BanSide.ENEMY,region,empty=true) else null
             } else null
         } else null
-        val positioned = fillHeaderPositions(observations + listOfNotNull(finalEmpty), width.toFloat() / height) { region ->
+        val positioned = fillHeaderPositions(observations + listOfNotNull(finalEmpty), width.toFloat() / height,
+            // Template crop radii describe different artwork scales. The visible
+            // rim of the next portrait need not equal their mean, especially
+            // after downsampling. Locate a rim at nearby sizes, without relaxing
+            // the identity threshold or treating texture alone as a new position.
+            hasOuterPortrait = { region -> floatArrayOf(1f, .8f, 1.2f).any { scale ->
+                hasHeaderCircleRing(bitmap, region.copy(radius = region.radius * scale))
+            } }) { region ->
             val cx = region.x * width
             val cy = region.y * height
             val radius = region.radius * height

@@ -19,6 +19,13 @@ object AllyDraftNameReader {
     internal fun preferOriginal(original: Reading, withoutBadge: Reading): Reading =
         if (original.ambiguous || original.champion != null || original.lane != null || original.unpicked) original else withoutBadge
 
+    /** A complete champion read from the exact contextual target can replace a
+     * lane-only fallback. The fallback comes from a different vertical band;
+     * it must not hide a selected short title such as VI. */
+    internal fun preferContextualTarget(original: Reading, contextual: Reading): Reading =
+        if (!contextual.ambiguous && contextual.champion != null) contextual
+        else preferOriginal(original, contextual)
+
     fun readTitleRows(lines: List<Pair<String, Int>>, rowDistance: Int, catalog: List<Champion>,
         titleMaxCenterY: Int = Int.MAX_VALUE): Reading {
         val titleLines = lines.filter { it.second <= titleMaxCenterY }
@@ -51,6 +58,19 @@ object AllyDraftNameReader {
             return Reading(lane = laneTitle(titleLines.sortedBy { it.second }.joinToString(" ") { it.first }))
         }
         return Reading()
+    }
+
+    /**
+     * Reads only OCR elements inside the target area of a contextual retry.
+     * The surrounding pixels help ML Kit detect short titles, but their text
+     * must never become the slot identity. A result is accepted only when the
+     * target area contains exactly one complete champion title.
+     */
+    internal fun readContextualElements(elements: List<String>, catalog: List<Champion>): Reading {
+        val candidates = elements.mapNotNull { text ->
+            read(listOf(text), catalog).takeIf { !it.ambiguous && it.champion != null }?.champion
+        }.distinctBy { it.id }
+        return if (candidates.size == 1) Reading(champion = candidates.single()) else Reading()
     }
 
     fun read(lines: List<String>, catalog: List<Champion>): Reading {

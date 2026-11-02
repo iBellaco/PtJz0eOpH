@@ -40,6 +40,10 @@ import kotlinx.coroutines.launch
 import com.example.data.SponsorReviewPolicy
 import com.example.data.SponsorReviewRepository
 
+private fun sponsorDecisionRejectLabel(context: android.content.Context, requestType: String): String =
+    if (requestType == "SPONSOR") context.getString(com.example.R.string.sponsor_reject_refund_blue)
+    else context.getString(com.example.R.string.sponsor_reject_generic)
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AdminModeratorRequestsDialog(
@@ -71,7 +75,7 @@ fun AdminModeratorRequestsDialog(
             } catch (cancelled: kotlinx.coroutines.CancellationException) {
                 throw cancelled
             } catch (pending: com.example.data.EconomyPendingException) {
-                Toast.makeText(context, pending.message, Toast.LENGTH_LONG).show()
+                Toast.makeText(context, context.getString(com.example.R.string.sponsor_review_pending), Toast.LENGTH_LONG).show()
             } catch (review: com.example.data.EconomyReviewException) {
                 Toast.makeText(context, review.message, Toast.LENGTH_LONG).show()
             } catch (_: Exception) {
@@ -442,7 +446,7 @@ fun AdminModeratorRequestsDialog(
                                                 shape = RoundedCornerShape(6.dp),
                                                 contentPadding = PaddingValues(vertical = 6.dp)
                                             ) {
-                                                Text(tr(if (type == "SPONSOR") "Recusar e devolver EA" else "Rechazar"), fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                                Text(sponsorDecisionRejectLabel(context, type), fontSize = 11.sp, fontWeight = FontWeight.Bold)
                                             }
 
                                             // Approve

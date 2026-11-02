@@ -117,6 +117,7 @@ jobs:
               'com.example.CaptureCoordinateSpaceTest',
               'com.example.PocoDebugCaptionLayoutTest',
               'com.example.DraftRingAlignmentTest',
+              'com.example.DraftNativeSceneTest',
               'com.example.SecurityPrioritiesTest',
               'com.example.PersonalBackupRoundTripTest',
               'com.example.RequiredVersionRegressionTest',
@@ -139,6 +140,7 @@ jobs:
               'com.example.EconomyRequestPolicyTest',
               'com.example.AppReliabilityTest',
               'com.example.SponsorSubmissionStoreTest',
+              'com.example.SponsorPendingStateTest',
               'com.example.InboxSynchronizationTest',
               'com.example.CoachingGeneratorLocalizationTest',
               'com.example.RuntimeBehaviorTest',
@@ -157,10 +159,11 @@ jobs:
           if-no-files-found: warn
           retention-days: 14
 
-      - name: Reproducir el baneo de Jhin en la captura reducida
+      - name: Reproducir centros desplazados y baneo en captura reducida
         run: |
           ./gradlew :app:testDebugUnitTest \
             --tests 'com.example.DraftMultiDeviceAuditTest.smallCapturePreservesJhinWhenPortraitsAndBansChange' \
+            --tests 'com.example.DraftMultiDeviceAuditTest.formerlyFailingCentersStayAlignedWhenPortraitsChange' \
             --tests 'com.example.data.OverlayAccessSnapshotTest' \
             --tests 'com.example.PasswordPolicyTest' \
             --tests 'com.example.PatchTierMovementTest' \
@@ -324,7 +327,7 @@ jobs:
 
   targeted-installed-vi:
     needs: catalog-preflight
-    name: Dos retratos de Vi en APK release instalado
+    name: Regresión instalada de Vi y secuencia reducida
     runs-on: ubuntu-latest
     timeout-minutes: 40
     steps:
@@ -333,11 +336,19 @@ jobs:
       - *fix-release-local-config
       - *fix-release-gradle
       - *fix-release-sign
+      - name: Preparar el caso exacto que falló en validación
+        run: |
+          mkdir -p app/build/generated/scanner-sequence-assets
+          cp app/src/test/resources/scanner/targeted-sequence-plan.json app/build/generated/scanner-sequence-assets/scanner-sequence-plan.json
       - *fix-release-build
       - *fix-release-kvm
       - uses: ./.github/actions/prepare-emulator
-      - name: Comprobar únicamente las dos regresiones instaladas que fallaron
+      - name: Comprobar retratos y la secuencia exacta pendiente
         uses: reactivecircus/android-emulator-runner@v2
+        env:
+          COACH_SEQUENCE_SHARD: '0'
+          COACH_SEQUENCE_TARGETS: 'sequence-52-ally-first'
+          COACH_SEQUENCE_PREFLIGHT: 'false'
         with:
           api-level: 34
           arch: x86_64
@@ -350,12 +361,15 @@ jobs:
             adb install -r app/build/outputs/apk/androidTest/release/app-release-androidTest.apk
             adb shell pm grant com.Coach android.permission.POST_NOTIFICATIONS
             python3 tools/verify-draft-rival-names-device.py --vi-only
+            python3 tools/verify-draft-sequence-device.py
       - name: Conservar resultados de Vi en release
         if: always()
         uses: actions/upload-artifact@v5
         with:
           name: fix-error-installed-vi-evidence
-          path: app/build/reports/spanish-device/draft-vi-instrumentation.txt
+          path: |
+            app/build/reports/spanish-device/draft-vi-instrumentation.txt
+            app/build/reports/scanner-sequence/
           if-no-files-found: warn
           retention-days: 14
 

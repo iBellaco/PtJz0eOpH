@@ -2,15 +2,15 @@ package com.example.service.screen
 
 import kotlin.math.abs
 
-/** Each side keeps its measured grid until a changed grid repeats in a later alignment. */
+/** Each allied row and the rival grid confirm changes on separate observations. */
 internal class DraftGeometryStability {
     private data class Column(val xs: List<Float>, val ys: List<Float>, val diameters: List<Float>) {
         fun near(other: Column): Boolean = xs.zip(other.xs).all { abs(it.first - it.second) <= .004f } &&
             ys.zip(other.ys).all { abs(it.first - it.second) <= .004f } &&
             diameters.zip(other.diameters).all { abs(it.first - it.second) <= .008f }
     }
-    private val accepted = arrayOfNulls<Column>(2)
-    private val pending = arrayOfNulls<Column>(2)
+    private val accepted = arrayOfNulls<Column>(6)
+    private val pending = arrayOfNulls<Column>(6)
 
     fun reset() {
         accepted.fill(null)
@@ -36,8 +36,11 @@ internal class DraftGeometryStability {
             pending[side] = next
             return old
         }
-        val ally = select(0, Column(candidate.allySlotXRatios, candidate.allySlotYRatios, candidate.allySlotDiameterRatios))
-        val enemy = select(1, Column(candidate.enemySlotXRatios, candidate.enemySlotYRatios, candidate.enemySlotDiameterRatios))
+        val rows = (0..4).map { slot -> select(slot, Column(
+            listOf(candidate.getAllySlotX(slot)), listOf(candidate.allySlotYRatios[slot]),
+            listOf(candidate.getSlotDiameter(true, slot)))) }
+        val ally = Column(rows.map { it.xs.single() }, rows.map { it.ys.single() }, rows.map { it.diameters.single() })
+        val enemy = select(5, Column(candidate.enemySlotXRatios, candidate.enemySlotYRatios, candidate.enemySlotDiameterRatios))
         return candidate.copy(
             allyAvatarCenterX = ally.xs.first(), allySlotXRatios = ally.xs,
             allySlotYRatios = ally.ys, allySlotDiameterRatios = ally.diameters,

@@ -17,6 +17,138 @@ import org.robolectric.annotation.GraphicsMode
 @Config(sdk=[34], application=Application::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class DraftRingAlignmentTest {
+    @Test fun marginalScaleEvidenceDoesNotReplaceTheNativeResampledPortraits() {
+        val source = javaClass.getResourceAsStream("/portraits/draft-ten-selected.jpg").use {
+            BitmapFactory.decodeStream(it)!!
+        }
+        try {
+            for ((w, h, edgeAnchored) in listOf(Triple(1920, 864, false), Triple(1024, 768, true))) {
+                val frame = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
+                try {
+                    val scale = if (edgeAnchored) h / 579f else minOf(w / 1280f, h / 579f)
+                    val rw = if (edgeAnchored) w else (1280 * scale).toInt()
+                    val rh = if (edgeAnchored) h else (579 * scale).toInt()
+                    val left = (w - rw) / 2
+                    val top = (h - rh) / 2
+                    android.graphics.Canvas(frame).apply {
+                        val paint = android.graphics.Paint(android.graphics.Paint.FILTER_BITMAP_FLAG)
+                        if (edgeAnchored) {
+                            drawColor(android.graphics.Color.rgb(10, 15, 30))
+                            drawBitmap(source, Rect(0, 0, 280, 579), Rect(0, 0, (280 * scale).toInt(), h), paint)
+                            drawBitmap(source, Rect(1040, 0, 1280, 579), Rect(w - (240 * scale).toInt(), 0, w, h), paint)
+                        } else {
+                            drawColor(android.graphics.Color.BLACK)
+                            drawBitmap(source, null, Rect(left, top, left + rw, top + rh), paint)
+                        }
+                    }
+                    val base = com.example.service.screen.DraftFrameGeometry.forViewport(VisionCalibrationConfig(),
+                        com.example.service.screen.DraftFrameGeometry.contentBounds(frame), w, h)
+                    val aligned = DraftRingAlignment.align(frame, base, null)
+                    val ys = listOf(110f, 188f, 265f, 343f, 420f)
+                    for (slot in 0..4) {
+                        val rect = com.example.service.screen.AdaptiveScreenLayoutEngine.calculateSlotCropRect(w, h, true, slot, aligned)
+                        val expectedX = if (edgeAnchored) 92f * scale else left + 92f * rw / 1280
+                        val error = kotlin.math.hypot(rect.exactCenterX() - expectedX,
+                            rect.exactCenterY() - top - ys[slot] * rh / 579) * 579 / rh
+                        assertTrue("$w/$h row=$slot: $error reference pixels", error <= 6f)
+                        assertEquals("$w/$h row=$slot diameter", base.getSlotDiameter(true, slot),
+                            aligned.getSlotDiameter(true, slot), .0001f)
+                    }
+                } finally { frame.recycle() }
+            }
+        } finally { source.recycle() }
+    }
+
+    @Test fun anAdditionalWeakRimCannotRescaleBetterCentredAlliedRows() {
+        val source = javaClass.getResourceAsStream("/portraits/draft-ten-selected.jpg").use {
+            BitmapFactory.decodeStream(it)!!
+        }
+        val frame = Bitmap.createScaledBitmap(source, 1920, 868, true)
+        try {
+            val aligned = DraftRingAlignment.align(frame, VisionCalibrationConfig(), null)
+            val ys = listOf(110f, 188f, 265f, 343f, 420f)
+            for (slot in 0..4) {
+                val rect = com.example.service.screen.AdaptiveScreenLayoutEngine.calculateSlotCropRect(1920, 868, true, slot, aligned)
+                val error = kotlin.math.hypot(rect.exactCenterX() - 92f * 1920 / 1280,
+                    rect.exactCenterY() - ys[slot] * 868 / 579) * 579 / 868
+                assertTrue("Resampled ally $slot: $error reference pixels", error <= 6f)
+            }
+        } finally { frame.recycle(); source.recycle() }
+    }
+
+    @Test fun blackBarsDoNotConsumeTheRingMeasurementResolution() {
+        val source = javaClass.getResourceAsStream("/portraits/draft-ten-selected.jpg").use {
+            BitmapFactory.decodeStream(it)!!
+        }
+        val content = Bitmap.createScaledBitmap(source, 1080, 488, true)
+        val square = Bitmap.createBitmap(1080, 1080, Bitmap.Config.ARGB_8888)
+        try {
+            val bounds = Rect(0, 296, 1080, 784)
+            android.graphics.Canvas(square).apply {
+                drawColor(android.graphics.Color.BLACK)
+                drawBitmap(content, null, bounds, android.graphics.Paint())
+            }
+            val base = VisionCalibrationConfig()
+            val direct = DraftRingAlignment.align(content, base, null)
+            val framedBase = com.example.service.screen.DraftFrameGeometry.forViewport(base, bounds, 1080, 1080)
+            val measured = DraftRingAlignment.align(square, framedBase, null)
+            val transformed = com.example.service.screen.DraftFrameGeometry.forViewport(direct, bounds, 1080, 1080)
+            val expectedYs = listOf(110f, 188f, 265f, 343f, 420f)
+            for (slot in 0..4) {
+                assertEquals(transformed.getAllySlotX(slot), measured.getAllySlotX(slot), .002f)
+                assertEquals(transformed.allySlotYRatios[slot], measured.allySlotYRatios[slot], .002f)
+                assertEquals(transformed.getSlotDiameter(true, slot), measured.getSlotDiameter(true, slot), .002f)
+                val error = kotlin.math.hypot(
+                    measured.getAllySlotX(slot) * 1080 - 92f * 1080 / 1280,
+                    measured.allySlotYRatios[slot] * 1080 - 296 - expectedYs[slot] * 488 / 579) * 579 / 488
+                assertTrue("Letterboxed ally $slot: $error reference pixels", error <= 6f)
+            }
+        } finally { square.recycle(); content.recycle(); source.recycle() }
+    }
+
+    @Test fun mixedAlliedRowsAndOneVisibleRowKeepTheirOwnCentersAcrossDimensions() {
+        for ((w, h) in listOf(1280 to 585, 1600 to 720, 1920 to 1080)) {
+            for (visible in listOf((0..4).toSet(), setOf(0, 1, 2, 3), setOf(0, 1), setOf(3))) {
+                val base = VisionCalibrationConfig()
+                val image = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
+                try {
+                    val canvas = android.graphics.Canvas(image)
+                    canvas.drawColor(android.graphics.Color.rgb(10, 15, 30))
+                    val paint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG)
+                    for (slot in visible) {
+                        val cx = w * if (slot < 3) .09f else .125f
+                        val cy = h * base.allySlotYRatios[slot]
+                        val radius = h * base.getSlotDiameter(true, slot) / 2
+                        paint.style = android.graphics.Paint.Style.FILL
+                        paint.color = android.graphics.Color.WHITE
+                        canvas.drawCircle(cx, cy, radius * .35f, paint)
+                        paint.style = android.graphics.Paint.Style.STROKE
+                        paint.strokeWidth = h * .006f
+                        paint.color = android.graphics.Color.rgb(30, 190, 220)
+                        canvas.drawCircle(cx, cy, radius, paint)
+                    }
+                    val saved = base.copy(
+                        allySlotXRatios = List(5) { .13f + it * .004f },
+                        allySlotYRatios = base.allySlotYRatios.map { it + .01f },
+                        allySlotDiameterRatios = base.allySlotDiameterRatios.map { it * .8f })
+                    for (previous in listOf(base, saved)) {
+                        val aligned = DraftRingAlignment.align(image, base, null, previous = previous)
+                        for (slot in 0..4) {
+                            val expected = if (slot !in visible) previous.getAllySlotX(slot)
+                                else if (slot < 3) .09f else .125f
+                            assertEquals("$w/$h row=$slot visible=$visible", expected, aligned.getAllySlotX(slot), .008f)
+                            if (slot !in visible) {
+                                assertEquals(previous.getAllySlotX(slot), aligned.getAllySlotX(slot), 0f)
+                                assertEquals(previous.allySlotYRatios[slot], aligned.allySlotYRatios[slot], 0f)
+                                assertEquals(previous.getSlotDiameter(true, slot), aligned.getSlotDiameter(true, slot), 0f)
+                            }
+                        }
+                        assertEquals(previous.enemySlotXRatios, aligned.enemySlotXRatios)
+                    }
+                } finally { image.recycle() }
+            }
+        }
+    }
     @Test fun missingRingsPreserveMeasuredColumnsInsteadOfRestoringDefaults() {
         val base = VisionCalibrationConfig()
         val previous = base.copy(allyAvatarCenterX = .125f, allySlotXRatios = List(5) { .125f },
@@ -53,6 +185,8 @@ class DraftRingAlignmentTest {
                     val aligned = DraftRingAlignment.align(image, base, null)
                     for (slot in 0..4) {
                         assertEquals("$w x $h scale=$hudScale ally", .125f, aligned.getAllySlotX(slot), .008f)
+                        assertEquals("$w x $h scale=$hudScale ally diameter", .11f * hudScale,
+                            aligned.getSlotDiameter(true, slot), .006f)
                         assertEquals("$w x $h scale=$hudScale rival", .906f, aligned.getEnemySlotX(slot), .008f)
                         // Both renderer and recognizer consume these same measured circles.
                         for (ally in listOf(true, false)) {

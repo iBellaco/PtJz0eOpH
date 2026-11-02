@@ -31,6 +31,34 @@ internal object DraftRingAlignment {
 
     fun align(bitmap: Bitmap, base: VisionCalibrationConfig, excluded: Rect?, ignoreDebugRings: Boolean = false,
               previous: VisionCalibrationConfig = base): VisionCalibrationConfig {
+        val bounds = DraftFrameGeometry.contentBounds(bitmap)
+        if (bounds != Rect(0, 0, bitmap.width, bitmap.height)) {
+            // Measure the game content before downsampling. On a square capture,
+            // black bars otherwise consume most of the 720px processing budget
+            // and expand the vertical search into the adjacent spell icons.
+            fun mapSlots(config: VisionCalibrationConfig, toContent: Boolean): VisionCalibrationConfig {
+                fun x(v: Float) = if (toContent) (v * bitmap.width - bounds.left) / bounds.width()
+                    else (bounds.left + v * bounds.width()) / bitmap.width
+                fun y(v: Float) = if (toContent) (v * bitmap.height - bounds.top) / bounds.height()
+                    else (bounds.top + v * bounds.height()) / bitmap.height
+                val scale = if (toContent) bitmap.height.toFloat() / bounds.height()
+                    else bounds.height().toFloat() / bitmap.height
+                return config.copy(
+                    avatarDiameterRatio = config.avatarDiameterRatio * scale,
+                    allyAvatarCenterX = x(config.allyAvatarCenterX), enemyAvatarCenterX = x(config.enemyAvatarCenterX),
+                    allySlotXRatios = config.allySlotXRatios.map(::x), enemySlotXRatios = config.enemySlotXRatios.map(::x),
+                    allySlotYRatios = config.allySlotYRatios.map(::y), enemySlotYRatios = config.enemySlotYRatios.map(::y),
+                    allySlotDiameterRatios = config.allySlotDiameterRatios.map { it * scale },
+                    enemySlotDiameterRatios = config.enemySlotDiameterRatios.map { it * scale })
+            }
+            val content = Bitmap.createBitmap(bitmap, bounds.left, bounds.top, bounds.width(), bounds.height())
+            try {
+                val mask = excluded?.let { Rect(it).takeIf { rect -> rect.intersect(bounds) }
+                    ?.apply { offset(-bounds.left, -bounds.top) } }
+                return mapSlots(align(content, mapSlots(base, true), mask, ignoreDebugRings,
+                    mapSlots(previous, true)), false)
+            } finally { content.recycle() }
+        }
         if (bitmap.width > 1280 || bitmap.height > 720) {
             val scale = minOf(1280f / bitmap.width, 720f / bitmap.height)
             val reduced = Bitmap.createScaledBitmap(bitmap, (bitmap.width * scale).roundToInt().coerceAtLeast(1),
@@ -44,7 +72,8 @@ internal object DraftRingAlignment {
         val w = bitmap.width; val h = bitmap.height
         val pixels = IntArray(w * h)
         bitmap.getPixels(pixels, 0, w, 0, 0, w, h)
-        data class ColumnFit(val xs: List<Float>, val ys: List<Float>, val diameterScale: Float)
+        data class ColumnFit(val xs: List<Float>, val ys: List<Float>, val diameterScale: Float,
+                             val measuredSlots: Set<Int> = (0..4).toSet(), val coverage: Int = 0)
         fun fit(ally: Boolean, diameterScale: Float = 1f): ColumnFit? {
             val ys = if (ally) base.allySlotYRatios else base.enemySlotYRatios
             val fits = mutableListOf<Triple<Int, Pair<Int, Int>, Int>>()
@@ -96,7 +125,12 @@ internal object DraftRingAlignment {
                                 val r = (color shr 16) and 255; val g = (color shr 8) and 255; val b = color and 255
                                 val team = if (ally) b > 85 && g > 65 && b > r * 1.25 && g > r * 1.15
                                     else r > 100 && r > g * 1.45 && r > b * 1.15
-                                if (!team) continue
+                                // Selected allies can have a gold rim instead of
+                                // cyan (the portrait visibility check accepts it
+                                // too). Ignoring it favors smaller circles on
+                                // spell artwork and leaves selected rows unlocated.
+                                val selectedAlly = ally && r > 90 && g > 60 && b < g * .8f
+                                if (!team && !selectedAlly) continue
                                 val ox=(x+dx*edgeDistance/radius).coerceIn(0,w-1)
                                 val oy=(y+dy*edgeDistance/radius).coerceIn(0,h-1)
                                 val ix=(x-dx*edgeDistance/radius).coerceIn(0,w-1)
@@ -139,6 +173,55 @@ internal object DraftRingAlignment {
                 }
                 center?.let { if (best > 0) fits += Triple(slot, it, best % 64) }
             }
+            // Allied rows move independently when spells/portraits appear. Never
+            // replace five different states with the median of one column.
+            if (ally) {
+                if (fits.isEmpty() || diameterScale != 1f && fits.size < 3) return null
+                // A coherent subset can stabilize weak partial rims, but it is
+                // not evidence that every allied row belongs to that column.
+                // Preserve independently observed, well-covered rings even when
+                // only one row moves. Missing rows retain their last geometry.
+                val medianX = fits.map { it.second.first }.sorted()[fits.size / 2]
+                val consistent = fits.filter { abs(it.second.first - medianX) <= radius / 3 }
+                if (consistent.size >= 2) {
+                    val foreignColumn = consistent.count { (slot, center, coverage) ->
+                        val nominalX = w * base.getAllySlotX(slot)
+                        val displacement = abs(center.first - nominalX)
+                        displacement > radius * 1.25f || coverage >= 28 && displacement > radius * .5f
+                    } >= 2
+                    val alignedYs = alignRows(ys, h, radius,
+                        consistent.map { it.first to it.second.second }, foreignColumn)
+                    // Agreement among visible rows does not locate hidden rows.
+                    // Route both cases through the same per-slot fallback, and
+                    // only mark observed slots as eligible for diameter updates.
+                    val coherentColumn = consistent.size == fits.size
+                    val measured = fits.associateBy { it.first }
+                    return ColumnFit(
+                        List(5) { slot ->
+                            val row = measured[slot]
+                            when {
+                                row == null -> previous.getAllySlotX(slot)
+                                !coherentColumn && row.third >= 32 -> row.second.first.toFloat() / w
+                                else -> medianX.toFloat() / w
+                            }
+                        },
+                        List(5) { slot ->
+                            val row = measured[slot]
+                            when {
+                                row == null -> previous.allySlotYRatios[slot]
+                                !coherentColumn && row.third >= 32 -> row.second.second.toFloat() / h
+                                else -> alignedYs[slot]
+                            }
+                        }, diameterScale, measured.keys, coverage = fits.sumOf { it.third })
+                }
+                val measured = fits.associateBy { it.first }
+                return ColumnFit(
+                    List(5) { slot -> measured[slot]?.second?.first?.toFloat()?.div(w)
+                        ?: previous.getAllySlotX(slot) },
+                    List(5) { slot -> measured[slot]?.second?.second?.toFloat()?.div(h)
+                        ?: previous.allySlotYRatios[slot] }, diameterScale, measured.keys,
+                    fits.sumOf { it.third })
+            }
             if (fits.size < 2) return null
             val medianX = fits.map { it.second.first }.sorted()[fits.size / 2]
             if (fits.count { abs(it.second.first - medianX) <= radius / 3 } < 2) return null
@@ -166,13 +249,31 @@ internal object DraftRingAlignment {
         // Some game layouts change HUD scale as well as capture dimensions. Only
         // try nearby physical sizes when the current size has no coherent column;
         // still require independent, consistent visible rings, never a phone preset.
-        fun fitColumn(ally: Boolean) = fit(ally) ?: fit(ally, .8f) ?: fit(ally, 1.2f)
+        fun fitColumn(ally: Boolean): ColumnFit? {
+            val nominal = fit(ally)
+            if (!ally) return nominal ?: fit(false, .8f) ?: fit(false, 1.2f)
+            // A small off-centre circle can match part of a larger rim. Independent
+            // rows no longer have a column-consistency check to reject that fit.
+            // Compare angular coverage at nearby sizes before accepting a weak fit.
+            // Full coverage at the base size needs no extra searches.
+            if (nominal?.coverage == 5 * 40) return nominal
+            // A sub-sample gain after resampling is not evidence of a 20% size
+            // change. Require four additional angular samples per observed ring
+            // (10% of the 40-sample circumference) before replacing the base size.
+            // Compare averages so an extra weak match cannot outweigh stronger
+            // rings; missing rows still keep their own previous geometry.
+            fun ColumnFit.meanCoverage() = coverage.toFloat() / measuredSlots.size
+            val alternatives = listOfNotNull(fit(true, .8f), fit(true, 1.2f))
+                .filter { nominal == null || it.meanCoverage() >= nominal.meanCoverage() + 4f }
+            return alternatives.maxByOrNull { it.meanCoverage() } ?: nominal
+        }
         val ally = fitColumn(true); val enemy = fitColumn(false)
         return base.copy(
             allyAvatarCenterX = ally?.xs?.first() ?: previous.allyAvatarCenterX,
             allySlotXRatios = ally?.xs ?: previous.allySlotXRatios,
             allySlotYRatios = ally?.ys ?: previous.allySlotYRatios,
-            allySlotDiameterRatios = ally?.let { fit -> base.allySlotDiameterRatios.map { it * fit.diameterScale } }
+            allySlotDiameterRatios = ally?.let { fit -> base.allySlotDiameterRatios.mapIndexed { slot, diameter ->
+                if (slot in fit.measuredSlots) diameter * fit.diameterScale else previous.getSlotDiameter(true, slot) } }
                 ?: previous.allySlotDiameterRatios,
             enemyAvatarCenterX = enemy?.xs?.first() ?: previous.enemyAvatarCenterX,
             enemySlotXRatios = enemy?.xs ?: previous.enemySlotXRatios,

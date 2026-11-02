@@ -23,6 +23,7 @@ internal fun banHeaderSideWidthRatio(aspect: Float): Float =
 
 /** Fill visible but unreadable portraits before assigning slot numbers. Never invents a champion. */
 internal fun fillHeaderPositions(observations: List<BanObservation>, aspect: Float,
+    hasOuterPortrait: ((BanRegion) -> Boolean)? = null,
     hasPortrait: (BanRegion) -> Boolean): List<BanObservation> = BanSide.entries.flatMap { side ->
     val candidates = observations.filter { it.side == side }.sortedBy { it.region.x }
     val row = candidates.toMutableList()
@@ -33,13 +34,17 @@ internal fun fillHeaderPositions(observations: List<BanObservation>, aspect: Flo
             .filter { it in nominal * .65f..nominal * 1.4f }.sorted()
         val step = gaps.getOrNull(gaps.size / 2) ?: nominal
         val radius = row.map { it.region.radius }.average().toFloat()
-        fun addAt(x: Float, y: Float): Boolean {
+        // A template can align to artwork a few pixels above the true rim.
+        // Extrapolate the row, not the last champion's individual crop offset.
+        val rowY = row.map { it.region.y }.sorted().let { it[it.size / 2] }
+        fun addAt(x: Float, y: Float, outer: Boolean = false): Boolean {
             val region = BanRegion(x, y, radius)
             val sideWidth = banHeaderSideWidthRatio(aspect)
             val min = if (side == BanSide.ALLY) 0f else 1f - sideWidth
             val max = if (side == BanSide.ALLY) sideWidth else 1f
             if (x - radius / aspect < min || x + radius / aspect > max ||
                 row.any { kotlin.math.abs(it.region.x - x) < step * .45f } || !hasPortrait(region)) return false
+            if (outer && hasOuterPortrait != null && !hasOuterPortrait(region)) return false
             row.add(BanObservation(side, region))
             row.sortBy { it.region.x }
             return true
@@ -51,13 +56,19 @@ internal fun fillHeaderPositions(observations: List<BanObservation>, aspect: Flo
                 x += step
             }
         }
-        // The expanded tablet band may include a textured inner neighbour while
-        // missing an outer portrait. Complete it before choosing five positions.
-        // Keep the established panoramic-band behaviour: extending its full row
-        // can mistake a status indicator after the fifth ban for another slot.
-        val positionLimit = if (banHeaderSideWidthRatio(aspect) > .27f) 7 else 5
-        while (row.size < positionLimit && addAt(row.first().region.x - step, row.first().region.y)) { /* visible leading slots */ }
-        while (row.size < positionLimit && addAt(row.last().region.x + step, row.last().region.y)) { /* visible trailing slots */ }
+        // A false inner candidate can hide the fifth outer circle at any aspect.
+        // With explicit rim evidence, complete the row before selecting five;
+        // mere texture/status indicators must not extend a full panoramic row.
+        val positionLimit = if (hasOuterPortrait != null || banHeaderSideWidthRatio(aspect) > .27f) 7 else 5
+        fun extend(left: Boolean) {
+            while (row.size < positionLimit && addAt(
+                if (left) row.first().region.x - step else row.last().region.x + step,
+                rowY, outer = true)) { /* visible positions only */ }
+        }
+        // Reserve the outward search first, before an inner status/profile icon
+        // can consume the bounded candidate budget.
+        extend(left = side == BanSide.ALLY)
+        extend(left = side != BanSide.ALLY)
     }
     // Template similarity alone can match a textured background outside the row.
     // Select the five circles with consistent spacing before latching identities.
@@ -76,7 +87,8 @@ internal fun fillHeaderPositions(observations: List<BanObservation>, aspect: Flo
       }
       val minimum = windows.minOf { it.second }
       val regular = windows.filter { it.second<=minimum+.02 }
-      // Equally regular adjacent profiles belong toward the centre of the screen.
+      // With equally regular candidates, the ban row is toward the screen edge,
+      // not the adjacent player/profile artwork toward the centre.
       (if(side==BanSide.ALLY) regular.first() else regular.last()).first
     }
 }

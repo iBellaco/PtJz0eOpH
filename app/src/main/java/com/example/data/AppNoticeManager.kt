@@ -52,6 +52,44 @@ object AppNoticeManager {
     private var authStateListener: FirebaseAuth.AuthStateListener? = null
     private var isAuthenticatingAnonymously = false
 
+    /**
+     * Returns ids that are known by the server. A null result means that the server
+     * could not be consulted, so callers must retain local data and avoid declaring it lost.
+     */
+    suspend fun authoritativePendingSponsorIds(context: Context, candidateIds: Set<String>): Set<String>? =
+        withContext(Dispatchers.IO) {
+            if (candidateIds.isEmpty()) return@withContext emptySet()
+            val uid = com.example.util.AuthManager.getAuth()?.currentUser?.uid
+                ?: return@withContext emptySet()
+            runCatching {
+                val db = FirebaseFirestore.getInstance()
+                val known = mutableSetOf<String>()
+                val ads = db.collection("pending_sponsor_ads")
+                    .whereEqualTo("userId", uid)
+                    .get(com.google.firebase.firestore.Source.SERVER).await()
+                ads.documents.forEach { document ->
+                    val ids = setOf(document.id, document.getString("id").orEmpty())
+                    known += ids.intersect(candidateIds)
+                }
+                val requests = db.collection("economy_requests")
+                    .whereEqualTo("userId", uid)
+                    .get(com.google.firebase.firestore.Source.SERVER).await()
+                requests.documents.forEach { document ->
+                    val payload = document.get("payload") as? Map<*, *> ?: return@forEach
+                    if (payload["action"]?.toString() != "SPONSOR") return@forEach
+                    val notice = payload["notice"] as? Map<*, *>
+                    val ids = setOf(
+                        document.getString("operationId").orEmpty(),
+                        document.id,
+                        payload["id"]?.toString().orEmpty(),
+                        notice?.get("id")?.toString().orEmpty()
+                    )
+                    known += ids.filter { it.isNotBlank() && it in candidateIds }
+                }
+                known
+            }.getOrNull()
+        }
+
     private val defaultNotices = listOf(
         AppNotice(
             title = "¡Nueva Actualización de Parche disponible!",
