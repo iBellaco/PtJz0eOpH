@@ -19,7 +19,7 @@ import org.robolectric.annotation.GraphicsMode
 class DraftRingAlignmentTest {
     @Test fun mixedAlliedRowsAndOneVisibleRowKeepTheirOwnCentersAcrossDimensions() {
         for ((w, h) in listOf(1280 to 585, 1600 to 720, 1920 to 1080)) {
-            for (visible in listOf((0..4).toSet(), setOf(3))) {
+            for (visible in listOf((0..4).toSet(), setOf(0, 1, 2, 3), setOf(0, 1), setOf(3))) {
                 val base = VisionCalibrationConfig()
                 val image = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
                 try {

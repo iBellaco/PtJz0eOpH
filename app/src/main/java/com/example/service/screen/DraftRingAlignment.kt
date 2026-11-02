@@ -144,11 +144,10 @@ internal object DraftRingAlignment {
             // replace five different states with the median of one column.
             if (ally) {
                 if (fits.isEmpty() || diameterScale != 1f && fits.size < 3) return null
-                // Keep the high-confidence path used by the regular draft layout
-                // when the visible allied rings still form one column. A portrait
-                // can contain asymmetric artwork, so selecting every row in
-                // isolation in this case lets a partial rim win over the shared
-                // column and shifts a crop by several pixels on resized frames.
+                // A coherent subset can stabilize weak partial rims, but it is
+                // not evidence that every allied row belongs to that column.
+                // Preserve independently observed, well-covered rings even when
+                // only one row moves. Missing rows retain their last geometry.
                 val medianX = fits.map { it.second.first }.sorted()[fits.size / 2]
                 val consistent = fits.filter { abs(it.second.first - medianX) <= radius / 3 }
                 if (consistent.size >= 2) {
@@ -159,8 +158,24 @@ internal object DraftRingAlignment {
                     } >= 2
                     val alignedYs = alignRows(ys, h, radius,
                         consistent.map { it.first to it.second.second }, foreignColumn)
-                    return ColumnFit(List(5) { medianX.toFloat() / w }, alignedYs, diameterScale,
-                        coverage = fits.sumOf { it.third })
+                    val measured = fits.associateBy { it.first }
+                    return ColumnFit(
+                        List(5) { slot ->
+                            val row = measured[slot]
+                            when {
+                                row == null -> previous.getAllySlotX(slot)
+                                row.third >= 32 -> row.second.first.toFloat() / w
+                                else -> medianX.toFloat() / w
+                            }
+                        },
+                        List(5) { slot ->
+                            val row = measured[slot]
+                            when {
+                                row == null -> previous.allySlotYRatios[slot]
+                                row.third >= 32 -> row.second.second.toFloat() / h
+                                else -> alignedYs[slot]
+                            }
+                        }, diameterScale, measured.keys, coverage = fits.sumOf { it.third })
                 }
                 val measured = fits.associateBy { it.first }
                 return ColumnFit(

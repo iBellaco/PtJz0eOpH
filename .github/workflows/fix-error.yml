@@ -158,10 +158,11 @@ jobs:
           if-no-files-found: warn
           retention-days: 14
 
-      - name: Reproducir el baneo de Jhin en la captura reducida
+      - name: Reproducir centros desplazados y baneo en captura reducida
         run: |
           ./gradlew :app:testDebugUnitTest \
             --tests 'com.example.DraftMultiDeviceAuditTest.smallCapturePreservesJhinWhenPortraitsAndBansChange' \
+            --tests 'com.example.DraftMultiDeviceAuditTest.formerlyFailingCentersStayAlignedWhenPortraitsChange' \
             --tests 'com.example.data.OverlayAccessSnapshotTest' \
             --tests 'com.example.PasswordPolicyTest' \
             --tests 'com.example.PatchTierMovementTest' \
