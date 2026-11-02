@@ -53,6 +53,9 @@ class ScreenCaptureManager(private val context: Context) {
     private var virtualDisplay: VirtualDisplay? = null
     private var imageReader: ImageReader? = null
 
+    private val _projectionReady = kotlinx.coroutines.flow.MutableStateFlow(false)
+    val projectionReady: kotlinx.coroutines.flow.StateFlow<Boolean> = _projectionReady
+
     private var screenWidth: Int = 1080
     private var screenHeight: Int = 2400
     private var screenDensity: Int = 420
@@ -216,6 +219,7 @@ class ScreenCaptureManager(private val context: Context) {
                 )
 
                 check(virtualDisplay != null) { "Android no pudo crear el VirtualDisplay." }
+                _projectionReady.value = true
                 surfaceAttached = true
                 handler.postDelayed(idleCapture, 1500L)
                 AppLogger.d(TAG, "MediaProjection y VirtualDisplay inicializados exitosamente ($captureWidth x $captureHeight).")
@@ -297,6 +301,7 @@ class ScreenCaptureManager(private val context: Context) {
 
     /** Call under projectionLock; detach references before stop can dispatch its callback. */
     private fun clearProjection(stop: Boolean) {
+        _projectionReady.value = false
         handler.removeCallbacks(idleCapture)
         surfaceAttached = false
         val previous = mediaProjection

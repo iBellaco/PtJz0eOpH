@@ -120,11 +120,16 @@ object DraftVisionScanner {
     private const val TAG = "DraftVisionScanner"
     @Volatile private var overlayMasks = CaptureMaskSnapshot(emptyList())
     @Volatile private var diagnosticMasks = CaptureMaskSnapshot(emptyList())
+    internal val screenOverlayBoundsFlow = kotlinx.coroutines.flow.MutableStateFlow<Rect?>(null)
     var overlayRect: Rect?
         get() = overlayMasks.rects.firstOrNull()?.let { Rect(it) }
-        set(value) { overlayMasks = CaptureMaskSnapshot(listOfNotNull(value?.let { Rect(it) })) }
+        set(value) {
+            overlayMasks = CaptureMaskSnapshot(listOfNotNull(value?.let { Rect(it) }))
+            screenOverlayBoundsFlow.value = value?.let { Rect(it) }
+        }
     fun publishScreenOverlay(rect: Rect, screenWidth: Int, screenHeight: Int) {
         overlayMasks = CaptureMaskSnapshot(listOf(Rect(rect)), screenWidth, screenHeight)
+        screenOverlayBoundsFlow.value = Rect(rect)
     }
     fun publishScreenDiagnosticText(rects: List<Rect>, screenWidth: Int, screenHeight: Int) {
         diagnosticMasks = CaptureMaskSnapshot(rects.map { Rect(it) }, screenWidth, screenHeight)
@@ -154,11 +159,12 @@ object DraftVisionScanner {
     private val banPublicationLock = Any()
     @Volatile private var banGeneration = 0L
 
-    internal fun captureBanFrame(bitmap: Bitmap, pickedIds: Set<String>): DraftBanFrame = synchronized(banPublicationLock) {
+    internal fun captureBanFrame(bitmap: Bitmap, pickedIds: Set<String>, refreshGeometry: Boolean = false): DraftBanFrame = synchronized(banPublicationLock) {
         banDetectionActiveFlow.value=true
+        val config = configForFrame(bitmap, refreshGeometry)
         DraftBanFrame(bitmap.copy(Bitmap.Config.ARGB_8888,false) ?: error("Ban frame unavailable"),
             diagnosticTextForFrame(bitmap.width,bitmap.height)+listOfNotNull(overlayForFrame(bitmap.width,bitmap.height)),
-            configForFrame(bitmap),
+            config,
             pickedIds,banGeneration)
     }
 
@@ -360,6 +366,8 @@ object DraftVisionScanner {
     }
 
     val alignedConfigFlow = kotlinx.coroutines.flow.MutableStateFlow(VisionCalibrationConfig())
+    internal val alignedFrameSizeFlow = kotlinx.coroutines.flow.MutableStateFlow(0 to 0)
+    internal val alignedViewportFlow = kotlinx.coroutines.flow.MutableStateFlow(Rect())
     private var alignedBase: VisionCalibrationConfig? = null
     @Volatile private var alignedSize = 0 to 0
     internal data class CalibrationReportSnapshot(val width: Int, val height: Int, val config: VisionCalibrationConfig)
@@ -370,7 +378,7 @@ object DraftVisionScanner {
     private var activeCaptureProfile: String? = null
     private var globalCalibrationConfig = VisionCalibrationConfig()
     @Synchronized
-    internal fun configForFrame(bitmap: Bitmap): VisionCalibrationConfig {
+    internal fun configForFrame(bitmap: Bitmap, refreshGeometry: Boolean = false): VisionCalibrationConfig {
         val profile = VisionCalibrationConfig.captureProfileKey(bitmap.width, bitmap.height)
         if (profile != activeCaptureProfile) {
             val profileConfig = calibrationContext?.let { context ->
@@ -396,7 +404,7 @@ object DraftVisionScanner {
         // Detect bars at the same cadence as ring alignment, not on every OCR pass.
         // Reinitialization invalidates the viewport too, even when capture dimensions
         // stay identical (full-screen HUD versus the same surface with outer bars).
-        val refresh = alignedBase == null || alignedSize != (bitmap.width to bitmap.height) || lastAlignmentAt == 0L || now-lastAlignmentAt >= 2000
+        val refresh = refreshGeometry || alignedBase == null || alignedSize != (bitmap.width to bitmap.height) || lastAlignmentAt == 0L || now-lastAlignmentAt >= 2000
         if (refresh) activeViewport = DraftFrameGeometry.contentBounds(bitmap)
         val normalized = AdaptiveScreenLayoutEngine.computeAdaptiveConfig(bitmap.width, bitmap.height, calibrationConfig)
         val base = if (manual) normalized else DraftFrameGeometry.forViewport(normalized, activeViewport, bitmap.width, bitmap.height)
@@ -405,11 +413,13 @@ object DraftVisionScanner {
             alignedBase = base; alignedSize = bitmap.width to bitmap.height
             lastAlignmentAt = 0L
         }
-        if (!manual && (lastAlignmentAt == 0L || now-lastAlignmentAt >= 2000)) {
+        if (!manual && (refreshGeometry || lastAlignmentAt == 0L || now-lastAlignmentAt >= 2000)) {
             alignedConfigFlow.value = DraftRingAlignment.align(bitmap, alignedConfigFlow.value,
                 overlayForFrame(bitmap.width, bitmap.height), showCalibrationBoxes.value)
             lastAlignmentAt = now
         }
+        alignedFrameSizeFlow.value = bitmap.width to bitmap.height
+        alignedViewportFlow.value = Rect(activeViewport)
         return alignedConfigFlow.value
     }
     private var activeViewport = android.graphics.Rect()
@@ -418,6 +428,8 @@ object DraftVisionScanner {
 
     @Synchronized
     fun initCalibration(context: android.content.Context) {
+        alignedFrameSizeFlow.value = 0 to 0
+        alignedViewportFlow.value = Rect()
         calibrationContext = context.applicationContext
         activeCaptureProfile = null
         calibrationConfig = VisionCalibrationConfig.loadFromPrefs(context)

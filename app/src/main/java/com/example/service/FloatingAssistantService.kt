@@ -220,6 +220,7 @@ class FloatingAssistantService : Service(), LifecycleOwner, ViewModelStoreOwner,
                     PixelFormat.TRANSLUCENT
                 ).apply {
                     gravity = Gravity.TOP or Gravity.START
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) setFitInsetsTypes(0)
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
                         layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS
                     }

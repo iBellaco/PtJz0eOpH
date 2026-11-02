@@ -11,6 +11,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.sp
@@ -27,6 +28,9 @@ fun ScannerDebugOverlay(
     val detectingBans by DraftVisionScanner.banDetectionActiveFlow.collectAsStateWithLifecycle()
     val banSlots by DraftVisionScanner.banSlotsFlow.collectAsStateWithLifecycle()
     val rawConfig by DraftVisionScanner.alignedConfigFlow.collectAsStateWithLifecycle()
+    val frameSize by DraftVisionScanner.alignedFrameSizeFlow.collectAsStateWithLifecycle()
+    val gameViewport by DraftVisionScanner.alignedViewportFlow.collectAsStateWithLifecycle()
+    val liveOverlayRect by DraftVisionScanner.screenOverlayBoundsFlow.collectAsStateWithLifecycle()
     val debugMatches by DraftVisionScanner.debugVisualMatches.collectAsStateWithLifecycle()
     val language = com.example.util.currentAppLanguage()
     val density = LocalDensity.current
@@ -102,9 +106,18 @@ fun ScannerDebugOverlay(
     }
 
     Canvas(modifier = Modifier.fillMaxSize()) {
-        val w = size.width
-        val h = size.height
-        if (w <= 0 || h <= 0) return@Canvas
+        val screenW = size.width.toInt()
+        val screenH = size.height.toInt()
+        if (screenW <= 0 || screenH <= 0) return@Canvas
+        val w = frameSize.first.takeIf { it > 0 }?.toFloat() ?: size.width
+        val h = frameSize.second.takeIf { it > 0 }?.toFloat() ?: size.height
+        val projection = com.example.service.screen.CaptureCoordinateSpace.transform(screenW, screenH, w.toInt(), h.toInt())
+        // Draw in the exact coordinate space used by OCR and bans, then undo
+        // Android's uniform capture scale/letterbox. Never stretch X and Y separately.
+        withTransform({
+            translate((-projection.offsetX / projection.scale).toFloat(), (-projection.offsetY / projection.scale).toFloat())
+            scale((1.0 / projection.scale).toFloat(), (1.0 / projection.scale).toFloat(), Offset.Zero)
+        }) {
 
         val textRects = mutableListOf<android.graphics.Rect>()
         allyLabelPaint.textSize = minOf(with(density) { 9.5.sp.toPx() }, h * .018f)
@@ -137,15 +150,18 @@ fun ScannerDebugOverlay(
         // Already resolved against the captured viewport. A second adaptation moves
         // the header away from the actual regions used by recognition.
         val currentConfig = rawConfig
+        val viewport = gameViewport.takeUnless { it.isEmpty } ?: android.graphics.Rect(0, 0, w.toInt(), h.toInt())
 
         // The rectangles are the exact header bands searched by the classifier.
         // Thin circle strokes stay outside its portrait descriptor samples.
         if (detectingBans) {
-            val sideWidth = com.example.service.screen.banHeaderSideWidthRatio(w / h)
+            val sideWidth = com.example.service.screen.banHeaderSideWidthRatio(viewport.width().toFloat() / viewport.height())
             for (side in com.example.service.screen.BanSide.entries) {
-                val x = if (side == com.example.service.screen.BanSide.ALLY) 0f else w * (1f - sideWidth)
+                val x = if (side == com.example.service.screen.BanSide.ALLY) viewport.left.toFloat()
+                    else viewport.right - viewport.width() * sideWidth
                 val color = if (side == com.example.service.screen.BanSide.ALLY) Color(0xCC00E5FF) else Color(0xCCFF1744)
-                drawRect(color.copy(alpha = .35f), Offset(x, 0f), Size(w * sideWidth, h * .12f), style = Stroke(1f))
+                drawRect(color.copy(alpha = .35f), Offset(x, viewport.top.toFloat()),
+                    Size(viewport.width() * sideWidth, viewport.height() * .12f), style = Stroke(1f))
                 for (slot in banSlots.filter { it.side == side }) {
                     val region = slot.region ?: continue
                     val center = Offset(region.x * w, region.y * h)
@@ -311,11 +327,14 @@ fun ScannerDebugOverlay(
         }
 
         // 4. Límites del Asistente Flotante
-        if (overlayRect != null) {
+        val capturedOverlayRect = if (liveOverlayRect != null) DraftVisionScanner.overlayForFrame(w.toInt(), h.toInt()) else overlayRect?.let {
+            com.example.service.screen.CaptureCoordinateSpace.map(it, screenW, screenH, w.toInt(), h.toInt())
+        }
+        if (capturedOverlayRect != null) {
             drawRect(
                 color = Color(0x55C89B3C),
-                topLeft = Offset(overlayRect.left.toFloat(), overlayRect.top.toFloat()),
-                size = Size(overlayRect.width().toFloat(), overlayRect.height().toFloat()),
+                topLeft = Offset(capturedOverlayRect.left.toFloat(), capturedOverlayRect.top.toFloat()),
+                size = Size(capturedOverlayRect.width().toFloat(), capturedOverlayRect.height().toFloat()),
                 style = Stroke(width = 1.5f)
             )
         }
@@ -331,22 +350,22 @@ fun ScannerDebugOverlay(
             lastDurationMs,
             skippedFrames
         )
-        val hudX = w * 0.29f
-        val hudWidth = w * .42f
+        val hudX = viewport.left + viewport.width() * 0.29f
+        val hudWidth = viewport.width() * .42f
         hudPaint.textSize = with(density) { 9.5.sp.toPx() }
         val measuredHud = hudPaint.measureText(com.example.util.appTr(hudText))
         if (measuredHud > hudWidth - 12f) hudPaint.textSize *= (hudWidth - 12f) / measuredHud
-        val hudY = 24f
+        val hudY = viewport.top + 24f
 
         drawRoundRect(
             color = Color(0xCC050A14),
-            topLeft = Offset(hudX - 4f, 6f),
+            topLeft = Offset(hudX - 4f, viewport.top + 6f),
             size = Size(hudWidth, 26f),
             cornerRadius = CornerRadius(6f, 6f)
         )
         drawRoundRect(
             color = if (isBusy) Color(0xFFFFD700) else Color(0x8800E676),
-            topLeft = Offset(hudX - 4f, 6f),
+            topLeft = Offset(hudX - 4f, viewport.top + 6f),
             size = Size(hudWidth, 26f),
             cornerRadius = CornerRadius(6f, 6f),
             style = Stroke(width = 1f)
@@ -359,5 +378,6 @@ fun ScannerDebugOverlay(
             hudPaint
         )
         DraftVisionScanner.publishScreenDiagnosticText(textRects, w.toInt(), h.toInt())
+        }
     }
 }

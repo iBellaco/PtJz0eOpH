@@ -6,11 +6,17 @@ import kotlin.math.floor
 
 /** Mirrors Android's uniform display scaling, including centered letterboxing. */
 internal object CaptureCoordinateSpace {
-    fun map(rect: Rect, sourceWidth: Int, sourceHeight: Int, frameWidth: Int, frameHeight: Int): Rect {
+    data class Transform(val scale: Double, val offsetX: Double, val offsetY: Double)
+
+    fun transform(sourceWidth: Int, sourceHeight: Int, frameWidth: Int, frameHeight: Int): Transform {
         require(sourceWidth > 0 && sourceHeight > 0 && frameWidth > 0 && frameHeight > 0)
         val scale = minOf(frameWidth.toDouble() / sourceWidth, frameHeight.toDouble() / sourceHeight)
-        val offsetX = (frameWidth - sourceWidth * scale) / 2.0
-        val offsetY = (frameHeight - sourceHeight * scale) / 2.0
+        return Transform(scale, (frameWidth - sourceWidth * scale) / 2.0,
+            (frameHeight - sourceHeight * scale) / 2.0)
+    }
+
+    fun map(rect: Rect, sourceWidth: Int, sourceHeight: Int, frameWidth: Int, frameHeight: Int): Rect {
+        val (scale, offsetX, offsetY) = transform(sourceWidth, sourceHeight, frameWidth, frameHeight)
         val left = floor(rect.left * scale + offsetX).toInt().coerceIn(0, frameWidth)
         val top = floor(rect.top * scale + offsetY).toInt().coerceIn(0, frameHeight)
         val right = ceil(rect.right * scale + offsetX).toInt().coerceIn(left, frameWidth)
