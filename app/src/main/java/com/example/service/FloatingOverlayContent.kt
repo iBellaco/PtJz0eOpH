@@ -202,6 +202,47 @@ internal fun FloatingOverlayContent(
     var autoScanEnabled by state::autoScanEnabled
     var scanNoticeMessage by state::scanNoticeMessage
 
+    val geometryPreviewVisible by DraftVisionScanner.showCalibrationBoxes.collectAsStateWithLifecycle()
+    val previewReadiness = remember(screenCaptureManager) {
+        screenCaptureManager?.projectionReady ?: kotlinx.coroutines.flow.MutableStateFlow(false)
+    }
+    val previewReady by previewReadiness.collectAsStateWithLifecycle()
+    val previewConfiguration = androidx.compose.ui.platform.LocalConfiguration.current
+    // Refresh the shared geometry even when recognition is paused. A bounded pair
+    // of fresh frames also preserves the two-frame confirmation rule for bans.
+    // No device identity is used, and capture returns to its idle state afterwards.
+    LaunchedEffect(geometryPreviewVisible, autoScanEnabled, screenCaptureManager, previewReady,
+        state.isExpanded, isScanning,
+        previewConfiguration.screenWidthDp, previewConfiguration.screenHeightDp) {
+        val previewCapture = screenCaptureManager ?: return@LaunchedEffect
+        if (!geometryPreviewVisible || autoScanEnabled || isScanning || !previewReady)
+            return@LaunchedEffect
+        // Let WindowManager finish expansion/rotation before reading its exclusion mask.
+        delay(300L)
+        withContext(Dispatchers.Default) {
+            val previewJob = kotlin.coroutines.coroutineContext[kotlinx.coroutines.Job]!!
+            val canPreview = { previewJob.isActive && previewCapture.isReady() &&
+                !state.autoScanEnabled && !state.isScanning && DraftVisionScanner.showCalibrationBoxes.value }
+            com.example.service.screen.refreshDraftGeometryPreview(
+                capture = previewCapture::captureCurrentFrame,
+                release = { it.recycle() },
+                canContinue = canPreview
+            ) { bitmap ->
+                try {
+                    val pickedIds = (state.allies + state.enemies).filterNotNull().map { it.id }.toSet()
+                    val banFrame = DraftVisionScanner.captureBanFrame(bitmap, pickedIds, refreshGeometry = true)
+                    try {
+                        DraftVisionScanner.processBanFrame(banFrame, context, canPreview)
+                    } finally { banFrame.bitmap.recycle() }
+                } catch (cancelled: kotlinx.coroutines.CancellationException) {
+                    throw cancelled
+                } catch (error: Exception) {
+                    AppLogger.w("DraftPreview", "Preview unavailable: ${error.javaClass.simpleName}")
+                }
+            }
+        }
+    }
+
     var isDraggingBubble by state::isDraggingBubble
     var dragAccumulatedY by state::dragAccumulatedY
     var isNearCloseThreshold by state::isNearCloseThreshold

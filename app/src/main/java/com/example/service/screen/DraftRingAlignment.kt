@@ -43,10 +43,11 @@ internal object DraftRingAlignment {
         val w = bitmap.width; val h = bitmap.height
         val pixels = IntArray(w * h)
         bitmap.getPixels(pixels, 0, w, 0, 0, w, h)
-        fun fit(ally: Boolean): Pair<List<Float>, List<Float>>? {
+        data class ColumnFit(val xs: List<Float>, val ys: List<Float>, val diameterScale: Float)
+        fun fit(ally: Boolean, diameterScale: Float = 1f): ColumnFit? {
             val ys = if (ally) base.allySlotYRatios else base.enemySlotYRatios
             val fits = mutableListOf<Triple<Int, Pair<Int, Int>, Int>>()
-            val radius = (h * base.avatarDiameterRatio / 2).roundToInt().coerceAtLeast(8)
+            val radius = (h * base.getSlotDiameter(ally, 2) * diameterScale / 2).roundToInt().coerceAtLeast(8)
             val radialRange = maxOf(3, (radius * .12f).toInt())
             val edgeDistance = maxOf(4, (radius * .16f).toInt())
             fun colorDistance(a: Int, b: Int): Int =
@@ -141,6 +142,8 @@ internal object DraftRingAlignment {
             // Keep each detected slot's Y instead of reusing another phone's row spacing.
             // This matters when the captured frame includes a different top inset or letterbox.
             val consistent = fits.filter { abs(it.second.first - medianX) <= radius / 3 }
+            // Resizing crops needs stronger evidence than translating an existing grid.
+            if (diameterScale != 1f && consistent.size < 3) return null
             // Robust row spacing from independent visible rings. One weak rim
             // on a face must not drag its row away from the rest of the column.
             // A preset from another layout can have both a different X and row spacing.
@@ -154,16 +157,22 @@ internal object DraftRingAlignment {
                 displacement > radius * 1.25f || coverage >= 28 && displacement > radius * .5f
             } >= 2
             val alignedYs = alignRows(ys, h, radius, consistent.map { it.first to it.second.second }, foreignColumn)
-            return List(5) { medianX.toFloat() / w } to alignedYs
+            return ColumnFit(List(5) { medianX.toFloat() / w }, alignedYs, diameterScale)
         }
-        val ally = fit(true); val enemy = fit(false)
+        // Some game layouts change HUD scale as well as capture dimensions. Only
+        // try nearby physical sizes when the current size has no coherent column;
+        // still require independent, consistent visible rings, never a phone preset.
+        fun fitColumn(ally: Boolean) = fit(ally) ?: fit(ally, .8f) ?: fit(ally, 1.2f)
+        val ally = fitColumn(true); val enemy = fitColumn(false)
         return base.copy(
-            allyAvatarCenterX = ally?.first?.first() ?: base.allyAvatarCenterX,
-            allySlotXRatios = ally?.first ?: base.allySlotXRatios,
-            allySlotYRatios = ally?.second ?: base.allySlotYRatios,
-            enemyAvatarCenterX = enemy?.first?.first() ?: base.enemyAvatarCenterX,
-            enemySlotXRatios = enemy?.first ?: base.enemySlotXRatios,
-            enemySlotYRatios = enemy?.second ?: base.enemySlotYRatios
+            allyAvatarCenterX = ally?.xs?.first() ?: base.allyAvatarCenterX,
+            allySlotXRatios = ally?.xs ?: base.allySlotXRatios,
+            allySlotYRatios = ally?.ys ?: base.allySlotYRatios,
+            allySlotDiameterRatios = base.allySlotDiameterRatios.map { it * (ally?.diameterScale ?: 1f) },
+            enemyAvatarCenterX = enemy?.xs?.first() ?: base.enemyAvatarCenterX,
+            enemySlotXRatios = enemy?.xs ?: base.enemySlotXRatios,
+            enemySlotYRatios = enemy?.ys ?: base.enemySlotYRatios,
+            enemySlotDiameterRatios = base.enemySlotDiameterRatios.map { it * (enemy?.diameterScale ?: 1f) }
         )
     }
 }

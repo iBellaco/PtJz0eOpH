@@ -15,6 +15,39 @@ import android.app.Application
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [34], application = Application::class)
 class CaptureCoordinateSpaceTest {
+    @Test fun viewerUndoesCaptureScalingForSlotsAndBansAcrossScreenDimensions() {
+        // Dimensions only: no device identity or model-specific coordinates.
+        for ((screenW, screenH) in listOf(1280 to 587, 1280 to 590, 1920 to 1080,
+            2400 to 1080, 3120 to 1440, 1024 to 768)) {
+            for ((frameW, frameH) in listOf(1280 to 590, 1920 to 1080)) {
+                val transform = CaptureCoordinateSpace.transform(screenW, screenH, frameW, frameH)
+                // Portraits, title bands and header bans use the same inverse.
+                for ((x, y) in listOf(.12 to .19, .91 to .72, .08 to .05, .92 to .05)) {
+                    val screenX = x * screenW
+                    val screenY = y * screenH
+                    val frameX = screenX * transform.scale + transform.offsetX
+                    val frameY = screenY * transform.scale + transform.offsetY
+                    assertEquals(screenX, (frameX - transform.offsetX) / transform.scale, .001)
+                    assertEquals(screenY, (frameY - transform.offsetY) / transform.scale, .001)
+                }
+                val content = CaptureCoordinateSpace.map(Rect(0, 0, screenW, screenH), screenW, screenH, frameW, frameH)
+                assertTrue(content.left >= 0 && content.top >= 0 && content.right <= frameW && content.bottom <= frameH)
+            }
+        }
+    }
+
+    @Test fun collapsingTheHubPublishesItsNewBoundsToTheViewer() {
+        val previous = DraftVisionScanner.overlayRect
+        try {
+            DraftVisionScanner.publishScreenOverlay(Rect(300, 0, 900, 550), 1280, 590)
+            DraftVisionScanner.publishScreenOverlay(Rect(400, 0, 460, 90), 1280, 590)
+            assertEquals(Rect(400, 0, 460, 90), DraftVisionScanner.screenOverlayBoundsFlow.value)
+            assertEquals(Rect(400, 0, 460, 90), DraftVisionScanner.overlayForFrame(1280, 590))
+            DraftVisionScanner.overlayRect = null
+            assertNull(DraftVisionScanner.screenOverlayBoundsFlow.value)
+        } finally { DraftVisionScanner.overlayRect = previous }
+    }
+
     @Test fun captureProfilesGroupDifferentResolutionsByAspectRatio() {
         assertEquals(
             VisionCalibrationConfig.captureProfileKey(1920, 1080),
