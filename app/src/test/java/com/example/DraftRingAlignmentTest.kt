@@ -38,13 +38,24 @@ class DraftRingAlignmentTest {
                         paint.color = android.graphics.Color.rgb(30, 190, 220)
                         canvas.drawCircle(cx, cy, radius, paint)
                     }
-                    val aligned = DraftRingAlignment.align(image, base, null)
-                    for (slot in 0..4) {
-                        val expected = if (slot !in visible) base.getAllySlotX(slot)
-                            else if (slot < 3) .09f else .125f
-                        assertEquals("$w/$h row=$slot visible=$visible", expected, aligned.getAllySlotX(slot), .008f)
+                    val saved = base.copy(
+                        allySlotXRatios = List(5) { .13f + it * .004f },
+                        allySlotYRatios = base.allySlotYRatios.map { it + .01f },
+                        allySlotDiameterRatios = base.allySlotDiameterRatios.map { it * .8f })
+                    for (previous in listOf(base, saved)) {
+                        val aligned = DraftRingAlignment.align(image, base, null, previous = previous)
+                        for (slot in 0..4) {
+                            val expected = if (slot !in visible) previous.getAllySlotX(slot)
+                                else if (slot < 3) .09f else .125f
+                            assertEquals("$w/$h row=$slot visible=$visible", expected, aligned.getAllySlotX(slot), .008f)
+                            if (slot !in visible) {
+                                assertEquals(previous.getAllySlotX(slot), aligned.getAllySlotX(slot), 0f)
+                                assertEquals(previous.allySlotYRatios[slot], aligned.allySlotYRatios[slot], 0f)
+                                assertEquals(previous.getSlotDiameter(true, slot), aligned.getSlotDiameter(true, slot), 0f)
+                            }
+                        }
+                        assertEquals(previous.enemySlotXRatios, aligned.enemySlotXRatios)
                     }
-                    assertEquals(base.enemySlotXRatios, aligned.enemySlotXRatios)
                 } finally { image.recycle() }
             }
         }

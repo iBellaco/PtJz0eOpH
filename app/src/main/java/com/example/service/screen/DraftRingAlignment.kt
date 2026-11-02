@@ -158,17 +158,17 @@ internal object DraftRingAlignment {
                     } >= 2
                     val alignedYs = alignRows(ys, h, radius,
                         consistent.map { it.first to it.second.second }, foreignColumn)
-                    if (consistent.size == fits.size) {
-                        return ColumnFit(List(5) { medianX.toFloat() / w }, alignedYs, diameterScale,
-                            coverage = fits.sumOf { it.third })
-                    }
+                    // Agreement among visible rows does not locate hidden rows.
+                    // Route both cases through the same per-slot fallback, and
+                    // only mark observed slots as eligible for diameter updates.
+                    val coherentColumn = consistent.size == fits.size
                     val measured = fits.associateBy { it.first }
                     return ColumnFit(
                         List(5) { slot ->
                             val row = measured[slot]
                             when {
                                 row == null -> previous.getAllySlotX(slot)
-                                row.third >= 32 -> row.second.first.toFloat() / w
+                                !coherentColumn && row.third >= 32 -> row.second.first.toFloat() / w
                                 else -> medianX.toFloat() / w
                             }
                         },
@@ -176,7 +176,7 @@ internal object DraftRingAlignment {
                             val row = measured[slot]
                             when {
                                 row == null -> previous.allySlotYRatios[slot]
-                                row.third >= 32 -> row.second.second.toFloat() / h
+                                !coherentColumn && row.third >= 32 -> row.second.second.toFloat() / h
                                 else -> alignedYs[slot]
                             }
                         }, diameterScale, measured.keys, coverage = fits.sumOf { it.third })
