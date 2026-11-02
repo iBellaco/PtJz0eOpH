@@ -139,6 +139,7 @@ jobs:
               'com.example.EconomyRequestPolicyTest',
               'com.example.AppReliabilityTest',
               'com.example.SponsorSubmissionStoreTest',
+              'com.example.SponsorPendingStateTest',
               'com.example.InboxSynchronizationTest',
               'com.example.CoachingGeneratorLocalizationTest',
               'com.example.RuntimeBehaviorTest',

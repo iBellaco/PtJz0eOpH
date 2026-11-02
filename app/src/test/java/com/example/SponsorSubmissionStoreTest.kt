@@ -23,6 +23,7 @@ class SponsorSubmissionStoreTest {
         val reopened = SponsorSubmissionStore(context, "owner")
         assertEquals(setOf("one", "two"), reopened.read().map { it.notice.id }.toSet())
         assertEquals(500L, reopened.read().first().expectedCost)
+        assertEquals(first.createdAtMillis, reopened.read().first { it.notice.id == "one" }.createdAtMillis)
         assertTrue(SponsorSubmissionStore(context, "other").read().isEmpty())
         assertTrue(reopened.complete("one"))
         assertEquals(listOf("two"), reopened.read().map { it.notice.id })

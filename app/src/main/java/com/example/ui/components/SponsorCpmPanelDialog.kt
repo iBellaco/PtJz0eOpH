@@ -48,6 +48,7 @@ import androidx.compose.ui.window.DialogProperties
 import coil.compose.AsyncImage
 import com.example.data.AppNotice
 import com.example.data.AppNoticeManager
+import com.example.data.staleSponsorSubmissionIds
 import com.example.ui.theme.*
 import com.example.util.NoticeMediaStorageManager
 import kotlinx.coroutines.launch
@@ -70,6 +71,7 @@ fun SponsorCpmPanelDialog(
     var adsCached by remember(authUser?.uid) { mutableStateOf(false) }
     val outbox = remember(authUser?.uid) { com.example.data.SponsorSubmissionStore(context, authUser?.uid.orEmpty()) }
     var unconfirmed by remember(authUser?.uid) { mutableStateOf(outbox.read()) }
+    var outboxReconciled by remember(authUser?.uid) { mutableStateOf(false) }
     var sendingIds by remember(authUser?.uid) { mutableStateOf(emptySet<String>()) }
     var submissionMessage by remember(authUser?.uid) { mutableStateOf<String?>(null) }
     val canSubmit = sessionPanelAccess(com.example.model.RolePanel.SPONSOR)
@@ -88,6 +90,9 @@ fun SponsorCpmPanelDialog(
                 unconfirmed = outbox.read()
                 submissionMessage = context.getString(com.example.R.string.sponsor_review_confirmed)
             } catch (error: kotlinx.coroutines.CancellationException) { throw error }
+            catch (_: com.example.data.EconomyPendingException) {
+                submissionMessage = context.getString(com.example.R.string.sponsor_submission_pending)
+            }
             catch (error: Exception) {
                 submissionMessage = error.message ?: com.example.util.appTr("No se pudo completar la operación. Vuelve a intentarlo.")
             } finally { sendingIds = sendingIds - submission.notice.id }
@@ -113,7 +118,16 @@ fun SponsorCpmPanelDialog(
     LaunchedEffect(remoteOwnAds, adsCached) {
         if (!adsCached) {
             remoteOwnAds.orEmpty().forEach { outbox.complete(it.id) }
-            unconfirmed = outbox.read()
+            val local = outbox.read()
+            val serverIds = AppNoticeManager.authoritativePendingSponsorIds(
+                context, local.map { it.notice.id }.toSet()
+            )
+            if (serverIds != null) {
+                staleSponsorSubmissionIds(local, serverIds, System.currentTimeMillis())
+                    .forEach { outbox.complete(it) }
+                outboxReconciled = true
+                unconfirmed = outbox.read()
+            }
         }
     }
 
@@ -412,7 +426,7 @@ fun SponsorCpmPanelDialog(
                 if (adsUnavailable || adsCached) Text(stringResource(com.example.R.string.sponsor_unavailable),
                     color = HextechGold, modifier = Modifier.testTag("sponsor_sync_error"))
                 submissionMessage?.let { Text(it, color = HextechGold, modifier = Modifier.testTag("sponsor_submission_status")) }
-                if (unconfirmed.isNotEmpty()) {
+                if (outboxReconciled && unconfirmed.isNotEmpty()) {
                     Column(Modifier.heightIn(max = 160.dp).verticalScroll(rememberScrollState())) {
                         unconfirmed.forEach { submission ->
                             Text(submission.notice.title + " · " + tr("Estado: por confirmar"), color = TextSecondary)

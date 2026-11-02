@@ -12,6 +12,7 @@ import com.example.model.AppUserRole
 import com.example.util.AuthManager
 import com.example.util.AppLanguage
 import com.example.util.appTr
+import com.example.data.authoritativePendingRequests
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.MetadataChanges
@@ -46,8 +47,12 @@ private fun observeRequest(): RequestView {
             .addSnapshotListener(MetadataChanges.INCLUDE) { snapshot, error ->
                 if (error != null) state = state.copy(loading = false, unavailable = true)
                 else {
-                    val requests = snapshot?.documents.orEmpty().mapNotNull { it.data }
-                        .filter { it["status"] in setOf("PENDING", "PROCESSING", "REVIEW") }
+                    val rows = snapshot?.documents.orEmpty().mapNotNull { it.data }
+                    val requests = authoritativePendingRequests(
+                        fromCache = snapshot?.metadata?.isFromCache == true,
+                        hasError = false,
+                        rows = rows
+                    )
                         .sortedWith(compareByDescending<Map<String, Any>> { it["status"] in setOf("PENDING", "PROCESSING", "REVIEW") }
                             .thenByDescending { (it["createdAt"] as? Timestamp)?.toDate()?.time ?: 0L })
                     state = RequestView(requests.firstOrNull(), false,
@@ -76,7 +81,8 @@ fun EconomyPendingStatus(alwaysVisible: Boolean = false) {
     if (AuthManager.isGuestOrUnauthenticated(user)) return
     val state = observeRequest()
     var details by remember(user.uid) { mutableStateOf(false) }
-    val pending = state.request?.get("status") in setOf("PENDING", "PROCESSING", "REVIEW")
+    val pending = !state.cached && !state.unavailable &&
+        state.request?.get("status") in setOf("PENDING", "PROCESSING", "REVIEW")
     if (alwaysVisible || pending || state.request != null || state.unavailable) {
         CoachOutlinedButton(onClick = { details = true }, modifier = Modifier.fillMaxWidth()
             .padding(bottom = 8.dp).heightIn(min = 48.dp).testTag("economy_request_open")) {

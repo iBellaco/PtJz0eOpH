@@ -4,7 +4,12 @@ import android.content.Context
 import org.json.JSONObject
 
 /** Unconfirmed submissions survive process death, with their original id and quoted cost. */
-data class SponsorSubmission(val notice: AppNotice, val expectedCost: Long)
+data class SponsorSubmission(
+    val notice: AppNotice,
+    val expectedCost: Long,
+    /** Local creation time. Zero keeps compatibility with records from older versions. */
+    val createdAtMillis: Long = System.currentTimeMillis()
+)
 
 class SponsorSubmissionStore(context: Context, private val uid: String) {
     private val prefs = context.applicationContext.getSharedPreferences("sponsor_outbox", Context.MODE_PRIVATE)
@@ -18,7 +23,7 @@ class SponsorSubmissionStore(context: Context, private val uid: String) {
                 durationValue = n.getInt("durationValue"), durationUnit = n.getString("durationUnit"),
                 budget = n.getDouble("budget"), budgetUnit = n.getString("durationUnit"),
                 sponsorEmail = n.getString("sponsorEmail"), tag = "PUBLICIDAD", isApproved = false, isEnabled = false),
-                saved.getLong("expectedCost"))
+                saved.getLong("expectedCost"), saved.optLong("createdAtMillis", 0L))
         }.getOrNull() }
 
     fun save(submission: SponsorSubmission): Boolean {
@@ -28,6 +33,7 @@ class SponsorSubmissionStore(context: Context, private val uid: String) {
             .put("titleColor", n.titleColor).put("durationValue", n.durationValue).put("durationUnit", n.durationUnit)
             .put("budget", n.budget).put("sponsorEmail", n.sponsorEmail)
         val saved = JSONObject().put("notice", notice).put("expectedCost", submission.expectedCost)
+            .put("createdAtMillis", submission.createdAtMillis)
         return prefs.edit().putString("$uid~${n.id}", saved.toString()).commit()
     }
 
