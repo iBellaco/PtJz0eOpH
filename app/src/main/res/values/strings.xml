@@ -6,7 +6,7 @@
     <string name="sponsor_reject_refund_blue">Rechazar y devolver esencias azules</string>
     <string name="sponsor_reject_generic">Rechazar</string>
     <string name="sponsor_submission_pending">La solicitud sigue en procesamiento. Actualiza el estado cuando termine; no se creó otro envío.</string>
-    <string name="sponsor_review_pending">La decisión sigue en procesamiento. Actualiza la lista cuando termine.</string>
+    <string name="sponsor_review_pending">La decisión sigue en procesamiento. La lista se actualizará automáticamente; puedes cerrar esta ventana.</string>
     <string name="password_requirements_error">Usa al menos 8 caracteres, una mayúscula, una minúscula, un número y un carácter especial, sin espacios.</string>
     <string name="registration_created_retry_verification">Tu cuenta ya está creada, pero no se pudo completar el envío de verificación. Inicia sesión para solicitar el enlace; no vuelvas a registrarte.</string>
     <string name="sponsor_rejected">Rechazado</string>

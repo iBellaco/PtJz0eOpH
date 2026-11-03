@@ -12,6 +12,11 @@ class EconomyRequestPolicyTest {
             assertEquals(action !in setOf("CLEANUP", "REDEEM"), EconomyRequestPolicy.canQueue(action, administrator = true))
         }
     }
+    @Test fun sponsorDecisionStopsBlockingAsSoonAsItsFallbackIsDurable() {
+        assertFalse(EconomyRequestPolicy.shouldAwaitQueuedResult("SPONSOR_RESOLVE", requested = true))
+        assertTrue(EconomyRequestPolicy.shouldAwaitQueuedResult("SPONSOR", requested = true))
+        assertFalse(EconomyRequestPolicy.shouldAwaitQueuedResult("SPONSOR", requested = false))
+    }
     @Test fun retriesReuseOnlyTheSameMeaning() {
         val existing = mapOf("id" to "old", "action" to "ROLE", "uid" to "a", "role" to "free")
         assertTrue(EconomyRequestPolicy.sameCommand(existing, existing + ("id" to "new")))

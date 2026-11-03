@@ -58,11 +58,11 @@ fun AdminModeratorRequestsDialog(
     var showSponsors by remember { mutableStateOf(false) }
     var showHistory by remember { mutableStateOf(false) }
     val reviewScope = rememberCoroutineScope()
-    var sponsorBusy by remember { mutableStateOf<Set<String>>(emptySet()) }
+    var sponsorDecisionInProgress by remember { mutableStateOf<Map<String, Boolean>>(emptyMap()) }
 
     fun resolveSponsor(id: String, approve: Boolean) {
-        if (id in sponsorBusy) return
-        sponsorBusy = sponsorBusy + id
+        if (id in sponsorDecisionInProgress) return
+        sponsorDecisionInProgress = sponsorDecisionInProgress + (id to approve)
         reviewScope.launch {
             try {
                 SponsorReviewRepository.resolve(id, approve, requests.firstOrNull { it["id"] == id }?.get("queuedRequestId") as? String)
@@ -76,11 +76,13 @@ fun AdminModeratorRequestsDialog(
                 throw cancelled
             } catch (pending: com.example.data.EconomyPendingException) {
                 Toast.makeText(context, context.getString(com.example.R.string.sponsor_review_pending), Toast.LENGTH_LONG).show()
+            } catch (unconfirmed: com.example.data.EconomyUnconfirmedException) {
+                Toast.makeText(context, context.getString(com.example.R.string.sponsor_review_pending), Toast.LENGTH_LONG).show()
             } catch (review: com.example.data.EconomyReviewException) {
                 Toast.makeText(context, review.message, Toast.LENGTH_LONG).show()
             } catch (_: Exception) {
                 Toast.makeText(context, context.getString(com.example.R.string.sponsor_review_error), Toast.LENGTH_LONG).show()
-            } finally { sponsorBusy = sponsorBusy - id }
+            } finally { sponsorDecisionInProgress = sponsorDecisionInProgress - id }
         }
     }
 
@@ -439,14 +441,20 @@ fun AdminModeratorRequestsDialog(
                                                         loadRequests()
                                                     }
                                                 },
-                                                enabled = id !in sponsorBusy,
-                                                modifier = Modifier.weight(1f),
+                                                enabled = id !in sponsorDecisionInProgress,
+                                                modifier = Modifier.weight(1f).heightIn(min = 48.dp)
+                                                    .testTag("sponsor_reject_$id"),
                                                 colors = ButtonDefaults.outlinedButtonColors(contentColor = DangerRed),
                                                 border = androidx.compose.foundation.BorderStroke(1.dp, DangerRed),
                                                 shape = RoundedCornerShape(6.dp),
                                                 contentPadding = PaddingValues(vertical = 6.dp)
                                             ) {
-                                                Text(sponsorDecisionRejectLabel(context, type), fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                                if (type == "SPONSOR" && sponsorDecisionInProgress[id] == false) {
+                                                    CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp,
+                                                        color = DangerRed)
+                                                } else {
+                                                    Text(sponsorDecisionRejectLabel(context, type), fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                                }
                                             }
 
                                             // Approve
@@ -471,13 +479,19 @@ fun AdminModeratorRequestsDialog(
                                                         }
                                                     }
                                                 },
-                                                enabled = id !in sponsorBusy,
-                                                modifier = Modifier.weight(1f),
+                                                enabled = id !in sponsorDecisionInProgress,
+                                                modifier = Modifier.weight(1f).heightIn(min = 48.dp)
+                                                    .testTag("sponsor_approve_$id"),
                                                 colors = ButtonDefaults.buttonColors(containerColor = HextechGold, contentColor = HextechDarkBg),
                                                 shape = RoundedCornerShape(6.dp),
                                                 contentPadding = PaddingValues(vertical = 6.dp)
                                             ) {
-                                                Text(tr("Aprobar"), fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                                if (type == "SPONSOR" && sponsorDecisionInProgress[id] == true) {
+                                                    CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp,
+                                                        color = HextechDarkBg)
+                                                } else {
+                                                    Text(tr("Aprobar"), fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                                }
                                             }
                                         }
                                     } else {
