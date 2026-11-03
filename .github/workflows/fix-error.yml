@@ -308,7 +308,7 @@ jobs:
           target: google_apis
           disable-animations: true
           emulator-boot-timeout: 300
-          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
+          emulator-options: -no-window -gpu swiftshader -no-snapshot -noaudio -no-boot-anim
           script: |
             if [ "$COACH_ISOLATED_SUITE" = "espanol-instalado" ]; then for attempt in 1 2 3; do COACH_ACCOUNT_DELETION_ATTEMPT="$attempt" python3 tools/verify-account-deletion-device.py || exit 1; done; python3 tools/verify-draft-rival-names-device.py && COACH_AUDIT_LANGUAGE=es python3 tools/audit-portuguese-device.py && python3 tools/verify-overlay-history-device.py; fi
             if [ "$COACH_SEQUENCE_PREFLIGHT" = "true" ]; then python3 tools/verify-targeted-red-magic.py; fi

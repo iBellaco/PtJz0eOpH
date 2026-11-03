@@ -480,13 +480,13 @@ jobs:
         target: google_apis
         disable-animations: true
         emulator-boot-timeout: 300
-        emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
+        emulator-options: -no-window -gpu swiftshader -no-snapshot -noaudio -no-boot-anim
         script: |
           python3 -m unittest discover -s tools -p test_portuguese_device_audit.py
+          COACH_AUDIT_LANGUAGE=pt python3 tools/audit-portuguese-device.py
           python3 tools/verify-native-ocr-device.py
           python3 tools/verify-device-reinstall.py
           python3 tools/run-draft-device-audit.py
-          COACH_AUDIT_LANGUAGE=pt python3 tools/audit-portuguese-device.py
     - name: Upload installed APK Portuguese evidence
       if: always()
       uses: actions/upload-artifact@v5
@@ -524,11 +524,11 @@ jobs:
         target: google_apis
         disable-animations: true
         emulator-boot-timeout: 300
-        emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
+        emulator-options: -no-window -gpu swiftshader -no-snapshot -noaudio -no-boot-anim
         script: |
-          python3 tools/verify-account-deletion-device.py
           python3 tools/verify-draft-rival-names-device.py
           COACH_AUDIT_LANGUAGE=es python3 tools/audit-portuguese-device.py
+          python3 tools/verify-account-deletion-device.py
           python3 tools/verify-overlay-history-device.py
     - name: Upload installed Spanish and overlay evidence
       if: always()
