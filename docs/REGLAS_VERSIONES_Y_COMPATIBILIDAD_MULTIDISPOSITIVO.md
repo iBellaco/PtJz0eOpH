@@ -30,6 +30,18 @@ Coach utiliza dos tipos de versión:
 - Antes de publicar, `versionName` debe ser numérico y `versionCode` debe ser
   ascendente.
 
+### Nombre obligatorio del APK
+
+- Toda APK de prueba debe incluir claramente `prueba` y su iteración en el
+  nombre del archivo.
+- Ejemplo: `Coach-1.1.10.466-prueba.1.apk`.
+- Nunca se debe entregar una APK de prueba con el mismo nombre que la APK de
+  producción ni con un nombre ambiguo.
+- La APK de producción conserva el nombre normal, por ejemplo:
+  `Coach-1.1.10.466.apk`.
+- Antes de entregar cualquier APK, comprobar que el nombre del archivo y la
+  versión visible dentro de la aplicación indiquen el mismo tipo de versión.
+
 Nunca se debe publicar una compilación que conserve el sufijo `-prueba`.
 
 ## 2. Dos funcionalidades de Coach
