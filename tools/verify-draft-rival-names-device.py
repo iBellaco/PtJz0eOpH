@@ -3,11 +3,14 @@ from pathlib import Path
 import argparse
 import subprocess
 import re
+import time
 
 TEST_CLASS = 'com.example.DraftRivalNameInstalledTest'
 SOURCE = Path(__file__).resolve().parents[1] / 'app/src/androidTest/java/com/example/DraftRivalNameInstalledTest.kt'
 VI_METHODS = frozenset({'reportedDraftPortraitSelectsViOnInstalledRelease',
                         'reportedViewerPortraitSelectsViOnInstalledRelease'})
+APKS = ('app/build/outputs/apk/release/app-release.apk',
+        'app/build/outputs/apk/androidTest/release/app-release-androidTest.apk')
 
 
 def expected_methods(source):
@@ -58,6 +61,17 @@ def validate_result(output, returncode, expected):
         raise ValueError(f'Pruebas incompletas o duplicadas: faltan={missing}, terminadas={completed}')
 
 
+def prepare_installed_runner(run=subprocess.run, pause=time.sleep):
+    """Start every installed suite from the APKs being audited, not stale state."""
+    for apk in APKS:
+        run(['adb', 'install', '-r', apk], check=True, timeout=60)
+    for package in ('com.Coach', 'com.Coach.test'):
+        run(['adb', 'shell', 'am', 'force-stop', package], check=False, timeout=20)
+    run(['adb', 'shell', 'pm', 'grant', 'com.Coach',
+         'android.permission.POST_NOTIFICATIONS'], check=True, timeout=20)
+    pause(1)
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--vi-only', action='store_true', help='Ejecutar solo los dos retratos de Vi en fix-error')
@@ -65,6 +79,7 @@ def main():
     expected, selector = select_methods(expected_methods(SOURCE.read_text()), args.vi_only)
     report = Path('app/build/reports/spanish-device')
     report.mkdir(parents=True, exist_ok=True)
+    prepare_installed_runner()
     command = ['adb', 'shell', 'am', 'instrument', '-w', '-r', '-e', 'class',
         selector, 'com.Coach.test/androidx.test.runner.AndroidJUnitRunner']
     output_name = 'draft-vi-instrumentation.txt' if args.vi_only else 'draft-rival-name-instrumentation.txt'

@@ -106,6 +106,22 @@ class ParallelValidationTest(unittest.TestCase):
             self.assertEqual('failure()', diagnostic['if'])
             self.assertIn('report_failures', diagnostic['run'])
 
+    def test_long_installed_audits_use_stable_software_rendering_and_clean_order(self):
+        portuguese = self.step('installed-audit', 'Revisit installed APK in Portuguese')
+        spanish = self.step('installed-spanish',
+                            'Revisit installed APK in Spanish and exercise overlay history')
+        for step in (portuguese, spanish):
+            options = step['with']['emulator-options']
+            self.assertIn('-gpu swiftshader', options)
+            self.assertNotIn('swiftshader_indirect', options)
+
+        portuguese_script = portuguese['with']['script']
+        self.assertLess(portuguese_script.index('COACH_AUDIT_LANGUAGE=pt'),
+                        portuguese_script.index('verify-native-ocr-device.py'))
+        spanish_script = spanish['with']['script']
+        self.assertLess(spanish_script.index('verify-draft-rival-names-device.py'),
+                        spanish_script.index('verify-account-deletion-device.py'))
+
     def test_release_summary_and_cleanup_wait_for_both_jobs(self):
         for job in ['build-and-release', 'workflow-report']:
             self.assertTrue({'core-tests', 'rendered-audit'}.issubset(self.jobs[job]['needs']))

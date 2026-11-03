@@ -1,5 +1,6 @@
 import importlib.util
 from pathlib import Path
+from unittest.mock import Mock, call
 import unittest
 
 spec = importlib.util.spec_from_file_location('rival_device', Path(__file__).with_name('verify-draft-rival-names-device.py'))
@@ -86,6 +87,20 @@ class DraftRivalDeviceTest(unittest.TestCase):
     def test_empty_source_is_not_an_empty_successful_suite(self):
         with self.assertRaises(ValueError):
             device.expected_methods('class Empty {}')
+
+    def test_installed_runner_reinstalls_both_apks_and_clears_old_processes(self):
+        run = Mock()
+        pause = Mock()
+        device.prepare_installed_runner(run, pause)
+        self.assertEqual([
+            call(['adb', 'install', '-r', device.APKS[0]], check=True, timeout=60),
+            call(['adb', 'install', '-r', device.APKS[1]], check=True, timeout=60),
+            call(['adb', 'shell', 'am', 'force-stop', 'com.Coach'], check=False, timeout=20),
+            call(['adb', 'shell', 'am', 'force-stop', 'com.Coach.test'], check=False, timeout=20),
+            call(['adb', 'shell', 'pm', 'grant', 'com.Coach',
+                  'android.permission.POST_NOTIFICATIONS'], check=True, timeout=20),
+        ], run.call_args_list)
+        pause.assert_called_once_with(1)
 
 
 if __name__ == '__main__':
