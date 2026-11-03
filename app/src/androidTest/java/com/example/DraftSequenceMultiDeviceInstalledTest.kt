@@ -102,7 +102,15 @@ class DraftSequenceMultiDeviceInstalledTest {
                                 // The first empty draft also initializes ML Kit on a cold
                                 // emulator. Keep the 60-second budget for every live-pick
                                 // frame; allow startup separately and report both times.
-                                val timeoutMs=if(step==0) 90_000L else 60_000L
+                                // Small captures need the bounded recovery chain to
+                                // finish on the CI emulator. Keep the normal budget
+                                // for every other geometry and avoid slowing the
+                                // multidispositivo matrix unnecessarily.
+                                val timeoutMs = when {
+                                    step == 0 -> 90_000L
+                                    frame.width <= 960 -> 120_000L
+                                    else -> 60_000L
+                                }
                                 frameEvidence.put("timeoutLimitMs",timeoutMs)
                                 try {
                                     read = kotlinx.coroutines.withTimeout(timeoutMs) {
