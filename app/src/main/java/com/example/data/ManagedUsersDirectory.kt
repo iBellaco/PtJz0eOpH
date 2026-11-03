@@ -32,6 +32,23 @@ internal object ManagedUsersDirectory {
         }
     }
 
+    internal fun lastConnectionMillis(data: Map<String, Any>): Long = when (
+        val value = data["last_active"] ?: data["lastActiveTimestamp"]
+    ) {
+        is Number -> value.toLong()
+        is com.google.firebase.Timestamp -> value.toDate().time
+        is java.util.Date -> value.time
+        is String -> value.toLongOrNull() ?: 0L
+        else -> 0L
+    }
+
+    internal fun mostRecentlyConnectedFirst(users: List<Map<String, Any>>): List<Map<String, Any>> =
+        users.sortedWith(
+            compareByDescending<Map<String, Any>> { lastConnectionMillis(it) }
+                .thenBy { (it["name"] ?: it["username"] ?: it["displayName"] ?: it["uid"] ?: "")
+                    .toString().lowercase() }
+        )
+
     internal fun newestFirst(users: List<Map<String, Any>>): List<Map<String, Any>> = users.sortedWith(
         compareByDescending<Map<String, Any>> { createdAtMillis(it) }
             .thenBy { (it["email"] ?: it["uid"] ?: "").toString().lowercase() }
