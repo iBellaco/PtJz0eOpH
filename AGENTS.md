@@ -61,6 +61,12 @@ El orden jerárquico de los rangos para consejos tácticos es:
 
 ## Continuidad y comprobaciones
 
+Las reglas detalladas de versiones de prueba/producción y de selección de
+dimensiones compatibles con Wild Rift y overlay están documentadas en
+[`docs/REGLAS_VERSIONES_Y_COMPATIBILIDAD_MULTIDISPOSITIVO.md`](docs/REGLAS_VERSIONES_Y_COMPATIBILIDAD_MULTIDISPOSITIVO.md).
+Leerlas junto con este archivo antes de preparar versiones o pruebas del
+escáner.
+
 El escáner automático es multidispositivo: su ámbito son los dispositivos Android
 compatibles con Wild Rift y con los permisos de captura/superposición disponibles.
 Adaptar por dimensiones reales de captura, viewport y evidencia visual; nunca

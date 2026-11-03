@@ -8,6 +8,13 @@ plugins {
   alias(libs.plugins.google.services)
 }
 
+val coachTestVersionSuffix = providers.gradleProperty("coachTestIteration").orNull?.trim()?.let {
+  require(Regex("^[1-9]\\d*$").matches(it)) {
+    "coachTestIteration debe ser un entero positivo, por ejemplo -PcoachTestIteration=1"
+  }
+  "-prueba.$it"
+} ?: ""
+
 android {
   androidResources {
     localeFilters += listOf("es", "pt")
@@ -24,8 +31,8 @@ android {
     applicationId = "com.Coach"
     minSdk = 24
     targetSdk = 36
-    versionCode = 1178
-    versionName = "1.1.10.462"
+    versionCode = 1180
+    versionName = "1.1.10.464"
     ndk {
       abiFilters.addAll(listOf("armeabi-v7a", "arm64-v8a", "x86_64"))
     }
@@ -88,12 +95,14 @@ android {
       isCrunchPngs = true
       isMinifyEnabled = true
       isShrinkResources = true
+      versionNameSuffix = coachTestVersionSuffix
       proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
       signingConfig = signingConfigs.getByName("release")
     }
     debug {
       isMinifyEnabled = false
       isShrinkResources = false
+      versionNameSuffix = coachTestVersionSuffix
       signingConfig = signingConfigs.getByName("debug")
     }
   }

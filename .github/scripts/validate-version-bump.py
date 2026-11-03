@@ -7,7 +7,9 @@ import sys
 
 
 VERSION_CODE_RE = re.compile(r"^\s*versionCode\s*=\s*(\d+)\s*$", re.MULTILINE)
+VERSION_NAME_RE = re.compile(r'^\s*versionName\s*=\s*"([^"]+)"\s*$', re.MULTILINE)
 RELEASE_TAG_RE = re.compile(r"-b(\d+)$")
+PRODUCTION_VERSION_NAME_RE = re.compile(r"^\d+(?:\.\d+){2,3}$")
 
 
 def version_code_from_gradle(path: Path) -> int:
@@ -15,6 +17,13 @@ def version_code_from_gradle(path: Path) -> int:
     if not match:
         raise ValueError(f"No se encontró versionCode en {path}")
     return int(match.group(1))
+
+
+def version_name_from_gradle(path: Path) -> str:
+    match = VERSION_NAME_RE.search(path.read_text(encoding="utf-8"))
+    if not match:
+        raise ValueError("No se encontró versionName en app/build.gradle.kts")
+    return match.group(1)
 
 
 def released_version_codes(tags: list[str]) -> list[int]:
@@ -30,7 +39,13 @@ def production_version_is_newer(current: int, tags: list[str]) -> tuple[bool, in
 
 def main() -> int:
     try:
-        current = version_code_from_gradle(Path("app/build.gradle.kts"))
+        gradle_path = Path("app/build.gradle.kts")
+        current = version_code_from_gradle(gradle_path)
+        current_name = version_name_from_gradle(gradle_path)
+        if not PRODUCTION_VERSION_NAME_RE.fullmatch(current_name):
+            raise ValueError(
+                f"versionName {current_name!r} no es de producción; elimina el sufijo -prueba antes de publicar"
+            )
         raw_tags = subprocess.check_output(
             ["git", "tag", "--list", "v*-b*"], text=True
         ).splitlines()
