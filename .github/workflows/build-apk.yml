@@ -1,7 +1,9 @@
 name: Build and Release APK
 concurrency:
   group: coach-apk-${{ github.ref }}
-  cancel-in-progress: false
+  # Cancel obsolete validations on new commits to save GitHub Actions minutes.
+  # Never interrupt production main builds or manually requested runs.
+  cancel-in-progress: ${{ github.ref == 'refs/heads/coach-validacion' && github.event_name == 'push' }}
 permissions:
   actions: write
   contents: write
