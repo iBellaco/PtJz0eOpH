@@ -2,12 +2,13 @@
 import ast
 from pathlib import Path
 import unittest
+from unittest.mock import Mock
 import xml.etree.ElementTree as ET
 
 source = ast.parse(Path(__file__).with_name('audit-portuguese-device.py').read_text())
 functions = ast.Module(body=[n for n in source.body if isinstance(n, ast.FunctionDef) and n.name in
     ('app_nodes', 'is_channel_name', 'ui_text_candidates', 'node_bounds',
-     'onboarding_fallback_point')], type_ignores=[])
+     'onboarding_fallback_point', 'finish_onboarding')], type_ignores=[])
 namespace = {'ET': ET, 'APP': 'com.Coach', 're': __import__('re')}
 exec(compile(functions, 'audit-portuguese-device.py', 'exec'), namespace)
 candidates = namespace['ui_text_candidates']
@@ -46,3 +47,18 @@ class DeviceTextAuditTest(unittest.TestCase):
 
     def test_onboarding_fallback_retains_safe_coordinate_for_incomplete_tree(self):
         self.assertEqual((160, 576), namespace['onboarding_fallback_point']([], 320, 640))
+
+    def test_last_onboarding_page_requires_dashboard_and_retries(self):
+        state = dict(namespace)
+        try:
+            namespace['tap'] = Mock()
+            namespace['window'] = Mock(return_value='screen')
+            namespace['app_nodes'] = Mock(side_effect=[
+                [{'text': '¡Comenzar ahora!'}] for _ in range(12)
+            ] + [[{'text': '🎨'}]])
+            namespace['time'] = Mock()
+            namespace['finish_onboarding']('¡Comenzar ahora!')
+            self.assertEqual(2, namespace['tap'].call_count)
+        finally:
+            namespace.clear()
+            namespace.update(state)

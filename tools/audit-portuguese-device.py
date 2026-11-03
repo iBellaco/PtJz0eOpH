@@ -178,6 +178,21 @@ def advance_onboarding(label):
     raise AssertionError("Onboarding did not advance after activating: " + label)
 
 
+def finish_onboarding(label):
+    """The last page can redraw without leaving onboarding; require the dashboard."""
+    for attempt in range(3):
+        tap(label, attempts=3, fallback="onboarding")
+        for _ in range(12):
+            nodes = app_nodes(window())
+            if any(n.get("text") == "🎨" or n.get("resource-id", "").endswith("/nav_theme_button")
+                   for n in nodes):
+                return
+            time.sleep(0.5)
+        print("PORTUGUESE_DEVICE_FINISH_RETRY:", attempt + 1, flush=True)
+    snapshot("onboarding-finish-stalled")
+    raise AssertionError("Onboarding did not reach the dashboard after activating: " + label)
+
+
 def back():
     adb("shell", "input", "keyevent", "KEYCODE_BACK")
     time.sleep(0.8)
@@ -220,7 +235,10 @@ if MODE in ("pt", "both"):
     tap("Aceitar e Entrar")
     for page in range(4):
         snapshot("onboarding-" + str(page + 1))
-        advance_onboarding("Seguinte" if page < 3 else "Começar agora!")
+        if page < 3:
+            advance_onboarding("Seguinte")
+        else:
+            finish_onboarding("Começar agora!")
     snapshot("home")
     tap("🎨")
     snapshot("themes-portuguese")
@@ -321,7 +339,10 @@ if MODE in ("es", "both"):
     tap('Aceptar y Entrar')
     for page in range(4):
         snapshot('onboarding-' + str(page + 1))
-        advance_onboarding('Siguiente' if page < 3 else '¡Comenzar ahora!')
+        if page < 3:
+            advance_onboarding('Siguiente')
+        else:
+            finish_onboarding('¡Comenzar ahora!')
     snapshot('home-spanish')
     tap('🎨')
     snapshot('themes-spanish')
