@@ -99,10 +99,35 @@ def scroll(direction="down"):
     time.sleep(0.6)
 
 
-def tap(label, scrolling=0, scroll_direction="down"):
+def node_bounds(node):
+    points = list(map(int, re.findall(r"\d+", node.get("bounds", ""))))
+    if len(points) != 4 or points[2] <= points[0] or points[3] <= points[1]:
+        return None
+    return tuple(points)
+
+
+def onboarding_fallback_point(nodes, width, height):
+    """Prefer the real lower CTA, but retain a safe coordinate for broken UI trees."""
+    candidates = []
+    for node in nodes:
+        bounds = node_bounds(node)
+        if node.get("clickable") != "true" or node.get("enabled") == "false" or bounds is None:
+            continue
+        left, top, right, bottom = bounds
+        center_y = (top + bottom) // 2
+        control_width = right - left
+        if center_y >= height // 2 and control_width >= width // 3:
+            candidates.append((center_y, control_width, ((left + right) // 2, center_y)))
+    if candidates:
+        return max(candidates)[2]
+    return width // 2, height - max(56, height // 10)
+
+
+def tap(label, scrolling=0, scroll_direction="down", attempts=20, fallback=None):
     labels = (label,) if isinstance(label, str) else tuple(label)
     # Keep looking while the activity is settling after install/launch.
-    for attempt in range(max(20, scrolling + 1)):
+    nodes = []
+    for attempt in range(max(attempts, scrolling + 1)):
         nodes = app_nodes(window())
         # A real remote announcement can arrive at any step, including onboarding.
         # Retain its Portuguese evidence before closing the blocking window.
@@ -117,8 +142,8 @@ def tap(label, scrolling=0, scroll_direction="down"):
                     continue
         for node in nodes:
             if any(candidate in [node.get("text"), node.get("content-desc")] for candidate in labels):
-                points = list(map(int, re.findall(r"\d+", node.get("bounds", ""))))
-                if len(points) == 4 and points[2] > points[0] and points[3] > points[1]:
+                points = node_bounds(node)
+                if points is not None:
                     adb("shell", "input", "tap", str((points[0] + points[2]) // 2), str((points[1] + points[3]) // 2))
                     time.sleep(0.8)
                     return
@@ -126,8 +151,31 @@ def tap(label, scrolling=0, scroll_direction="down"):
             scroll(scroll_direction)
         else:
             time.sleep(1)
+    if fallback == "onboarding":
+        x, y = onboarding_fallback_point(nodes, WIDTH, HEIGHT)
+        print("PORTUGUESE_DEVICE_ONBOARDING_FALLBACK:", x, y, flush=True)
+        adb("shell", "input", "tap", str(x), str(y))
+        time.sleep(1)
+        return
     snapshot("missing-" + str(len(screens)))
     raise AssertionError("Control not found: " + str(label))
+
+
+def visible_signature():
+    return tuple(sorted((n.get("text", ""), n.get("content-desc", ""))
+                        for n in app_nodes(window())
+                        if n.get("text") or n.get("content-desc")))
+
+
+def advance_onboarding(label):
+    before = visible_signature()
+    tap(label, attempts=3, fallback="onboarding")
+    for _ in range(20):
+        if visible_signature() != before:
+            return
+        time.sleep(0.5)
+    snapshot("onboarding-stalled-" + str(len(screens)))
+    raise AssertionError("Onboarding did not advance after activating: " + label)
 
 
 def back():
@@ -172,7 +220,7 @@ if MODE in ("pt", "both"):
     tap("Aceitar e Entrar")
     for page in range(4):
         snapshot("onboarding-" + str(page + 1))
-        tap("Seguinte" if page < 3 else "Começar agora!")
+        advance_onboarding("Seguinte" if page < 3 else "Começar agora!")
     snapshot("home")
     tap("🎨")
     snapshot("themes-portuguese")
@@ -273,7 +321,7 @@ if MODE in ("es", "both"):
     tap('Aceptar y Entrar')
     for page in range(4):
         snapshot('onboarding-' + str(page + 1))
-        tap('Siguiente' if page < 3 else '¡Comenzar ahora!')
+        advance_onboarding('Siguiente' if page < 3 else '¡Comenzar ahora!')
     snapshot('home-spanish')
     tap('🎨')
     snapshot('themes-spanish')
