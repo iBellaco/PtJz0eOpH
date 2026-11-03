@@ -97,7 +97,7 @@ object EconomyServiceClient {
         }
         val direct = if (alreadyQueued) null else try {
             @Suppress("UNCHECKED_CAST")
-            withTimeoutOrNull(15_000L) {
+            withTimeoutOrNull(if (action == "SPONSOR_RESOLVE") 30_000L else 15_000L) {
                 FirebaseFunctions.getInstance("us-central1").getHttpsCallable("coachEconomy").call(payload).await().data as? Map<String, Any>
             } ?: error("direct_service_timeout")
         } catch (error: FirebaseFunctionsException) {
@@ -162,7 +162,7 @@ object EconomyServiceClient {
         // Administrative screens must remain usable while the scheduled worker processes
         // a durable request. Callers that opt out still receive the queued/pending state.
         if (!awaitQueuedResult) throw EconomyPendingException()
-        val result = withTimeoutOrNull(8_000L) {
+        val result = withTimeoutOrNull(if (action == "SPONSOR_RESOLVE") 60_000L else 8_000L) {
             suspendCancellableCoroutine<Map<String, Any>> { continuation ->
                 var listener: ListenerRegistration? = null
                 listener = FirebaseFirestore.getInstance().collection("economy_results")

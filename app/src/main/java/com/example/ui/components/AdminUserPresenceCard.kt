@@ -112,13 +112,7 @@ fun AdminUserPresenceCard(modifier: Modifier = Modifier) {
             ?: (user["lastActiveTimestamp"] as? Number)?.toLong() ?: 0L
         return ((user["is_online"] as? Boolean) == true) && active > 0L && now - active in 0 until 10 * 60 * 1000L
     }
-    fun lastActive(user: Map<String, Any>): Long = when (val value = user["last_active"] ?: user["lastActiveTimestamp"]) {
-        is Number -> value.toLong()
-        is com.google.firebase.Timestamp -> value.toDate().time
-        is Date -> value.time
-        is String -> value.toLongOrNull() ?: 0L
-        else -> 0L
-    }
+    fun lastActive(user: Map<String, Any>): Long = com.example.data.ManagedUsersDirectory.lastConnectionMillis(user)
     @Composable
     fun presenceLabel(user: Map<String, Any>): String {
         if (online(user)) return tr("En línea")
@@ -173,7 +167,7 @@ fun AdminUserPresenceCard(modifier: Modifier = Modifier) {
         users.filter { user ->
             if (selection == "__all__") online(user) else matchesSelection(user, selection)
         }
-            .let(com.example.data.ManagedUsersDirectory::newestFirst)
+            .let(com.example.data.ManagedUsersDirectory::mostRecentlyConnectedFirst)
     }.orEmpty()
 
     Card(
@@ -236,9 +230,6 @@ fun AdminUserPresenceCard(modifier: Modifier = Modifier) {
                             Spacer(Modifier.width(8.dp))
                             Column(Modifier.weight(1f)) {
                                 Text(displayName, color = TextPrimary, fontSize = 13.sp)
-                                (user["email"] as? String)?.takeIf { it.isNotBlank() }?.let {
-                                    Text(it, color = TextMuted, fontSize = 10.sp)
-                                }
                                 Text(presenceLabel(user),
                                     color = if (isOnline) HextechGreen else TextMuted, fontSize = 9.sp)
                             }

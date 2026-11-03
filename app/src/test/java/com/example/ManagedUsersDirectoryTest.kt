@@ -41,4 +41,13 @@ class ManagedUsersDirectoryTest {
         ))
         assertEquals(listOf("new", "middle", "old"), ordered.map { it["uid"] })
     }
+
+    @Test fun activityDirectoryOrdersUsersByLastConnection() {
+        val ordered = ManagedUsersDirectory.mostRecentlyConnectedFirst(listOf(
+            mapOf("uid" to "old", "last_active" to 100L),
+            mapOf("uid" to "recent", "lastActiveTimestamp" to 300L),
+            mapOf("uid" to "middle", "last_active" to 200L)
+        ))
+        assertEquals(listOf("recent", "middle", "old"), ordered.map { it["uid"] })
+    }
 }

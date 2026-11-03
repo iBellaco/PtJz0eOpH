@@ -3,6 +3,7 @@ package com.example
 import com.example.data.AppNotice
 import com.example.data.SponsorSubmission
 import com.example.data.authoritativePendingRequests
+import com.example.data.pendingSponsorIdsFromServer
 import com.example.data.staleSponsorSubmissionIds
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -21,6 +22,18 @@ class SponsorPendingStateTest {
             mapOf<String, Any>("status" to "COMPLETED")
         )
         assertEquals(2, authoritativePendingRequests(false, false, rows).size)
+    }
+
+    @Test fun settledSponsorRecordsDoNotKeepTheLocalOutboxPending() {
+        val rejectedAd = mapOf<String, Any>("status" to "REJECTED", "isApproved" to false)
+        val completedCommand = mapOf<String, Any>("status" to "COMPLETED",
+            "payload" to mapOf("action" to "SPONSOR"))
+        val activeCommand = mapOf<String, Any>("status" to "PROCESSING",
+            "payload" to mapOf("action" to "SPONSOR"))
+        assertEquals(emptySet<String>(), pendingSponsorIdsFromServer(false, false,
+            listOf("old" to rejectedAd), listOf("completed" to completedCommand)))
+        assertEquals(setOf("active"), pendingSponsorIdsFromServer(false, false,
+            emptyList(), listOf("active" to activeCommand)))
     }
 
     @Test fun missingOldOutboxRowsAreRemovedButFreshRowsGetAGracePeriod() {
