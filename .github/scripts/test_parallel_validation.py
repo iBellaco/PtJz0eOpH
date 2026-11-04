@@ -125,20 +125,34 @@ class ParallelValidationTest(unittest.TestCase):
     def test_release_summary_and_cleanup_wait_for_both_jobs(self):
         for job in ['build-and-release', 'workflow-report']:
             self.assertTrue({'core-tests', 'rendered-audit'}.issubset(self.jobs[job]['needs']))
-            self.assertEqual("always() && inputs.target_portuguese_run == ''", self.jobs[job]['if'])
+            self.assertEqual("always() && (inputs.target_portuguese_run == '' || inputs.test_build)", self.jobs[job]['if'])
         env = self.step('build-and-release', 'Require all validations to pass')['env']
         self.assertEqual('${{ needs.core-tests.result }}', env['CORE_RESULT'])
         self.assertEqual('${{ needs.rendered-audit.result }}', env['RENDERED_RESULT'])
 
     def test_targeted_portuguese_run_reuses_apk_and_skips_full_validation(self):
         targeted = self.jobs['portuguese-audit-only']
-        self.assertIn("inputs.target_portuguese_run != ''", targeted['if'])
+        self.assertIn("inputs.target_portuguese_run != '' && !inputs.test_build", targeted['if'])
         download = next(step for step in targeted['steps'] if step.get('name') == 'Reuse APKs from the completed validation')
         self.assertEqual('${{ inputs.target_portuguese_run }}', download['with']['run-id'])
         self.assertEqual('installed-audit-apks', download['with']['name'])
-        self.assertEqual("inputs.target_portuguese_run == ''", self.jobs['find-validated-apk']['if'])
+        self.assertEqual("inputs.target_portuguese_run == '' || inputs.test_build", self.jobs['find-validated-apk']['if'])
         script = next(step for step in targeted['steps'] if step.get('name') == 'Revisit only the installed APK in Portuguese')['with']['script']
         self.assertIn('COACH_AUDIT_LANGUAGE=pt python3 tools/audit-portuguese-device.py', script)
+
+    def test_main_test_build_runs_full_gate_without_official_release(self):
+        inputs = self.workflow['on']['workflow_dispatch']['inputs']
+        self.assertEqual(False, inputs['test_build']['default'])
+        build = self.step('build-apk', 'Build obfuscated release APK')
+        self.assertIn('TEST_VERSION_ARG=(-PcoachTestIteration=1)', build['run'])
+        self.assertEqual("${{ inputs.test_build && 'true' || 'false' }}", build['env']['COACH_TEST_BUILD'])
+        for name in ('Validate production version is newer than the last release',
+                     'Check access to the persistent signing identity'):
+            self.assertIn('!inputs.test_build', self.step('find-validated-apk', name)['if'])
+        for name in ('Verify the validated APK still carries the persistent signature',
+                     'Create or Update GitHub Release'):
+            self.assertIn('!inputs.test_build', self.step('build-and-release', name)['if'])
+        self.assertEqual('inputs.test_build', self.step('build-and-release', 'Upload test APK')['if'])
 
     def gate(self, overrides=None):
         step = self.step('build-and-release', 'Require all validations to pass')
