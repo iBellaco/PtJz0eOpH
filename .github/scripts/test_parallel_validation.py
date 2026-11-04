@@ -153,6 +153,9 @@ class ParallelValidationTest(unittest.TestCase):
                      'Create or Update GitHub Release'):
             self.assertIn('!inputs.test_build', self.step('build-and-release', name)['if'])
         self.assertEqual('inputs.test_build', self.step('build-and-release', 'Upload test APK')['if'])
+        download = self.step('build-and-release', 'Download test APK')['with']
+        self.assertEqual('${{ needs.find-validated-apk.outputs.run_id || github.run_id }}', download['run-id'])
+        self.assertEqual('${{ secrets.GITHUB_TOKEN }}', download['github-token'])
 
     def gate(self, overrides=None):
         step = self.step('build-and-release', 'Require all validations to pass')

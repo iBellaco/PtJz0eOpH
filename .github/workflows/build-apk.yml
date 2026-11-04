@@ -81,6 +81,7 @@ jobs:
       id: validated
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        COACH_TEST_BUILD: ${{ inputs.test_build && 'true' || 'false' }}
       run: python3 .github/scripts/find-validated-apk.py
     - name: Check access to the persistent signing identity
       if: github.ref == 'refs/heads/main' && !inputs.test_build
@@ -864,6 +865,8 @@ jobs:
       with:
         name: app-release.apk
         path: app/build/outputs/apk/release/
+        run-id: ${{ needs.find-validated-apk.outputs.run_id || github.run_id }}
+        github-token: ${{ secrets.GITHUB_TOKEN }}
     - name: Verify and name test APK
       if: inputs.test_build
       run: |
@@ -885,6 +888,7 @@ jobs:
       id: test_delivery
       env:
         COACH_TEST_DELIVERY: 'true'
+        COACH_TEST_BUILD: 'true'
       run: python3 .github/scripts/package-delivery.py
     - name: Upload test source ZIP
       if: inputs.test_build
