@@ -8,7 +8,7 @@ permissions:
   packages: write
 jobs:
   portuguese-audit-only:
-    if: github.event_name == 'workflow_dispatch' && inputs.target_portuguese_run != ''
+    if: github.event_name == 'workflow_dispatch' && inputs.target_portuguese_run != '' && !inputs.test_build
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
@@ -62,7 +62,7 @@ jobs:
           app/build/reports/draft-attempts/
         retention-days: 14
   find-validated-apk:
-    if: inputs.target_portuguese_run == ''
+    if: inputs.target_portuguese_run == '' || inputs.test_build
     runs-on: ubuntu-latest
     outputs:
       run_id: ${{ steps.validated.outputs.run_id }}
@@ -70,7 +70,7 @@ jobs:
     steps:
     - uses: actions/checkout@v5
     - name: Validate production version is newer than the last release
-      if: github.ref == 'refs/heads/main'
+      if: github.ref == 'refs/heads/main' && !inputs.test_build
       run: |
         git fetch --tags --force origin
         python3 -m unittest discover -s .github/scripts -p test_validate_version_bump.py
@@ -83,7 +83,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: python3 .github/scripts/find-validated-apk.py
     - name: Check access to the persistent signing identity
-      if: github.ref == 'refs/heads/main'
+      if: github.ref == 'refs/heads/main' && !inputs.test_build
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         COACH_DEBUG_KEYSTORE_BASE64: ${{ secrets.COACH_DEBUG_KEYSTORE_BASE64 }}
@@ -138,7 +138,7 @@ jobs:
         python3 -m unittest discover -s .github/scripts -p test_release_obfuscation.py
         python3 -m unittest discover -s .github/scripts -p test_workflow_failure_report.py
     - name: Check publication signing configuration
-      if: github.ref == 'refs/heads/main'
+      if: github.ref == 'refs/heads/main' && !inputs.test_build
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         COACH_DEBUG_KEYSTORE_BASE64: ${{ secrets.COACH_DEBUG_KEYSTORE_BASE64 }}
@@ -186,8 +186,8 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         COACH_DEBUG_KEYSTORE_BASE64: ${{ secrets.COACH_DEBUG_KEYSTORE_BASE64 }}
         COACH_SIGNING_CERT_SHA256: ${{ vars.COACH_SIGNING_CERT_SHA256 }}
-        COACH_REQUIRE_PERSISTENT_SIGNING: ${{ github.ref == 'refs/heads/main' && 'true' || 'false' }}
-        COACH_ALLOW_EPHEMERAL_TEST_SIGNING: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository && 'true' || 'false' }}
+        COACH_REQUIRE_PERSISTENT_SIGNING: ${{ github.ref == 'refs/heads/main' && !inputs.test_build && 'true' || 'false' }}
+        COACH_ALLOW_EPHEMERAL_TEST_SIGNING: ${{ inputs.test_build && 'true' || github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository && 'true' || 'false' }}
       run: python3 .github/scripts/restore-private-signing.py
     - name: Verify restored signing file
       run: |
@@ -216,18 +216,24 @@ jobs:
         # Test-only signing is explicit and limited to non-main runs. The
         # main branch remains strictly dependent on the configured production
         # signing identity and never uses a debug fallback.
-        COACH_ALLOW_EPHEMERAL_TEST_SIGNING: ${{ github.ref != 'refs/heads/main' && 'true' || 'false' }}
+        COACH_ALLOW_EPHEMERAL_TEST_SIGNING: ${{ (github.ref != 'refs/heads/main' || inputs.test_build) && 'true' || 'false' }}
+        COACH_TEST_BUILD: ${{ inputs.test_build && 'true' || 'false' }}
         COACH_SIGNING_KEY_ALIAS: androiddebugkey
         KEYSTORE_PATH: ${{ github.workspace }}/github.keystore
         STORE_PASSWORD: android
         KEY_PASSWORD: android
       run: |
         rm -rf app/build/outputs/apk/ || true
+        TEST_VERSION_ARG=()
+        if [ "$COACH_TEST_BUILD" = "true" ]; then
+          TEST_VERSION_ARG=(-PcoachTestIteration=1)
+        fi
 
         # Build the production APK first. Packaging the release APK and the
         # instrumented APK in one Gradle invocation can retain both R8 graphs
         # and exhaust the GitHub runner heap inside ApkFlinger.
         ./gradlew :app:assembleRelease \
+          "${TEST_VERSION_ARG[@]}" \
           -PcoachInstrumentedBuildType=release \
           -Dorg.gradle.jvmargs="-Xmx4096m -XX:MaxMetaspaceSize=1024m -Dfile.encoding=UTF-8 -Djava.awt.headless=true" \
           --max-workers=1 --stacktrace --no-daemon -x lint -x lintVitalRelease
@@ -244,6 +250,7 @@ jobs:
         # safely packaged, in a fresh Gradle JVM with the same bounded worker
         # count. This prevents packageRelease from competing for heap.
         ./gradlew :app:assembleReleaseAndroidTest \
+          "${TEST_VERSION_ARG[@]}" \
           -PcoachInstrumentedBuildType=release \
           -Dorg.gradle.jvmargs="-Xmx4096m -XX:MaxMetaspaceSize=1024m -Dfile.encoding=UTF-8 -Djava.awt.headless=true" \
           --max-workers=1 --stacktrace --no-daemon -x lint -x lintVitalRelease
@@ -725,7 +732,7 @@ jobs:
         if-no-files-found: error
         retention-days: 14
   build-and-release:
-    if: always() && inputs.target_portuguese_run == ''
+    if: always() && (inputs.target_portuguese_run == '' || inputs.test_build)
     needs:
     - find-validated-apk
     - security-auth-tests
@@ -763,13 +770,13 @@ jobs:
         PYRESULT
     - *id001
     - name: Download validated APK (current run)
-      if: github.ref == 'refs/heads/main' && needs.find-validated-apk.outputs.run_id == ''
+      if: github.ref == 'refs/heads/main' && !inputs.test_build && needs.find-validated-apk.outputs.run_id == ''
       uses: actions/download-artifact@v4
       with:
         name: app-release.apk
         path: app/build/outputs/apk/release/
     - name: Download validated APK (reused run)
-      if: github.ref == 'refs/heads/main' && needs.find-validated-apk.outputs.run_id != ''
+      if: github.ref == 'refs/heads/main' && !inputs.test_build && needs.find-validated-apk.outputs.run_id != ''
       uses: actions/download-artifact@v4
       with:
         name: app-release.apk
@@ -779,7 +786,7 @@ jobs:
     - *id002
     - *id006
     - name: Verify the validated APK still carries the persistent signature
-      if: github.ref == 'refs/heads/main'
+      if: github.ref == 'refs/heads/main' && !inputs.test_build
       env:
         COACH_REQUIRE_APK_PROVENANCE: 'true'
       run: |
@@ -802,7 +809,7 @@ jobs:
         echo "version_code=$VERSION_CODE" >> "$GITHUB_OUTPUT"
         echo "App Version Name: $VERSION_NAME"
         echo "App Version Code: $VERSION_CODE"
-      if: github.ref == 'refs/heads/main'
+      if: github.ref == 'refs/heads/main' && !inputs.test_build
     - name: Prepare APK release asset
       id: prepare_asset
       run: |
@@ -815,13 +822,13 @@ jobs:
         cp app/build/outputs/apk/release/app-release.apk "$ASSET_PATH"
         echo "asset_path=$ASSET_PATH" >> "$GITHUB_OUTPUT"
         echo "asset_name=$ASSET_NAME" >> "$GITHUB_OUTPUT"
-      if: github.ref == 'refs/heads/main'
+      if: github.ref == 'refs/heads/main' && !inputs.test_build
     - name: Package the validated project ZIP
-      if: github.ref == 'refs/heads/main'
+      if: github.ref == 'refs/heads/main' && !inputs.test_build
       id: delivery
       run: python3 .github/scripts/package-delivery.py
     - name: Create or Update GitHub Release
-      if: github.ref == 'refs/heads/main'
+      if: github.ref == 'refs/heads/main' && !inputs.test_build
       id: create_release
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -851,8 +858,43 @@ jobs:
            --title "$RELEASE_NAME" \
            --target "${{ github.sha }}" \
            --notes-file release_notes.md
+    - name: Download test APK
+      if: inputs.test_build
+      uses: actions/download-artifact@v4
+      with:
+        name: app-release.apk
+        path: app/build/outputs/apk/release/
+    - name: Verify and name test APK
+      if: inputs.test_build
+      run: |
+        APK="app/build/outputs/apk/release/app-release.apk"
+        BASE_VERSION=$(sed -n 's/.*versionName = "\([^"]*\)".*/\1/p' app/build.gradle.kts | head -n 1)
+        TEST_VERSION="${BASE_VERSION}-prueba.1"
+        /usr/local/lib/android/sdk/build-tools/36.0.0/aapt dump badging "$APK" | grep -F "versionName='$TEST_VERSION'"
+        mkdir -p app/build/outputs/test-delivery
+        cp "$APK" "app/build/outputs/test-delivery/Coach-${TEST_VERSION}.apk"
+    - name: Upload test APK
+      if: inputs.test_build
+      uses: actions/upload-artifact@v5
+      with:
+        name: Coach-test-apk
+        path: app/build/outputs/test-delivery/Coach-*-prueba.1.apk
+        if-no-files-found: error
+    - name: Package test source ZIP
+      if: inputs.test_build
+      id: test_delivery
+      env:
+        COACH_TEST_DELIVERY: 'true'
+      run: python3 .github/scripts/package-delivery.py
+    - name: Upload test source ZIP
+      if: inputs.test_build
+      uses: actions/upload-artifact@v5
+      with:
+        name: Coach-test-source
+        path: ${{ steps.test_delivery.outputs.project_zip }}
+        if-no-files-found: error
   workflow-report:
-    if: always() && inputs.target_portuguese_run == ''
+    if: always() && (inputs.target_portuguese_run == '' || inputs.test_build)
     needs:
     - find-validated-apk
     - catalog-validation
@@ -892,6 +934,11 @@ jobs:
     - coach-validacion
   workflow_dispatch:
     inputs:
+      test_build:
+        description: Run the complete suite as a test version without publishing an official release
+        required: false
+        type: boolean
+        default: false
       target_portuguese_run:
         description: Reuse installed APKs and run only the Portuguese installed audit
         required: false
