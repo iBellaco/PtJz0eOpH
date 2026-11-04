@@ -125,10 +125,20 @@ class ParallelValidationTest(unittest.TestCase):
     def test_release_summary_and_cleanup_wait_for_both_jobs(self):
         for job in ['build-and-release', 'workflow-report']:
             self.assertTrue({'core-tests', 'rendered-audit'}.issubset(self.jobs[job]['needs']))
-            self.assertEqual('always()', self.jobs[job]['if'])
+            self.assertEqual("always() && inputs.target_portuguese_run == ''", self.jobs[job]['if'])
         env = self.step('build-and-release', 'Require all validations to pass')['env']
         self.assertEqual('${{ needs.core-tests.result }}', env['CORE_RESULT'])
         self.assertEqual('${{ needs.rendered-audit.result }}', env['RENDERED_RESULT'])
+
+    def test_targeted_portuguese_run_reuses_apk_and_skips_full_validation(self):
+        targeted = self.jobs['portuguese-audit-only']
+        self.assertIn("inputs.target_portuguese_run != ''", targeted['if'])
+        download = next(step for step in targeted['steps'] if step.get('name') == 'Reuse APKs from the completed validation')
+        self.assertEqual('${{ inputs.target_portuguese_run }}', download['with']['run-id'])
+        self.assertEqual('installed-audit-apks', download['with']['name'])
+        self.assertEqual("inputs.target_portuguese_run == ''", self.jobs['find-validated-apk']['if'])
+        script = next(step for step in targeted['steps'] if step.get('name') == 'Revisit only the installed APK in Portuguese')['with']['script']
+        self.assertIn('COACH_AUDIT_LANGUAGE=pt python3 tools/audit-portuguese-device.py', script)
 
     def gate(self, overrides=None):
         step = self.step('build-and-release', 'Require all validations to pass')
