@@ -24,6 +24,8 @@ def main():
     version = provenance['version_name']
     if not re.fullmatch(r'[0-9]+(?:\.[0-9]+){2,3}', version):
         raise SystemExit('Invalid delivery version')
+    if os.environ.get('COACH_TEST_DELIVERY') == 'true':
+        version += '-prueba.1'
     digest = hashlib.sha256(apk.read_bytes()).hexdigest()
     tree = subprocess.check_output(['git', 'rev-parse', 'HEAD^{tree}'], text=True).strip()
     spec = importlib.util.spec_from_file_location('validated_apk', Path(__file__).with_name('find-validated-apk.py'))
