@@ -171,6 +171,9 @@ jobs:
             --tests 'com.example.CoachRoutineRegressionTest' \
             --tests 'com.example.LiteRTViewerNavigationTest' \
             --tests 'com.example.service.FloatingWindowLifecycleTest' \
+            --tests 'com.example.DraftGeometryStabilityTest' \
+            --tests 'com.example.DraftAutoStopTest' \
+            --tests 'com.example.DraftSessionLifecycleTest' \
             --stacktrace --no-daemon --max-workers=1
 
       - name: Conservar la regresión de la captura reducida

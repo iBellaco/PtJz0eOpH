@@ -267,6 +267,7 @@ internal fun FloatingOverlayContent(
         }
 
         val draftKey = (allies.filterNotNull() + enemies.filterNotNull()).joinToString("|") { it.id } + "|" + activeRole.name
+        state.stopAutomaticScanIfComplete(confirmed = true, buildOpened = true)
         if (redirectedDraftKey == draftKey) return@LaunchedEffect
         redirectedDraftKey = draftKey
         overlayHubTab = OverlayHubTab.DRAFT
@@ -344,7 +345,8 @@ internal fun FloatingOverlayContent(
     // 3. Adaptive Cooldown: Si una inferencia toma más tiempo del previsto, se aplica un intervalo compensatorio
     //    para evitar saturación térmica y mantener estabilidad de fotogramas en Android.
     // 4. Null-Frame Drop: Si el ImageReader no tiene un fotograma nuevo, se salta el ciclo sin re-analizar imágenes estáticas.
-    LaunchedEffect(autoScanEnabled) {
+    LaunchedEffect(autoScanEnabled, state.scanGeneration) {
+        val scanGeneration = state.scanGeneration
         if (autoScanEnabled) {
             DraftVisionScanner.resetSlotLifecycle()
         }
@@ -356,14 +358,14 @@ internal fun FloatingOverlayContent(
         withContext(Dispatchers.Default) {
             val isProcessingFrame = java.util.concurrent.atomic.AtomicBoolean(false)
             val banWorker = com.example.service.screen.DraftBanWorker(this) { frame, job ->
-                DraftVisionScanner.processBanFrame(frame,context) { job.isActive && state.autoScanEnabled }
+                DraftVisionScanner.processBanFrame(frame,context) { job.isActive && state.acceptsScanResult(scanGeneration) }
             }
             var quickReadCount = 0
             var lastGlobalSyncFinishedAt = android.os.SystemClock.elapsedRealtime()
             var fpsLastTime = System.currentTimeMillis()
             var framesInSecond = 0
 
-            try { while (autoScanEnabled) {
+            try { while (state.acceptsScanResult(scanGeneration)) {
                 // 1. REGLA DE SALTO: Arrastre o interacción de usuario
                 if (isDraggingBubble || showSaveDraftDialog || showRoleChangeDialog) {
                     DraftVisionScanner.recordFrameSkipped()
@@ -419,7 +421,7 @@ internal fun FloatingOverlayContent(
 
                     if (screenCaptureManager == null || !screenCaptureManager.isReady()) {
                         withContext(Dispatchers.Main) {
-                                            if (!autoScanEnabled) return@withContext
+                                            if (!state.acceptsScanResult(scanGeneration)) return@withContext
                             scanNoticeMessage = "Permiso de captura inactivo. Toca aquí para activarlo."
                         }
                         delay(500L)
@@ -437,7 +439,7 @@ internal fun FloatingOverlayContent(
                                 if (slotObservation != com.example.service.screen.DraftSlotLifecycle.Observation.ACTIVE) {
                                     if (slotObservation == com.example.service.screen.DraftSlotLifecycle.Observation.FINISHED) {
                                         withContext(Dispatchers.Main) {
-                                            if (!autoScanEnabled) return@withContext
+                                            if (!state.acceptsScanResult(scanGeneration)) return@withContext
                                             val finalReport = com.example.service.screen.LiteRTVisionClassifier.finishLastVisibleSelection()
                                             if (finalReport?.pickedChampion != null) {
                                                 state.applyConfirmedLastPick(com.example.service.screen.DraftScanResult(
@@ -459,7 +461,7 @@ internal fun FloatingOverlayContent(
                                         if(state.isFirstPickManuallySelected) isFirstPick else null,activeRole,
                                         confirmedHudPicks(),namesOnly=true,quickTitlePass=quickReadCount % 8 != 0)
                                     if(result.isSuccessful) withContext(Dispatchers.Main) {
-                                        if(!autoScanEnabled) return@withContext
+                                        if(!state.acceptsScanResult(scanGeneration)) return@withContext
                                         state.observeFirstPick(result.detectedFirstPick)
                                         syncAlliedHud(result)
                                         syncEnemyHud(result)
@@ -487,7 +489,7 @@ internal fun FloatingOverlayContent(
 
                                     if (detectedPicks.isNotEmpty()) {
                                         withContext(Dispatchers.Main) {
-                                            if (!autoScanEnabled) return@withContext
+                                            if (!state.acceptsScanResult(scanGeneration)) return@withContext
                                             for ((turn, champ) in detectedPicks) {
                                                 val scan = com.example.service.screen.DraftScanResult(
                                                     allies = allies.filterNotNull(), enemies = enemies.filterNotNull(),
@@ -515,7 +517,7 @@ internal fun FloatingOverlayContent(
                                     quickReadCount = 0
                                     if (result.isSuccessful) {
                                         withContext(Dispatchers.Main) {
-                                            if (!autoScanEnabled) return@withContext
+                                            if (!state.acceptsScanResult(scanGeneration)) return@withContext
                                             state.observeFirstPick(result.detectedFirstPick)
 
                                             val newAlliesAdded = syncAlliedHud(result)
@@ -622,6 +624,7 @@ internal fun FloatingOverlayContent(
         }
         isScanning = true
         scanNoticeMessage = "Escaneando selección en directo..."
+        val manualGeneration = state.scanGeneration
         coroutineScope.launch(Dispatchers.IO) {
             try {
             val bitmap = kotlinx.coroutines.withTimeoutOrNull(800L) {
@@ -636,6 +639,7 @@ internal fun FloatingOverlayContent(
                 try {
                 val result = DraftVisionScanner.scanDraftFromBitmap(bitmap, context, if (state.isFirstPickManuallySelected) isFirstPick else null, activeRole, confirmedHudPicks(), detectBannedPortraits = true)
                 withContext(Dispatchers.Main) {
+                    if (state.scanGeneration != manualGeneration) return@withContext
                     if (result.isSuccessful) {
                         // Sincronizar primera selección si se detectó y no ha sido fijada manualmente
                         state.observeFirstPick(result.detectedFirstPick)
@@ -690,6 +694,7 @@ internal fun FloatingOverlayContent(
                 } finally { bitmap.recycle() }
             } else {
                 withContext(Dispatchers.Main) {
+                    if (state.scanGeneration != manualGeneration) return@withContext
                     scanNoticeMessage = "No hay frame de captura disponible"
                     isScanning = false
                 }
@@ -697,12 +702,16 @@ internal fun FloatingOverlayContent(
             } catch (cancelled: kotlinx.coroutines.CancellationException) {
                 throw cancelled
             } catch (_: Exception) {
-                withContext(Dispatchers.Main) { scanNoticeMessage = "No hay frame de captura disponible" }
+                withContext(Dispatchers.Main) {
+                    if (state.scanGeneration == manualGeneration) scanNoticeMessage = "No hay frame de captura disponible"
+                }
             } finally {
-                withContext(kotlinx.coroutines.NonCancellable + Dispatchers.Main) { isScanning = false }
+                withContext(kotlinx.coroutines.NonCancellable + Dispatchers.Main) {
+                    if (state.scanGeneration == manualGeneration) isScanning = false
+                }
             }
             delay(3500)
-            scanNoticeMessage = null
+            if (state.scanGeneration == manualGeneration) scanNoticeMessage = null
         }
     }
 
