@@ -61,10 +61,18 @@ def is_channel_name(node):
     return node.get("resource-id", "").rsplit("/", 1)[-1] == "streamer_channel_name"
 
 
+def is_announcement_body(node, nodes):
+    titles = ("COMUNICADO OFICIAL", "AVISO URGENTE / MANUTENÇÃO",
+              "AVISO URGENTE / MANTENIMIENTO")
+    return (node.get("class") == "android.widget.ScrollView" and bool(node.get("text"))
+            and any(other.get("text") in titles for other in nodes)
+            and any(other.get("text") == "Entendido" for other in nodes))
+
+
 def ui_text_candidates(nodes):
     result = []
     for node in nodes:
-        if not is_channel_name(node) and node.get("text"):
+        if not is_channel_name(node) and not is_announcement_body(node, nodes) and node.get("text"):
             result.append(node.get("text"))
         # Accessibility labels are still application UI even on an authored name.
         if node.get("content-desc"):
@@ -82,6 +90,7 @@ def snapshot(name):
     (OUT / (name + ".json")).write_text(json.dumps(strings, ensure_ascii=False, indent=2))
     nodes = app_nodes(xml)
     authored_texts.extend({"screen": name, "text": n.get("text"), "kind": "channel_name"} for n in nodes if is_channel_name(n) and n.get("text"))
+    authored_texts.extend({"screen": name, "text": n.get("text"), "kind": "announcement_body"} for n in nodes if is_announcement_body(n, nodes))
     findings.extend({"screen": name, "text": s} for s in ui_text_candidates(nodes) if len(s) > 2 and SPANISH.search(s.replace("Lee Sin", "LeeSin")))
     screens.append(name)
     print("PORTUGUESE_DEVICE_SCREEN:", name, len(strings), "texts", flush=True)
@@ -99,14 +108,40 @@ def scroll(direction="down"):
     time.sleep(0.6)
 
 
-def tap(label, scrolling=0, scroll_direction="down"):
+def node_bounds(node):
+    points = list(map(int, re.findall(r"\d+", node.get("bounds", ""))))
+    if len(points) != 4 or points[2] <= points[0] or points[3] <= points[1]:
+        return None
+    return tuple(points)
+
+
+def onboarding_fallback_point(nodes, width, height):
+    """Prefer the real lower CTA, but retain a safe coordinate for broken UI trees."""
+    candidates = []
+    for node in nodes:
+        bounds = node_bounds(node)
+        if node.get("clickable") != "true" or node.get("enabled") == "false" or bounds is None:
+            continue
+        left, top, right, bottom = bounds
+        center_y = (top + bottom) // 2
+        control_width = right - left
+        if center_y >= height // 2 and control_width >= width // 3:
+            candidates.append((center_y, control_width, ((left + right) // 2, center_y)))
+    if candidates:
+        return max(candidates)[2]
+    return width // 2, height - max(56, height // 10)
+
+
+def tap(label, scrolling=0, scroll_direction="down", attempts=20, fallback=None):
     labels = (label,) if isinstance(label, str) else tuple(label)
     # Keep looking while the activity is settling after install/launch.
-    for attempt in range(max(20, scrolling + 1)):
+    nodes = []
+    for attempt in range(max(attempts, scrolling + 1)):
         nodes = app_nodes(window())
         # A real remote announcement can arrive at any step, including onboarding.
         # Retain its Portuguese evidence before closing the blocking window.
-        if any(n.get("text") == "COMUNICADO OFICIAL" for n in nodes):
+        if any(n.get("text") in ("COMUNICADO OFICIAL", "AVISO URGENTE / MANUTENÇÃO",
+                                 "AVISO URGENTE / MANTENIMIENTO") for n in nodes):
             snapshot("official-notice-" + str(len(screens)))
             acknowledgment = next((n for n in nodes if n.get("text") == "Entendido"), None)
             if acknowledgment is not None:
@@ -117,8 +152,8 @@ def tap(label, scrolling=0, scroll_direction="down"):
                     continue
         for node in nodes:
             if any(candidate in [node.get("text"), node.get("content-desc")] for candidate in labels):
-                points = list(map(int, re.findall(r"\d+", node.get("bounds", ""))))
-                if len(points) == 4 and points[2] > points[0] and points[3] > points[1]:
+                points = node_bounds(node)
+                if points is not None:
                     adb("shell", "input", "tap", str((points[0] + points[2]) // 2), str((points[1] + points[3]) // 2))
                     time.sleep(0.8)
                     return
@@ -126,8 +161,46 @@ def tap(label, scrolling=0, scroll_direction="down"):
             scroll(scroll_direction)
         else:
             time.sleep(1)
+    if fallback == "onboarding":
+        x, y = onboarding_fallback_point(nodes, WIDTH, HEIGHT)
+        print("PORTUGUESE_DEVICE_ONBOARDING_FALLBACK:", x, y, flush=True)
+        adb("shell", "input", "tap", str(x), str(y))
+        time.sleep(1)
+        return
     snapshot("missing-" + str(len(screens)))
     raise AssertionError("Control not found: " + str(label))
+
+
+def visible_signature():
+    return tuple(sorted((n.get("text", ""), n.get("content-desc", ""))
+                        for n in app_nodes(window())
+                        if n.get("text") or n.get("content-desc")))
+
+
+def advance_onboarding(label):
+    before = visible_signature()
+    tap(label, attempts=3, fallback="onboarding")
+    for _ in range(20):
+        if visible_signature() != before:
+            return
+        time.sleep(0.5)
+    snapshot("onboarding-stalled-" + str(len(screens)))
+    raise AssertionError("Onboarding did not advance after activating: " + label)
+
+
+def finish_onboarding(label):
+    """The last page can redraw without leaving onboarding; require the dashboard."""
+    for attempt in range(3):
+        tap(label, attempts=3, fallback="onboarding")
+        for _ in range(12):
+            nodes = app_nodes(window())
+            if any(n.get("text") == "🎨" or n.get("resource-id", "").endswith("/nav_theme_button")
+                   for n in nodes):
+                return
+            time.sleep(0.5)
+        print("PORTUGUESE_DEVICE_FINISH_RETRY:", attempt + 1, flush=True)
+    snapshot("onboarding-finish-stalled")
+    raise AssertionError("Onboarding did not reach the dashboard after activating: " + label)
 
 
 def back():
@@ -172,7 +245,10 @@ if MODE in ("pt", "both"):
     tap("Aceitar e Entrar")
     for page in range(4):
         snapshot("onboarding-" + str(page + 1))
-        tap("Seguinte" if page < 3 else "Começar agora!")
+        if page < 3:
+            advance_onboarding("Seguinte")
+        else:
+            finish_onboarding("Começar agora!")
     snapshot("home")
     tap("🎨")
     snapshot("themes-portuguese")
@@ -273,7 +349,10 @@ if MODE in ("es", "both"):
     tap('Aceptar y Entrar')
     for page in range(4):
         snapshot('onboarding-' + str(page + 1))
-        tap('Siguiente' if page < 3 else '¡Comenzar ahora!')
+        if page < 3:
+            advance_onboarding('Siguiente')
+        else:
+            finish_onboarding('¡Comenzar ahora!')
     snapshot('home-spanish')
     tap('🎨')
     snapshot('themes-spanish')
