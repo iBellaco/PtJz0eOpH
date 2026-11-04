@@ -34,9 +34,13 @@ class OverlayState {
     var isCompactBubble by androidx.compose.runtime.mutableStateOf(false)
     var isScanning by androidx.compose.runtime.mutableStateOf(false)
     private var automaticScanState by androidx.compose.runtime.mutableStateOf(false)
+    internal var scanGeneration by mutableStateOf(0L)
+        private set
+    internal fun acceptsScanResult(generation: Long) = autoScanEnabled && scanGeneration == generation
     var autoScanEnabled: Boolean
         get() = automaticScanState
         set(value) {
+            if (automaticScanState != value) scanGeneration++
             com.example.service.screen.TenthPickDiagnosticManager.setAutomaticScanActive(value)
             automaticScanState = value
             if (!value) {
@@ -45,7 +49,7 @@ class OverlayState {
             }
         }
     internal fun startAutomaticScan() {
-        if (autoScanEnabled) return
+        if (autoScanEnabled || completedDraftLocked) return
         val scanner = com.example.service.screen.DraftVisionScanner
         val displayed = (allies + enemies).filterNotNull().map { it.id }.toSet()
         val represented = displayed + unassignedAllies.map { it.id }
@@ -63,10 +67,10 @@ class OverlayState {
         scanner.resetSlotLifecycle()
         autoScanEnabled = true
     }
-    internal fun stopAutomaticScanIfComplete(confirmed: Boolean = false, selectionEnded: Boolean = false): Boolean {
-        // Ten recognized portraits can still include a hover. Only the capture
-        // loop's sustained departure observation may close and persist the draft.
-        if (!selectionEnded || completedDraftLocked) return false
+    internal fun stopAutomaticScanIfComplete(confirmed: Boolean = false, selectionEnded: Boolean = false, buildOpened: Boolean = false): Boolean {
+        // Close on sustained departure or when the complete draft opens its build.
+        // A raw count without either event must not close a provisional selection.
+        if ((!selectionEnded && !buildOpened) || completedDraftLocked) return false
         val picks=(allies+enemies).filterNotNull()
         if ((!confirmed && trackedLastPick == null) || !autoScanEnabled || picks.size!=10 || picks.map {it.id}.distinct().size!=10) return false
         autoScanEnabled=false
@@ -77,6 +81,7 @@ class OverlayState {
         return true
     }
     internal fun clearDraftAndCrops(context: android.content.Context) {
+        scanGeneration++
         autoScanEnabled = false
         showSaveDraftDialog = false
         autoSavePendingRequested = false
@@ -85,6 +90,8 @@ class OverlayState {
         isScanning = false
         trackedLastPick = null
         completedDraftLocked = false
+        selectedChampionDetail = null
+        showChampionPickerForSlot = null
         allies.indices.forEach { allies[it] = null; enemies[it] = null }
         manualLockedAllySlots.clear(); manualLockedEnemySlots.clear()
         unassignedAllies.clear(); enemyConfidences.clear()

@@ -918,7 +918,7 @@ private fun CoachContent(
 
             Button(
                 onClick = onClearAll,
-                modifier = Modifier.weight(0.9f).height(28.dp),
+                modifier = Modifier.weight(0.9f).heightIn(min = 48.dp).testTag("overlay_clear_draft"),
                 colors = ButtonDefaults.buttonColors(containerColor = DangerRed.copy(alpha = 0.15f)),
                 border = BorderStroke(1.dp, DangerRed.copy(alpha = 0.7f)),
                 contentPadding = androidx.compose.foundation.layout.PaddingValues(0.dp)

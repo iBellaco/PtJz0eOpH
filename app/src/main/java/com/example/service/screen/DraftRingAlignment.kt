@@ -30,7 +30,7 @@ internal object DraftRingAlignment {
     }
 
     fun align(bitmap: Bitmap, base: VisionCalibrationConfig, excluded: Rect?, ignoreDebugRings: Boolean = false,
-              previous: VisionCalibrationConfig = base): VisionCalibrationConfig {
+              previous: VisionCalibrationConfig = base, onEnemyMeasured: (() -> Unit)? = null): VisionCalibrationConfig {
         val bounds = DraftFrameGeometry.contentBounds(bitmap)
         if (bounds != Rect(0, 0, bitmap.width, bitmap.height)) {
             // Measure the game content before downsampling. On a square capture,
@@ -56,7 +56,7 @@ internal object DraftRingAlignment {
                 val mask = excluded?.let { Rect(it).takeIf { rect -> rect.intersect(bounds) }
                     ?.apply { offset(-bounds.left, -bounds.top) } }
                 return mapSlots(align(content, mapSlots(base, true), mask, ignoreDebugRings,
-                    mapSlots(previous, true)), false)
+                    mapSlots(previous, true), onEnemyMeasured), false)
             } finally { content.recycle() }
         }
         if (bitmap.width > 1280 || bitmap.height > 720) {
@@ -66,7 +66,7 @@ internal object DraftRingAlignment {
             try {
                 val mask = excluded?.let { Rect(floor(it.left * scale).toInt(), floor(it.top * scale).toInt(),
                     ceil(it.right * scale).toInt(), ceil(it.bottom * scale).toInt()) }
-                return align(reduced, base, mask, ignoreDebugRings, previous)
+                return align(reduced, base, mask, ignoreDebugRings, previous, onEnemyMeasured)
             } finally { reduced.recycle() }
         }
         val w = bitmap.width; val h = bitmap.height
@@ -268,6 +268,7 @@ internal object DraftRingAlignment {
             return alternatives.maxByOrNull { it.meanCoverage() } ?: nominal
         }
         val ally = fitColumn(true); val enemy = fitColumn(false)
+        if (enemy != null) onEnemyMeasured?.invoke()
         return base.copy(
             allyAvatarCenterX = ally?.xs?.first() ?: previous.allyAvatarCenterX,
             allySlotXRatios = ally?.xs ?: previous.allySlotXRatios,

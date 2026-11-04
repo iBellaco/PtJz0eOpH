@@ -173,6 +173,18 @@ las pruebas secuenciales deben declarar qué etapas son simuladas.
 
 ## Baneos
 
+Actualización del propietario del 4 de noviembre de 2026 para producción:
+cuando el Hub contiene diez campeones únicos reconocidos y abre automáticamente
+la build propia, apagar Auto-Scan en esa misma transición y cerrar la sesión una
+sola vez. Esta condición sustituye la espera de desaparición de slots en ese
+caso; antes de navegar se mantienen las confirmaciones temporales y la corrección
+del décimo provisional. Vaciar debe cerrar la ficha, detener la sesión y rechazar
+resultados pendientes de la sesión anterior, incluso si se vuelve a activar.
+La captura reportada de Oppo Find X9 Pro evidencia el juego con visor activo;
+no demuestra compatibilidad física ya validada ni autoriza presets por modelo.
+La columna rival se fija tras confirmar su geometría y solo se vuelve a medir
+al cambiar el viewport, dimensiones o calibración.
+
 Actualización del propietario, 28 de octubre de 2026: un décimo retrato estable
 es provisional mientras los slots sigan visibles. Si cambia Sion por Gwen,
 reconfirmar el retrato en fotogramas distintos y sustituir solo ese slot.

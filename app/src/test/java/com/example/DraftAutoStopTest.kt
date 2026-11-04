@@ -15,6 +15,21 @@ import org.robolectric.annotation.Config
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk=[34],application=Application::class)
 class DraftAutoStopTest {
+    @Test fun openingBuildWithTenUniqueChampionsStopsAndSavesOnlyOnce() {
+        val hud = OverlayState()
+        repeat(5) {
+            hud.allies[it] = Champion(id="ally_$it")
+            hud.enemies[it] = Champion(id="enemy_$it")
+        }
+        hud.autoScanEnabled = true
+        assertTrue(hud.stopAutomaticScanIfComplete(confirmed=true, buildOpened=true))
+        assertFalse(hud.autoScanEnabled)
+        assertFalse(TenthPickDiagnosticManager.automaticScanActiveFlow.value)
+        assertTrue(hud.autoSavePendingRequested)
+        hud.autoSavePendingRequested = false
+        assertFalse(hud.stopAutomaticScanIfComplete(confirmed=true, buildOpened=true))
+        assertFalse(hud.autoSavePendingRequested)
+    }
     @Test fun ninthAndUnconfirmedPortraitKeepScanningAndDepartureRequestsOneSave() {
         val hud=OverlayState()
         (0..4).forEach { hud.allies[it]=Champion(id="ally_$it",name="Ally $it") }
@@ -24,6 +39,7 @@ class DraftAutoStopTest {
         hud.autoScanEnabled=true
         try {
             assertFalse(hud.stopAutomaticScanIfComplete())
+            assertFalse(hud.stopAutomaticScanIfComplete(confirmed=true, buildOpened=true))
             val report=DraftScanResult(allies=hud.allies.filterNotNull(),enemies=hud.enemies.filterNotNull(),
                 lastPickChampion=final,tenthPickIsAlly=false,tenthPickSlotIndex=4,
                 isLastPickConfirmed=false,isSuccessful=true,statusMessage="")
@@ -92,6 +108,7 @@ class DraftAutoStopTest {
         try {
             (0..4).forEach { hud.allies[it]=Champion(id="same",name="Same"); hud.enemies[it]=Champion(id="enemy_$it",name="Enemy") }
             assertFalse(hud.stopAutomaticScanIfComplete(confirmed=true, selectionEnded=true))
+            assertFalse(hud.stopAutomaticScanIfComplete(confirmed=true, buildOpened=true))
             assertTrue(hud.autoScanEnabled)
         } finally { hud.autoScanEnabled=false }
     }

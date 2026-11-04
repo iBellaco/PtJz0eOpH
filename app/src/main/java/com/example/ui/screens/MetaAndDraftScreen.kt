@@ -291,8 +291,7 @@ fun MetaAndDraftScreen(
                         onSelectChampion = { haptic.performHapticFeedback(HapticFeedbackType.LongPress); openChampionDetails(it) },
                         onOpenHistory = { showDraftHistoryScreen = true },
                         onClearAll = {
-                            allySlots.clear()
-                            enemySlots.clear()
+                            DraftSessionManager.clearAll()
                             android.widget.Toast.makeText(screenContext, com.example.util.appTr("Equipos vaciados"), android.widget.Toast.LENGTH_SHORT).show()
                         }
                     )
@@ -485,8 +484,7 @@ fun MetaAndDraftScreen(
                             }
                         },
                         onClearAll = {
-                            allySlots.clear()
-                            enemySlots.clear()
+                            DraftSessionManager.clearAll()
                             android.widget.Toast.makeText(screenContext, com.example.util.appTr("Equipos vaciados"), android.widget.Toast.LENGTH_SHORT).show()
                         }
                     )
