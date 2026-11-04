@@ -303,11 +303,17 @@ jobs:
             targets: ''
     steps:
       - uses: actions/checkout@v5
+      - *fix-release-java
+      - *fix-release-local-config
       - name: Recuperar los APK release compartidos
         uses: actions/download-artifact@v4
         with:
           name: fix-error-shared-release-apks
           path: app/build/outputs/apk/
+      - name: Preparar el plan exacto de secuencias de prueba
+        run: |
+          mkdir -p app/build/generated/scanner-sequence-assets
+          cp app/src/test/resources/scanner/targeted-sequence-plan.json app/build/generated/scanner-sequence-assets/scanner-sequence-plan.json
       - &fix-release-kvm
         name: Activar aceleración del emulador
         run: |
@@ -354,11 +360,17 @@ jobs:
     timeout-minutes: 40
     steps:
       - uses: actions/checkout@v5
+      - *fix-release-java
+      - *fix-release-local-config
       - name: Recuperar los mismos APK release verificados
         uses: actions/download-artifact@v4
         with:
           name: fix-error-shared-release-apks
           path: app/build/outputs/apk/
+      - name: Preparar el plan exacto de secuencias de prueba
+        run: |
+          mkdir -p app/build/generated/scanner-sequence-assets
+          cp app/src/test/resources/scanner/targeted-sequence-plan.json app/build/generated/scanner-sequence-assets/scanner-sequence-plan.json
       - *fix-release-kvm
       - uses: ./.github/actions/prepare-emulator
       - name: Comprobar retratos y la secuencia exacta pendiente
