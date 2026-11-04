@@ -61,10 +61,18 @@ def is_channel_name(node):
     return node.get("resource-id", "").rsplit("/", 1)[-1] == "streamer_channel_name"
 
 
+def is_announcement_body(node, nodes):
+    titles = ("COMUNICADO OFICIAL", "AVISO URGENTE / MANUTENÇÃO",
+              "AVISO URGENTE / MANTENIMIENTO")
+    return (node.get("class") == "android.widget.ScrollView" and bool(node.get("text"))
+            and any(other.get("text") in titles for other in nodes)
+            and any(other.get("text") == "Entendido" for other in nodes))
+
+
 def ui_text_candidates(nodes):
     result = []
     for node in nodes:
-        if not is_channel_name(node) and node.get("text"):
+        if not is_channel_name(node) and not is_announcement_body(node, nodes) and node.get("text"):
             result.append(node.get("text"))
         # Accessibility labels are still application UI even on an authored name.
         if node.get("content-desc"):
@@ -82,6 +90,7 @@ def snapshot(name):
     (OUT / (name + ".json")).write_text(json.dumps(strings, ensure_ascii=False, indent=2))
     nodes = app_nodes(xml)
     authored_texts.extend({"screen": name, "text": n.get("text"), "kind": "channel_name"} for n in nodes if is_channel_name(n) and n.get("text"))
+    authored_texts.extend({"screen": name, "text": n.get("text"), "kind": "announcement_body"} for n in nodes if is_announcement_body(n, nodes))
     findings.extend({"screen": name, "text": s} for s in ui_text_candidates(nodes) if len(s) > 2 and SPANISH.search(s.replace("Lee Sin", "LeeSin")))
     screens.append(name)
     print("PORTUGUESE_DEVICE_SCREEN:", name, len(strings), "texts", flush=True)
@@ -131,7 +140,8 @@ def tap(label, scrolling=0, scroll_direction="down", attempts=20, fallback=None)
         nodes = app_nodes(window())
         # A real remote announcement can arrive at any step, including onboarding.
         # Retain its Portuguese evidence before closing the blocking window.
-        if any(n.get("text") == "COMUNICADO OFICIAL" for n in nodes):
+        if any(n.get("text") in ("COMUNICADO OFICIAL", "AVISO URGENTE / MANUTENÇÃO",
+                                 "AVISO URGENTE / MANTENIMIENTO") for n in nodes):
             snapshot("official-notice-" + str(len(screens)))
             acknowledgment = next((n for n in nodes if n.get("text") == "Entendido"), None)
             if acknowledgment is not None:
