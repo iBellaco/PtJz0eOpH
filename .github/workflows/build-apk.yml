@@ -79,12 +79,13 @@ jobs:
       run: python3 -m unittest discover -s .github/scripts -p test_validated_apk.py
     - name: Find a fully validated APK with identical source files
       id: validated
+      if: ${{ !inputs.test_build || github.ref != 'refs/heads/main' }}
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         COACH_TEST_BUILD: ${{ inputs.test_build && 'true' || 'false' }}
       run: python3 .github/scripts/find-validated-apk.py
     - name: Check access to the persistent signing identity
-      if: github.ref == 'refs/heads/main' && !inputs.test_build
+      if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/coach-validacion'
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         COACH_DEBUG_KEYSTORE_BASE64: ${{ secrets.COACH_DEBUG_KEYSTORE_BASE64 }}
@@ -187,8 +188,8 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         COACH_DEBUG_KEYSTORE_BASE64: ${{ secrets.COACH_DEBUG_KEYSTORE_BASE64 }}
         COACH_SIGNING_CERT_SHA256: ${{ vars.COACH_SIGNING_CERT_SHA256 }}
-        COACH_REQUIRE_PERSISTENT_SIGNING: ${{ github.ref == 'refs/heads/main' && !inputs.test_build && 'true' || 'false' }}
-        COACH_ALLOW_EPHEMERAL_TEST_SIGNING: ${{ inputs.test_build && 'true' || github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository && 'true' || 'false' }}
+        COACH_REQUIRE_PERSISTENT_SIGNING: ${{ (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/coach-validacion') && 'true' || 'false' }}
+        COACH_ALLOW_EPHEMERAL_TEST_SIGNING: ${{ (github.ref != 'refs/heads/main' && github.ref != 'refs/heads/coach-validacion') && 'true' || 'false' }}
       run: python3 .github/scripts/restore-private-signing.py
     - name: Verify restored signing file
       run: |
@@ -214,10 +215,9 @@ jobs:
     - name: Build obfuscated release APK
       env:
         CI: 'true'
-        # Test-only signing is explicit and limited to non-main runs. The
-        # main branch remains strictly dependent on the configured production
-        # signing identity and never uses a debug fallback.
-        COACH_ALLOW_EPHEMERAL_TEST_SIGNING: ${{ (github.ref != 'refs/heads/main' || inputs.test_build) && 'true' || 'false' }}
+        # Only branches outside main and coach-validacion may use an ephemeral
+        # test identity. Deliverable APKs always use the persistent certificate.
+        COACH_ALLOW_EPHEMERAL_TEST_SIGNING: ${{ (github.ref != 'refs/heads/main' && github.ref != 'refs/heads/coach-validacion') && 'true' || 'false' }}
         COACH_TEST_BUILD: ${{ inputs.test_build && 'true' || 'false' }}
         COACH_SIGNING_KEY_ALIAS: androiddebugkey
         KEYSTORE_PATH: ${{ github.workspace }}/github.keystore
@@ -867,6 +867,13 @@ jobs:
         path: app/build/outputs/apk/release/
         run-id: ${{ needs.find-validated-apk.outputs.run_id || github.run_id }}
         github-token: ${{ secrets.GITHUB_TOKEN }}
+    - name: Verify persistent signature of test APK
+      if: inputs.test_build && github.ref == 'refs/heads/main'
+      env:
+        COACH_REQUIRE_APK_PROVENANCE: 'true'
+      run: |
+        export COACH_EXPECTED_APK_CERT=$(python3 -c 'import json; print(json.load(open(".github/coach-signing.json"))["certificate_sha256"])')
+        python3 .github/scripts/verify-apk-signing.py
     - name: Verify and name test APK
       if: inputs.test_build
       run: |
@@ -897,6 +904,22 @@ jobs:
         name: Coach-test-source
         path: ${{ steps.test_delivery.outputs.project_zip }}
         if-no-files-found: error
+    - name: Publish direct test downloads
+      if: inputs.test_build && github.ref == 'refs/heads/main'
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        VERSION=$(sed -n 's/.*versionName = "\([^"]*\)".*/\1/p' app/build.gradle.kts | head -n 1)
+        CODE=$(sed -n 's/.*versionCode = \([0-9]*\).*/\1/p' app/build.gradle.kts | head -n 1)
+        TEST_VERSION="${VERSION}-prueba.1"
+        TAG="v${TEST_VERSION}-b${CODE}-r${{ github.run_number }}"
+        APK="app/build/outputs/test-delivery/Coach-${TEST_VERSION}.apk"
+        test -s "$APK"
+        test -s "${{ steps.test_delivery.outputs.project_zip }}"
+        gh release create "$TAG" "$APK" "${{ steps.test_delivery.outputs.project_zip }}" \
+          --title "Coach ${TEST_VERSION} (Build ${CODE}, prueba)" \
+          --target "${{ github.sha }}" --prerelease --latest=false \
+          --notes 'Versión de prueba para instalación y validación. No es una actualización oficial.'
   workflow-report:
     if: always() && (inputs.target_portuguese_run == '' || inputs.test_build)
     needs:
