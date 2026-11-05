@@ -9,6 +9,10 @@ on:
         description: Ejecutar también las regresiones OCR instaladas (opcional y lento)
         type: boolean
         default: false
+      spanish_only:
+        description: Recompilar y comprobar geometría y la suite instalada en español pendiente
+        type: boolean
+        default: false
 
 concurrency:
   group: coach-fix-error-${{ github.ref }}
@@ -190,6 +194,7 @@ jobs:
           retention-days: 14
 
   sponsor-permissions:
+    if: ${{ !inputs.spanish_only }}
     needs: catalog-preflight
     name: Solicitudes, esencias y moderación con las reglas reales
     runs-on: ubuntu-latest
@@ -293,19 +298,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - suite: titulos-cortos
-            preflight: 'true'
-            targets: 'sequence-49-enemy-first,sequence-56-ally-first,sequence-63-enemy-first'
-          - suite: redmagic-secuencia-completa
-            preflight: 'false'
-            targets: 'sequence-0-enemy-first'
-          - suite: xiaomi-secuencia-completa
-            preflight: 'false'
-            targets: 'sequence-42-ally-first'
-          - suite: espanol-instalado
-            preflight: 'false'
-            targets: ''
+        include: ${{ fromJSON(inputs.spanish_only && '[{"suite":"espanol-instalado","preflight":"false","targets":""}]' || '[{"suite":"titulos-cortos","preflight":"true","targets":"sequence-49-enemy-first,sequence-56-ally-first,sequence-63-enemy-first"},{"suite":"redmagic-secuencia-completa","preflight":"false","targets":"sequence-0-enemy-first"},{"suite":"xiaomi-secuencia-completa","preflight":"false","targets":"sequence-42-ally-first"},{"suite":"espanol-instalado","preflight":"false","targets":""}]') }}
     steps:
       - uses: actions/checkout@v5
       - *fix-release-java
@@ -359,6 +352,7 @@ jobs:
           retention-days: 14
 
   targeted-installed-vi:
+    if: ${{ !inputs.spanish_only }}
     needs: [catalog-preflight, shared-release-apks]
     name: Regresión instalada de Vi y secuencia reducida
     runs-on: ubuntu-latest

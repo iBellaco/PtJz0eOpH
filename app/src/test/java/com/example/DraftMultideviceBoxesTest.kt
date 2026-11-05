@@ -15,6 +15,28 @@ import org.robolectric.annotation.GraphicsMode
 @Config(sdk = [34], application = Application::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class DraftMultideviceBoxesTest {
+    @Test fun tabletInsetsReachTheSameTitleGeometryUsedByTheColumnReader() {
+        val bitmap = Bitmap.createBitmap(1024, 768, Bitmap.Config.ARGB_8888)
+        try {
+            bitmap.eraseColor(Color.BLACK)
+            val expected = Rect(40, 0, 964, 768)
+            Canvas(bitmap).drawRect(expected, Paint().apply { color = Color.rgb(30, 35, 45) })
+            val bounds = DraftFrameGeometry.contentBounds(bitmap)
+            assertEquals(expected, bounds)
+            val config = DraftFrameGeometry.calculateMultideviceBoxes(VisionCalibrationConfig(), bounds, 1024, 768)
+            val atlas = DraftNameAtlas.createColumns(bitmap, config, emptyList())
+            try {
+                for (slot in 0..3) {
+                    val region = atlas.tiles.single { !it.ally && it.slot == slot }.source
+                    // Independent title position used by the installed regression.
+                    val x = (964 - 768 * .44f).toInt()
+                    val y = ((listOf(.188f, .324f, .457f, .590f)[slot] - .025f) * 768).toInt()
+                    assertTrue("Rival $slot at $x,$y outside $region", region.contains(x, y))
+                }
+            } finally { atlas.bitmap.recycle() }
+        } finally { bitmap.recycle() }
+    }
+
     @Test fun edgeDistancesAndSquarePortraitsSurviveAspectInsetsAndTabletLetterboxing() {
         val base = VisionCalibrationConfig()
         for ((w, h) in listOf(1280 to 720, 2340 to 1080, 2400 to 1080,

@@ -23,6 +23,21 @@ EXPECTED_RENDERED_CLASSES = {
 
 
 class ParallelValidationTest(unittest.TestCase):
+    def test_spanish_recheck_builds_current_apks_and_keeps_the_full_default_matrix(self):
+        workflow = yaml.safe_load((WORKFLOWS / 'fix-error.yml').read_text())
+        jobs = workflow['jobs']
+        recheck = jobs['targeted-red-magic-release']
+        matrix = recheck['strategy']['matrix']['include']
+        self.assertIn('fromJSON(inputs.spanish_only &&', matrix)
+        selected, full = [json.loads(value) for value in re.findall(r"'([^']*)'", matrix)]
+        self.assertEqual([{'suite': 'espanol-instalado', 'preflight': 'false', 'targets': ''}], selected)
+        self.assertEqual({'espanol-instalado', 'titulos-cortos', 'redmagic-secuencia-completa',
+                          'xiaomi-secuencia-completa'}, {entry['suite'] for entry in full})
+        self.assertIn('shared-release-apks', recheck['needs'])
+        self.assertNotIn('if', jobs['shared-release-apks'])
+        self.assertNotIn('if', jobs['targeted-last-pick'])
+        self.assertFalse(recheck.get('continue-on-error', False))
+
     def test_fix_sequence_target_belongs_to_the_selected_shard(self):
         workflow = yaml.safe_load((WORKFLOWS / 'fix-error.yml').read_text())
         steps = workflow['jobs']['targeted-installed-vi']['steps']

@@ -53,7 +53,10 @@ internal object DraftFrameGeometry {
             return Rect(0, 0, w, h)
         val bounds = Rect(left, top, right, bottom)
         // Loading/blank frames are not evidence of a viewport.
-        return if (bounds.width().toFloat() / bounds.height() in 1.5f..3.1f &&
+        // A 4:3 tablet with asymmetric side bars can have a landscape content
+        // aspect below 1.5. Rejecting that observed area discards its safe insets
+        // and shifts the right-hand title band into the portrait.
+        return if (bounds.width().toFloat() / bounds.height() in 1f..3.1f &&
             // A landscape game fitted into a nearly square foldable occupies less
             // than half the height. The outer-bar search limits already reject
             // blank/loading frames; do not discard an observed boundary here.
