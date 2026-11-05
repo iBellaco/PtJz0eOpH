@@ -5,15 +5,43 @@ import android.graphics.Rect
 
 /** Only contiguous, nearly black outer bars are excluded; never crop to the central artwork. */
 internal object DraftFrameGeometry {
+    /** Defaults were measured on the 1280 x 579 reference capture. Convert
+     * distances from each edge to height units before mapping into the viewport.
+     * Saved manual calibrations bypass this conversion. */
+    fun calculateMultideviceBoxes(base: VisionCalibrationConfig, bounds: Rect,
+                                 width: Int, height: Int): VisionCalibrationConfig {
+        require(width > 0 && height > 0 && bounds.width() > 0 && bounds.height() > 0)
+        val factor = (1280f / 579f) * bounds.height() / bounds.width()
+        fun left(x: Float) = x * factor
+        fun right(x: Float) = 1f - (1f - x) * factor
+        val anchored = base.copy(
+            allyAvatarCenterX = left(base.allyAvatarCenterX),
+            enemyAvatarCenterX = right(base.enemyAvatarCenterX),
+            allySlotXRatios = base.allySlotXRatios.map(::left),
+            enemySlotXRatios = base.enemySlotXRatios.map(::right),
+            allyOcrMinX = left(base.allyOcrMinX), allyOcrMaxX = left(base.allyOcrMaxX),
+            enemyOcrMinX = right(base.enemyOcrMinX), enemyOcrMaxX = right(base.enemyOcrMaxX),
+            allyBanXRatios = base.allyBanXRatios.map(::left),
+            enemyBanXRatios = base.enemyBanXRatios.map(::right),
+            spellLeftRatio = left(base.spellLeftRatio),
+            topAlly5XRatio = left(base.topAlly5XRatio), topEnemy5XRatio = right(base.topEnemy5XRatio),
+            topAllyXRatios = base.topAllyXRatios.map(::left),
+            topEnemyXRatios = base.topEnemyXRatios.map(::right)
+        )
+        return forViewport(anchored, bounds, width, height)
+    }
+
     fun contentBounds(bitmap: Bitmap): Rect {
         val w = bitmap.width; val h = bitmap.height
         fun black(x: Int, y: Int): Boolean {
             val c = bitmap.getPixel(x, y)
-            return ((c shr 16) and 255) <= 6 && ((c shr 8) and 255) <= 6 && (c and 255) <= 6
+            return ((c shr 16) and 255) < 12 && ((c shr 8) and 255) < 12 && (c and 255) < 12
         }
         fun blackRow(y: Int): Boolean = (0 until 128).all { black(it * (w - 1) / 127, y) }
+        // Three interior samples reject a dark patch on just one scanline.
+        // Cached by configForFrame; no frame-wide pixel buffer is allocated.
         fun blackColumn(x: Int, top: Int, bottom: Int): Boolean =
-            (0 until 128).all { black(x, top + it * (bottom - top - 1) / 127) }
+            (1..3).all { black(x, top + it * (bottom - top - 1) / 4) }
         var top = 0; var bottom = h; var left = 0; var right = w
         while (top < h / 3 && blackRow(top)) top++
         while (bottom > h * 2 / 3 && blackRow(bottom - 1)) bottom--

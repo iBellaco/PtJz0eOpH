@@ -408,7 +408,7 @@ object DraftVisionScanner {
         val refresh = refreshGeometry || alignedBase == null || alignedSize != (bitmap.width to bitmap.height) || lastAlignmentAt == 0L || now-lastAlignmentAt >= 2000
         if (refresh) activeViewport = DraftFrameGeometry.contentBounds(bitmap)
         val normalized = AdaptiveScreenLayoutEngine.computeAdaptiveConfig(bitmap.width, bitmap.height, calibrationConfig)
-        val base = if (manual) normalized else DraftFrameGeometry.forViewport(normalized, activeViewport, bitmap.width, bitmap.height)
+        val base = if (manual) normalized else DraftFrameGeometry.calculateMultideviceBoxes(normalized, activeViewport, bitmap.width, bitmap.height)
         if (alignedBase != base || alignedSize != (bitmap.width to bitmap.height)) {
             geometryStability.reset()
             alignedConfigFlow.value = base
@@ -687,7 +687,7 @@ object DraftVisionScanner {
             // Deben excluirse siempre; de lo contrario el OCR puede leer "Pantheon" del propio overlay.
             val exclusions = frameDiagnosticTexts
             // namesOnly is the live draft fast path. All ten title rows are read
-            // below from calibrated title-only atlases, so a second OCR request
+            // below from calibrated regions, so a second OCR request
             // over the entire 1920x863 frame is both redundant and extremely
             // expensive on an emulator/low-end device. Full scans retain the
             // whole-screen request for banners, account identity and metadata.
@@ -707,7 +707,8 @@ object DraftVisionScanner {
 
             // Read every player title in one request, including the visible portion
             // of a name band partly covered by the central assistant window.
-            val atlas = DraftNameAtlas.create(bitmap,calib,exclusions+listOfNotNull(frameOverlay))
+            val atlas = if (quickTitlePass) DraftNameAtlas.createColumns(bitmap, calib, exclusions + listOfNotNull(frameOverlay))
+                else DraftNameAtlas.create(bitmap,calib,exclusions+listOfNotNull(frameOverlay))
             try {
                 val detectedTitleLines=mutableMapOf<Pair<Boolean,Int>,MutableList<Rect>>()
                 val contextDonors=mutableMapOf<Pair<Boolean,Int>,Rect>()
@@ -839,12 +840,12 @@ object DraftVisionScanner {
                         exclusions + listOfNotNull(frameOverlay), missingLanes)
                     try { readTitles(lanes) } finally { lanes.bitmap.recycle() }
                 }
-                val unresolved = atlas.tiles.filter { tile -> tile.original &&
+                val unresolved = atlas.tiles.filter { tile -> !quickTitlePass && tile.original &&
                     (if(tile.ally) targetedAllyReadings else targetedEnemyReadings)[tile.slot].let {
                         !it.ambiguous && it.champion==null && it.lane==null && !it.unpicked
                     }
                 }.mapNotNull { tile -> DraftNameAtlas.titleFocusBounds(atlas,tile)?.let { tile to it } }
-                if (unresolved.isNotEmpty() && (!quickTitlePass || missingLanes.isEmpty())) {
+                if (unresolved.isNotEmpty() && !quickTitlePass) {
                     val retry = DraftNameAtlas.retryUnresolved(atlas,unresolved.map { it.first })
                     try { readTitles(retry) } finally { retry.bitmap.recycle() }
                 }

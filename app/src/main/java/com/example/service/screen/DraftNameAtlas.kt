@@ -19,6 +19,44 @@ internal class DraftNameAtlas private constructor(val bitmap: Bitmap, val tiles:
     companion object {
         private const val GUTTER = 32
 
+        /** Two native-resolution columns in a single allocation/OCR request.
+         * Tile coordinates identify only calibrated title bands: nearby player
+         * names and central artwork never become champion evidence. */
+        fun createColumns(source: Bitmap, config: VisionCalibrationConfig,
+                          masks: List<Rect>): DraftNameAtlas {
+            val bands = listOf(true, false).map { ally ->
+                (0..4).map { slot -> AdaptiveScreenLayoutEngine.calculateSlotNameRect(
+                    source.width, source.height, ally, slot, config) }
+            }
+            val columns = bands.map { rows -> Rect(rows.minOf { it.left }, 0,
+                rows.maxOf { it.right }, rows.maxOf { it.bottom }) }
+            val bitmap = Bitmap.createBitmap(columns.sumOf { it.width() } + GUTTER * 3,
+                columns.maxOf { it.height() } + GUTTER * 2, Bitmap.Config.ARGB_8888)
+            try {
+                val canvas = Canvas(bitmap).apply { drawColor(Color.BLACK) }
+                val paint = Paint().apply { color = Color.BLACK }
+                val tiles = mutableListOf<Tile>()
+                var x = GUTTER
+                columns.forEachIndexed { side, column ->
+                    val destination = Rect(x, GUTTER, x + column.width(), GUTTER + column.height())
+                    canvas.drawBitmap(source, column, destination, null)
+                    for (mask in masks) {
+                        val clipped = Rect(mask)
+                        if (clipped.intersect(column)) {
+                            clipped.offset(x - column.left, GUTTER)
+                            canvas.drawRect(clipped, paint)
+                        }
+                    }
+                    bands[side].forEachIndexed { slot, band ->
+                        val region = Rect(band).apply { offset(x - column.left, GUTTER) }
+                        tiles += Tile(side == 0, slot, band, region, region.height())
+                    }
+                    x = destination.right + GUTTER
+                }
+                return DraftNameAtlas(bitmap, tiles, source, masks)
+            } catch (error: Throwable) { bitmap.recycle(); throw error }
+        }
+
         /** Pack alternatives without rescaling their pixels. Bounded pages keep
          * the detector from shrinking small glyphs and avoid one request per crop.
          * Inputs remain owned by the caller; returned pages own independent pixels. */

@@ -138,7 +138,9 @@ object AdaptiveScreenLayoutEngine {
         val cx = if (isAlly) (width * config.getAllySlotX(sIdx)).toInt() else (width * config.getEnemySlotX(sIdx)).toInt()
         val yRatios = if (isAlly) config.allySlotYRatios else config.enemySlotYRatios
         val cy = (height * yRatios.getOrElse(sIdx) { 0.2f + sIdx * 0.13f }).toInt()
-        val diam = (height * config.getSlotDiameter(isAlly, sIdx)).toInt().coerceAtLeast(32)
+        require(width > 0 && height > 0)
+        val diam = (height * config.getSlotDiameter(isAlly, sIdx)).toInt()
+            .coerceAtLeast(32).coerceAtMost(min(width, height))
         val radius = diam / 2
 
         val left = (cx - radius).coerceIn(0, (width - diam).coerceAtLeast(0))
