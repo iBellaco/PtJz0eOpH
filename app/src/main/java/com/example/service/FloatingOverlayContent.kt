@@ -1189,42 +1189,6 @@ internal fun FloatingOverlayContent(
                             Spacer(modifier = Modifier.height(2.dp))
                         }
 
-                        // Banner de estado de escaneo si existe
-                        if (scanNoticeMessage != null) {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clip(RoundedCornerShape(6.dp))
-                                    .background(HextechSurface)
-                                    .border(1.dp, HextechCyan.copy(alpha = 0.5f), RoundedCornerShape(6.dp))
-                                    .clickable {
-                                        val captureRecoveryNeeded = scanNoticeMessage?.let {
-                                            it.contains("Permiso", ignoreCase = true) ||
-                                                it.contains("captura", ignoreCase = true) ||
-                                                it.contains("autorización", ignoreCase = true)
-                                        } == true
-                                        if (captureRecoveryNeeded) {
-                                            try {
-                                                val intent = Intent(context, com.example.MainActivity::class.java).apply {
-                                                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP)
-                                                    putExtra("EXTRA_REQUEST_CAPTURE", true)
-                                                }
-                                                context.startActivity(intent)
-                                            } catch (_: Exception) {}
-                                        }
-                                    }
-                                    .padding(horizontal = 8.dp, vertical = 4.dp)
-                            ) {
-                                Text(
-                                    text = com.example.util.tr(scanNoticeMessage ?: ""),
-                                    color = HextechCyan,
-                                    fontSize = 10.sp,
-                                    fontWeight = FontWeight.Medium
-                                )
-                            }
-                            Spacer(modifier = Modifier.height(4.dp))
-                        }
-
                         // Contenido Principal del Hub según la Pestaña Activa o Detalle de Campeón
                         Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
                             if (selectedChampionDetail != null) {
@@ -1244,18 +1208,6 @@ internal fun FloatingOverlayContent(
                                 when (overlayHubTab) {
                                     OverlayHubTab.DRAFT -> {
                                         Column(Modifier.fillMaxSize()) {
-                                        val certainty = com.example.model.DraftCertaintyPolicy.selection(state.completedDraftLocked,
-                                            state.trackedLastPick != null, (allies + enemies + state.unassignedAllies)
-                                                .filterNotNull().map { it.id }.distinct().size)
-                                        Text(androidx.compose.ui.res.stringResource(when (certainty) {
-                                            com.example.model.DraftCertainty.CONFIRMED -> com.example.R.string.draft_confirmed
-                                            com.example.model.DraftCertainty.PROVISIONAL -> com.example.R.string.draft_provisional
-                                            com.example.model.DraftCertainty.COLLECTING -> com.example.R.string.draft_collecting
-                                        }), fontSize = 11.sp, color = HextechGold, modifier = Modifier.testTag("draft_certainty"))
-                                        if (enemies.indices.any { enemies[it] != null && state.manualLockedEnemySlots[it] != true }) {
-                                            Text(androidx.compose.ui.res.stringResource(com.example.R.string.draft_roles_estimated),
-                                                fontSize = 11.sp, color = TextSecondary, modifier = Modifier.testTag("draft_estimated_roles"))
-                                        }
                                         FloatingDraftCoachView(
                                             banSlots = banSlots,
                                             isLandscapeMode = isLandscapeMode,
