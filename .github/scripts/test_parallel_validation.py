@@ -30,7 +30,12 @@ class ParallelValidationTest(unittest.TestCase):
         matrix = recheck['strategy']['matrix']['include']
         self.assertEqual({'espanol-instalado', 'titulos-cortos', 'redmagic-secuencia-completa',
                           'xiaomi-secuencia-completa'}, {entry['suite'] for entry in matrix})
-        self.assertIn("matrix.suite == 'espanol-instalado'", recheck['if'])
+        self.assertIn("!inputs.spanish_only", recheck['if'])
+        spanish = jobs['targeted-spanish-recheck']
+        self.assertIn('inputs.spanish_only', spanish['if'])
+        self.assertIn('shared-release-apks', spanish['needs'])
+        self.assertIn('verify-draft-rival-names-device.py',
+                      next(step for step in spanish['steps'] if 'script' in step.get('with', {}))['with']['script'])
         self.assertIn('shared-release-apks', recheck['needs'])
         self.assertNotIn('if', jobs['shared-release-apks'])
         self.assertNotIn('if', jobs['targeted-last-pick'])
