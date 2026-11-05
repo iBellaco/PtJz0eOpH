@@ -70,6 +70,10 @@ fun AdminModeratorRequestsDialog(
                 try { com.example.data.AppNoticeManager.syncFromCloud(context) }
                 catch (cancelled: kotlinx.coroutines.CancellationException) { throw cancelled }
                 catch (_: Exception) { }
+                // Remove the resolved card immediately. The realtime listener
+                // will reconcile it with the server and repopulate it only if
+                // the decision was not committed.
+                requests = requests.filterNot { it["id"] == id }
                 Toast.makeText(context, if (approve) com.example.util.appTr("Anuncio aprobado y visible en el panel de anuncios")
                     else context.getString(com.example.R.string.sponsor_rejection_done), Toast.LENGTH_SHORT).show()
             } catch (cancelled: kotlinx.coroutines.CancellationException) {
