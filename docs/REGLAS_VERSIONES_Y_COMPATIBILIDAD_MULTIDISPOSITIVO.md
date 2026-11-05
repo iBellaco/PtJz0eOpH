@@ -29,6 +29,10 @@ Coach utiliza dos tipos de versión:
   actualizaciones.
 - Antes de publicar, `versionName` debe ser numérico y `versionCode` debe ser
   ascendente.
+- Toda versión de producción que detecte una versión publicada posterior debe
+  exigir la actualización. El aviso no ofrece «Más tarde» ni permite continuar
+  usando Coach hasta completar la actualización. Las versiones `-prueba.N`
+  permanecen fuera de la comprobación oficial.
 
 ### Nombre obligatorio del APK
 

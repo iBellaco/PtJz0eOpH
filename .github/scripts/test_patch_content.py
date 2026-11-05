@@ -18,16 +18,16 @@ class PatchContentTest(unittest.TestCase):
         self.assertFalse(module.valid_source_patch_bindings(sources + '\n' + sources.splitlines()[0]))
 
     def test_source_evidence_keeps_its_real_historical_version(self):
-        self.assertTrue(module.valid_evidence_patches(['7.3b'], '7.3c'))
-        self.assertTrue(module.valid_evidence_patches(['7.3c'], '7.3c'))
-        for patches in [[], ['8.1'], ['7.3d'], ['unknown'], [None], '7.3c']:
-            self.assertFalse(module.valid_evidence_patches(patches, '7.3c'), patches)
+        self.assertTrue(module.valid_evidence_patches(['7.3c'], '7.3e'))
+        self.assertTrue(module.valid_evidence_patches(['7.3e'], '7.3e'))
+        for patches in [[], ['8.1'], ['7.3f'], ['unknown'], [None], '7.3e']:
+            self.assertFalse(module.valid_evidence_patches(patches, '7.3e'), patches)
 
     def test_rejects_any_incorrect_current_patch(self):
         for value in ['Parche 7.3a', 'Patch 7.4', '{"patch":"8.1"}', '{"gamePatch":"7.3b"}']:
-            self.assertTrue(module.validate_text(value, '7.3c'), value)
+            self.assertTrue(module.validate_text(value, '7.3e'), value)
 
     def test_allows_current_patch_and_historical_evidence(self):
-        for value in ['Parche 7.3c', 'Patch 7.3c', '{"patch":"7.3c"}',
+        for value in ['Parche 7.3e', 'Patch 7.3e', '{"patch":"7.3e"}',
                       '{"sources":{"historical":{"patches":["7.2b"]}}}', 'val scale = 0.7f']:
-            self.assertEqual([], module.validate_text(value, '7.3c'), value)
+            self.assertEqual([], module.validate_text(value, '7.3e'), value)

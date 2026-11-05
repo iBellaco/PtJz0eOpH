@@ -12,8 +12,8 @@ class EconomyRequestPolicyTest {
             assertEquals(action !in setOf("CLEANUP", "REDEEM"), EconomyRequestPolicy.canQueue(action, administrator = true))
         }
     }
-    @Test fun sponsorDecisionStopsBlockingAsSoonAsItsFallbackIsDurable() {
-        assertFalse(EconomyRequestPolicy.shouldAwaitQueuedResult("SPONSOR_RESOLVE", requested = true))
+    @Test fun sponsorDecisionWaitsForTheCommittedResult() {
+        assertTrue(EconomyRequestPolicy.shouldAwaitQueuedResult("SPONSOR_RESOLVE", requested = true))
         assertTrue(EconomyRequestPolicy.shouldAwaitQueuedResult("SPONSOR", requested = true))
         assertFalse(EconomyRequestPolicy.shouldAwaitQueuedResult("SPONSOR", requested = false))
     }

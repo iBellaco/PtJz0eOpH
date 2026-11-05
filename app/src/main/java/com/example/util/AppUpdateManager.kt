@@ -73,7 +73,9 @@ object AppUpdateManager {
         }
         _updateInfo.value = if (version.newerThan(BuildConfig.VERSION_NAME, BuildConfig.VERSION_CODE))
             AppUpdateInfo(true, version.code, version.name,
-                isMandatory = BuildConfig.VERSION_CODE < minimumSupportedCode) else null
+                // Production releases always require the current published
+                // release. Test builds return before this official flow.
+                isMandatory = AppVersionPolicy.isProductionVersion(BuildConfig.VERSION_NAME)) else null
     }
 
     suspend fun checkForUpdates(context: Context, forceManualCheck: Boolean = false): AppUpdateInfo = withContext(Dispatchers.IO) {
