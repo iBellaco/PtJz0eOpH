@@ -16,13 +16,12 @@ object EconomyRequestPolicy {
     fun canQueue(action: String, administrator: Boolean): Boolean = action in queueableActions
 
     /**
-     * Sponsor moderation has its own real-time source of truth. Once its durable
-     * fallback is stored, keeping the dialog blocked while the scheduled worker
-     * runs only makes the decision look frozen. Other operations still keep their
-     * existing wait semantics.
+     * Sponsor moderation must wait for the durable result. Returning as soon as
+     * the fallback is queued leaves the moderator seeing a pending card even
+     * after the worker has committed the decision.
      */
     fun shouldAwaitQueuedResult(action: String, requested: Boolean): Boolean =
-        requested && action != "SPONSOR_RESOLVE"
+        requested
 
     fun sameCommand(existing: Map<*, *>, requested: Map<*, *>): Boolean =
         canonical(existing.filterKeys { it != "id" }) == canonical(requested.filterKeys { it != "id" })
