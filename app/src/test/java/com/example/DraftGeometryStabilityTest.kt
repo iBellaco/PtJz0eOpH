@@ -6,6 +6,32 @@ import org.junit.Assert.*
 import org.junit.Test
 
 class DraftGeometryStabilityTest {
+    @Test fun framesWithoutRivalRingEvidenceCannotLockDefaultCoordinates() {
+        val filter = DraftGeometryStability()
+        val base = VisionCalibrationConfig()
+        repeat(4) { filter.update(base, enemyMeasured=false) }
+        val measured = base.copy(enemySlotXRatios = List(5) { .91f })
+        assertEquals(measured.enemySlotXRatios, filter.update(measured).enemySlotXRatios)
+        filter.update(measured)
+        repeat(4) { assertEquals(measured.enemySlotXRatios, filter.update(base).enemySlotXRatios) }
+    }
+    @Test fun confirmedRivalPositionsRemainFixedUntilViewportReset() {
+        val filter = DraftGeometryStability()
+        val base = VisionCalibrationConfig()
+        filter.update(base)
+        filter.update(base)
+        val moving = base.copy(enemySlotXRatios = List(5) { .83f },
+            enemySlotYRatios = base.enemySlotYRatios.map { it + .03f },
+            enemySlotDiameterRatios = base.enemySlotDiameterRatios.map { it * .8f })
+        repeat(20) {
+            val stable = filter.update(moving)
+            assertEquals(base.enemySlotXRatios, stable.enemySlotXRatios)
+            assertEquals(base.enemySlotYRatios, stable.enemySlotYRatios)
+            assertEquals(base.enemySlotDiameterRatios, stable.enemySlotDiameterRatios)
+        }
+        filter.reset()
+        assertEquals(moving.enemySlotXRatios, filter.update(moving).enemySlotXRatios)
+    }
     @Test fun movingOneAllyDoesNotBlockAnotherRowOrMoveRivals() {
         val filter = DraftGeometryStability()
         val base = VisionCalibrationConfig()

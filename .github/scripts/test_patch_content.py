@@ -18,10 +18,10 @@ class PatchContentTest(unittest.TestCase):
         self.assertFalse(module.valid_source_patch_bindings(sources + '\n' + sources.splitlines()[0]))
 
     def test_source_evidence_keeps_its_real_historical_version(self):
-        self.assertTrue(module.valid_evidence_patches(['7.3c'], '7.3d'))
-        self.assertTrue(module.valid_evidence_patches(['7.3d'], '7.3d'))
-        for patches in [[], ['8.1'], ['7.3e'], ['unknown'], [None], '7.3c']:
-            self.assertFalse(module.valid_evidence_patches(patches, '7.3d'), patches)
+        self.assertTrue(module.valid_evidence_patches(['7.3b'], '7.3c'))
+        self.assertTrue(module.valid_evidence_patches(['7.3c'], '7.3c'))
+        for patches in [[], ['8.1'], ['7.3d'], ['unknown'], [None], '7.3c']:
+            self.assertFalse(module.valid_evidence_patches(patches, '7.3c'), patches)
 
     def test_rejects_any_incorrect_current_patch(self):
         for value in ['Parche 7.3a', 'Patch 7.4', '{"patch":"8.1"}', '{"gamePatch":"7.3b"}']:

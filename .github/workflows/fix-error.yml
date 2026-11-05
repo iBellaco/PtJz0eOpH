@@ -171,6 +171,9 @@ jobs:
             --tests 'com.example.CoachRoutineRegressionTest' \
             --tests 'com.example.LiteRTViewerNavigationTest' \
             --tests 'com.example.service.FloatingWindowLifecycleTest' \
+            --tests 'com.example.DraftGeometryStabilityTest' \
+            --tests 'com.example.DraftAutoStopTest' \
+            --tests 'com.example.DraftSessionLifecycleTest' \
             --stacktrace --no-daemon --max-workers=1
 
       - name: Conservar la regresión de la captura reducida
@@ -207,28 +210,11 @@ jobs:
         working-directory: tests/firestore
         run: npx firebase emulators:exec --only firestore,auth --project demo-coach-tests --config ../../firebase.json 'node rules.test.mjs && node economy-submission.test.mjs && node sponsor-review.test.mjs && node ../../server/economy/test/emulator.integration.mjs'
 
-  targeted-red-magic-release:
-    if: github.event_name == 'workflow_dispatch' && inputs.scanner_regressions
+  shared-release-apks:
     needs: catalog-preflight
-    name: Errores conocidos en release (${{ matrix.suite }})
+    name: Compilar APK release una vez para todas las pruebas instaladas
     runs-on: ubuntu-latest
-    timeout-minutes: 50
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - suite: titulos-cortos
-            preflight: 'true'
-            targets: 'sequence-49-enemy-first,sequence-56-ally-first,sequence-63-enemy-first'
-          - suite: redmagic-secuencia-completa
-            preflight: 'false'
-            targets: 'sequence-0-enemy-first'
-          - suite: xiaomi-secuencia-completa
-            preflight: 'false'
-            targets: 'sequence-42-ally-first'
-          - suite: espanol-instalado
-            preflight: 'false'
-            targets: ''
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v5
       - &fix-release-java
@@ -286,6 +272,51 @@ jobs:
           ./gradlew :app:assembleReleaseAndroidTest -PcoachInstrumentedBuildType=release \
             -Dorg.gradle.jvmargs="-Xmx4096m -XX:MaxMetaspaceSize=1024m -Dfile.encoding=UTF-8 -Djava.awt.headless=true" \
             --max-workers=1 --stacktrace --no-daemon -x lint -x lintVitalRelease
+      - name: Compartir ambos APK de prueba con los emuladores
+        uses: actions/upload-artifact@v5
+        with:
+          name: fix-error-shared-release-apks
+          path: |
+            app/build/outputs/apk/release/app-release.apk
+            app/build/outputs/apk/androidTest/release/app-release-androidTest.apk
+          if-no-files-found: error
+          retention-days: 3
+
+  targeted-red-magic-release:
+    if: github.event_name == 'workflow_dispatch' && inputs.scanner_regressions
+    needs: [catalog-preflight, shared-release-apks]
+    name: Errores conocidos en release (${{ matrix.suite }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - suite: titulos-cortos
+            preflight: 'true'
+            targets: 'sequence-49-enemy-first,sequence-56-ally-first,sequence-63-enemy-first'
+          - suite: redmagic-secuencia-completa
+            preflight: 'false'
+            targets: 'sequence-0-enemy-first'
+          - suite: xiaomi-secuencia-completa
+            preflight: 'false'
+            targets: 'sequence-42-ally-first'
+          - suite: espanol-instalado
+            preflight: 'false'
+            targets: ''
+    steps:
+      - uses: actions/checkout@v5
+      - *fix-release-java
+      - *fix-release-local-config
+      - name: Recuperar los APK release compartidos
+        uses: actions/download-artifact@v4
+        with:
+          name: fix-error-shared-release-apks
+          path: app/build/outputs/apk/
+      - name: Preparar el plan exacto de secuencias de prueba
+        run: |
+          mkdir -p app/build/generated/scanner-sequence-assets
+          cp app/src/test/resources/scanner/targeted-sequence-plan.json app/build/generated/scanner-sequence-assets/scanner-sequence-plan.json
       - &fix-release-kvm
         name: Activar aceleración del emulador
         run: |
@@ -326,7 +357,7 @@ jobs:
           retention-days: 14
 
   targeted-installed-vi:
-    needs: catalog-preflight
+    needs: [catalog-preflight, shared-release-apks]
     name: Regresión instalada de Vi y secuencia reducida
     runs-on: ubuntu-latest
     timeout-minutes: 40
@@ -334,13 +365,15 @@ jobs:
       - uses: actions/checkout@v5
       - *fix-release-java
       - *fix-release-local-config
-      - *fix-release-gradle
-      - *fix-release-sign
-      - name: Preparar el caso exacto que falló en validación
+      - name: Recuperar los mismos APK release verificados
+        uses: actions/download-artifact@v4
+        with:
+          name: fix-error-shared-release-apks
+          path: app/build/outputs/apk/
+      - name: Preparar el plan exacto de secuencias de prueba
         run: |
           mkdir -p app/build/generated/scanner-sequence-assets
           cp app/src/test/resources/scanner/targeted-sequence-plan.json app/build/generated/scanner-sequence-assets/scanner-sequence-plan.json
-      - *fix-release-build
       - *fix-release-kvm
       - uses: ./.github/actions/prepare-emulator
       - name: Comprobar retratos y la secuencia exacta pendiente

@@ -572,7 +572,7 @@ fun DraftAnalysisTab(
                 },
                 modifier = Modifier
                     .weight(0.9f)
-                    .height(44.dp)
+                    .height(48.dp)
                     .testTag("clear_draft_button"),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = DangerRedSurface,

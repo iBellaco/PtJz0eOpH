@@ -418,10 +418,11 @@ object DraftVisionScanner {
         if (!manual && (refreshGeometry || lastAlignmentAt == 0L || now-lastAlignmentAt >= 2000)) {
             // Always measure against the viewport baseline. Feeding the previous
             // estimate back as the baseline compounds 0.8/1.2 scale corrections.
+            var enemyMeasured = false
             val measured = DraftRingAlignment.align(bitmap, base,
                 overlayForFrame(bitmap.width, bitmap.height), showCalibrationBoxes.value,
-                previous = alignedConfigFlow.value)
-            alignedConfigFlow.value = geometryStability.update(measured)
+                previous = alignedConfigFlow.value, onEnemyMeasured = { enemyMeasured = true })
+            alignedConfigFlow.value = geometryStability.update(measured, enemyMeasured)
             lastAlignmentAt = now
         }
         alignedFrameSizeFlow.value = bitmap.width to bitmap.height

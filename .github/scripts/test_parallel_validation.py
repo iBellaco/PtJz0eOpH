@@ -143,16 +143,34 @@ class ParallelValidationTest(unittest.TestCase):
     def test_main_test_build_runs_full_gate_without_official_release(self):
         inputs = self.workflow['on']['workflow_dispatch']['inputs']
         self.assertEqual(False, inputs['test_build']['default'])
+        find = self.step('find-validated-apk', 'Find a fully validated APK with identical source files')
+        self.assertIn('!inputs.test_build', find['if'])
+        self.assertIn("github.ref != 'refs/heads/main'", find['if'])
         build = self.step('build-apk', 'Build obfuscated release APK')
         self.assertIn('TEST_VERSION_ARG=(-PcoachTestIteration=1)', build['run'])
         self.assertEqual("${{ inputs.test_build && 'true' || 'false' }}", build['env']['COACH_TEST_BUILD'])
-        for name in ('Validate production version is newer than the last release',
-                     'Check access to the persistent signing identity'):
-            self.assertIn('!inputs.test_build', self.step('find-validated-apk', name)['if'])
+        self.assertIn('!inputs.test_build', self.step('find-validated-apk',
+            'Validate production version is newer than the last release')['if'])
+        self.assertNotIn('!inputs.test_build', self.step('find-validated-apk',
+            'Check access to the persistent signing identity')['if'])
+        restore = self.step('build-apk', 'Restore persistent debug keystore')['env']
+        self.assertIn("github.ref == 'refs/heads/main'", restore['COACH_REQUIRE_PERSISTENT_SIGNING'])
+        self.assertIn("github.ref == 'refs/heads/coach-validacion'", restore['COACH_REQUIRE_PERSISTENT_SIGNING'])
+        self.assertNotIn('inputs.test_build', restore['COACH_ALLOW_EPHEMERAL_TEST_SIGNING'])
+        self.assertNotIn('inputs.test_build', build['env']['COACH_ALLOW_EPHEMERAL_TEST_SIGNING'])
         for name in ('Verify the validated APK still carries the persistent signature',
                      'Create or Update GitHub Release'):
             self.assertIn('!inputs.test_build', self.step('build-and-release', name)['if'])
         self.assertEqual('inputs.test_build', self.step('build-and-release', 'Upload test APK')['if'])
+        verify = self.step('build-and-release', 'Verify persistent signature of test APK')
+        self.assertIn("github.ref == 'refs/heads/main'", verify['if'])
+        self.assertIn('verify-apk-signing.py', verify['run'])
+        self.assertEqual('true', verify['env']['COACH_REQUIRE_APK_PROVENANCE'])
+        publish = self.step('build-and-release', 'Publish direct test downloads')
+        self.assertIn("github.ref == 'refs/heads/main'", publish['if'])
+        self.assertIn('--prerelease --latest=false', publish['run'])
+        self.assertIn('steps.test_delivery.outputs.project_zip', publish['run'])
+        self.assertIn('Coach-${TEST_VERSION}.apk', publish['run'])
         download = self.step('build-and-release', 'Download test APK')['with']
         self.assertEqual('${{ needs.find-validated-apk.outputs.run_id || github.run_id }}', download['run-id'])
         self.assertEqual('${{ secrets.GITHUB_TOKEN }}', download['github-token'])

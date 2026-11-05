@@ -11,26 +11,35 @@ internal class DraftGeometryStability {
     }
     private val accepted = arrayOfNulls<Column>(6)
     private val pending = arrayOfNulls<Column>(6)
+    private var enemyLocked = false
 
     fun reset() {
         accepted.fill(null)
         pending.fill(null)
+        enemyLocked = false
     }
 
-    fun update(candidate: VisionCalibrationConfig): VisionCalibrationConfig {
+    fun update(candidate: VisionCalibrationConfig, enemyMeasured: Boolean = true): VisionCalibrationConfig {
         fun select(side: Int, next: Column): Column {
             val old = accepted[side]
+            if (side == 5 && !enemyMeasured) {
+                pending[side] = null
+                return old ?: next
+            }
+            if (side == 5 && enemyLocked && old != null) return old
             if (old == null) {
                 accepted[side] = next
                 return next
             }
             if (old.near(next)) {
                 pending[side] = null
+                if (side == 5) enemyLocked = true
                 return old
             }
             if (pending[side]?.near(next) == true) {
                 accepted[side] = next
                 pending[side] = null
+                if (side == 5) enemyLocked = true
                 return next
             }
             pending[side] = next

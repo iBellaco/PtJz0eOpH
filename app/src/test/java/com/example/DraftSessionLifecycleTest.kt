@@ -16,6 +16,33 @@ import org.robolectric.annotation.Config
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk=[34],application=Application::class)
 class DraftSessionLifecycleTest {
+    @Test fun clearClosesChampionAndRejectsResultsFromPreviousScanAfterRestart() {
+        val ctx = RuntimeEnvironment.getApplication()
+        val hud = OverlayState()
+        hud.autoScanEnabled = true
+        val previous = hud.scanGeneration
+        hud.selectedChampionDetail = Champion(id="sona")
+        hud.showChampionPickerForSlot = true to 0
+        hud.clearDraftAndCrops(ctx)
+        assertNull(hud.selectedChampionDetail)
+        assertNull(hud.showChampionPickerForSlot)
+        assertFalse(hud.acceptsScanResult(previous))
+        hud.startAutomaticScan()
+        try {
+            assertFalse(hud.acceptsScanResult(previous))
+            assertTrue(hud.acceptsScanResult(hud.scanGeneration))
+        } finally { hud.autoScanEnabled = false }
+    }
+    @Test fun mainHubClearPreservesFiveEmptyRoleSlotsPerTeam() {
+        val session = com.example.ui.screens.DraftSessionManager
+        session.clearAll()
+        assertEquals(5, session.allySlots.size)
+        assertEquals(5, session.enemySlots.size)
+        assertEquals(5, session.allySlots.map { it.assignedRole }.distinct().size)
+        assertTrue((session.allySlots + session.enemySlots).all {
+            it.champion == com.example.data.WildRiftRepository.EMPTY_CHAMPION
+        })
+    }
     @Test fun diagnosticEnabledCannotWriteAfterAutomaticScanStops() {
         val ctx = RuntimeEnvironment.getApplication()
         val hud = OverlayState()
