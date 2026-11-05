@@ -44,6 +44,18 @@ private fun sponsorDecisionRejectLabel(context: android.content.Context, request
     if (requestType == "SPONSOR") context.getString(com.example.R.string.sponsor_reject_refund_blue)
     else context.getString(com.example.R.string.sponsor_reject_generic)
 
+internal fun isSponsorModerationRow(row: Map<String, Any>): Boolean =
+    row["requestType"]?.toString().equals("SPONSOR", ignoreCase = true) ||
+        row["type"]?.toString().equals("SPONSOR", ignoreCase = true) ||
+        row["type"]?.toString().equals("PATROCINADOR", ignoreCase = true) ||
+        row["tag"]?.toString().equals("PATROCINADOR", ignoreCase = true) ||
+        row["tag"]?.toString().equals("PUBLICIDAD", ignoreCase = true)
+
+internal fun sponsorModerationRowId(row: Map<String, Any>): String? =
+    listOf("id", "sponsorId", "operationId").asSequence()
+        .mapNotNull { row[it]?.toString()?.takeIf(String::isNotBlank) }
+        .firstOrNull()
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AdminModeratorRequestsDialog(
@@ -73,7 +85,13 @@ fun AdminModeratorRequestsDialog(
                 // Remove the resolved card immediately. The realtime listener
                 // will reconcile it with the server and repopulate it only if
                 // the decision was not committed.
-                requests = requests.filterNot { it["id"] == id }
+                // A sponsor can appear both in the live sponsor feed and in an
+                // older moderator/support snapshot. Remove every representation
+                // of the same advertisement so the resolved card cannot remain
+                // over the dialog after approval or rejection.
+                requests = requests.filterNot {
+                    isSponsorModerationRow(it) && sponsorModerationRowId(it) == id
+                }
                 Toast.makeText(context, if (approve) com.example.util.appTr("Anuncio aprobado y visible en el panel de anuncios")
                     else context.getString(com.example.R.string.sponsor_rejection_done), Toast.LENGTH_SHORT).show()
             } catch (cancelled: kotlinx.coroutines.CancellationException) {
@@ -114,12 +132,12 @@ fun AdminModeratorRequestsDialog(
                             data["id"] = doc.id
                             combinedMap[doc.id] = data
                         }
-                        requests = requests.filter { it["requestType"] == "SPONSOR" } + combinedMap.values
+                        requests = requests.filterNot(::isSponsorModerationRow) + combinedMap.values.filterNot(::isSponsorModerationRow)
                             .sortedByDescending { (it["timestamp"] as? Number)?.toLong() ?: 0L }
                         isLoading = false
                     }
                     .addOnFailureListener {
-                        requests = requests.filter { it["requestType"] == "SPONSOR" } + combinedMap.values
+                        requests = requests.filterNot(::isSponsorModerationRow) + combinedMap.values.filterNot(::isSponsorModerationRow)
                             .sortedByDescending { (it["timestamp"] as? Number)?.toLong() ?: 0L }
                         isLoading = false
                     }
@@ -133,7 +151,7 @@ fun AdminModeratorRequestsDialog(
                             data["id"] = doc.id
                             data
                         }.sortedByDescending { (it["timestamp"] as? Number)?.toLong() ?: 0L }
-                        requests = requests.filter { it["requestType"] == "SPONSOR" } + list
+                        requests = requests.filterNot(::isSponsorModerationRow) + list.filterNot(::isSponsorModerationRow)
                         isLoading = false
                     }
                     .addOnFailureListener { e ->
@@ -149,7 +167,7 @@ fun AdminModeratorRequestsDialog(
                 "requestType" to "SPONSOR", "status" to "PENDIENTE",
                 "targetName" to (row["title"] ?: ""), "targetEmail" to (row["sponsorEmail"] ?: ""),
                 "newValue" to (row["content"] ?: ""), "timestamp" to (row["createdAt"] ?: 0L)) }
-            requests = requests.filterNot { it["requestType"] == "SPONSOR" } + sponsors
+            requests = requests.filterNot(::isSponsorModerationRow) + sponsors
         }, onError = {
             Toast.makeText(context, context.getString(com.example.R.string.sponsor_review_error), Toast.LENGTH_LONG).show()
         })
