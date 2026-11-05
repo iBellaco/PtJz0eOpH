@@ -28,11 +28,9 @@ class ParallelValidationTest(unittest.TestCase):
         jobs = workflow['jobs']
         recheck = jobs['targeted-red-magic-release']
         matrix = recheck['strategy']['matrix']['include']
-        self.assertIn('fromJSON(inputs.spanish_only &&', matrix)
-        selected, full = [json.loads(value) for value in re.findall(r"'([^']*)'", matrix)]
-        self.assertEqual([{'suite': 'espanol-instalado', 'preflight': 'false', 'targets': ''}], selected)
         self.assertEqual({'espanol-instalado', 'titulos-cortos', 'redmagic-secuencia-completa',
-                          'xiaomi-secuencia-completa'}, {entry['suite'] for entry in full})
+                          'xiaomi-secuencia-completa'}, {entry['suite'] for entry in matrix})
+        self.assertIn("matrix.suite == 'espanol-instalado'", recheck['if'])
         self.assertIn('shared-release-apks', recheck['needs'])
         self.assertNotIn('if', jobs['shared-release-apks'])
         self.assertNotIn('if', jobs['targeted-last-pick'])

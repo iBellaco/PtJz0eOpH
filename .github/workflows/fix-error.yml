@@ -290,7 +290,7 @@ jobs:
           retention-days: 3
 
   targeted-red-magic-release:
-    if: github.event_name == 'workflow_dispatch' && inputs.scanner_regressions
+    if: github.event_name == 'workflow_dispatch' && inputs.scanner_regressions && (!inputs.spanish_only || matrix.suite == 'espanol-instalado')
     needs: [catalog-preflight, shared-release-apks]
     name: Errores conocidos en release (${{ matrix.suite }})
     runs-on: ubuntu-latest
@@ -298,7 +298,19 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        include: ${{ fromJSON(inputs.spanish_only && '[{"suite":"espanol-instalado","preflight":"false","targets":""}]' || '[{"suite":"titulos-cortos","preflight":"true","targets":"sequence-49-enemy-first,sequence-56-ally-first,sequence-63-enemy-first"},{"suite":"redmagic-secuencia-completa","preflight":"false","targets":"sequence-0-enemy-first"},{"suite":"xiaomi-secuencia-completa","preflight":"false","targets":"sequence-42-ally-first"},{"suite":"espanol-instalado","preflight":"false","targets":""}]') }}
+        include:
+          - suite: titulos-cortos
+            preflight: 'true'
+            targets: 'sequence-49-enemy-first,sequence-56-ally-first,sequence-63-enemy-first'
+          - suite: redmagic-secuencia-completa
+            preflight: 'false'
+            targets: 'sequence-0-enemy-first'
+          - suite: xiaomi-secuencia-completa
+            preflight: 'false'
+            targets: 'sequence-42-ally-first'
+          - suite: espanol-instalado
+            preflight: 'false'
+            targets: ''
     steps:
       - uses: actions/checkout@v5
       - *fix-release-java
