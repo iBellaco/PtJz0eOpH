@@ -34,12 +34,12 @@ class RequiredVersionRegressionTest {
         clear()
         assertNull(AppUpdateManager.updateInfo.value)
     }
-    @Test fun `ordinary new release can be deferred`() {
+    @Test fun `every newer production release blocks deferral`() {
         context.getSharedPreferences("published_app_version", 0).edit()
             .putString("tag", "v1.1.99.999-b99999").remove("minimum_supported_code").commit()
         AppUpdateManager.restore(context)
-        assertFalse(AppUpdateManager.updateInfo.value!!.isMandatory)
+        assertTrue(AppUpdateManager.updateInfo.value!!.isMandatory)
         AppUpdateManager.dismissAlert()
-        assertNull(AppUpdateManager.updateInfo.value)
+        assertTrue(AppUpdateManager.updateInfo.value!!.isUpdateAvailable)
     }
 }
