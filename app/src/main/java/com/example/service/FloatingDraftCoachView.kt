@@ -885,7 +885,7 @@ private fun CoachContent(
         ) {
             Button(
                 onClick = onSaveDraftClick,
-                modifier = Modifier.weight(1.1f).height(28.dp),
+                modifier = Modifier.weight(1f).height(48.dp),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = if (isSavedRecently) Color(0xFF00FF7F).copy(alpha = 0.2f) else HextechGold.copy(alpha = 0.15f)
                 ),
@@ -918,7 +918,7 @@ private fun CoachContent(
 
             Button(
                 onClick = onClearAll,
-                modifier = Modifier.weight(0.9f).heightIn(min = 48.dp).testTag("overlay_clear_draft"),
+                modifier = Modifier.weight(1f).height(48.dp).testTag("overlay_clear_draft"),
                 colors = ButtonDefaults.buttonColors(containerColor = DangerRed.copy(alpha = 0.15f)),
                 border = BorderStroke(1.dp, DangerRed.copy(alpha = 0.7f)),
                 contentPadding = androidx.compose.foundation.layout.PaddingValues(0.dp)
