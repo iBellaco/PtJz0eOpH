@@ -9,6 +9,10 @@ on:
         description: Ejecutar también las regresiones OCR instaladas (opcional y lento)
         type: boolean
         default: false
+      spanish_only:
+        description: Recompilar y comprobar geometría y la suite instalada en español pendiente
+        type: boolean
+        default: false
 
 concurrency:
   group: coach-fix-error-${{ github.ref }}
@@ -111,6 +115,8 @@ jobs:
           from importlib.machinery import SourceFileLoader
           runner = SourceFileLoader('regression', 'tools/run-jvm-regression.py').load_module()
           runner.verify([
+              'com.example.DraftMultideviceBoxesTest',
+              'com.example.CaptureFrameDecoderTest',
               'com.example.DraftGeometryPreviewTest',
               'com.example.DraftGeometryStabilityTest',
               'com.example.DraftPreviewAlignmentTest',
@@ -188,6 +194,7 @@ jobs:
           retention-days: 14
 
   sponsor-permissions:
+    if: ${{ !inputs.spanish_only }}
     needs: catalog-preflight
     name: Solicitudes, esencias y moderación con las reglas reales
     runs-on: ubuntu-latest
@@ -283,7 +290,7 @@ jobs:
           retention-days: 3
 
   targeted-red-magic-release:
-    if: github.event_name == 'workflow_dispatch' && inputs.scanner_regressions
+    if: github.event_name == 'workflow_dispatch' && inputs.scanner_regressions && !inputs.spanish_only
     needs: [catalog-preflight, shared-release-apks]
     name: Errores conocidos en release (${{ matrix.suite }})
     runs-on: ubuntu-latest
@@ -356,7 +363,60 @@ jobs:
           if-no-files-found: warn
           retention-days: 14
 
+  targeted-spanish-recheck:
+    if: github.event_name == 'workflow_dispatch' && inputs.scanner_regressions && inputs.spanish_only
+    needs: [catalog-preflight, shared-release-apks]
+    name: Revisión instalada en español (corrección dirigida)
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    steps:
+      - uses: actions/checkout@v5
+      - *fix-release-java
+      - *fix-release-local-config
+      - name: Recuperar los APK release compartidos
+        uses: actions/download-artifact@v4
+        with:
+          name: fix-error-shared-release-apks
+          path: app/build/outputs/apk/
+      - name: Preparar el plan exacto de secuencias de prueba
+        run: |
+          mkdir -p app/build/generated/scanner-sequence-assets
+          cp app/src/test/resources/scanner/targeted-sequence-plan.json app/build/generated/scanner-sequence-assets/scanner-sequence-plan.json
+      - *fix-release-kvm
+      - uses: ./.github/actions/prepare-emulator
+      - name: Reproducir únicamente la suite instalada en español
+        uses: reactivecircus/android-emulator-runner@v2
+        env:
+          COACH_SEQUENCE_SHARD: '0'
+          COACH_SEQUENCE_PREFLIGHT: 'false'
+          COACH_SEQUENCE_TARGETS: ''
+          COACH_SEQUENCE_BUILD_TYPE: release
+          COACH_ISOLATED_SUITE: espanol-instalado
+        with:
+          api-level: 34
+          arch: x86_64
+          target: google_apis
+          disable-animations: true
+          emulator-boot-timeout: 300
+          emulator-options: -no-window -gpu swiftshader -no-snapshot -noaudio -no-boot-anim
+          script: |
+            for attempt in 1 2 3; do COACH_ACCOUNT_DELETION_ATTEMPT="$attempt" python3 tools/verify-account-deletion-device.py || exit 1; done
+            python3 tools/verify-draft-rival-names-device.py
+            COACH_AUDIT_LANGUAGE=es python3 tools/audit-portuguese-device.py
+            python3 tools/verify-overlay-history-device.py
+      - name: Conservar evidencia de la revisión española
+        if: always()
+        uses: actions/upload-artifact@v5
+        with:
+          name: fix-error-spanish-recheck-evidence
+          path: |
+            app/build/reports/spanish-device/
+            app/build/reports/scanner-sequence/
+          if-no-files-found: warn
+          retention-days: 14
+
   targeted-installed-vi:
+    if: ${{ !inputs.spanish_only }}
     needs: [catalog-preflight, shared-release-apks]
     name: Regresión instalada de Vi y secuencia reducida
     runs-on: ubuntu-latest
@@ -408,7 +468,7 @@ jobs:
 
   cleanup-history:
     if: always()
-    needs: [catalog-preflight, targeted-last-pick, sponsor-permissions, targeted-red-magic-release, targeted-installed-vi]
+    needs: [catalog-preflight, targeted-last-pick, sponsor-permissions, targeted-red-magic-release, targeted-spanish-recheck, targeted-installed-vi]
     runs-on: ubuntu-latest
     concurrency:
       group: coach-actions-history

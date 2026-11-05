@@ -24,6 +24,64 @@ import org.junit.runner.RunWith
 /** Real pixels from the reported name bands, without account/player names. */
 @RunWith(AndroidJUnit4::class)
 class DraftRivalNameInstalledTest {
+    @Test fun heightAnchoredColumnsReadNineTitlesAcrossSyntheticSurfaces() = kotlinx.coroutines.runBlocking {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val scanner = com.example.service.screen.DraftVisionScanner
+        val previous = scanner.calibrationConfig
+        val times = mutableListOf<Long>()
+        val allyNames = listOf("SWAIN", "KAYN", "VOLIBEAR", "JHIN", "DRAVEN")
+        val enemyNames = listOf("ZYRA", "VAYNE", "SENNA", "POPPY", "Jugador 5")
+        try {
+            scanner.warmUpTextRecognizer()
+            // Synthetic surfaces exercise geometry and native OCR, not actual
+            // Wild Rift/overlay compatibility on these devices.
+            for ((w, h) in listOf(1280 to 720, 1560 to 720, 1600 to 720,
+                1680 to 720, 1600 to 1000, 1024 to 768)) {
+                scanner.resetSlotMemory()
+                scanner.updateCalibration(context, com.example.service.screen.VisionCalibrationConfig())
+                val frame = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
+                try {
+                    val canvas = android.graphics.Canvas(frame)
+                    canvas.drawColor(android.graphics.Color.BLACK)
+                    val leftInset = 40f
+                    val rightEdge = w - 60f
+                    val paint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG)
+                    paint.color = android.graphics.Color.rgb(30, 35, 45)
+                    canvas.drawRect(leftInset, 0f, rightEdge, h.toFloat(), paint)
+                    paint.color = android.graphics.Color.WHITE
+                    paint.textSize = h * .025f
+                    paint.typeface = android.graphics.Typeface.DEFAULT_BOLD
+                    for (ally in listOf(true, false)) for (slot in 0..4) {
+                        // Independent reference measurements (1280 x 579),
+                        // anchored to the visible edges rather than capture width.
+                        val ys = if (ally) listOf(.188f, .324f, .458f, .591f, .725f)
+                            else listOf(.188f, .324f, .457f, .590f, .722f)
+                        val x = if (ally) leftInset + h * .23f else rightEdge - h * .44f
+                        val y = (ys[slot] - .015f) * h
+                        canvas.drawText((if (ally) allyNames else enemyNames)[slot], x, y, paint)
+                        canvas.drawText("ANNIE", x, y + h * .045f, paint)
+                    }
+                    var latest: com.example.service.screen.DraftScanResult? = null
+                    repeat(3) {
+                        val started = android.os.SystemClock.elapsedRealtime()
+                        latest = scanner.scanDraftFromBitmap(frame, context, namesOnly = true, quickTitlePass = true)
+                        times += android.os.SystemClock.elapsedRealtime() - started
+                        assertNull(latest!!.ocrFailure)
+                        assertTrue(latest!!.ocrRequestCount in 1..2)
+                    }
+                    val ids = latest!!.alliesBySlot.values.map { it.id } + latest!!.enemiesBySlot.values.map { it.id }
+                    assertEquals("Synthetic $w x $h: $ids", 9, ids.distinct().size)
+                    assertFalse(ids.contains("annie"))
+                    assertFalse(latest!!.isLastPickConfirmed)
+                } finally { frame.recycle() }
+            }
+            val sorted = times.sorted()
+            InstrumentationRegistry.getInstrumentation().sendStatus(2, android.os.Bundle().apply {
+                putString("stream", "\nCOLUMN_OCR_BENCHMARK: synthetic emulator; samples=${times.size}; medianMs=${sorted[sorted.size / 2]}; p95Ms=${sorted[((sorted.size - 1) * .95).toInt()]}; targetMs=150\n")
+            })
+        } finally { scanner.resetSlotMemory(); scanner.updateCalibration(context, previous) }
+    }
+
     @Test fun slotResetClearsPublishedOrderForBothSidesEvenWhenKeepingBans() {
         val scanner = com.example.service.screen.DraftVisionScanner
         try {
