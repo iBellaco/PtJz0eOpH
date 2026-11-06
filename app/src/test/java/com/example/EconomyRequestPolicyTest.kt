@@ -12,6 +12,13 @@ class EconomyRequestPolicyTest {
             assertEquals(action !in setOf("CLEANUP", "REDEEM"), EconomyRequestPolicy.canQueue(action, administrator = true))
         }
     }
+    @Test fun administratorsCanRetryPrivilegedQueueRowsWithoutRetryingSponsorSubmissions() {
+        for (action in listOf("RESOLVE", "SPONSOR_RESOLVE", "ADJUST", "PREMIUM_GRANT", "PREMIUM_REMOVE", "ROLE")) {
+            assertTrue(action, EconomyRequestPolicy.canRetryQueuedDirect(action, administrator = true))
+            assertFalse(action, EconomyRequestPolicy.canRetryQueuedDirect(action, administrator = false))
+        }
+        assertFalse(EconomyRequestPolicy.canRetryQueuedDirect("SPONSOR", administrator = true))
+    }
     @Test fun sponsorDecisionWaitsForTheCommittedResult() {
         assertTrue(EconomyRequestPolicy.shouldAwaitQueuedResult("SPONSOR_RESOLVE", requested = true))
         assertTrue(EconomyRequestPolicy.shouldAwaitQueuedResult("SPONSOR", requested = true))

@@ -13,7 +13,19 @@ object EconomyRequestPolicy {
         "RESOLVE", "SPONSOR_RESOLVE", "ADJUST", "PREMIUM_GRANT", "PREMIUM_REMOVE", "ROLE"
     )
 
+    /** Privileged retries reuse the same server id and are therefore idempotent. */
+    private val privilegedDirectRetryActions = setOf(
+        "RESOLVE", "SPONSOR_RESOLVE", "ADJUST", "PREMIUM_GRANT", "PREMIUM_REMOVE", "ROLE"
+    )
+
     fun canQueue(action: String, administrator: Boolean): Boolean = action in queueableActions
+
+    /**
+     * An administrator may recover a queued privileged command through the
+     * callable service. Sponsor submissions stay in moderation by design.
+     */
+    fun canRetryQueuedDirect(action: String, administrator: Boolean): Boolean =
+        administrator && action in privilegedDirectRetryActions
 
     /**
      * Sponsor moderation must wait for the durable result. Returning as soon as
