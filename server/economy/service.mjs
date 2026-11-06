@@ -16,6 +16,7 @@ function publicSponsorNotice(id, data) {
 export async function executeEconomy(db, auth, raw, clock = Date.now, {requestedAtMillis, identities, sourceRequestId} = {}) {
   ensure(auth && auth.uid && auth.token?.firebase?.sign_in_provider !== 'anonymous' && auth.token?.email !== 'coach.guest.reader@gmail.com', 'unauthenticated', 'Inicia sesión');
   const input = {...validateInput(raw)}, admin = auth.token?.admin === true;
+  const queuedSourceRequestId = input.queuedRequestId;
   ensure(!adminActions.has(input.action) || admin, 'permission-denied', 'No tienes permisos para esta operación');
   // Retired in every client, including older installed versions. Existing settlements remain recoverable.
   ensure(input.action !== 'REDEEM', 'failed-precondition', 'Esta operación ya no está disponible');
@@ -105,9 +106,17 @@ export async function executeEconomy(db, auth, raw, clock = Date.now, {requested
       const notices = (registry.get('notices') ?? []).filter(n => n && n.id !== input.sponsorId);
       // A direct moderation call can resolve an ad that was first submitted
       // through the durable queue. Close that original row in this transaction
-      // so the sponsor does not keep seeing a stale request.
-      const sourceRows = await tx.get(db.collection('economy_requests')
-        .where('operationId', '==', input.sponsorId).limit(20));
+      // so the sponsor does not keep seeing a stale request. Do not run a
+      // collection query inside the transaction: on production it may require
+      // an index and leaves the decision in the fallback queue for minutes.
+      // Queue documents use one of these deterministic IDs (the first one is
+      // supplied by the worker when it is reconciling an explicit request).
+      const sourceIds = [...new Set([sourceRequestId, queuedSourceRequestId, `${uid}~${input.sponsorId}`, uid].filter(Boolean))];
+      const sourceRows = [];
+      for (const sourceId of sourceIds) {
+        const source = await tx.get(db.doc(`economy_requests/${sourceId}`));
+        if (source.exists) sourceRows.push(source);
+      }
       // Firestore requires every read before the first write, including queue reconciliation.
       const chargeSnapshot = !input.approved
         ? await tx.get(profile.collection('economy_operations').doc(input.sponsorId)) : null;
@@ -117,7 +126,7 @@ export async function executeEconomy(db, auth, raw, clock = Date.now, {requested
       const sourceOutcome = {operationId: input.sponsorId, status: 'COMPLETED',
         result: {ok: true, resolvedByModeration: true, approved: input.approved},
         completedAt: serverTime()};
-      for (const source of sourceRows.docs) {
+      for (const source of sourceRows) {
         const sourceData = source.data();
         if (sourceData.userId && sourceData.payload?.action === 'SPONSOR' &&
             ['PENDING', 'PROCESSING', 'REVIEW'].includes(sourceData.status)) {

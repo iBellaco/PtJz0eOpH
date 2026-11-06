@@ -443,6 +443,10 @@ fun DraftCalibrationPanel(
                     DraftVisionScanner.resetCalibration(context)
                     config = DraftVisionScanner.alignedConfigFlow.value
                 },
+                onSave = {
+                    DraftVisionScanner.saveCalibrationForDevice(context)
+                    Toast.makeText(context, tr("Coordenadas guardadas en este dispositivo"), Toast.LENGTH_SHORT).show()
+                },
                 report = { CalibrationSendButton() },
                 directionTagPrefix = "draft_calibration",
                 sizeTagPrefix = "draft_calibration_size",

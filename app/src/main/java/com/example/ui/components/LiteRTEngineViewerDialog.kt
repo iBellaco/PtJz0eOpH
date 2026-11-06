@@ -521,7 +521,7 @@ fun LiteRTEngineViewerDialog(
 
                         Spacer(modifier = Modifier.height(8.dp))
 
-                        // Selector de Círculo Objetivo (Chips horizontales)
+                        // Selector de objetivo organizado por columna, slot y baneos.
                         Text(
                             text = tr("1. Selecciona el círculo a ajustar:"),
                             color = Color(0xFFE2E8F0),
@@ -529,44 +529,48 @@ fun LiteRTEngineViewerDialog(
                             fontWeight = FontWeight.Bold
                         )
                         Spacer(modifier = Modifier.height(4.dp))
+                        @Composable
+                        fun targetChip(target: CircleTarget, accent: Color) {
+                            val isSel = selectedTarget == target
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(6.dp))
+                                    .background(if (isSel) accent.copy(alpha = 0.28f) else Color(0xFF0F172A))
+                                    .border(1.dp, if (isSel) accent else Color(0xFF334155), RoundedCornerShape(6.dp))
+                                    .coachClickable { selectedTarget = target }
+                                    .widthIn(min = 74.dp)
+                                    .heightIn(min = 48.dp)
+                                    .padding(horizontal = 8.dp, vertical = 4.dp)
+                                    .testTag("calibration_target_${target.name.lowercase()}")
+                            ) {
+                                Text(
+                                    text = com.example.util.tr(target.title),
+                                    color = if (isSel) accent else Color(0xFF94A3B8),
+                                    fontSize = 8.5.sp,
+                                    fontWeight = if (isSel) FontWeight.Bold else FontWeight.Normal
+                                )
+                            }
+                        }
                         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             listOf(true, false).forEach { side ->
-                                Column(Modifier.weight(1f).testTag(if (side) "calibration_allies" else "calibration_rivals")) {
-                                    Text(tr(if (side) "Aliados" else "Rivales"),
-                                        color = if (side) Color(0xFF38BDF8) else Color(0xFFEF4444), fontWeight = FontWeight.Bold)
-                                FlowRow(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        horizontalArrangement = Arrangement.spacedBy(4.dp),
-                                        verticalArrangement = Arrangement.spacedBy(4.dp),
-                                        maxItemsInEachRow = 2
-                                    ) {
-                                        CircleTarget.entries.filter { it.isAlly == side }.forEach { target ->
-                                            val isSel = selectedTarget == target
-                                            Box(
-                                                modifier = Modifier
-                                                    .clip(RoundedCornerShape(6.dp))
-                                                    .background(if (isSel) Color(0xFF0284C7).copy(alpha = 0.35f) else Color(0xFF0F172A))
-                                                    .border(
-                                                        1.dp,
-                                                        if (isSel) Color(0xFF38BDF8) else Color(0xFF334155),
-                                                        RoundedCornerShape(6.dp)
-                                                    )
-                                                    .coachClickable { selectedTarget = target }
-                                                    .widthIn(min = 48.dp)
-                                                    .heightIn(min = 48.dp)
-                                                    .padding(horizontal = 8.dp, vertical = 4.dp)
-                                                    .testTag("calibration_target_${target.name.lowercase()}")
-                                            ) {
-                                                Text(
-                                                    text = com.example.util.tr(target.title),
-                                                    color = if (isSel) Color(0xFF38BDF8) else Color(0xFF94A3B8),
-                                                    fontSize = 8.5.sp,
-                                                    fontWeight = if (isSel) FontWeight.Bold else FontWeight.Normal
-                                                )
-                                            }
-                                        }
+                                val accent = if (side) Color(0xFF38BDF8) else Color(0xFFEF4444)
+                                val slots = CircleTarget.entries.filter { it.isAlly == side && it.slotIndex != null }
+                                val bans = CircleTarget.entries.filter { it.isAlly == side && it.isBan }
+                                val column = CircleTarget.entries.first { it.isAlly == side && it.slotIndex == null && !it.isBan }
+                                Column(
+                                    Modifier.weight(1f).testTag(if (side) "calibration_allies" else "calibration_rivals"),
+                                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                                ) {
+                                    Text(tr(if (side) "Aliados" else "Rivales"), color = accent, fontWeight = FontWeight.Bold)
+                                    targetChip(column, accent)
+                                    Text(tr("Slots"), color = Color(0xFFCBD5E1), fontSize = 9.sp, fontWeight = FontWeight.SemiBold)
+                                    FlowRow(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalArrangement = Arrangement.spacedBy(4.dp), maxItemsInEachRow = 2) {
+                                        slots.forEach { targetChip(it, accent) }
                                     }
-
+                                    Text(tr("Baneos"), color = Color(0xFFCBD5E1), fontSize = 9.sp, fontWeight = FontWeight.SemiBold)
+                                    FlowRow(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalArrangement = Arrangement.spacedBy(4.dp), maxItemsInEachRow = 2) {
+                                        bans.forEach { targetChip(it, accent) }
+                                    }
                                 }
                             }
                         }
@@ -611,6 +615,10 @@ fun LiteRTEngineViewerDialog(
                             onStep = { calibrationStep = it },
                             onMove = { x, y, size -> modifyDetectionCircle(x, y, size) },
                             onReset = { DraftVisionScanner.resetCalibration(context) },
+                            onSave = {
+                                DraftVisionScanner.saveCalibrationForDevice(context)
+                                Toast.makeText(context, tr("Coordenadas guardadas en este dispositivo"), Toast.LENGTH_SHORT).show()
+                            },
                             report = { CalibrationSendButton() }
                         )
                     }

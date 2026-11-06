@@ -35,6 +35,8 @@ fun CalibrationControls(
     onMove: (Float, Float, Float) -> Unit,
     onReset: () -> Unit,
     report: @Composable () -> Unit,
+    onSave: (() -> Unit)? = null,
+    saveTag: String = "calibration_save_device",
     directionTagPrefix: String = "vision_calibration",
     sizeTagPrefix: String = "calibration_size",
     stepTagPrefix: String = "calibration_step",
@@ -60,6 +62,16 @@ fun CalibrationControls(
                 CoachOutlinedButton(onClick = { onStep(value) }, modifier = Modifier.heightIn(min = 48.dp).testTag("${stepTagPrefix}_${label.replace('.', '_').replace('%', 'p')}")) {
                     Text(if (step == value) "• $label" else label, fontSize = 14.sp)
                 }
+            }
+        }
+        onSave?.let { save ->
+            CoachButton(
+                onClick = save,
+                modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp).testTag(saveTag)
+            ) {
+                Icon(Icons.Default.Save, contentDescription = tr("Guardar coordenadas"))
+                Spacer(Modifier.width(6.dp))
+                Text(tr("Guardar coordenadas en este dispositivo"), modifier = Modifier.weight(1f), textAlign = TextAlign.Center, fontSize = 13.sp)
             }
         }
         report()
@@ -94,15 +106,24 @@ fun CalibrationSendButton() {
                 try {
                     val metrics = context.resources.displayMetrics
                     val snapshot = DraftVisionScanner.calibrationReportSnapshot()
+                    val displayName = account.displayName?.trim().orEmpty()
+                        .ifBlank { account.email?.substringBefore("@")?.trim().orEmpty() }
+                        .ifBlank { "Invocador" }
+                    val coordinates = "usuario=$displayName\n${snapshot.config.toFormattedCoordinatesString()}"
                     val payload = CalibrationReport.build(
                         "${Build.MANUFACTURER} ${Build.MODEL}; API ${Build.VERSION.SDK_INT}",
                         "${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})",
                         "${metrics.widthPixels}x${metrics.heightPixels}; density=${metrics.density}; font=${context.resources.configuration.fontScale}; orientation=${context.resources.configuration.orientation}",
                         if (snapshot.width > 0) "${snapshot.width}x${snapshot.height}" else "not_observed",
-                        snapshot.config.toKotlinCode()
+                        coordinates
                     )
                     val title = if (AppLanguage.current.value == "pt") "Coordenadas do scanner" else "Coordenadas del escáner"
-                    val result = FeedbackRepository.submitFeedback("SOPORTE", title, payload, userName = account.displayName)
+                    val result = FeedbackRepository.submitFeedback(
+                        "COORDENADAS", title, payload,
+                        userName = displayName,
+                        adminOnly = true,
+                        writeUserInboxCopy = false
+                    )
                     sent = result.isSuccess
                     if (sent) {
                         val count = prefs.getInt("sent_$dayKey", 0) + 1

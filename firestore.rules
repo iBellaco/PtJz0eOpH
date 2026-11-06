@@ -347,7 +347,10 @@ service cloud.firestore {
       allow create: if isAdmin() || (verifiedSignedIn() && request.resource.data.get('category', '') == 'MODERATOR_REQUEST' && isModerator()) ||
         (verifiedSignedIn() && request.resource.data.userId == request.auth.uid && (request.resource.data.get('userEmail', '').lower() == request.auth.token.get('email', '').lower() || request.resource.data.get('userEmail', '') == '')
           && (request.resource.data.get('tag', '') != 'VERIFICAR' || validVerificationPhotos())
-          && request.resource.data.staffVisible == !sponsor(request.resource.data)
+          && (request.resource.data.staffVisible == !sponsor(request.resource.data)
+            || (request.resource.data.get('adminOnly', false) == true
+              && request.resource.data.get('tag', '').upper() in ['COORDENADAS', 'CALIBRACION', 'CALIBRAÇÃO']
+              && request.resource.data.staffVisible == false))
           && request.resource.data.status == 'PENDING' && request.resource.data.get('adminReply', '') == ''
           && request.resource.data.get('userCanReply', false) == false
           && request.resource.data.conversation.size() == 2

@@ -242,6 +242,7 @@ try {
     await ref.set({userId:sponsorUid,operationId:id,authTime:Math.floor(Date.now()/1000),status:'PENDING',schema:2,createdAt:Timestamp.now(),payload:{action:'SPONSOR',id,notice,expectedCost:27}});
     const profile=db.doc(`users/${sponsorUid}`), before=(await profile.get()).get('blueEssence');
     const request={action:'SPONSOR_RESOLVE',id:'queued_review_approve',sponsorId:id,approved:true,queuedRequestId:ref.id};
+    await assert.rejects(executeEconomy(db,auth(sponsorUid),request,Date.now,{identities}), /permisos/);
     await executeEconomy(db,admin,request,Date.now,{identities});
     await executeEconomy(db,admin,request,Date.now,{identities});
     assert.equal((await profile.get()).get('blueEssence'),before-27);

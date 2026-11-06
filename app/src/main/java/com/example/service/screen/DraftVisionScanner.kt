@@ -466,6 +466,17 @@ object DraftVisionScanner {
         activeCaptureProfile?.let { newConfig.saveProfileToPrefs(context, it) }
     }
 
+    /** Persiste explícitamente la geometría actual en el perfil de este dispositivo. */
+    @Synchronized
+    fun saveCalibrationForDevice(context: android.content.Context) {
+        val current = calibrationConfig
+        current.saveToPrefs(context)
+        activeCaptureProfile?.let { current.saveProfileToPrefs(context, it) }
+        globalCalibrationConfig = current
+        calibrationConfigFlow.value = current
+        alignedConfigFlow.value = current
+    }
+
     @Synchronized
     fun resetCalibration(context: android.content.Context) {
         calibrationConfig = VisionCalibrationConfig.resetToDefaults(context)
@@ -474,6 +485,7 @@ object DraftVisionScanner {
         alignedConfigFlow.value = calibrationConfig
         alignedBase = null
         activeCaptureProfile = null
+        calibrationConfig.saveToPrefs(context)
     }
 
     private var recognizerInstance: com.google.mlkit.vision.text.TextRecognizer? = null
