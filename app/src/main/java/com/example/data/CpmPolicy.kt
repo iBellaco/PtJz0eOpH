@@ -7,6 +7,12 @@ object CpmPolicy {
         if (!rate.isFinite() || !multiplier.isFinite() || rate < 0 || multiplier < 0) return 0.0
         return impressions.coerceAtLeast(0).toDouble() / 1000 * rate * multiplier
     }
+    /** Revenue earned per 1,000 delivered impressions (RPM). */
+    fun rpm(impressions: Long, revenue: Double): Double = if (impressions > 0 && revenue.isFinite() && revenue >= 0.0) {
+        revenue / impressions.toDouble() * 1000.0
+    } else 0.0
+    fun rpm(impressions: Long, rate: Double, multiplier: Double = 1.0): Double =
+        rpm(impressions, revenue(impressions, rate, multiplier))
     /** set(map, merge) takes a nested map; dots in a notice id must remain part of its key. */
     fun nestedWrite(fields: Map<String, Any>): Map<String, Any> {
         val result = mutableMapOf<String, Any>()

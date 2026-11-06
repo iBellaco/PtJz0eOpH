@@ -119,7 +119,7 @@ jobs:
         if: steps.connection.outputs.method == 'identity' || steps.connection.outputs.method == 'account'
         run: |
           DEPLOY_LOG="$RUNNER_TEMP/coach-functions.log"
-          if tests/firestore/node_modules/.bin/firebase deploy --only functions:economy:coachEconomy --project wild-rift-drafting --non-interactive > "$DEPLOY_LOG" 2>&1; then
+          if tests/firestore/node_modules/.bin/firebase deploy --only functions:economy --project wild-rift-drafting --non-interactive > "$DEPLOY_LOG" 2>&1; then
             cat "$DEPLOY_LOG"
           else
             cat "$DEPLOY_LOG"

@@ -30,6 +30,10 @@ data class NoticeMetrics(
     fun calculateRevenue(globalCpmRate: Double, mediaMultiplier: Double = 1.0): Double {
         return CpmPolicy.revenue(impressions, customCpmRate ?: globalCpmRate, mediaMultiplier)
     }
+
+    fun calculateRpm(globalCpmRate: Double, mediaMultiplier: Double = 1.0): Double {
+        return CpmPolicy.rpm(impressions, calculateRevenue(globalCpmRate, mediaMultiplier))
+    }
 }
 
 object AppNoticeAnalyticsManager {
@@ -575,6 +579,10 @@ object AppNoticeAnalyticsManager {
         return CpmPolicy.ctr(totalImps, totalClicks)
     }
 
+    fun getOverallRpm(globalCpmRate: Double = _baseCpmRate.value, notices: List<AppNotice>? = null): Double {
+        return CpmPolicy.rpm(getTotalImpressions(), getTotalRevenue(globalCpmRate, notices))
+    }
+
     fun generateSummaryReport(notices: List<AppNotice>): String {
         val sdf = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
         val startFormatted = sdf.format(Date(_trackingStartDate.value))
@@ -585,11 +593,12 @@ object AppNoticeAnalyticsManager {
         val cpm = _baseCpmRate.value
         val totalRev = getTotalRevenue(cpm, notices)
         val overallCtr = getOverallCtr()
+        val overallRpm = CpmPolicy.rpm(totalImps, totalRev)
         val dynamicRec = calculateRecommendedCpm()
 
         val totalBudget = notices.sumOf { it.budget }
         val sb = StringBuilder()
-        sb.append("REPORTE DE MONETIZACION Y CPM - WILD RIFT COACH\n")
+        sb.append("REPORTE DE MONETIZACION, CPM Y RPM - WILD RIFT COACH\n")
         sb.append("====================================================\n")
         sb.append("Periodo: $startFormatted hasta $nowFormatted\n")
         sb.append("Tarifa Configurada: $${String.format(Locale.US, "%.2f", cpm)} USD / 1,000 Imp.\n")
@@ -600,6 +609,7 @@ object AppNoticeAnalyticsManager {
         sb.append("Pantalla Completa: $totalFullscreen vistas\n")
         sb.append("Presupuesto Total de Anuncios: $${String.format(Locale.US, "%.2f", totalBudget)} USD\n")
         sb.append("Ingresos Estimados Totales: $${String.format(Locale.US, "%.2f", totalRev)} USD\n")
+        sb.append("RPM Efectivo: $${String.format(Locale.US, "%.2f", overallRpm)} USD / 1,000 Imp.\n")
         sb.append("====================================================\n")
         sb.append("DESGLOSE POR ANUNCIO / CAMPANA:\n")
 
@@ -610,6 +620,7 @@ object AppNoticeAnalyticsManager {
                 else 1.5
             } else 1.0
             val rev = m.calculateRevenue(cpm, mediaMultiplier)
+            val rpm = m.calculateRpm(cpm, mediaMultiplier)
             val budgetStr = if (n.budget > 0) "$${String.format(Locale.US, "%.2f", n.budget)} USD" else "Sin asignar"
             val spentPct = if (n.budget > 0) " (${String.format(Locale.US, "%.1f", (rev / n.budget) * 100.0)}% consumido)" else ""
             sb.append("\n[${n.tag.uppercase()}] ${n.title}\n")
@@ -618,6 +629,7 @@ object AppNoticeAnalyticsManager {
             sb.append("  - Clics Unicos: ${m.clicks} (CTR: ${String.format(Locale.US, "%.2f", m.ctr)}%)\n")
             sb.append("  - Fullscreen: ${m.fullscreenViews}\n")
             sb.append("  - Generado: $${String.format(Locale.US, "%.2f", rev)} USD\n")
+            sb.append("  - RPM Efectivo: $${String.format(Locale.US, "%.2f", rpm)} USD / 1,000 Imp.\n")
         }
 
         return sb.toString()

@@ -96,6 +96,8 @@ object SubscriptionManager {
     private var unreadModeratorSupportReports = 0
     private var hasUnreadFromDoc = false
     private var docUnreadCount = 0
+    /** Temporary route used while the profile listener arrives before messages. */
+    private val profileUnreadFallbackKey = "message:profile_unread"
 
     private fun recalculateUnreadCount() {
         val auth = AuthManager.getAuth()
@@ -109,13 +111,30 @@ object SubscriptionManager {
 
         val unique = unreadMessagesSubcollection + unreadSupportReports + unreadPrivateArray
         val actualPersonalUnread = unique.size
-        _unreadMessageIds.value = unique
+        val remoteUnreadCount = maxOf(docUnreadCount, if (hasUnreadFromDoc) 1 else 0)
+        val sourcesReady = phoneSourcesReady()
+        // The profile document is updated in the same server transaction as the
+        // message. Until the message subcollection listener catches up, keep a
+        // visible inbox event instead of clearing that server marker as a false
+        // zero. This removes the delayed badge/animation seen after essence gifts.
+        val fallback = if (!sourcesReady && remoteUnreadCount > actualPersonalUnread) {
+            setOf(profileUnreadFallbackKey)
+        } else emptySet()
+        val displayed = unique + fallback
+        _unreadMessageIds.value = displayed
         _unreadMessageRoutes.value = (inboxArray + inboxDocuments).mapNotNull { data ->
             com.example.data.InboxNotificationPolicy.key(data)?.takeIf { it in unique }?.let { it to com.example.data.PanelNotificationPolicy.messagePanels(data) }
         }.groupBy({ it.first }, { it.second }).mapValues { (_, panels) -> panels.flatten().toSet() }
-        _unreadMessagesCount.value = actualPersonalUnread
+            .toMutableMap().apply {
+                if (profileUnreadFallbackKey in fallback) {
+                    this[profileUnreadFallbackKey] = setOf(com.example.data.NotificationPanel.INBOX)
+                }
+            }
+        _unreadMessagesCount.value = if (sourcesReady) actualPersonalUnread else maxOf(actualPersonalUnread, remoteUnreadCount)
 
-        if (actualPersonalUnread == 0 && (hasUnreadFromDoc || docUnreadCount > 0)) {
+        // Only clear the aggregate marker after all phone sources have loaded;
+        // clearing it earlier races the messages listener and loses the event.
+        if (sourcesReady && actualPersonalUnread == 0 && remoteUnreadCount > 0) {
             hasUnreadFromDoc = false
             docUnreadCount = 0
             scope.launch {

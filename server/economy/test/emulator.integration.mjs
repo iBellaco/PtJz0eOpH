@@ -80,6 +80,10 @@ try {
   });
   await test('admin adjustment records the actual clipped debit and a notification', async () => {
     await call('ADJUST', 'adjust_server_credit', {uid: 'economy-poor', amount: 25, currency: 'ORANGE', addition: true, notify: true, title: 'Ajuste', customBody: ''}, admin);
+    const message = await db.doc('users/economy-poor/messages/adjust_server_credit').get();
+    assert.equal(message.get('panel'), 'INBOX');
+    assert.equal(message.get('isRead'), false);
+    assert.equal(message.get('timestampMillis') > 0, true);
     await call('ADJUST', 'adjust_server_debit', {uid: 'economy-poor', amount: 100, currency: 'ORANGE', addition: false, notify: false, title: '', customBody: ''}, admin);
     assert.equal((await db.doc('users/economy-poor').get()).get('orangeEssence'), 0);
     assert.equal((await db.doc('users/economy-poor/subscription_history/adjust_server_debit').get()).get('amount'), '-26 EN');

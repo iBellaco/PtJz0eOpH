@@ -281,7 +281,7 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                             Icon(Icons.Default.TrendingUp, contentDescription = null, tint = Color(0xFF00FF66), modifier = Modifier.size(20.dp))
                             Spacer(modifier = Modifier.width(8.dp))
                             Column {
-                                Text(tr("Métricas de CPM & Monetización"), color = Color(0xFF00FF66), fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                                Text(tr("Métricas de Monetización, CPM & RPM"), color = Color(0xFF00FF66), fontSize = 12.sp, fontWeight = FontWeight.Bold)
                                 Text(tr("Ver impresiones, clics, CTR e ingresos estimados"), color = TextSecondary, fontSize = 10.sp)
                             }
                         }
@@ -1209,7 +1209,7 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                         Icon(Icons.Default.AttachMoney, contentDescription = null, tint = HextechGold)
                     },
                     supportingText = {
-                        Text(tr("Monitorea el gasto y saldo restante de este anuncio en el panel de analíticas CPM."), color = TextMuted, fontSize = 10.sp)
+                        Text(tr("Monitorea el gasto, CPM y RPM de este anuncio en el panel de analíticas."), color = TextMuted, fontSize = 10.sp)
                     },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                     modifier = Modifier.fillMaxWidth(),
