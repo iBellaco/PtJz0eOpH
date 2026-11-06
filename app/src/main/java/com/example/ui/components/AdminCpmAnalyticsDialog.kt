@@ -47,6 +47,7 @@ import androidx.compose.ui.window.DialogProperties
 import com.example.data.AppNotice
 import com.example.data.AppNoticeAnalyticsManager
 import com.example.data.AppNoticeManager
+import com.example.data.CpmPolicy
 import com.example.data.NoticeMetrics
 import com.example.ui.theme.*
 import java.text.SimpleDateFormat
@@ -101,6 +102,9 @@ fun AdminCpmAnalyticsDialog(
     val totalFullscreen = remember(metricsMap) { AppNoticeAnalyticsManager.getTotalFullscreenViews() }
     val totalRevenue = remember(metricsMap, baseCpmRate, notices) { AppNoticeAnalyticsManager.getTotalRevenue(baseCpmRate, notices) }
     val overallCtr = remember(totalImpressions, totalClicks) { AppNoticeAnalyticsManager.getOverallCtr() }
+    val overallRpm = remember(metricsMap, baseCpmRate, notices, totalImpressions, totalRevenue) {
+        AppNoticeAnalyticsManager.getOverallRpm(baseCpmRate, notices)
+    }
 
     // Recomendación dinámica inteligente recalculada en tiempo real
     val dynamicRec = remember(metricsMap, baseCpmRate, startDateMs, totalImpressions, totalClicks, totalFullscreen, overallCtr) {
@@ -116,9 +120,9 @@ fun AdminCpmAnalyticsDialog(
 
     fun copyReport() {
         val report = AppNoticeAnalyticsManager.generateSummaryReport(notices)
-        val clip = ClipData.newPlainText("Reporte CPM Coach" , report)
+        val clip = ClipData.newPlainText("Reporte CPM/RPM Coach" , report)
         clipboardManager?.setPrimaryClip(clip)
-        Toast.makeText(context, com.example.util.appTr("Reporte CPM copiado al portapapeles"), Toast.LENGTH_SHORT).show()
+        Toast.makeText(context, com.example.util.appTr("Reporte CPM/RPM copiado al portapapeles"), Toast.LENGTH_SHORT).show()
     }
 
     // Diálogo de confirmación para eliminar anuncio
@@ -190,7 +194,7 @@ fun AdminCpmAnalyticsDialog(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(Icons.Default.AutoAwesome, contentDescription = null, tint = HextechGold, modifier = Modifier.size(20.dp))
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text(tr("Criterio de CPM y proyección"), color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 15.sp)
+                            Text(tr("Criterio de CPM/RPM y proyección"), color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 15.sp)
                 }
             },
             text = {
@@ -212,6 +216,8 @@ fun AdminCpmAnalyticsDialog(
                             Text(com.example.util.tr("• Nivel / Calificación: ${dynamicRec.tierName}"), color = HextechCyan, fontWeight = FontWeight.Bold, fontSize = 12.sp)
                             Spacer(modifier = Modifier.height(3.dp))
                             Text(com.example.util.tr("• CPM configurado: $${String.format(Locale.US, "%.2f", dynamicRec.recommendedCpm)} USD"), color = Color(0xFF00FF66), fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                            Spacer(modifier = Modifier.height(3.dp))
+                            Text(com.example.util.tr("• RPM efectivo: $${String.format(Locale.US, "%.2f", overallRpm)} USD / 1,000 impresiones"), color = HextechCyan, fontWeight = FontWeight.Bold, fontSize = 12.sp)
                             Spacer(modifier = Modifier.height(3.dp))
                             Text(com.example.util.tr("• Rango sugerido de venta: $${String.format(Locale.US, "%.2f", dynamicRec.suggestedPriceRange.first)} - $${String.format(Locale.US, "%.2f", dynamicRec.suggestedPriceRange.second)} USD"), color = HextechGold, fontSize = 11.5.sp)
                             Spacer(modifier = Modifier.height(3.dp))
@@ -236,6 +242,7 @@ fun AdminCpmAnalyticsDialog(
                                 val presentationText = """
 PRECIOS PUBLICITARIOS - COACH APP
 CPM configurado (por cada 1,000 vistas): ${'$'}${String.format(Locale.US, "%.2f", dynamicRec.recommendedCpm)} USD
+RPM efectivo (ingreso por cada 1,000 impresiones): ${'$'}${String.format(Locale.US, "%.2f", overallRpm)} USD
 
 Proyección de Paquetes (Precios Fijos):
 - 1 Día: ${'$'}${String.format(Locale.US, "%.0f", dynamicRec.price1Day)} USD
@@ -247,7 +254,7 @@ Proyección de Paquetes (Precios Fijos):
 Estos precios están calculados en base a nuestras analíticas activas y engagement de la audiencia.
                                 """.trimIndent()
                                 val clipboardManager = context.getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
-                                val clip = android.content.ClipData.newPlainText("Precios CPM" , presentationText)
+                                val clip = android.content.ClipData.newPlainText("Precios CPM/RPM" , presentationText)
                                 clipboardManager.setPrimaryClip(clip)
                                 Toast.makeText(context, com.example.util.appTr("Presentación copiada al portapapeles"), Toast.LENGTH_SHORT).show()
                             },
@@ -903,7 +910,7 @@ Métricas de Tráfico y Rendimiento:
                             Spacer(modifier = Modifier.width(10.dp))
                             Column {
                                 Text(
-                                    text = tr("Métricas de Monetización & CPM"),
+                                    text = tr("Métricas de Monetización, CPM & RPM"),
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.Bold,
                                     color = Color(0xFF00FF66),
@@ -1009,7 +1016,7 @@ Métricas de Tráfico y Rendimiento:
                             Column {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     Text(
-                                        text = com.example.util.tr("CPM configurado: $${String.format(Locale.US, "%.2f", dynamicRec.recommendedCpm)} USD"),
+                                    text = com.example.util.tr("CPM configurado: $${String.format(Locale.US, "%.2f", dynamicRec.recommendedCpm)} USD"),
                                         color = Color(0xFF00FF66),
                                         fontSize = 12.5.sp,
                                         fontWeight = FontWeight.Bold
@@ -1029,7 +1036,7 @@ Métricas de Tráfico y Rendimiento:
                                     }
                                 }
                                 Text(
-                                    text = com.example.util.tr("${dynamicRec.tierName} • Rango: $${String.format(Locale.US, "%.2f", dynamicRec.suggestedPriceRange.first)} - $${String.format(Locale.US, "%.2f", dynamicRec.suggestedPriceRange.second)} USD (Toca para ver criterio)"),
+                                    text = com.example.util.tr("RPM efectivo: $${String.format(Locale.US, "%.2f", overallRpm)}/1k • ${dynamicRec.tierName} • Rango: $${String.format(Locale.US, "%.2f", dynamicRec.suggestedPriceRange.first)} - $${String.format(Locale.US, "%.2f", dynamicRec.suggestedPriceRange.second)} USD (Toca para ver criterio)"),
                                     color = TextSecondary,
                                     fontSize = 10.sp,
                                     maxLines = 1,
@@ -1081,7 +1088,7 @@ Métricas de Tráfico y Rendimiento:
                                     modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    Text(com.example.util.tr("CPM Actual: $${String.format(Locale.US, "%.2f", baseCpmRate)}/1k ✎"), color = HextechGold, fontSize = 10.5.sp, fontWeight = FontWeight.Bold)
+                                    Text(com.example.util.tr("CPM $${String.format(Locale.US, "%.2f", baseCpmRate)}/1k • RPM $${String.format(Locale.US, "%.2f", overallRpm)} ✎"), color = HextechGold, fontSize = 10.5.sp, fontWeight = FontWeight.Bold)
                                 }
                             }
                         }
@@ -1140,6 +1147,17 @@ Métricas de Tráfico y Rendimiento:
                                 icon = Icons.Default.TouchApp
                             )
                         }
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        KpiCard(
+                            modifier = Modifier.fillMaxWidth(),
+                            label = "RPM Efectivo",
+                            value = "$${String.format(Locale.US, "%.2f", overallRpm)} / 1k",
+                            subtext = "Ingresos estimados por cada 1,000 impresiones",
+                            accentColor = Color(0xFF00FF66),
+                            icon = Icons.Default.TrendingUp
+                        )
                     }
                 }
 
@@ -1273,6 +1291,7 @@ Métricas de Tráfico y Rendimiento:
                                     } else 1.0
                                     (metricsMap[it.id]?.calculateRevenue(baseCpmRate, mult) ?: 0.0)
                                 }
+                                val tagRpm = CpmPolicy.rpm(tagTotalImps, tagRevenue)
                                 val tagCtr = if (tagTotalImps > 0) (tagTotalClicks.toDouble() / tagTotalImps.toDouble()) * 100.0 else 0.0
 
                                 val tagColor = when {
@@ -1346,6 +1365,12 @@ Métricas de Tráfico y Rendimiento:
                                                 text = com.example.util.tr("📱 $tagTotalFullscreen full"),
                                                 color = Color(0xFFCC66FF),
                                                 fontSize = 9.sp
+                                            )
+                                            Text(
+                                                text = com.example.util.tr("RPM $${String.format(Locale.US, "%.2f", tagRpm)}"),
+                                                color = Color(0xFF00FF66),
+                                                fontSize = 9.sp,
+                                                fontWeight = FontWeight.Bold
                                             )
                                         }
                                     }
@@ -1464,6 +1489,7 @@ private fun NoticeAnalyticsItemCard(
         if (notice.videoUrl.contains("video") || notice.videoUrl.endsWith(".mp4") || notice.videoUrl.contains("youtube")) 2.5 else 1.5
     } else 1.0
     val revenue = metrics.calculateRevenue(baseCpm, mediaMultiplier)
+    val rpm = metrics.calculateRpm(baseCpm, mediaMultiplier)
 
     fun getTagColor(tag: String): Color {
         val l = tag.lowercase(Locale.ROOT)
@@ -1772,6 +1798,12 @@ private fun NoticeAnalyticsItemCard(
                         com.example.util.tr("$${String.format(Locale.US, "%.2f", metrics.customCpmRate ?: baseCpm)}"),
                         color = Color(0xFF00FF66),
                         fontSize = 11.5.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        com.example.util.tr("RPM $${String.format(Locale.US, "%.2f", rpm)} / 1k"),
+                        color = HextechCyan,
+                        fontSize = 9.sp,
                         fontWeight = FontWeight.Bold
                     )
                 }
