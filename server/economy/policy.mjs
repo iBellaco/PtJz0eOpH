@@ -10,8 +10,8 @@ const plans = {
   MONTHLY: {days: 30, BLUE: 100, ORANGE: 9, label: '1 mes'},
   SIX_MONTHS: {days: 180, BLUE: 550, ORANGE: 50, label: '6 meses'},
   ANNUAL: {days: 365, BLUE: 1100, ORANGE: 95, label: '1 año'},
-  EIGHTEEN_MONTHS: {days: 545, BLUE: 1650, ORANGE: 145, label: '1 año y 6 meses'},
-  TWO_YEARS: {days: 730, BLUE: 2200, ORANGE: 190, label: '2 años'}
+  EIGHTEEN_MONTHS: {days: 545, BLUE: 1580, ORANGE: 138, label: '1 año y 6 meses'},
+  TWO_YEARS: {days: 730, BLUE: 2050, ORANGE: 175, label: '2 años'}
 };
 const contracts = new Set(['txlaq63xg1nazckpwkhvzw7csemlmeqcdj', '0xdac17f958d2ee523a2206206994597c13d831ec7', '0x55d398326f99059ff775485246999027b3197955']);
 export function integer(value, min = 0, max = Number.MAX_SAFE_INTEGER) {

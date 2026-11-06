@@ -169,10 +169,10 @@ class RuntimeBehaviorTest {
             Triple(EssencePremiumPlan.SIX_MONTHS, EssenceCurrency.ORANGE, 50L),
             Triple(EssencePremiumPlan.ANNUAL, EssenceCurrency.BLUE, 1100L),
             Triple(EssencePremiumPlan.ANNUAL, EssenceCurrency.ORANGE, 95L),
-            Triple(EssencePremiumPlan.EIGHTEEN_MONTHS, EssenceCurrency.BLUE, 1650L),
-            Triple(EssencePremiumPlan.EIGHTEEN_MONTHS, EssenceCurrency.ORANGE, 145L),
-            Triple(EssencePremiumPlan.TWO_YEARS, EssenceCurrency.BLUE, 2200L),
-            Triple(EssencePremiumPlan.TWO_YEARS, EssenceCurrency.ORANGE, 190L)
+            Triple(EssencePremiumPlan.EIGHTEEN_MONTHS, EssenceCurrency.BLUE, 1580L),
+            Triple(EssencePremiumPlan.EIGHTEEN_MONTHS, EssenceCurrency.ORANGE, 138L),
+            Triple(EssencePremiumPlan.TWO_YEARS, EssenceCurrency.BLUE, 2050L),
+            Triple(EssencePremiumPlan.TWO_YEARS, EssenceCurrency.ORANGE, 175L)
         )
         for ((plan, currency, price) in cases) {
             val (balance, deadline) = EssenceEconomyPolicy.purchase(account, plan, currency, now)
@@ -181,7 +181,10 @@ class RuntimeBehaviorTest {
         }
         assertEquals(50L, EssencePremiumPlan.SIX_MONTHS.blueSavings)
         assertEquals(4L, EssencePremiumPlan.SIX_MONTHS.orangeSavings)
-        assertEquals(200L, EssencePremiumPlan.TWO_YEARS.blueSavings)
+        assertEquals(220L, EssencePremiumPlan.EIGHTEEN_MONTHS.blueSavings)
+        assertEquals(24L, EssencePremiumPlan.EIGHTEEN_MONTHS.orangeSavings)
+        assertEquals(350L, EssencePremiumPlan.TWO_YEARS.blueSavings)
+        assertEquals(41L, EssencePremiumPlan.TWO_YEARS.orangeSavings)
         assertEquals("creador", account["role"]); assertEquals("streamer", account["secondaryRole"])
     }
 

@@ -16,8 +16,8 @@ enum class EssencePremiumPlan(
     MONTHLY(30, 1, 100, 9, "1 mes"),
     SIX_MONTHS(180, 6, 550, 50, "6 meses"),
     ANNUAL(365, 12, 1100, 95, "1 año"),
-    EIGHTEEN_MONTHS(545, 18, 1650, 145, "1 año y 6 meses"),
-    TWO_YEARS(730, 24, 2200, 190, "2 años");
+    EIGHTEEN_MONTHS(545, 18, 1580, 138, "1 año y 6 meses"),
+    TWO_YEARS(730, 24, 2050, 175, "2 años");
 
     /** Precio sin descuento usando la tarifa mensual de cada esencia. */
     val fullBlueCost: Long get() = months * 100L

@@ -150,7 +150,10 @@ fun DraftAnalysisTab(
     onSelectChampion: (Champion) -> Unit,
     onOpenHistory: () -> Unit,
     onClearAll: () -> Unit,
-    onRandomFill: (() -> Unit)? = null
+    onRandomFill: (() -> Unit)? = null,
+    favoriteOnlyRecommendations: Boolean = false,
+    favoriteRecommendationCount: Int = 0,
+    onToggleFavoriteOnlyRecommendations: (Boolean) -> Unit = {}
 ) {
     val selectedOwnChampion = myChampion?.takeUnless { it.id.equals("empty", true) || it.id.isBlank() }
     val selectedEnemyChampion = enemyLaneOpponent?.takeUnless { it.id.equals("empty", true) || it.id.isBlank() }
@@ -1050,6 +1053,44 @@ fun DraftAnalysisTab(
             selectedAllySlots.isNotEmpty() || selectedEnemySlots.isNotEmpty()
         if (shouldShowDraftRecommendations(activeRole, isFirstPick, hasDraftSelection)) {
             val recommendationRole = requireNotNull(activeRole)
+            val favoriteFilterAvailable = favoriteRecommendationCount >= 5
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .testTag("draft_favorite_recommendations_filter"),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Column(Modifier.weight(1f)) {
+                    Text(
+                        tr("Recomendar solo mis favoritos de esta línea"),
+                        color = if (favoriteFilterAvailable) HextechCyan else TextMuted,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        if (favoriteFilterAvailable) tr("Favoritos disponibles para esta línea: {0}. También aplica al primer pick")
+                            .replace("{0}", favoriteRecommendationCount.toString())
+                        else tr("Añade al menos 5 favoritos de esta línea para activar este filtro"),
+                        color = TextMuted,
+                        fontSize = 10.sp,
+                        lineHeight = 14.sp
+                    )
+                }
+                Switch(
+                    checked = favoriteOnlyRecommendations && favoriteFilterAvailable,
+                    onCheckedChange = onToggleFavoriteOnlyRecommendations,
+                    enabled = favoriteFilterAvailable,
+                    modifier = Modifier.testTag("draft_favorite_recommendations_toggle"),
+                    colors = SwitchDefaults.colors(
+                        checkedThumbColor = Color.White,
+                        checkedTrackColor = HextechCyan,
+                        uncheckedThumbColor = TextMuted,
+                        uncheckedTrackColor = HextechSurfaceVariant
+                    )
+                )
+            }
+            Spacer(modifier = Modifier.height(8.dp))
             // Live Recommendations Header
             Row(modifier = Modifier.testTag("draft_recommendations"), verticalAlignment = Alignment.CenterVertically) {
                 Image(

@@ -413,6 +413,15 @@ object WildRiftRepository {
             )
     }
 
+    /** Number of saved favorites that can actually be recommended in a lane. */
+    fun favoriteChampionCountForRole(role: LaneRole, favoriteIds: Set<String>): Int {
+        val normalized = favoriteIds.map { it.trim().lowercase(java.util.Locale.ROOT) }.toSet()
+        return champions.count { champion ->
+            champion.id.lowercase(java.util.Locale.ROOT) in normalized &&
+                (champion.primaryRole == role || champion.secondaryRoles.contains(role))
+        }
+    }
+
     private fun t(lang: String, pt: String, es: String): String {
         return when (lang) {
             "pt" -> pt
@@ -469,7 +478,9 @@ object WildRiftRepository {
         enemyLaneOpponent: Champion? = null,
         isFirstPick: Boolean = false,
         lang: String = "es",
-        bannedChampionIds: Set<String> = emptySet()
+        bannedChampionIds: Set<String> = emptySet(),
+        favoriteChampionIds: Set<String> = emptySet(),
+        favoriteOnlyRecommendations: Boolean = false
     ): DraftAnalysisResult {
 
         val activeEnemies = (enemies + listOfNotNull(enemyLaneOpponent)).filter { it.id != "empty" }.distinctBy { it.id }
@@ -561,16 +572,29 @@ object WildRiftRepository {
             !activeAllies.any { it.id == champ.id } && !activeEnemies.any { it.id == champ.id }
         }
 
+        // The filter is opt-in. Once five saved favorites are available for the
+        // active lane, all recommendations (including first pick) use only that
+        // personal pool. With fewer than five, the normal catalog remains active.
+        val normalizedFavoriteIds = favoriteChampionIds.map {
+            it.trim().lowercase(java.util.Locale.ROOT)
+        }.toSet()
+        val favoriteFilterActive = favoriteOnlyRecommendations && myRole != null &&
+            favoriteChampionCountForRole(myRole, normalizedFavoriteIds) >= 5
+        val favoritePoolForRole = if (favoriteFilterActive) {
+            availableChampions.filter { it.id.lowercase(java.util.Locale.ROOT) in normalizedFavoriteIds }
+        } else emptyList()
+        val recommendationPool = if (favoriteFilterActive) favoritePoolForRole else availableChampions
+
         val candidates = if (myRole != null) {
-            val naturalLane = availableChampions.filter { it.primaryRole == myRole }
+            val naturalLane = recommendationPool.filter { it.primaryRole == myRole }
             // The main draft answer must represent the selected lane. Flex picks
             // are useful only as a fallback for a damaged or incomplete catalog;
             // otherwise a jungle primary should never appear as a mid answer.
-            if (naturalLane.size >= 5) naturalLane else availableChampions.filter { champ ->
+            if (naturalLane.size >= 5) naturalLane else recommendationPool.filter { champ ->
                 champ.primaryRole == myRole || champ.secondaryRoles.contains(myRole)
             }
         } else {
-            availableChampions
+            recommendationPool
         }
 
         val uniqueCandidates = candidates.groupBy { it.id }.values.map { profiles -> profiles.firstOrNull { it.primaryRole == myRole } ?: profiles.first() }
