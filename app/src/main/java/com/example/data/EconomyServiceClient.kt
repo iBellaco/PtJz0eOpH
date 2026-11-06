@@ -52,6 +52,11 @@ object EconomyServiceClient {
         check(AuthManager.getAuth()?.currentUser?.uid == user.uid) { appTr("Inicia sesión") }
         val admin = token.claims["admin"] == true
         val isSponsorResolution = action == "SPONSOR_RESOLVE"
+        // Staff actions must reach the callable directly. Reading an old queue
+        // row first added several seconds to every approval/rejection and could
+        // surface a false "pendiente" state while the server was available.
+        // The server still verifies the signed admin claim and the target data.
+        val isImmediateAdminAction = admin && action in setOf("SPONSOR_RESOLVE", "ADJUST")
         val retryQueuedDirect = EconomyRequestPolicy.canRetryQueuedDirect(action, admin)
         val commandKey = EconomyRequestPolicy.operationKey(user.uid, action,
             if (action == "SPONSOR") fields + ("publicationId" to id) else fields)
@@ -59,7 +64,7 @@ object EconomyServiceClient {
         // A sponsor decision is idempotent on the server and its advertisement
         // document is observed in real time. Retrying it directly is both faster
         // and safer for the dialog than waiting on stale fallback receipts first.
-        val queued = if (isSponsorResolution) null else try {
+        val queued = if (isSponsorResolution || isImmediateAdminAction) null else try {
             val document = if (usesIndependentRequestDocument(action)) "${user.uid}~$directId" else user.uid
             withTimeoutOrNull(5_000L) { FirebaseFirestore.getInstance().collection("economy_requests")
                 .document(document).get(Source.SERVER).await() }
@@ -76,7 +81,7 @@ object EconomyServiceClient {
         val payload = fields + mapOf("action" to action, "id" to directId)
         // A previous process may have died after the server applied the command.
         // Read the receipt before resending; even if offline, reuse exactly the same ID.
-        val previous = if (isSponsorResolution) null else try {
+        val previous = if (isSponsorResolution || isImmediateAdminAction) null else try {
             withTimeoutOrNull(5_000L) { FirebaseFirestore.getInstance().collection("economy_results")
                 .document("${user.uid}~$directId").get(Source.SERVER).await() }
         } catch (error: CancellationException) { throw error }
@@ -106,7 +111,7 @@ object EconomyServiceClient {
         // pending request without permitting a second balance change.
         val direct = if (alreadyQueued && !retryQueuedDirect) null else try {
             @Suppress("UNCHECKED_CAST")
-            withTimeoutOrNull(if (isSponsorResolution) 10_000L else 15_000L) {
+            withTimeoutOrNull(if (isSponsorResolution || isImmediateAdminAction) 30_000L else 15_000L) {
                 FirebaseFunctions.getInstance("us-central1").getHttpsCallable("coachEconomy").call(payload).await().data as? Map<String, Any>
             } ?: error("direct_service_timeout")
         } catch (error: FirebaseFunctionsException) {
@@ -173,7 +178,7 @@ object EconomyServiceClient {
         if (!EconomyRequestPolicy.shouldAwaitQueuedResult(action, awaitQueuedResult)) {
             throw EconomyPendingException()
         }
-        val result = withTimeoutOrNull(if (action == "SPONSOR_RESOLVE") 60_000L else 8_000L) {
+        val result = withTimeoutOrNull(if (action == "SPONSOR_RESOLVE" || isImmediateAdminAction) 30_000L else 8_000L) {
             suspendCancellableCoroutine<Map<String, Any>> { continuation ->
                 var listener: ListenerRegistration? = null
                 listener = FirebaseFirestore.getInstance().collection("economy_results")

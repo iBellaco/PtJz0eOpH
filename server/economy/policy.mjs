@@ -6,7 +6,13 @@ export class EconomyError extends Error {
 export function ensure(ok, code, message) { if (!ok) throw new EconomyError(code, message); }
 export const DAY = 86400000;
 export const FEES = {BEP20: 1, TRC20: 2, ERC20: 5};
-const plans = {MONTHLY: {days: 30, BLUE: 100, ORANGE: 9}, ANNUAL: {days: 365, BLUE: 1100, ORANGE: 95}};
+const plans = {
+  MONTHLY: {days: 30, BLUE: 100, ORANGE: 9, label: '1 mes'},
+  SIX_MONTHS: {days: 180, BLUE: 550, ORANGE: 50, label: '6 meses'},
+  ANNUAL: {days: 365, BLUE: 1100, ORANGE: 95, label: '1 año'},
+  EIGHTEEN_MONTHS: {days: 545, BLUE: 1580, ORANGE: 138, label: '1 año y 6 meses'},
+  TWO_YEARS: {days: 730, BLUE: 2050, ORANGE: 175, label: '2 años'}
+};
 const contracts = new Set(['txlaq63xg1nazckpwkhvzw7csemlmeqcdj', '0xdac17f958d2ee523a2206206994597c13d831ec7', '0x55d398326f99059ff775485246999027b3197955']);
 export function integer(value, min = 0, max = Number.MAX_SAFE_INTEGER) {
   ensure(Number.isSafeInteger(value) && value >= min && value <= max, 'invalid-argument', 'Cantidad no válida'); return value;
@@ -36,7 +42,7 @@ export function premiumPurchase(account, plan, currency, now, admin = false) {
   const price = plans[plan]; ensure(price && ['BLUE', 'ORANGE'].includes(currency), 'invalid-argument', 'Plan no válido');
   ensure(!admin && ![account.role, account.secondaryRole].some(r => ['admin', 'administrador', 'moderador'].includes(r)), 'failed-precondition', 'Tu acceso premium es vitalicio');
   const remaining = balance(account, currency) - price[currency]; ensure(remaining >= 0, 'failed-precondition', 'Esencias insuficientes');
-  return {remaining, cost: price[currency], days: price.days, until: integer(Math.max(deadline(account.premiumUntil), now) + price.days * DAY)};
+  return {remaining, cost: price[currency], days: price.days, label: price.label, until: integer(Math.max(deadline(account.premiumUntil), now) + price.days * DAY)};
 }
 export function validWallet(network, wallet) {
   if (typeof wallet !== 'string' || wallet !== wallet.trim() || contracts.has(wallet.toLowerCase())) return false;

@@ -7,7 +7,7 @@ import {executeEconomy} from './service.mjs';
 import {processQueueRow} from './queue.mjs';
 import {EconomyError} from './policy.mjs';
 initializeApp();
-export const coachEconomy = onCall({region: 'us-central1', maxInstances: 10, timeoutSeconds: 60, memory: '256MiB'}, async request => {
+export const coachEconomy = onCall({region: 'us-central1', minInstances: 1, maxInstances: 10, timeoutSeconds: 60, memory: '256MiB'}, async request => {
   try { return await executeEconomy(getFirestore(), request.auth, request.data); }
   catch (error) {
     if (error instanceof EconomyError) throw new HttpsError(error.code, error.message);
@@ -22,6 +22,7 @@ export const coachEconomy = onCall({region: 'us-central1', maxInstances: 10, tim
 export const processEconomyRequest = onDocumentCreated({
   document: 'economy_requests/{requestId}',
   region: 'us-central1',
+  minInstances: 1,
   timeoutSeconds: 60,
   memory: '256MiB',
   retry: true

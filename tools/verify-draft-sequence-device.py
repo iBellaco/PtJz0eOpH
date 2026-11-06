@@ -55,8 +55,13 @@ def main():
     if targets:
         command += ['-e', 'sequenceTargets', ','.join(sorted(targets))]
     command += ['com.Coach.test/androidx.test.runner.AndroidJUnitRunner']
-    code, output = run_instrumentation(command, directory / f'instrumentation-{label}.txt',
-                                       1800 if preflight else 3300)
+    # Keep the process budget independent from the workflow timeout. A cold
+    # emulator plus ML Kit can make one full shard exceed the old 55-minute
+    # limit before it writes its evidence. The workflow supplies 4200 seconds
+    # for the complete production matrix; preflight keeps its shorter budget.
+    default_timeout = 1800 if preflight else 3300
+    timeout = int(os.environ.get('COACH_SEQUENCE_TIMEOUT_SECONDS', default_timeout))
+    code, output = run_instrumentation(command, directory / f'instrumentation-{label}.txt', timeout)
     cases = [json.loads(line) for line in re.findall(r'COACH_SEQUENCE_CASE: (\{[^\r\n]+\})', output)]
     report = dict(shard=shard, sourceSha256=plan['sourceSha256'], cases=cases,
                   expectedCases=sorted(expected), physicalDevicesTested=[],

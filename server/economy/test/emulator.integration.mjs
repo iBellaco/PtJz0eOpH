@@ -9,14 +9,20 @@ if (!/^127\.0\.0\.1:\d+$/.test(process.env.FIRESTORE_EMULATOR_HOST ?? '')) throw
 const app = initializeApp({projectId: 'demo-coach-tests'}, 'economy-tests'), db = getFirestore(app);
 const auth = (uid, admin = false) => ({uid, token: {admin, email: `${uid}@test.invalid`, firebase: {sign_in_provider: 'password'}}});
 const owner = auth('economy-server'), admin = auth('economy-admin', true), other = auth('economy-other');
-const base = {role: 'creador', secondaryRole: 'streamer', blueEssence: 2500, orangeEssence: 300, premiumUntil: Timestamp.fromMillis(Date.now() + 90 * 86400000)};
+const base = {role: 'creador', secondaryRole: 'streamer', blueEssence: 10000, orangeEssence: 1000, premiumUntil: Timestamp.fromMillis(Date.now() + 90 * 86400000)};
 let passed = 0;
 async function test(name, fn) { await fn(); console.log(`PASS server economy: ${name}`); passed++; }
 const call = (action, id, fields = {}, caller = action === 'REDEEM' ? auth(owner.uid, true) : owner) => executeEconomy(db, caller, {action, id, ...fields});
 try {
   for (const uid of [owner.uid, admin.uid, other.uid]) await db.doc(`users/${uid}`).set({...base, role: uid === admin.uid ? 'admin' : 'creador'});
-  await test('all four Premium prices, inherited deadline and roles', async () => {
-    for (const [plan, currency, price, days] of [['MONTHLY', 'BLUE', 100, 30], ['MONTHLY', 'ORANGE', 9, 30], ['ANNUAL', 'BLUE', 1100, 365], ['ANNUAL', 'ORANGE', 95, 365]]) {
+  await test('all ten Premium prices, inherited deadline and roles', async () => {
+    for (const [plan, currency, price, days] of [
+      ['MONTHLY', 'BLUE', 100, 30], ['MONTHLY', 'ORANGE', 9, 30],
+      ['SIX_MONTHS', 'BLUE', 550, 180], ['SIX_MONTHS', 'ORANGE', 50, 180],
+      ['ANNUAL', 'BLUE', 1100, 365], ['ANNUAL', 'ORANGE', 95, 365],
+      ['EIGHTEEN_MONTHS', 'BLUE', 1580, 545], ['EIGHTEEN_MONTHS', 'ORANGE', 138, 545],
+      ['TWO_YEARS', 'BLUE', 2050, 730], ['TWO_YEARS', 'ORANGE', 175, 730]
+    ]) {
       const ref = db.doc(`users/${owner.uid}`), before = (await ref.get()).data(), field = currency === 'BLUE' ? 'blueEssence' : 'orangeEssence';
       await call('PURCHASE', `premium_${plan}_${currency}`, {plan, currency}); const after = (await ref.get()).data();
       const old = before.premiumUntil.toMillis?.() ?? before.premiumUntil;
