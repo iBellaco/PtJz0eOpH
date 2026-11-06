@@ -20,13 +20,6 @@ DELIVERY_ONLY_FILES = {
     'docs/coach-audit-1.1.10.336.md',
     'docs/coach-audit-1.1.10.351.md',
 }
-TEST_DELIVERY_ONLY_FILES = {
-    '.github/workflows/build-apk.yml',
-    '.github/scripts/test_parallel_validation.py',
-    '.github/scripts/test_validated_apk.py',
-    'docs/coach-audit-1.1.10.473.md',
-}
-
 REQUIRED_JOBS = {'catalog-validation', 'security-auth-tests', 'scanner-tests',
                  'build-apk', 'core-tests', 'rendered-audit', 'installed-audit', 'installed-spanish',
                  'scanner-sequence-audit', 'build-and-release'}
@@ -65,7 +58,7 @@ def same_apk_inputs(repository, source_tree, target_tree, request=api):
     if previous.get('truncated', True) or current.get('truncated', True):
         return False
     def apk_inputs(tree):
-        ignored = DELIVERY_ONLY_FILES | (TEST_DELIVERY_ONLY_FILES if os.environ.get('COACH_TEST_BUILD') == 'true' else set())
+        ignored = DELIVERY_ONLY_FILES
         return {entry['path']: (entry['type'], entry['sha'])
                 for entry in tree['tree'] if entry['type'] != 'tree'
                 and entry['path'] not in ignored}
