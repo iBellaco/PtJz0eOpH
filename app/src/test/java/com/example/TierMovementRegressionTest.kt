@@ -28,4 +28,11 @@ class TierMovementRegressionTest {
         change("B","C")
         assertEquals(1,WildRiftRepository.champions.first { it.id=="ahri" }.tierMovement)
     }
+
+    @Test fun multiCategoryChangesExposeTheNumberOfTiersMoved() {
+        WildRiftRepository.initChampions(RuntimeEnvironment.getApplication(),forceReload=true)
+        WildRiftRepository.applyRegionalTierList(MetaRegion.DEFAULT,
+            mapOf("ahri" to "S+"), previousTiers=mapOf("ahri" to "B"))
+        assertEquals(3, WildRiftRepository.champions.first { it.id=="ahri" }.tierMovement)
+    }
 }

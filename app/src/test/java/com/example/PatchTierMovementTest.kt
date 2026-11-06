@@ -15,4 +15,8 @@ class PatchTierMovementTest {
         assertEquals(emptyMap<String, Int>(), PatchTierMovement.update(emptyMap(), mapOf("ahri" to "S"), emptyMap()))
         assertEquals(mapOf("ahri" to 1), PatchTierMovement.update(mapOf("lux" to "A"), mapOf("lux" to "A"), mapOf("ahri" to 1)))
     }
+    @Test fun multiCategoryChangesKeepTheirMagnitudeForTheTierBadge() {
+        assertEquals(2, PatchTierMovement.update(mapOf("ahri" to "B"), mapOf("ahri" to "S"), emptyMap())["ahri"])
+        assertEquals(-3, PatchTierMovement.update(mapOf("ahri" to "S+"), mapOf("ahri" to "B"), emptyMap())["ahri"])
+    }
 }

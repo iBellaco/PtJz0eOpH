@@ -6,18 +6,19 @@ import androidx.compose.foundation.Image
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Visibility
-import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
-import androidx.compose.material.icons.filled.BugReport
 import kotlinx.coroutines.launch
 import android.content.Context
 import android.content.Intent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
@@ -138,13 +139,6 @@ internal fun FloatingOverlayContent(
     var activeRole by state::activeRole
 
     val sharedPrefs = remember { context.getSharedPreferences("app_prefs", android.content.Context.MODE_PRIVATE) }
-    var hubViewerButtonsVisible by remember { mutableStateOf(false) }
-    val accountId = remember { runCatching { com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid }.getOrNull() }
-    LaunchedEffect(accountId) {
-        hubViewerButtonsVisible = runCatching {
-            loadViewerAccess(accountId)
-        }.getOrDefault(false)
-    }
 
     LaunchedEffect(Unit) {
         val savedRoleStr = sharedPrefs.getString("saved_active_role", null)
@@ -201,6 +195,15 @@ internal fun FloatingOverlayContent(
     var isScanning by state::isScanning
     var autoScanEnabled by state::autoScanEnabled
     var scanNoticeMessage by state::scanNoticeMessage
+    val autoScanTextAlpha = rememberInfiniteTransition(label = "auto_scan_text_pulse").animateFloat(
+        initialValue = 0.62f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(850),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "auto_scan_text_alpha"
+    )
 
     val geometryPreviewVisible by DraftVisionScanner.showCalibrationBoxes.collectAsStateWithLifecycle()
     val previewReadiness = remember(screenCaptureManager) {
@@ -957,7 +960,8 @@ internal fun FloatingOverlayContent(
                                             color = indicatorColor,
                                             fontSize = 8.5.sp,
                                             fontWeight = FontWeight.Bold,
-                                            maxLines = 1
+                                            maxLines = 1,
+                                            modifier = Modifier.alpha(if (autoScanEnabled) autoScanTextAlpha.value else 0.86f)
                                         )
                                     }
                                 }
@@ -965,77 +969,28 @@ internal fun FloatingOverlayContent(
 
                             Spacer(modifier = Modifier.width(4.dp))
 
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                            // El Hub usa la geometría adaptativa del escáner y no expone
+                            // controles manuales de visor o depuración. Solo se conserva
+                            // minimizar para devolver el panel a la burbuja flotante.
+                            Surface(
+                                modifier = Modifier
+                                    .size(48.dp)
+                                    .clickable {
+                                        isExpanded = false
+                                        onExpandedChange(false)
+                                    }
+                                    .testTag("btn_minimize_hub"),
+                                shape = RoundedCornerShape(6.dp),
+                                color = HextechGold.copy(alpha = 0.2f),
+                                border = BorderStroke(1.2.dp, HextechGold)
                             ) {
-                                val isLiveVisionActive by com.example.service.screen.DraftVisionScanner.showCalibrationBoxes.collectAsStateWithLifecycle()
-
-                                // 1. Botón de Visión en Vivo (Solo icono de ojo, sin texto)
-                                if (hubViewerButtonsVisible) Surface(
-                                    modifier = Modifier
-                                        .size(48.dp)
-                                        .clickable {
-                                            com.example.service.screen.DraftVisionScanner.showCalibrationBoxes.value = !isLiveVisionActive
-                                        }
-                                        .testTag("btn_live_vision_toggle"),
-                                    shape = RoundedCornerShape(6.dp),
-                                    color = if (isLiveVisionActive) HextechCyan.copy(alpha = 0.35f) else Color(0xFF1E293B),
-                                    border = BorderStroke(1.dp, if (isLiveVisionActive) HextechCyan else HextechCyan.copy(alpha = 0.6f))
-                                ) {
-                                    Box(contentAlignment = Alignment.Center) {
-                                        Icon(
-                                            imageVector = if (isLiveVisionActive) Icons.Default.Visibility else Icons.Default.VisibilityOff,
-                                            contentDescription = com.example.util.trNullable("Visión"),
-                                            tint = if (isLiveVisionActive) HextechCyan else TextSecondary,
-                                            modifier = Modifier.size(15.dp)
-                                        )
-                                    }
-                                }
-
-                                // 2. Botón de Depurado LiteRT (Solo icono)
-                                if (hubViewerButtonsVisible) Surface(
-                                    modifier = Modifier
-                                        .size(48.dp)
-                                        .clickable {
-                                            showLiteRTViewer = true
-                                        }
-                                        .testTag("btn_debug_overlay"),
-                                    shape = RoundedCornerShape(6.dp),
-                                    color = if (showLiteRTViewer) HextechCyan.copy(alpha = 0.35f) else Color(0xFF1E293B),
-                                    border = BorderStroke(1.dp, if (showLiteRTViewer) HextechCyan else HextechCyan.copy(alpha = 0.6f))
-                                ) {
-                                    Box(contentAlignment = Alignment.Center) {
-                                        Icon(
-                                            imageVector = Icons.Default.BugReport,
-                                            contentDescription = com.example.util.trNullable("Depurado"),
-                                            tint = HextechCyan,
-                                            modifier = Modifier.size(14.dp)
-                                        )
-                                    }
-                                }
-
-                                // 3. Botón Minimizar (a Burbuja flotante) - Visible, resaltado y siempre asegurado
-                                Surface(
-                                    modifier = Modifier
-                                        .size(48.dp)
-                                        .clickable {
-                                            isExpanded = false
-                                            onExpandedChange(false)
-                                        }
-                                        .testTag("btn_minimize_hub"),
-                                    shape = RoundedCornerShape(6.dp),
-                                    color = HextechGold.copy(alpha = 0.2f),
-                                    border = BorderStroke(1.2.dp, HextechGold)
-                                ) {
-                                    Box(contentAlignment = Alignment.Center) {
-                                        Icon(
-                                            imageVector = Icons.Default.Remove,
-                                            contentDescription = com.example.util.trNullable("Minimizar"),
-                                            tint = HextechGold,
-                                            modifier = Modifier.size(16.dp)
-                                        )
-                                    }
+                                Box(contentAlignment = Alignment.Center) {
+                                    Icon(
+                                        imageVector = Icons.Default.Remove,
+                                        contentDescription = com.example.util.trNullable("Minimizar"),
+                                        tint = HextechGold,
+                                        modifier = Modifier.size(16.dp)
+                                    )
                                 }
                             }
                         }
@@ -1311,7 +1266,10 @@ internal fun FloatingOverlayContent(
                                     text = tr("Auto-Scan"),
                                     color = TextMuted,
                                     fontSize = 9.5.sp,
-                                    modifier = Modifier.padding(end = 4.dp)
+                                    modifier = Modifier
+                                        .padding(end = 4.dp)
+                                        .alpha(if (autoScanEnabled) autoScanTextAlpha.value else 0.86f)
+                                        .testTag("overlay_auto_scan_label")
                                 )
                                 if (!isPremium) {
                                     Box(

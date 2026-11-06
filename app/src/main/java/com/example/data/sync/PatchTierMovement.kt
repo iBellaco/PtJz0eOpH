@@ -9,8 +9,8 @@ object PatchTierMovement {
         saved.toMutableMap().apply {
             current.forEach { (id, tier) ->
                 previous[id]?.let { old ->
-                    val direction = rank(tier).compareTo(rank(old))
-                    if (direction != 0) put(id, direction)
+                    val movement = rank(tier) - rank(old)
+                    if (movement != 0) put(id, movement)
                 }
             }
         }

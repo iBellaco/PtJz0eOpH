@@ -259,8 +259,7 @@ object WildRiftRepository {
                 tier = category,
                 tierMovement = patchMovements?.get(com.example.data.sync.RegionalTierParser.canonical(champion.id)) ?: if (patchMovements != null) 0 else previousTier?.takeIf { it.isNotBlank() }?.let {
                     when {
-                        tierRank(category) > tierRank(it) -> 1
-                        tierRank(category) < tierRank(it) -> -1
+                        tierRank(category) != tierRank(it) -> tierRank(category) - tierRank(it)
                         else -> priorMovements[champion.id] ?: champion.tierMovement
                     }
                 } ?: (priorMovements[champion.id] ?: champion.tierMovement),

@@ -114,7 +114,7 @@ data class Champion(
     val primaryRole: LaneRole = LaneRole.MID,
     val secondaryRoles: List<LaneRole> = emptyList(),
     val tier: String = "B", // "S+", "S", "A+", "A", "B"
-    /** Movimiento de categoría en la última sincronización: 1 sube, -1 baja. */
+    /** Movimiento de categoría en la última sincronización: positivo sube, negativo baja; la magnitud es el número de categorías. */
     val tierMovement: Int = 0,
     val hasRegionalStats: Boolean = true,
     val statsCheckedAt: Long = 0L,

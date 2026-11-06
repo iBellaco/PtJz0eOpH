@@ -161,15 +161,27 @@ class RuntimeBehaviorTest {
 
     @Test fun `subscription price and inherited deadlines depend on selected plan and currency`() {
         val account = mapOf<String, Any>("role" to "creador", "secondaryRole" to "streamer", "premiumUntil" to now + 1000L,
-            "blueEssence" to 1200L, "orangeEssence" to 100L)
-        val cases = listOf(Triple(EssencePremiumPlan.MONTHLY, EssenceCurrency.BLUE, 100L),
+            "blueEssence" to 10000L, "orangeEssence" to 1000L)
+        val cases = listOf(
+            Triple(EssencePremiumPlan.MONTHLY, EssenceCurrency.BLUE, 100L),
             Triple(EssencePremiumPlan.MONTHLY, EssenceCurrency.ORANGE, 9L),
-            Triple(EssencePremiumPlan.ANNUAL, EssenceCurrency.BLUE, 1100L), Triple(EssencePremiumPlan.ANNUAL, EssenceCurrency.ORANGE, 95L))
+            Triple(EssencePremiumPlan.SIX_MONTHS, EssenceCurrency.BLUE, 550L),
+            Triple(EssencePremiumPlan.SIX_MONTHS, EssenceCurrency.ORANGE, 50L),
+            Triple(EssencePremiumPlan.ANNUAL, EssenceCurrency.BLUE, 1100L),
+            Triple(EssencePremiumPlan.ANNUAL, EssenceCurrency.ORANGE, 95L),
+            Triple(EssencePremiumPlan.EIGHTEEN_MONTHS, EssenceCurrency.BLUE, 1650L),
+            Triple(EssencePremiumPlan.EIGHTEEN_MONTHS, EssenceCurrency.ORANGE, 145L),
+            Triple(EssencePremiumPlan.TWO_YEARS, EssenceCurrency.BLUE, 2200L),
+            Triple(EssencePremiumPlan.TWO_YEARS, EssenceCurrency.ORANGE, 190L)
+        )
         for ((plan, currency, price) in cases) {
             val (balance, deadline) = EssenceEconomyPolicy.purchase(account, plan, currency, now)
             assertEquals(EssenceEconomyPolicy.balance(account, currency) - price, balance)
             assertEquals(now + 1000L + plan.days * PremiumAccessPolicy.DAY_MILLIS, deadline)
         }
+        assertEquals(50L, EssencePremiumPlan.SIX_MONTHS.blueSavings)
+        assertEquals(4L, EssencePremiumPlan.SIX_MONTHS.orangeSavings)
+        assertEquals(200L, EssencePremiumPlan.TWO_YEARS.blueSavings)
         assertEquals("creador", account["role"]); assertEquals("streamer", account["secondaryRole"])
     }
 
