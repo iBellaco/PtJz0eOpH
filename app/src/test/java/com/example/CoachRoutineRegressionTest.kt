@@ -33,6 +33,9 @@ class CoachRoutineRegressionTest {
         assertEquals(0.0, CpmPolicy.revenue(1000, Double.NaN), 0.0)
         assertEquals(0.0, CpmPolicy.ctr(0, 10), 0.0)
         assertEquals(2.0, CpmPolicy.ctr(1000, 20), 0.0)
+        assertEquals(2.50, CpmPolicy.rpm(1500, 3.75), 0.0001)
+        assertEquals(6.25, CpmPolicy.rpm(1500, 2.50, 2.5), 0.0001)
+        assertEquals(0.0, CpmPolicy.rpm(0, 10.0), 0.0)
     }
     @Test fun `CPM writes actual nested counters and keeps dots inside notice identifiers`() {
         val result = CpmPolicy.nestedWrite(mapOf("metrics.sponsor.test.impressions" to 1L,

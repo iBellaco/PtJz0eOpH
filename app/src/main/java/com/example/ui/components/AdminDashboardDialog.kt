@@ -542,7 +542,7 @@ internal fun AdminDashboardHeader(
                 ) {
                     Icon(Icons.Default.TrendingUp, contentDescription = null, tint = Color(0xFF00FF66), modifier = Modifier.size(13.dp))
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text(tr("CPM"), fontSize = 10.5.sp, color = Color(0xFF00FF66), fontWeight = FontWeight.Bold, maxLines = 1)
+                    Text(tr("CPM/RPM"), fontSize = 10.5.sp, color = Color(0xFF00FF66), fontWeight = FontWeight.Bold, maxLines = 1)
                 }
 
                 // Botón Base de Datos

@@ -206,7 +206,7 @@ export async function executeEconomy(db, auth, raw, clock = Date.now, {requested
       metadata = {kind: 'ADJUSTMENT', currency: input.currency, delta: change};
       if (input.notify) {
         ensure(typeof input.title === 'string' && input.title.length <= 200 && typeof input.customBody === 'string' && input.customBody.length <= 10000, 'invalid-argument', 'Mensaje no válido');
-        const message = {id: input.id, title: input.title, content: input.customBody || `Se ha realizado un ajuste de ${record.amount} en tu saldo.`, tag: 'GENERAL', panel: 'HISTORY', timestamp: now, isRead: false, historyRecord: record};
+        const message = {id: input.id, title: input.title, content: input.customBody || `Se ha realizado un ajuste de ${record.amount} en tu saldo.`, tag: 'GENERAL', panel: 'INBOX', timestamp: now, timestampMillis: now, createdAt: serverTime(), isRead: false, historyRecord: record};
         writes.push([profile.collection('messages').doc(input.id), message]); updates.hasUnreadMessages = true; updates.unreadMessagesCount = FieldValue.increment(1);
       }
     } else if (input.action === 'PREMIUM_GRANT' || input.action === 'PREMIUM_REMOVE') {
@@ -256,7 +256,7 @@ export async function executeEconomy(db, auth, raw, clock = Date.now, {requested
         record = receipt(input.id, now, 'CREATOR_SUBSCRIPTION', 'Suscripción a Creador', '-5 EN');
         ensure(!(await tx.get(creatorRef.collection('economy_operations').doc(input.id))).exists && !(await tx.get(creatorRef.collection('subscription_history').doc(input.id))).exists, 'already-exists', 'El identificador ya pertenece a otra operación');
         const creatorReceipt = receipt(input.id, now, 'CREATOR_SUBSCRIPTION_REWARD', 'Pago por Suscriptor', `+${reward} EN`, 'Añadido por Suscripción');
-        writes.push([entry, {userId: uid, operationId: input.id, active: true, subscribedAt: serverTime()}], [creatorRef.collection('subscription_history').doc(input.id), creatorReceipt], [creatorRef.collection('economy_operations').doc(input.id), {id: input.id, kind: 'CREATOR_REWARD', userId: input.creatorUid, actorUid: 'service', timestamp: now, createdAt: serverTime(), cost: 5, reward, receipt: creatorReceipt}], [creatorRef.collection('messages').doc(input.id), {id: input.id, title: '¡Nueva Suscripción con Esencia Naranja!', content: `Un usuario se ha suscrito a tu perfil. Se añadieron ${reward} EN.`, tag: 'GENERAL', panel: 'CREATOR', timestamp: now, isRead: false}]);
+        writes.push([entry, {userId: uid, operationId: input.id, active: true, subscribedAt: serverTime()}], [creatorRef.collection('subscription_history').doc(input.id), creatorReceipt], [creatorRef.collection('economy_operations').doc(input.id), {id: input.id, kind: 'CREATOR_REWARD', userId: input.creatorUid, actorUid: 'service', timestamp: now, createdAt: serverTime(), cost: 5, reward, receipt: creatorReceipt}], [creatorRef.collection('messages').doc(input.id), {id: input.id, title: '¡Nueva Suscripción con Esencia Naranja!', content: `Un usuario se ha suscrito a tu perfil. Se añadieron ${reward} EN.`, tag: 'GENERAL', panel: 'CREATOR', timestamp: now, timestampMillis: now, createdAt: serverTime(), isRead: false}]);
         tx.update(creatorRef, {orangeEssence: integer(balance(creator, 'ORANGE') + reward), creatorSubscriberCount: count + 1, hasUnreadMessages: true, unreadMessagesCount: FieldValue.increment(1)});
         metadata = {kind: 'CREATOR_SUBSCRIPTION', creatorUid: input.creatorUid, cost: 5, reward};
       } else {

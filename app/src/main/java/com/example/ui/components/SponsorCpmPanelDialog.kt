@@ -376,7 +376,7 @@ fun SponsorCpmPanelDialog(
                         Icon(Icons.Default.Campaign, contentDescription = null, tint = HextechGold, modifier = Modifier.size(28.dp))
                         Spacer(modifier = Modifier.width(10.dp))
                         Column {
-                            Text(tr("Panel CPM de Patrocinador"), color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                            Text(tr("Panel CPM/RPM de Patrocinador"), color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 18.sp)
                             Text(tr("Gestiona tus anuncios publicitarios y presupuestos"), color = TextSecondary, fontSize = 12.sp)
                         }
                     }
@@ -486,7 +486,7 @@ fun SponsorCpmPanelDialog(
         AlertDialog(
             onDismissRequest = { showCreateDialog = false },
             containerColor = HextechSurface,
-            title = { Text(tr("Publicar Anuncio CPM"), color = HextechGold, fontWeight = FontWeight.Bold) },
+            title = { Text(tr("Publicar Anuncio CPM/RPM"), color = HextechGold, fontWeight = FontWeight.Bold) },
             text = {
                 Column(
                     modifier = Modifier.fillMaxWidth().verticalScroll(rememberScrollState()),
@@ -1069,8 +1069,13 @@ fun SponsorNoticeCard(
     }
 
     val metricsMap by com.example.data.AppNoticeAnalyticsManager.metricsMap.collectAsState()
+    val baseCpmRate by com.example.data.AppNoticeAnalyticsManager.baseCpmRate.collectAsState()
     val metrics = metricsMap[notice.id] ?: com.example.data.NoticeMetrics(notice.id)
     val ctr = metrics.ctr
+    val mediaMultiplier = if (notice.videoUrl.isNotBlank()) {
+        if (notice.videoUrl.contains("video") || notice.videoUrl.endsWith(".mp4") || notice.videoUrl.contains("youtube")) 2.5 else 1.5
+    } else 1.0
+    val rpm = metrics.calculateRpm(baseCpmRate, mediaMultiplier)
 
     val unitLabel = when (notice.durationUnit.lowercase(Locale.ROOT)) {
         "hour", "hours", "hora", "horas" -> "Horas"
@@ -1159,6 +1164,10 @@ fun SponsorNoticeCard(
                         Text(com.example.util.tr("CTR"), color = TextSecondary, fontSize = 10.sp)
                         Text(com.example.util.tr(String.format(Locale.US, "%.1f%%", ctr)), color = HextechCyan, fontWeight = FontWeight.Bold, fontSize = 12.sp)
                     }
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(com.example.util.tr("RPM"), color = TextSecondary, fontSize = 10.sp)
+                        Text(com.example.util.tr("$${String.format(Locale.US, "%.2f", rpm)} / 1k"), color = Color(0xFF00FF66), fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                    }
                 }
             }
 
@@ -1186,6 +1195,7 @@ fun SponsorNoticeCard(
 • Vistas (Impresiones): ${metrics.impressions}
 • Clics: ${metrics.clicks}
 • CTR: ${String.format(Locale.US, "%.1f%%", ctr)}
+• RPM efectivo: $${String.format(Locale.US, "%.2f", rpm)} USD / 1,000 impresiones
 • Presupuesto: $${String.format(Locale.US, "%.2f", notice.budget)} USD
 • Duración: ${notice.durationValue} $unitLabel
 ${if (deletionNoticeStr != null) "• Estado de tiempo: $deletionNoticeStr" else ""}
