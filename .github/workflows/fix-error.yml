@@ -1,10 +1,22 @@
-name: Fix error de draft y catálogo
+name: Validación selectiva de correcciones de Coach
 
 on:
   push:
     branches: [fix-error]
   workflow_dispatch:
     inputs:
+      validation_scope:
+        description: Alcance de la validación dirigida (auto detecta los archivos modificados)
+        type: choice
+        options:
+          - auto
+          - full
+          - scanner
+          - ui
+          - sponsors
+          - docs
+        default: auto
+        required: true
       scanner_regressions:
         description: Ejecutar también las regresiones OCR instaladas (opcional y lento)
         type: boolean
@@ -13,6 +25,16 @@ on:
         description: Recompilar y comprobar geometría y la suite instalada en español pendiente
         type: boolean
         default: false
+      native_sequence_shard:
+        description: Repetir únicamente un shard nativo fallido (por ejemplo 10)
+        type: string
+        required: false
+        default: ''
+      native_sequence_source_run:
+        description: Ejecución validada que contiene scanner-multidevice-audit para reconstruir el shard
+        type: string
+        required: false
+        default: ''
 
 concurrency:
   group: coach-fix-error-${{ github.ref }}
@@ -23,7 +45,43 @@ permissions:
   contents: read
 
 jobs:
+  validation-scope:
+    name: Detectar alcance seguro de la corrección
+    runs-on: ubuntu-latest
+    outputs:
+      scope: ${{ steps.scope.outputs.scope }}
+      run_draft: ${{ steps.scope.outputs.run_draft }}
+      run_sponsor: ${{ steps.scope.outputs.run_sponsor }}
+      run_release: ${{ steps.scope.outputs.run_release }}
+      run_native: ${{ steps.scope.outputs.run_native }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - name: Clasificar archivos modificados sin consultar ejecuciones externas
+        id: scope
+        env:
+          COACH_VALIDATION_SCOPE: ${{ inputs.validation_scope || 'auto' }}
+          COACH_SCANNER_REGRESSIONS: ${{ inputs.scanner_regressions || 'false' }}
+          COACH_SPANISH_ONLY: ${{ inputs.spanish_only || 'false' }}
+          COACH_BEFORE_SHA: ${{ github.event.before }}
+          GITHUB_EVENT_NAME: ${{ github.event_name }}
+          GITHUB_SHA: ${{ github.sha }}
+        run: python3 .github/scripts/detect-validation-scope.py
+      - name: Mostrar alcance seleccionado
+        run: |
+          {
+            echo "### Alcance de fix-error"
+            echo "Se ejecutan únicamente las suites afectadas; la validación completa sigue reservada para coach-validacion."
+            echo "Alcance: ${{ steps.scope.outputs.scope }}"
+            echo "Draft/interfaz: ${{ steps.scope.outputs.run_draft }}"
+            echo "Patrocinadores/economía: ${{ steps.scope.outputs.run_sponsor }}"
+            echo "APK instalado: ${{ steps.scope.outputs.run_release }}"
+            echo "Secuencia nativa: ${{ steps.scope.outputs.run_native }}"
+          } >> "$GITHUB_STEP_SUMMARY"
+
   catalog-preflight:
+    needs: validation-scope
     name: Comprobaciones previas de catálogos, idiomas y planes de prueba
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -44,6 +102,7 @@ jobs:
         python3 -m unittest discover -s .github/scripts -p test_localized_resources.py
         python3 -m unittest discover -s .github/scripts -p test_session_dialog.py
         python3 -m unittest discover -s .github/scripts -p test_no_realtime_cooldown_tracker.py
+        python3 -m unittest discover -s .github/scripts -p test_validation_scope.py
         python3 .github/scripts/validate-localized-resources.py
         python3 .github/scripts/validate-patch-content.py
         python3 -m unittest discover -s .github/scripts -p test_patch_content.py
@@ -60,7 +119,8 @@ jobs:
         bash tools/audit-portuguese.sh
 
   targeted-last-pick:
-    needs: catalog-preflight
+    if: needs.validation-scope.outputs.run_draft == 'true'
+    needs: [validation-scope, catalog-preflight]
     name: Roles, primera selección, baneos y catálogo
     runs-on: ubuntu-latest
     timeout-minutes: 40
@@ -194,8 +254,8 @@ jobs:
           retention-days: 14
 
   sponsor-permissions:
-    if: ${{ !inputs.spanish_only }}
-    needs: catalog-preflight
+    if: needs.validation-scope.outputs.run_sponsor == 'true' && !inputs.spanish_only
+    needs: [validation-scope, catalog-preflight]
     name: Solicitudes, esencias y moderación con las reglas reales
     runs-on: ubuntu-latest
     timeout-minutes: 12
@@ -204,6 +264,10 @@ jobs:
       - uses: actions/setup-node@v5
         with:
           node-version: '22'
+          cache: npm
+          cache-dependency-path: |
+            server/economy/package-lock.json
+            tests/firestore/package-lock.json
       - uses: actions/setup-java@v5
         with:
           distribution: temurin
@@ -218,7 +282,8 @@ jobs:
         run: npx firebase emulators:exec --only firestore,auth --project demo-coach-tests --config ../../firebase.json 'node rules.test.mjs && node economy-submission.test.mjs && node sponsor-review.test.mjs && node ../../server/economy/test/emulator.integration.mjs'
 
   shared-release-apks:
-    needs: catalog-preflight
+    if: needs.validation-scope.outputs.run_release == 'true'
+    needs: [validation-scope, catalog-preflight]
     name: Compilar APK release una vez para todas las pruebas instaladas
     runs-on: ubuntu-latest
     timeout-minutes: 30
@@ -290,8 +355,8 @@ jobs:
           retention-days: 3
 
   targeted-red-magic-release:
-    if: github.event_name == 'workflow_dispatch' && inputs.scanner_regressions && !inputs.spanish_only
-    needs: [catalog-preflight, shared-release-apks]
+    if: github.event_name == 'workflow_dispatch' && inputs.scanner_regressions && !inputs.spanish_only && needs.validation-scope.outputs.run_native == 'true'
+    needs: [validation-scope, catalog-preflight, shared-release-apks]
     name: Errores conocidos en release (${{ matrix.suite }})
     runs-on: ubuntu-latest
     timeout-minutes: 50
@@ -364,8 +429,8 @@ jobs:
           retention-days: 14
 
   targeted-spanish-recheck:
-    if: github.event_name == 'workflow_dispatch' && inputs.scanner_regressions && inputs.spanish_only
-    needs: [catalog-preflight, shared-release-apks]
+    if: github.event_name == 'workflow_dispatch' && inputs.scanner_regressions && inputs.spanish_only && needs.validation-scope.outputs.run_native == 'true'
+    needs: [validation-scope, catalog-preflight, shared-release-apks]
     name: Revisión instalada en español (corrección dirigida)
     runs-on: ubuntu-latest
     timeout-minutes: 50
@@ -416,8 +481,8 @@ jobs:
           retention-days: 14
 
   targeted-installed-vi:
-    if: ${{ !inputs.spanish_only }}
-    needs: [catalog-preflight, shared-release-apks]
+    if: needs.validation-scope.outputs.run_native == 'true' && !inputs.spanish_only
+    needs: [validation-scope, catalog-preflight, shared-release-apks]
     name: Regresión instalada de Vi y secuencia reducida
     runs-on: ubuntu-latest
     timeout-minutes: 40
@@ -466,9 +531,74 @@ jobs:
           if-no-files-found: warn
           retention-days: 14
 
+  targeted-native-shard:
+    if: github.event_name == 'workflow_dispatch' && inputs.native_sequence_shard != '' && needs.validation-scope.outputs.run_native == 'true'
+    needs: [validation-scope, catalog-preflight, shared-release-apks]
+    name: Repetir únicamente el shard nativo ${{ inputs.native_sequence_shard }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    steps:
+      - uses: actions/checkout@v5
+      - *fix-release-java
+      - *fix-release-local-config
+      - name: Recuperar los APK release compartidos
+        uses: actions/download-artifact@v4
+        with:
+          name: fix-error-shared-release-apks
+          path: app/build/outputs/apk/
+      - name: Recuperar la matriz completa de una validación anterior cuando se indicó
+        if: inputs.native_sequence_source_run != ''
+        uses: actions/download-artifact@v4
+        with:
+          run-id: ${{ inputs.native_sequence_source_run }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          name: scanner-multidevice-audit
+          path: app/build/
+      - name: Preparar el plan de secuencias del shard solicitado
+        run: |
+          mkdir -p app/build/generated/scanner-sequence-assets
+          if [ -f app/build/reports/scanner-multidevice/audit-summary.json ]; then
+            python3 tools/scanner-sequence-plan.py \
+              app/build/reports/scanner-multidevice/audit-summary.json \
+              app/build/generated/scanner-sequence-assets/scanner-sequence-plan.json
+          else
+            if [ "${{ inputs.native_sequence_shard }}" != "0" ]; then
+              echo 'Para repetir un shard distinto de 0 debes indicar native_sequence_source_run.'
+              exit 1
+            fi
+            cp app/src/test/resources/scanner/targeted-sequence-plan.json \
+              app/build/generated/scanner-sequence-assets/scanner-sequence-plan.json
+          fi
+      - *fix-release-kvm
+      - uses: ./.github/actions/prepare-emulator
+      - name: Ejecutar el shard nativo solicitado
+        uses: reactivecircus/android-emulator-runner@v2
+        env:
+          COACH_SEQUENCE_SHARD: ${{ inputs.native_sequence_shard }}
+          COACH_SEQUENCE_PREFLIGHT: 'false'
+          COACH_SEQUENCE_TARGETS: ''
+          COACH_SEQUENCE_BUILD_TYPE: release
+          COACH_SEQUENCE_TIMEOUT_SECONDS: '4200'
+        with:
+          api-level: 34
+          arch: x86_64
+          target: google_apis
+          disable-animations: true
+          emulator-boot-timeout: 300
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
+          script: python3 tools/verify-draft-sequence-device.py
+      - name: Conservar evidencia del shard nativo dirigido
+        if: always()
+        uses: actions/upload-artifact@v5
+        with:
+          name: fix-error-native-sequence-shard-${{ inputs.native_sequence_shard }}
+          path: app/build/reports/scanner-sequence/
+          if-no-files-found: warn
+          retention-days: 14
+
   cleanup-history:
     if: always()
-    needs: [catalog-preflight, targeted-last-pick, sponsor-permissions, targeted-red-magic-release, targeted-spanish-recheck, targeted-installed-vi]
+    needs: [validation-scope, catalog-preflight, targeted-last-pick, sponsor-permissions, shared-release-apks, targeted-red-magic-release, targeted-spanish-recheck, targeted-installed-vi, targeted-native-shard]
     runs-on: ubuntu-latest
     concurrency:
       group: coach-actions-history

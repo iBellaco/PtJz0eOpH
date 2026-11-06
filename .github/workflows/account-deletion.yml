@@ -20,6 +20,11 @@ jobs:
       - uses: actions/setup-node@v5
         with:
           node-version: '22'
+          cache: npm
+          cache-dependency-path: |
+            server/account-deletion/package-lock.json
+            tests/firestore/package-lock.json
+            server/economy/package-lock.json
       - run: npm ci --ignore-scripts --no-audit --no-fund
         working-directory: server/account-deletion
       - run: npm test
@@ -54,6 +59,11 @@ jobs:
       - uses: actions/setup-node@v5
         with:
           node-version: '22'
+          cache: npm
+          cache-dependency-path: |
+            server/account-deletion/package-lock.json
+            tests/firestore/package-lock.json
+            server/economy/package-lock.json
       - run: npm ci --ignore-scripts --no-audit --no-fund
         working-directory: server/account-deletion
       - uses: google-github-actions/auth@v2
