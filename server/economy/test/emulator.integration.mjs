@@ -20,8 +20,8 @@ try {
       ['MONTHLY', 'BLUE', 100, 30], ['MONTHLY', 'ORANGE', 9, 30],
       ['SIX_MONTHS', 'BLUE', 550, 180], ['SIX_MONTHS', 'ORANGE', 50, 180],
       ['ANNUAL', 'BLUE', 1100, 365], ['ANNUAL', 'ORANGE', 95, 365],
-      ['EIGHTEEN_MONTHS', 'BLUE', 1650, 545], ['EIGHTEEN_MONTHS', 'ORANGE', 145, 545],
-      ['TWO_YEARS', 'BLUE', 2200, 730], ['TWO_YEARS', 'ORANGE', 190, 730]
+      ['EIGHTEEN_MONTHS', 'BLUE', 1580, 545], ['EIGHTEEN_MONTHS', 'ORANGE', 138, 545],
+      ['TWO_YEARS', 'BLUE', 2050, 730], ['TWO_YEARS', 'ORANGE', 175, 730]
     ]) {
       const ref = db.doc(`users/${owner.uid}`), before = (await ref.get()).data(), field = currency === 'BLUE' ? 'blueEssence' : 'orangeEssence';
       await call('PURCHASE', `premium_${plan}_${currency}`, {plan, currency}); const after = (await ref.get()).data();

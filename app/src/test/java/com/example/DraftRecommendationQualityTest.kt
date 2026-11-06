@@ -80,6 +80,29 @@ class DraftRecommendationQualityTest {
         assertFalse(shouldShowDraftRecommendations(null, isFirstPick = true, hasDraftSelection = false))
     }
 
+    @Test
+    fun `optional favorite filter limits first pick recommendations to five lane favorites`() {
+        val favorites = WildRiftRepository.champions
+            .filter { it.primaryRole == LaneRole.MID || it.secondaryRoles.contains(LaneRole.MID) }
+            .take(5)
+        assertEquals(5, favorites.size)
+        val favoriteIds = favorites.map { it.id }.toSet()
+        assertEquals(5, WildRiftRepository.favoriteChampionCountForRole(LaneRole.MID, favoriteIds))
+
+        val filtered = WildRiftRepository.analyzeDraft(
+            myRole = LaneRole.MID,
+            allies = emptyList(),
+            enemies = emptyList(),
+            isFirstPick = true,
+            favoriteChampionIds = favoriteIds,
+            favoriteOnlyRecommendations = true
+        )
+
+        assertTrue(filtered.isFirstPickMode)
+        assertTrue(filtered.recommendations.isNotEmpty())
+        assertTrue(filtered.recommendations.all { it.champion.id in favoriteIds })
+    }
+
     @Test fun `blind advice without allies never duplicates tactics as synergy in either language`() {
         for (lang in listOf("es", "pt")) {
             val result = WildRiftRepository.analyzeDraft(myRole = LaneRole.MID,

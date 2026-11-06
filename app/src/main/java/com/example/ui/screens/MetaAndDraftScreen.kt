@@ -60,6 +60,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.data.WildRiftRepository
+import com.example.data.local.FavoriteChampionsManager
 import com.example.model.Champion
 import com.example.util.SubscriptionManager
 import com.example.model.DraftSlot
@@ -152,6 +153,7 @@ fun MetaAndDraftScreen(
 
     LaunchedEffect(Unit) {
         com.example.data.local.CustomChampionBuildsManager.init(screenContext)
+        FavoriteChampionsManager.init(screenContext)
         DraftSessionManager.initDefaults()
     }
 
@@ -166,7 +168,16 @@ fun MetaAndDraftScreen(
         initialChampionId?.let { id -> WildRiftRepository.getChampionById(id) }
     ) }
     var isFirstPick by remember { mutableStateOf(false) }
+    var favoriteOnlyRecommendations by remember {
+        mutableStateOf(sharedPrefs.getBoolean("draft_favorite_only_recommendations", false))
+    }
     var showDraftHistoryScreen by remember { mutableStateOf(false) }
+
+    LaunchedEffect(favoriteOnlyRecommendations) {
+        sharedPrefs.edit().putBoolean("draft_favorite_only_recommendations", favoriteOnlyRecommendations).apply()
+    }
+
+    val favoriteChampionIds by FavoriteChampionsManager.favoritesFlow.collectAsState()
 
     androidx.activity.compose.BackHandler {
         when {
@@ -220,14 +231,20 @@ fun MetaAndDraftScreen(
     val enemyLaneOpponent = if (activeRole != null) enemySlots.find { it.assignedRole == activeRole }?.champion ?: enemySlots.getOrNull(roleIndex)?.champion else null
     val selectedLaneOpponent = enemyLaneOpponent?.takeUnless { it.id == "empty" }
 
-    val analysis = remember(activeRole, isFirstPick, allySlots.toList(), enemySlots.toList(), lang) {
+    val favoriteRecommendationCount = activeRole?.let {
+        WildRiftRepository.favoriteChampionCountForRole(it, favoriteChampionIds)
+    } ?: 0
+    val analysis = remember(activeRole, isFirstPick, allySlots.toList(), enemySlots.toList(), lang,
+        favoriteChampionIds, favoriteOnlyRecommendations) {
         WildRiftRepository.analyzeDraft(
             myRole = activeRole,
             allies = allySlots.map { it.champion },
             enemies = enemySlots.map { it.champion },
             enemyLaneOpponent = selectedLaneOpponent,
             isFirstPick = isFirstPick,
-            lang = lang
+            lang = lang,
+            favoriteChampionIds = favoriteChampionIds,
+            favoriteOnlyRecommendations = favoriteOnlyRecommendations
         )
     }
 
@@ -293,7 +310,10 @@ fun MetaAndDraftScreen(
                         onClearAll = {
                             DraftSessionManager.clearAll()
                             android.widget.Toast.makeText(screenContext, com.example.util.appTr("Equipos vaciados"), android.widget.Toast.LENGTH_SHORT).show()
-                        }
+                        },
+                        favoriteOnlyRecommendations = favoriteOnlyRecommendations,
+                        favoriteRecommendationCount = favoriteRecommendationCount,
+                        onToggleFavoriteOnlyRecommendations = { favoriteOnlyRecommendations = it }
                     )
                 }
                 MetaScreenMode.TIER_LIST -> {
@@ -486,7 +506,10 @@ fun MetaAndDraftScreen(
                         onClearAll = {
                             DraftSessionManager.clearAll()
                             android.widget.Toast.makeText(screenContext, com.example.util.appTr("Equipos vaciados"), android.widget.Toast.LENGTH_SHORT).show()
-                        }
+                        },
+                        favoriteOnlyRecommendations = favoriteOnlyRecommendations,
+                        favoriteRecommendationCount = favoriteRecommendationCount,
+                        onToggleFavoriteOnlyRecommendations = { favoriteOnlyRecommendations = it }
                     )
                 }
                 MetaScreenMode.TIER_LIST -> {

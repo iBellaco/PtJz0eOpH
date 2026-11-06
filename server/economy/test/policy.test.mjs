@@ -6,8 +6,8 @@ for (const [plan, currency, days, cost] of [
   ['MONTHLY', 'BLUE', 30, 100], ['MONTHLY', 'ORANGE', 30, 9],
   ['SIX_MONTHS', 'BLUE', 180, 550], ['SIX_MONTHS', 'ORANGE', 180, 50],
   ['ANNUAL', 'BLUE', 365, 1100], ['ANNUAL', 'ORANGE', 365, 95],
-  ['EIGHTEEN_MONTHS', 'BLUE', 545, 1650], ['EIGHTEEN_MONTHS', 'ORANGE', 545, 145],
-  ['TWO_YEARS', 'BLUE', 730, 2200], ['TWO_YEARS', 'ORANGE', 730, 190]
+  ['EIGHTEEN_MONTHS', 'BLUE', 545, 1580], ['EIGHTEEN_MONTHS', 'ORANGE', 545, 138],
+  ['TWO_YEARS', 'BLUE', 730, 2050], ['TWO_YEARS', 'ORANGE', 730, 175]
 ]) {
   test(`${plan} ${currency} inherits existing time and uses the fixed price`, () => {
     const result = premiumPurchase(account, plan, currency, 1000);
