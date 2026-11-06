@@ -406,7 +406,11 @@ fun AdminGiveEssenceDialog(
                                 }
                             }
                         },
-                        enabled = !isProcessing && !pending && (amount.toLongOrNull() ?: 0L) > 0L,
+                        // A pending result is recoverable and idempotent for an
+                        // administrator. Keep the control usable so the same
+                        // operation can be retried instead of trapping the
+                        // dialog behind a disabled button.
+                        enabled = !isProcessing && (amount.toLongOrNull() ?: 0L) > 0L,
                         modifier = Modifier.heightIn(min = 48.dp).testTag("essence_submit"),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = activeColor

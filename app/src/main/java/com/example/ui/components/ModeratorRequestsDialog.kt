@@ -56,6 +56,13 @@ internal fun sponsorModerationRowId(row: Map<String, Any>): String? =
         .mapNotNull { row[it]?.toString()?.takeIf(String::isNotBlank) }
         .firstOrNull()
 
+/** Keep live sponsor rows when legacy moderator collections finish loading. */
+internal fun mergeModeratorRows(
+    existing: List<Map<String, Any>>,
+    incoming: List<Map<String, Any>>
+): List<Map<String, Any>> =
+    existing.filter(::isSponsorModerationRow) + incoming.filterNot(::isSponsorModerationRow)
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AdminModeratorRequestsDialog(
@@ -132,12 +139,12 @@ fun AdminModeratorRequestsDialog(
                             data["id"] = doc.id
                             combinedMap[doc.id] = data
                         }
-                        requests = requests.filterNot(::isSponsorModerationRow) + combinedMap.values.filterNot(::isSponsorModerationRow)
+                        requests = mergeModeratorRows(requests, combinedMap.values.toList())
                             .sortedByDescending { (it["timestamp"] as? Number)?.toLong() ?: 0L }
                         isLoading = false
                     }
                     .addOnFailureListener {
-                        requests = requests.filterNot(::isSponsorModerationRow) + combinedMap.values.filterNot(::isSponsorModerationRow)
+                        requests = mergeModeratorRows(requests, combinedMap.values.toList())
                             .sortedByDescending { (it["timestamp"] as? Number)?.toLong() ?: 0L }
                         isLoading = false
                     }
@@ -151,7 +158,7 @@ fun AdminModeratorRequestsDialog(
                             data["id"] = doc.id
                             data
                         }.sortedByDescending { (it["timestamp"] as? Number)?.toLong() ?: 0L }
-                        requests = requests.filterNot(::isSponsorModerationRow) + list.filterNot(::isSponsorModerationRow)
+                        requests = mergeModeratorRows(requests, list)
                         isLoading = false
                     }
                     .addOnFailureListener { e ->

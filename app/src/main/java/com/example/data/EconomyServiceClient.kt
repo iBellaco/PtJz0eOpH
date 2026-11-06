@@ -52,6 +52,7 @@ object EconomyServiceClient {
         check(AuthManager.getAuth()?.currentUser?.uid == user.uid) { appTr("Inicia sesión") }
         val admin = token.claims["admin"] == true
         val isSponsorResolution = action == "SPONSOR_RESOLVE"
+        val retryQueuedDirect = EconomyRequestPolicy.canRetryQueuedDirect(action, admin)
         val commandKey = EconomyRequestPolicy.operationKey(user.uid, action,
             if (action == "SPONSOR") fields + ("publicationId" to id) else fields)
         var directId = withOperationStorage { operations.reserve(commandKey, id) }
@@ -70,7 +71,7 @@ object EconomyServiceClient {
             if (!EconomyRequestPolicy.sameCommand(pending, fields + ("action" to action))) throw EconomyPendingException()
             directId = queued?.getString("operationId")?.takeIf { it.isNotBlank() } ?: throw EconomyReviewException()
             withOperationStorage { operations.adopt(commandKey, directId) }
-            if (queued?.getString("status") == "REVIEW") throw EconomyReviewException()
+            if (queued?.getString("status") == "REVIEW" && !retryQueuedDirect) throw EconomyReviewException()
         }
         val payload = fields + mapOf("action" to action, "id" to directId)
         // A previous process may have died after the server applied the command.
@@ -99,7 +100,11 @@ object EconomyServiceClient {
                 }
             }
         }
-        val direct = if (alreadyQueued) null else try {
+        // The callable is idempotent on the operation id. Let administrators
+        // retry their privileged command even when a previous attempt left a
+        // durable queue row; this avoids locking the admin UI behind a stale
+        // pending request without permitting a second balance change.
+        val direct = if (alreadyQueued && !retryQueuedDirect) null else try {
             @Suppress("UNCHECKED_CAST")
             withTimeoutOrNull(if (isSponsorResolution) 10_000L else 15_000L) {
                 FirebaseFunctions.getInstance("us-central1").getHttpsCallable("coachEconomy").call(payload).await().data as? Map<String, Any>
