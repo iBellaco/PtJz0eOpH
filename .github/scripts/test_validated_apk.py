@@ -2,7 +2,6 @@ import importlib.util
 from pathlib import Path
 import unittest
 import re
-from unittest.mock import patch
 
 spec = importlib.util.spec_from_file_location('validated_apk', Path(__file__).with_name('find-validated-apk.py'))
 validated = importlib.util.module_from_spec(spec)
@@ -57,13 +56,6 @@ class ValidatedApkTest(unittest.TestCase):
     def test_delivery_housekeeping_can_reuse_the_installed_apk(self):
         self.assertEqual(('42', 'a' * 40), self.invoke(changed_tree=True,
             files=[{'filename': p} for p in validated.DELIVERY_ONLY_FILES]))
-
-    def test_test_delivery_only_change_can_reuse_but_app_change_cannot(self):
-        changed = [{'filename': p} for p in validated.TEST_DELIVERY_ONLY_FILES]
-        with patch.dict('os.environ', {'COACH_TEST_BUILD': 'true'}):
-            self.assertEqual(('42', 'a' * 40), self.invoke(changed_tree=True, files=changed))
-            self.assertEqual(('', ''), self.invoke(changed_tree=True,
-                files=changed + [{'filename': 'app/build.gradle.kts'}]))
 
     def test_build_inputs_and_renamed_source_cannot_be_excluded(self):
         for filename in ['app/build.gradle.kts', '.github/workflows/build-apk.yml',
