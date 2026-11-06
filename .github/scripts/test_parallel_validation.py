@@ -37,8 +37,8 @@ class ParallelValidationTest(unittest.TestCase):
         self.assertIn('verify-draft-rival-names-device.py',
                       next(step for step in spanish['steps'] if 'script' in step.get('with', {}))['with']['script'])
         self.assertIn('shared-release-apks', recheck['needs'])
-        self.assertNotIn('if', jobs['shared-release-apks'])
-        self.assertNotIn('if', jobs['targeted-last-pick'])
+        self.assertIn('needs.validation-scope.outputs.run_release', jobs['shared-release-apks']['if'])
+        self.assertIn('needs.validation-scope.outputs.run_draft', jobs['targeted-last-pick']['if'])
         self.assertFalse(recheck.get('continue-on-error', False))
 
     def test_fix_sequence_target_belongs_to_the_selected_shard(self):

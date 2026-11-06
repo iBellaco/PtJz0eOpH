@@ -439,6 +439,11 @@ jobs:
     - uses: actions/setup-node@v5
       with:
         node-version: '22'
+        cache: npm
+        cache-dependency-path: |
+          server/economy/package-lock.json
+          server/account-deletion/package-lock.json
+          tests/firestore/package-lock.json
     - name: Install isolated service test dependencies
       run: |
         npm ci --ignore-scripts --no-audit --no-fund --prefix server/economy
@@ -642,7 +647,10 @@ jobs:
   native-name-sequence:
     needs: [build-apk,native-title-preflight]
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    # One cold emulator shard previously reached the 55-minute subprocess cap
+    # before it could publish evidence. Keep all cases, but allow the slowest
+    # valid shard to finish inside a bounded 75-minute job.
+    timeout-minutes: 75
     strategy:
       fail-fast: false
       matrix:
@@ -677,6 +685,7 @@ jobs:
       uses: reactivecircus/android-emulator-runner@v2
       env:
         COACH_SEQUENCE_SHARD: ${{ matrix.shard }}
+        COACH_SEQUENCE_TIMEOUT_SECONDS: '4200'
       with:
         api-level: 34
         arch: x86_64
