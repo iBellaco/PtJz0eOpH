@@ -1,6 +1,7 @@
 package com.example
 
 import com.example.ui.components.isSponsorModerationRow
+import com.example.ui.components.mergeModeratorRows
 import com.example.ui.components.sponsorModerationRowId
 import org.junit.Assert.*
 import org.junit.Test
@@ -22,5 +23,11 @@ class SponsorModerationRowTest {
         val row = mapOf<String, Any>("requestType" to "VERIFICATION", "id" to "verify-123")
         assertFalse(isSponsorModerationRow(row))
         assertEquals("verify-123", sponsorModerationRowId(row))
+    }
+
+    @Test fun legacyLoadDoesNotEraseLiveSponsorRows() {
+        val sponsor = mapOf<String, Any>("requestType" to "SPONSOR", "id" to "ad-12345678")
+        val moderator = mapOf<String, Any>("requestType" to "VERIFICATION", "id" to "verify-123")
+        assertEquals(listOf(sponsor, moderator), mergeModeratorRows(listOf(sponsor), listOf(moderator)))
     }
 }
