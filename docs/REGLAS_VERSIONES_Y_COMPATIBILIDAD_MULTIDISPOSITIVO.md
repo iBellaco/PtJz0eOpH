@@ -4,49 +4,23 @@ Este documento forma parte de las instrucciones permanentes del proyecto
 Coach. Debe consultarse antes de preparar una compilación, definir una prueba
 o interpretar un resultado del escáner.
 
-## 1. Versiones de prueba y producción
+## 1. Única versión de producción
 
-Coach utiliza dos tipos de versión:
+Coach trabaja únicamente con versiones de producción, tanto en validaciones
+como en entregas.
 
-### Versión de prueba
-
-- Se utiliza para pruebas internas, regresiones y validación previa.
-- Conserva la versión base y añade el sufijo `-prueba.N`.
-- Ejemplo: `1.1.10.464-prueba.1`.
-- La palabra `prueba` debe aparecer junto a la versión visible de la
-  aplicación para identificarla claramente.
-- Puede incrementarse `N` para distinguir nuevas iteraciones de prueba sin
-  convertirlas en una versión de producción.
-- No debe activar ni mostrar la comprobación de actualizaciones oficiales.
-
-### Versión de producción
-
-- Se utiliza únicamente cuando la versión ya fue probada y está lista para
-  distribuirse.
-- Mantiene solamente el formato numérico, sin `-prueba`.
-- Ejemplo: `1.1.10.464`.
-- Es la única versión que participa en la comprobación oficial de
-  actualizaciones.
-- Antes de publicar, `versionName` debe ser numérico y `versionCode` debe ser
-  ascendente.
+- `versionName` siempre conserva el formato numérico, sin `-prueba` ni otros
+  sufijos. Ejemplo: `1.1.10.483`.
+- `versionCode` debe incrementarse en cada intervención que genere una entrega.
+- La validación, la instalación automatizada y la publicación usan exactamente
+  la misma identidad de versión y firma persistente.
+- La APK conserva el nombre normal de producción, por ejemplo:
+  `Coach-1.1.10.483.apk`.
 - Toda versión de producción que detecte una versión publicada posterior debe
   exigir la actualización. El aviso no ofrece «Más tarde» ni permite continuar
-  usando Coach hasta completar la actualización. Las versiones `-prueba.N`
-  permanecen fuera de la comprobación oficial.
-
-### Nombre obligatorio del APK
-
-- Toda APK de prueba debe incluir claramente `prueba` y su iteración en el
-  nombre del archivo.
-- Ejemplo: `Coach-1.1.10.466-prueba.1.apk`.
-- Nunca se debe entregar una APK de prueba con el mismo nombre que la APK de
-  producción ni con un nombre ambiguo.
-- La APK de producción conserva el nombre normal, por ejemplo:
-  `Coach-1.1.10.466.apk`.
-- Antes de entregar cualquier APK, comprobar que el nombre del archivo y la
-  versión visible dentro de la aplicación indiquen el mismo tipo de versión.
-
-Nunca se debe publicar una compilación que conserve el sufijo `-prueba`.
+  usando Coach hasta completar la actualización.
+- No se crean APK, ZIP ni etiquetas alternativas de prueba. La validación no
+  cambia el nombre ni la versión visible de la aplicación.
 
 ## 2. Dos funcionalidades de Coach
 
