@@ -12,6 +12,11 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -19,8 +24,10 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.data.*
 import com.example.model.PremiumAccessPolicy
 import com.example.ui.theme.*
@@ -56,10 +63,19 @@ fun SubscriptionPlansBottomSheet(onDismiss: () -> Unit) {
         }
     }
     selected?.let { (plan, currency) ->
-        val planLabel = tr(if (plan == EssencePremiumPlan.MONTHLY) "Mensual" else "Anual")
+        val planLabel = tr(plan.labelKey)
         AlertDialog(onDismissRequest = { if (!busy) selected = null },
             title = { Text(tr("Confirmar suscripción")) },
-            text = { Column { Text(tr("Se descontarán ${plan.cost(currency)} ${currency.abbreviation}. El plan $planLabel añade ${plan.days} días a tu tiempo premium.")); feedback?.let { Text(tr(it), color = DangerRed) } } },
+            text = { Column {
+                Text(
+                    tr("Se descontarán {0} {1}. El plan {2} añade {3} días a tu tiempo premium.")
+                        .replace("{0}", plan.cost(currency).toString())
+                        .replace("{1}", currency.abbreviation)
+                        .replace("{2}", planLabel)
+                        .replace("{3}", plan.days.toString())
+                )
+                feedback?.let { Text(tr(it), color = DangerRed) }
+            } },
             confirmButton = { TextButton(enabled = !busy, modifier = Modifier.testTag("premium_purchase_confirm"), onClick = {
                 busy = true; feedback = null
                 scope.launch {
@@ -78,25 +94,58 @@ fun EssencePlanOptions(blue: Long, orange: Long, enabled: Boolean = true,
     onChoose: (EssencePremiumPlan, EssenceCurrency) -> Unit) {
     Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         EssencePremiumPlan.entries.forEach { plan ->
-            Surface(color = HextechSurface, border = BorderStroke(1.dp, if (plan == EssencePremiumPlan.ANNUAL) HextechGold else HextechCyan.copy(alpha = 0.6f)), shape = RoundedCornerShape(20.dp)) {
+            Surface(color = HextechSurface, border = BorderStroke(1.dp, if (plan != EssencePremiumPlan.MONTHLY) HextechGold else HextechCyan.copy(alpha = 0.6f)), shape = RoundedCornerShape(20.dp)) {
                 Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                         Icon(if (plan == EssencePremiumPlan.MONTHLY) Icons.Default.DateRange else Icons.Default.WorkspacePremium,
                             contentDescription = null, tint = if (plan == EssencePremiumPlan.MONTHLY) HextechCyan else HextechGold)
-                        Text(tr(if (plan == EssencePremiumPlan.MONTHLY) "Mensual" else "Anual"), color = TextPrimary, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                        Text(tr(plan.labelKey), color = TextPrimary, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
                     }
-                    if (plan == EssencePremiumPlan.ANNUAL) Text(tr("Más tiempo, mejor valor"), color = HextechGold, style = MaterialTheme.typography.labelMedium)
-                    Text(tr("${plan.days} días de Premium"), color = TextSecondary)
+                    if (plan != EssencePremiumPlan.MONTHLY) Text(tr("Más tiempo, mejor valor"), color = HextechGold, style = MaterialTheme.typography.labelMedium)
+                    Text(tr("{0} días de Premium").replace("{0}", plan.days.toString()), color = TextSecondary)
                     Button(onClick = { onChoose(plan, EssenceCurrency.BLUE) }, enabled = enabled && blue >= plan.blueCost,
                         modifier = Modifier.fillMaxWidth().testTag("premium_${plan.name}_BLUE"),
-                        shape = RoundedCornerShape(12.dp), colors = ButtonDefaults.buttonColors(containerColor = HextechCyan, contentColor = HextechDarkBg)) { Text(tr("${plan.blueCost} Esencias Azules")) }
-                    if (orange > 0) OutlinedButton(onClick = { onChoose(plan, EssenceCurrency.ORANGE) }, enabled = enabled && orange >= plan.orangeCost,
-                        modifier = Modifier.fillMaxWidth().testTag("premium_${plan.name}_ORANGE"), shape = RoundedCornerShape(12.dp),
-                        border = BorderStroke(1.dp, Color(0xFFFF9E1B)), colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFFFF9E1B))) { Text(tr("${plan.orangeCost} Esencias Naranjas")) }
+                        shape = RoundedCornerShape(12.dp), colors = ButtonDefaults.buttonColors(containerColor = HextechCyan, contentColor = HextechDarkBg)) { Text("${plan.blueCost} ${tr("Esencias Azules")}") }
+                    SavingsBadge(plan, EssenceCurrency.BLUE)
+                    if (orange > 0) {
+                        OutlinedButton(onClick = { onChoose(plan, EssenceCurrency.ORANGE) }, enabled = enabled && orange >= plan.orangeCost,
+                            modifier = Modifier.fillMaxWidth().testTag("premium_${plan.name}_ORANGE"), shape = RoundedCornerShape(12.dp),
+                            border = BorderStroke(1.dp, Color(0xFFFF9E1B)), colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFFFF9E1B))) { Text("${plan.orangeCost} ${tr("Esencias Naranjas")}") }
+                        SavingsBadge(plan, EssenceCurrency.ORANGE)
+                    }
                     if (blue < plan.blueCost && orange < plan.orangeCost) Text(tr("Esencias insuficientes"), color = TextMuted)
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun SavingsBadge(plan: EssencePremiumPlan, currency: EssenceCurrency) {
+    val savings = plan.savings(currency)
+    if (savings <= 0L) return
+    val pulse = rememberInfiniteTransition(label = "premium_savings_${plan.name}_${currency.name}").animateFloat(
+        initialValue = 0.96f,
+        targetValue = 1.04f,
+        animationSpec = infiniteRepeatable(animation = tween(900), repeatMode = RepeatMode.Reverse),
+        label = "premium_savings_scale"
+    )
+    val abbreviation = currency.abbreviation
+    Surface(
+        color = HextechGreen.copy(alpha = 0.14f),
+        shape = RoundedCornerShape(8.dp),
+        border = BorderStroke(1.dp, HextechGreen.copy(alpha = 0.55f)),
+        modifier = Modifier
+            .scale(pulse.value)
+            .testTag("premium_savings_${plan.name}_${currency.name}")
+    ) {
+        Text(
+            text = tr("Ahorro de {0} $abbreviation").replace("{0}", savings.toString()),
+            color = HextechGreen,
+            fontSize = 11.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(horizontal = 9.dp, vertical = 4.dp)
+        )
     }
 }
 

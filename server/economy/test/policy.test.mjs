@@ -1,8 +1,14 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {allowedAccount, cashRedemption, hasSponsorRole, premiumPurchase, validWallet, validateInput, integer, sponsorPrice, fingerprint, DAY} from '../policy.mjs';
-const account = {role: 'creador', blueEssence: 2000, orangeEssence: 200, premiumUntil: 9000000000000};
-for (const [plan, currency, days, cost] of [['MONTHLY', 'BLUE', 30, 100], ['MONTHLY', 'ORANGE', 30, 9], ['ANNUAL', 'BLUE', 365, 1100], ['ANNUAL', 'ORANGE', 365, 95]]) {
+const account = {role: 'creador', blueEssence: 10000, orangeEssence: 1000, premiumUntil: 9000000000000};
+for (const [plan, currency, days, cost] of [
+  ['MONTHLY', 'BLUE', 30, 100], ['MONTHLY', 'ORANGE', 30, 9],
+  ['SIX_MONTHS', 'BLUE', 180, 550], ['SIX_MONTHS', 'ORANGE', 180, 50],
+  ['ANNUAL', 'BLUE', 365, 1100], ['ANNUAL', 'ORANGE', 365, 95],
+  ['EIGHTEEN_MONTHS', 'BLUE', 545, 1650], ['EIGHTEEN_MONTHS', 'ORANGE', 545, 145],
+  ['TWO_YEARS', 'BLUE', 730, 2200], ['TWO_YEARS', 'ORANGE', 730, 190]
+]) {
   test(`${plan} ${currency} inherits existing time and uses the fixed price`, () => {
     const result = premiumPurchase(account, plan, currency, 1000);
     assert.equal(result.until, account.premiumUntil + days * DAY); assert.equal(result.cost, cost);
@@ -24,7 +30,7 @@ test('wallet validation rejects contracts, zero addresses and invalid Tron check
 for (const [network, expectedFee] of [['BEP20', 1], ['ERC20', 5], ['TRC20', 2]]) test(`${network} debits the server fee and rejects stale quotes`, () => {
   const wallet = network === 'TRC20' ? 'TLa2f6VPqDgRE67v1736s7bJ8Ray5wYjU7' : '0x1111111111111111111111111111111111111111';
   const input = {amount: 10, network, wallet, expectedFee};
-  assert.equal(cashRedemption(account, input, true).remaining, 190 - expectedFee);
+  assert.equal(cashRedemption(account, input, true).remaining, account.orangeEssence - 10 - expectedFee);
   assert.throws(() => cashRedemption(account, {...input, expectedFee: 0}, true), /comisión/);
 });
 test('Binance email requires an exclusive destination and has no network fee', () => {

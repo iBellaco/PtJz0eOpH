@@ -51,9 +51,17 @@ class LiteRTViewerNavigationTest {
         compose.onNodeWithTag("draft_estimated_roles").assertDoesNotExist()
     }
 
-    @Test fun `Spanish capture shortcuts preserve paused scan and detected draft`() = exerciseShortcuts("es", false)
-
-    @Test fun `Portuguese capture shortcuts preserve active scan and detected draft`() = exerciseShortcuts("pt", true)
+    @Test fun `Hub multidispositivo no expone controles manuales del visor`() {
+        val state = overlayState(false)
+        renderOverlay(state)
+        compose.onNodeWithTag("btn_live_vision_toggle").assertDoesNotExist()
+        compose.onNodeWithTag("btn_debug_overlay").assertDoesNotExist()
+        compose.onNodeWithTag("btn_minimize_hub").assertIsDisplayed()
+        compose.runOnIdle {
+            assertEquals("yuumi", state.allies[4]?.id)
+            assertEquals("darius", state.enemies[0]?.id)
+        }
+    }
 
     @Test fun `resuming scan preserves detections role mapping and current report`() {
         val state = overlayState(false)
@@ -105,6 +113,7 @@ class LiteRTViewerNavigationTest {
         renderOverlay(overlayState(false), viewerAllowed = false)
         compose.waitForIdle()
         compose.onNodeWithTag("btn_live_vision_toggle").assertDoesNotExist()
+        compose.onNodeWithTag("btn_debug_overlay").assertDoesNotExist()
     }
 
     private fun renderOverlay(state: com.example.service.OverlayState, viewerAllowed: Boolean = true) {
@@ -113,26 +122,6 @@ class LiteRTViewerNavigationTest {
                 com.example.service.FloatingOverlayContent(state, isLandscapeMode = false,
                     screenCaptureManager = null, onClose = {}, onDragDelta = { _, _, _, _ -> },
                     onExpandedChange = {}, onCompactModeChange = {}, loadViewerAccess = { viewerAllowed })
-            }
-        }
-    }
-
-    private fun exerciseShortcuts(language: String, active: Boolean) {
-        val state = overlayState(active)
-        AppLanguage.select(RuntimeEnvironment.getApplication(), language)
-        val report = com.example.service.screen.LiteRTVisionClassifier.reportFlow.value
-        val teams = (state.allies + state.enemies).map { it?.id }
-        renderOverlay(state)
-        repeat(2) {
-            compose.onNodeWithTag("btn_live_vision_toggle").assertIsDisplayed().performClick()
-            compose.onNodeWithTag("btn_debug_overlay").assertIsDisplayed().performClick()
-            compose.onNodeWithTag("vision_viewer_back").assertIsDisplayed().performClick()
-            compose.runOnIdle {
-                assertEquals(active, state.autoScanEnabled)
-                assertEquals(teams, (state.allies + state.enemies).map { it?.id })
-                assertTrue(state.manualLockedAllySlots[4] == true)
-                assertEquals("yuumi", com.example.service.screen.DraftVisionScanner.allySlotConfirmedChampions[0]?.id)
-                assertEquals(report, com.example.service.screen.LiteRTVisionClassifier.reportFlow.value)
             }
         }
     }

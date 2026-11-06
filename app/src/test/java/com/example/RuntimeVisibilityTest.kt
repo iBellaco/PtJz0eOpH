@@ -489,6 +489,11 @@ class RuntimeVisibilityTest(private val screen: String) {
             "premium-plans-overview" -> {
                 compose.onNodeWithText(appTr("Tu próximo nivel en Coach")).assertIsDisplayed()
                 compose.onNodeWithTag("premium_ANNUAL_ORANGE").performScrollTo().assertIsDisplayed()
+                for (plan in listOf("MONTHLY", "SIX_MONTHS", "ANNUAL", "EIGHTEEN_MONTHS", "TWO_YEARS")) {
+                    compose.onNodeWithTag("premium_${plan}_BLUE").performScrollTo().assertIsDisplayed()
+                }
+                compose.onNodeWithTag("premium_savings_SIX_MONTHS_BLUE").performScrollTo().assertIsDisplayed()
+                compose.onNodeWithTag("premium_savings_TWO_YEARS_ORANGE").performScrollTo().assertIsDisplayed()
                 inspect("annual")
                 compose.onNodeWithText(appTr("Tu próximo nivel en Coach")).performScrollTo()
             }
@@ -527,7 +532,7 @@ class RuntimeVisibilityTest(private val screen: String) {
                 Assert.assertEquals("ANNUAL:ORANGE", copiedSummary)
             }
             "essence-plans-insufficient" -> {
-                for (plan in listOf("MONTHLY", "ANNUAL")) for (currency in listOf("BLUE", "ORANGE"))
+                for (plan in listOf("MONTHLY", "SIX_MONTHS", "ANNUAL", "EIGHTEEN_MONTHS", "TWO_YEARS")) for (currency in listOf("BLUE", "ORANGE"))
                     compose.onNodeWithTag("premium_${plan}_$currency").performScrollTo().assertIsNotEnabled()
             }
             "storage-summary", "storage-summary-partial" -> {

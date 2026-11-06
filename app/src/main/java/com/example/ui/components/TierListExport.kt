@@ -144,8 +144,11 @@ internal fun renderTierListImage(context: Context, champions: List<Champion>): B
                 text(champion.name,center,nameY,minOf(21f,cellHeight*.23f),white,cellWidth-12,true)
                 text("WR ${percent(champion.winrate)} · P ${percent(champion.pickRate)} · B ${percent(champion.banRate)}",
                     center,y+cellHeight*.94f,minOf(15f,cellHeight*.21f),0xFFB4D8DE.toInt(),cellWidth-12,true)
-                if(champion.tierMovement!=0) text(if(champion.tierMovement>0) "↑" else "↓",x+cellWidth-24,y+19,20f,
-                    if(champion.tierMovement>0)0xFF6BDE9C.toInt() else 0xFFFF6677.toInt(),20f,true)
+                if(champion.tierMovement!=0) {
+                    val steps = kotlin.math.abs(champion.tierMovement).coerceAtMost(3)
+                    text("${if(champion.tierMovement>0) "↑" else "↓"} x$steps",x+cellWidth-24,y+19,14f,
+                        if(champion.tierMovement>0)0xFF6BDE9C.toInt() else 0xFFFF6677.toInt(),42f,true)
+                }
             }
             y+=cellHeight
         }

@@ -154,13 +154,12 @@ export async function executeEconomy(db, auth, raw, clock = Date.now, {requested
       const result = premiumPurchase(account, input.plan, input.currency, now, admin);
       updates[input.currency === 'BLUE' ? 'blueEssence' : 'orangeEssence'] = result.remaining;
       updates.premiumUntil = result.until;
-      updates.subscriptionPlan = input.plan === 'MONTHLY' ? 'Suscripción Premium mensual' : 'Suscripción Premium anual';
+      updates.subscriptionPlan = `Suscripción Premium ${result.label}`;
       record = receipt(input.id, now, 'ESSENCE_PURCHASE', updates.subscriptionPlan, `-${result.cost} ${input.currency === 'BLUE' ? 'EA' : 'EN'}`, 'Completado', result.days);
       metadata = {kind: 'PREMIUM', plan: input.plan, currency: input.currency, cost: result.cost, premiumUntil: result.until};
       const noticeId = `subscription_${input.id}`;
       const language = input.language === 'pt' ? 'pt' : 'es';
-      const planLabel = input.plan === 'MONTHLY' ? 'Mensual' : 'Anual';
-      const text = `${account.name ?? 'Usuario'} activó Premium ${planLabel} con ${result.cost} ${input.currency === 'BLUE' ? 'EA' : 'EN'}.`;
+      const text = `${account.name ?? 'Usuario'} activó Premium (${result.label}) con ${result.cost} ${input.currency === 'BLUE' ? 'EA' : 'EN'}.`;
       writes.push([db.doc(`support_reports/${noticeId}`), {
         id: noticeId, reportId: noticeId, subscriberUid: uid, userId: '',
         userEmail: auth.token.email ?? '', userName: account.name ?? 'Usuario',

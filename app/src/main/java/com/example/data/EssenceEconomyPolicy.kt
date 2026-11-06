@@ -6,9 +6,26 @@ enum class EssenceCurrency(val field: String, val abbreviation: String) {
     BLUE("blueEssence", "EA"), ORANGE("orangeEssence", "EN")
 }
 
-enum class EssencePremiumPlan(val days: Int, val blueCost: Long, val orangeCost: Long) {
-    MONTHLY(30, 100, 9), ANNUAL(365, 1100, 95);
+enum class EssencePremiumPlan(
+    val days: Int,
+    val months: Int,
+    val blueCost: Long,
+    val orangeCost: Long,
+    val labelKey: String
+) {
+    MONTHLY(30, 1, 100, 9, "1 mes"),
+    SIX_MONTHS(180, 6, 550, 50, "6 meses"),
+    ANNUAL(365, 12, 1100, 95, "1 año"),
+    EIGHTEEN_MONTHS(545, 18, 1650, 145, "1 año y 6 meses"),
+    TWO_YEARS(730, 24, 2200, 190, "2 años");
+
+    /** Precio sin descuento usando la tarifa mensual de cada esencia. */
+    val fullBlueCost: Long get() = months * 100L
+    val fullOrangeCost: Long get() = months * 9L
+    val blueSavings: Long get() = (fullBlueCost - blueCost).coerceAtLeast(0L)
+    val orangeSavings: Long get() = (fullOrangeCost - orangeCost).coerceAtLeast(0L)
     fun cost(currency: EssenceCurrency) = if (currency == EssenceCurrency.BLUE) blueCost else orangeCost
+    fun savings(currency: EssenceCurrency) = if (currency == EssenceCurrency.BLUE) blueSavings else orangeSavings
 }
 
 object EssenceEconomyPolicy {

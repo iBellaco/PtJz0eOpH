@@ -29,6 +29,9 @@ Idioma principal del desarrollador: español latino (es-419). Traduce a portugu�
 - Además de entregar el commit, debes incrementar/modificar la versión de depurado de la aplicación (en `app/build.gradle.kts` incrementando `versionCode` y `versionName`) para que se actualice la versión que aparece en la parte de abajo derecha de la aplicación.
 - Este archivo es la fuente única de instrucciones. `INSTRUCCIONES_AGENTES.md` mantiene un enlace de compatibilidad.
 
+### REGLA DE TÍTULOS DE ENTREGA
+- El título de cada actualización, modificación, corrección, auditoría o solicitud debe describir exactamente el cambio actual. No reutilizar títulos de trabajos anteriores ni presentar un cambio distinto del que se está implementando.
+
 ### REGLA DE RESUMEN COPIABLE DE LA APLICACIÓN (CRÍTICO)
 - La entrega de cada validación debe incluir texto copiable para testers sobre los cambios de Coach, sin reportes técnicos internos ni mensajes de commit. Distinguir lo implementado de lo validado.
 - No mencionar el repositorio, ramas, flujos, panel de administrador ni roles en las respuestas. Describir únicamente los cambios de la aplicación y distinguir las correcciones implementadas de las que todavía requieren validación.
