@@ -103,6 +103,7 @@ fun LiteRTEngineViewerDialog(
     initializeDiagnostics: Boolean = true
 ) {
     val context = LocalContext.current
+    val savedCoordinatesMessage = tr("Coordenadas guardadas en este dispositivo")
     val cropControlsRequester = remember { BringIntoViewRequester() }
     val cropNavigationScope = androidx.compose.runtime.rememberCoroutineScope()
     val report by LiteRTVisionClassifier.reportFlow.collectAsStateWithLifecycle()
@@ -617,7 +618,7 @@ fun LiteRTEngineViewerDialog(
                             onReset = { DraftVisionScanner.resetCalibration(context) },
                             onSave = {
                                 DraftVisionScanner.saveCalibrationForDevice(context)
-                                Toast.makeText(context, tr("Coordenadas guardadas en este dispositivo"), Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, savedCoordinatesMessage, Toast.LENGTH_SHORT).show()
                             },
                             report = { CalibrationSendButton() }
                         )

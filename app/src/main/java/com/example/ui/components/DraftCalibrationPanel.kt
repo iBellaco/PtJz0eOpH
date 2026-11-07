@@ -68,6 +68,7 @@ fun DraftCalibrationPanel(
     onDragDelta: ((dx: Int, dy: Int, isDragging: Boolean, isEnded: Boolean) -> Unit)? = null
 ) {
     val context = LocalContext.current
+    val savedCoordinatesMessage = tr("Coordenadas guardadas en este dispositivo")
     val currentConfig by DraftVisionScanner.alignedConfigFlow.collectAsStateWithLifecycle()
     var config by remember { mutableStateOf(currentConfig) }
     LaunchedEffect(currentConfig) {
@@ -445,7 +446,7 @@ fun DraftCalibrationPanel(
                 },
                 onSave = {
                     DraftVisionScanner.saveCalibrationForDevice(context)
-                    Toast.makeText(context, tr("Coordenadas guardadas en este dispositivo"), Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, savedCoordinatesMessage, Toast.LENGTH_SHORT).show()
                 },
                 report = { CalibrationSendButton() },
                 directionTagPrefix = "draft_calibration",
