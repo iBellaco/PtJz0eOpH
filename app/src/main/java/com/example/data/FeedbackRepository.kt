@@ -46,7 +46,9 @@ object FeedbackRepository {
         imagesBase64: List<String> = emptyList(),
         retentionDays: Int = 7,
         userName: String? = null,
-        id: String? = null
+        id: String? = null,
+        adminOnly: Boolean = false,
+        writeUserInboxCopy: Boolean = true
     ): Result<Unit> = withContext(Dispatchers.IO) {
         try {
             // 2. Preparar el nuevo reporte
@@ -86,7 +88,8 @@ object FeedbackRepository {
                 "userName" to (userName ?: "Usuario"),
                 "userEmail" to account.email.orEmpty(),
                 "contactEmail" to email.orEmpty(), "userId" to account.uid,
-                "staffVisible" to !SupportConversationPolicy.isAdministratorOnly(type), "userCanReply" to false,
+                "staffVisible" to (!SupportConversationPolicy.isAdministratorOnly(type) && !adminOnly),
+                "adminOnly" to adminOnly, "userCanReply" to false,
                 "conversation" to history.map { SupportConversationPolicy.encode(it, if (it.senderRole == "USER") account.uid else "") },
                 "userRead" to true, "isRead" to true, "hasNewAdminReply" to false, "staffRead" to false,
                 "appVersion" to appVersion,
@@ -98,8 +101,10 @@ object FeedbackRepository {
             )
             val batch = db.batch()
             batch.set(db.collection("support_reports").document(reportId), firestoreMap)
-            batch.set(db.collection("users").document(account.uid).collection("messages").document(reportId),
-                firestoreMap + mapOf("timestamp" to now))
+            if (writeUserInboxCopy) {
+                batch.set(db.collection("users").document(account.uid).collection("messages").document(reportId),
+                    firestoreMap + mapOf("timestamp" to now))
+            }
             batch.commit().await()
             com.example.WildRiftApp.instance?.let { SupportReplyManager.saveConversation(it, reportId, history) }
             Log.d(TAG, "Feedback guardado exitosamente en la nube")

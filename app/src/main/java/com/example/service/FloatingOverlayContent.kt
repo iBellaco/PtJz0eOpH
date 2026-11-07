@@ -53,6 +53,9 @@ import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Shield
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material.icons.filled.BugReport
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -139,6 +142,18 @@ internal fun FloatingOverlayContent(
     var activeRole by state::activeRole
 
     val sharedPrefs = remember { context.getSharedPreferences("app_prefs", android.content.Context.MODE_PRIVATE) }
+    // Los botones del visor deben aparecer de inmediato para una sesión de
+    // administrador; la política remota puede restringirlos después sin
+    // dejar el Hub vacío mientras se obtiene la configuración.
+    var hubViewerButtonsVisible by remember(isAdmin) { mutableStateOf(isAdmin) }
+    val accountId = remember {
+        runCatching { com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid }.getOrNull()
+    }
+    LaunchedEffect(accountId, isAdmin) {
+        hubViewerButtonsVisible = if (isAdmin) true else runCatching {
+            loadViewerAccess(accountId)
+        }.getOrDefault(false)
+    }
 
     LaunchedEffect(Unit) {
         val savedRoleStr = sharedPrefs.getString("saved_active_role", null)
@@ -969,28 +984,72 @@ internal fun FloatingOverlayContent(
 
                             Spacer(modifier = Modifier.width(4.dp))
 
-                            // El Hub usa la geometría adaptativa del escáner y no expone
-                            // controles manuales de visor o depuración. Solo se conserva
-                            // minimizar para devolver el panel a la burbuja flotante.
-                            Surface(
-                                modifier = Modifier
-                                    .size(48.dp)
-                                    .clickable {
-                                        isExpanded = false
-                                        onExpandedChange(false)
-                                    }
-                                    .testTag("btn_minimize_hub"),
-                                shape = RoundedCornerShape(6.dp),
-                                color = HextechGold.copy(alpha = 0.2f),
-                                border = BorderStroke(1.2.dp, HextechGold)
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(4.dp)
                             ) {
-                                Box(contentAlignment = Alignment.Center) {
-                                    Icon(
-                                        imageVector = Icons.Default.Remove,
-                                        contentDescription = com.example.util.trNullable("Minimizar"),
-                                        tint = HextechGold,
-                                        modifier = Modifier.size(16.dp)
-                                    )
+                                val isLiveVisionActive by DraftVisionScanner.showCalibrationBoxes.collectAsStateWithLifecycle()
+
+                                if (hubViewerButtonsVisible) Surface(
+                                    modifier = Modifier
+                                        .size(48.dp)
+                                        .clickable {
+                                            DraftVisionScanner.showCalibrationBoxes.value = !isLiveVisionActive
+                                        }
+                                        .testTag("btn_live_vision_toggle"),
+                                    shape = RoundedCornerShape(6.dp),
+                                    color = if (isLiveVisionActive) HextechCyan.copy(alpha = 0.35f) else Color(0xFF1E293B),
+                                    border = BorderStroke(1.dp, if (isLiveVisionActive) HextechCyan else HextechCyan.copy(alpha = 0.6f))
+                                ) {
+                                    Box(contentAlignment = Alignment.Center) {
+                                        Icon(
+                                            imageVector = if (isLiveVisionActive) Icons.Default.Visibility else Icons.Default.VisibilityOff,
+                                            contentDescription = com.example.util.trNullable("Visión"),
+                                            tint = if (isLiveVisionActive) HextechCyan else TextSecondary,
+                                            modifier = Modifier.size(15.dp)
+                                        )
+                                    }
+                                }
+
+                                if (hubViewerButtonsVisible) Surface(
+                                    modifier = Modifier
+                                        .size(48.dp)
+                                        .clickable { showLiteRTViewer = true }
+                                        .testTag("btn_debug_overlay"),
+                                    shape = RoundedCornerShape(6.dp),
+                                    color = if (showLiteRTViewer) HextechCyan.copy(alpha = 0.35f) else Color(0xFF1E293B),
+                                    border = BorderStroke(1.dp, if (showLiteRTViewer) HextechCyan else HextechCyan.copy(alpha = 0.6f))
+                                ) {
+                                    Box(contentAlignment = Alignment.Center) {
+                                        Icon(
+                                            imageVector = Icons.Default.BugReport,
+                                            contentDescription = com.example.util.trNullable("Depurado"),
+                                            tint = HextechCyan,
+                                            modifier = Modifier.size(14.dp)
+                                        )
+                                    }
+                                }
+
+                                Surface(
+                                    modifier = Modifier
+                                        .size(48.dp)
+                                        .clickable {
+                                            isExpanded = false
+                                            onExpandedChange(false)
+                                        }
+                                        .testTag("btn_minimize_hub"),
+                                    shape = RoundedCornerShape(6.dp),
+                                    color = HextechGold.copy(alpha = 0.2f),
+                                    border = BorderStroke(1.2.dp, HextechGold)
+                                ) {
+                                    Box(contentAlignment = Alignment.Center) {
+                                        Icon(
+                                            imageVector = Icons.Default.Remove,
+                                            contentDescription = com.example.util.trNullable("Minimizar"),
+                                            tint = HextechGold,
+                                            modifier = Modifier.size(16.dp)
+                                        )
+                                    }
                                 }
                             }
                         }
@@ -1261,14 +1320,38 @@ internal fun FloatingOverlayContent(
                                     .padding(4.dp)
                             )
 
-                            Row(verticalAlignment = Alignment.CenterVertically) {
+                            val autoScanColor by animateColorAsState(
+                                targetValue = if (autoScanEnabled) Color(0xFF00FF7F) else TextMuted,
+                                animationSpec = tween(300),
+                                label = "auto_scan_text_color"
+                            )
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(6.dp))
+                                    .background(if (autoScanEnabled) autoScanColor.copy(alpha = 0.12f) else Color.Transparent)
+                                    .border(1.dp, if (autoScanEnabled) autoScanColor.copy(alpha = 0.6f) else Color.Transparent, RoundedCornerShape(6.dp))
+                                    .padding(start = 4.dp, end = 1.dp, top = 1.dp, bottom = 1.dp)
+                                    .testTag("overlay_auto_scan_status")
+                            ) {
+                                if (autoScanEnabled) {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(6.dp)
+                                            .clip(CircleShape)
+                                            .background(autoScanColor)
+                                    )
+                                    Spacer(Modifier.width(3.dp))
+                                }
                                 Text(
-                                    text = tr("Auto-Scan"),
-                                    color = TextMuted,
+                                    text = tr(if (autoScanEnabled) "Auto-Scan • ACTIVO" else "Auto-Scan"),
+                                    color = autoScanColor,
                                     fontSize = 9.5.sp,
+                                    fontWeight = if (autoScanEnabled) FontWeight.Bold else FontWeight.Normal,
                                     modifier = Modifier
                                         .padding(end = 4.dp)
                                         .alpha(if (autoScanEnabled) autoScanTextAlpha.value else 0.86f)
+                                        .scale(if (autoScanEnabled) 0.98f + (autoScanTextAlpha.value * 0.04f) else 1f)
                                         .testTag("overlay_auto_scan_label")
                                 )
                                 if (!isPremium) {

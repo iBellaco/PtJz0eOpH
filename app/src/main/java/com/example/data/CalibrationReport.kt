@@ -1,6 +1,6 @@
 package com.example.data
 
-/** Versioned plain-text envelope; deliberately contains no account identifiers or screenshots. */
+/** Versioned plain-text envelope; contains only the requested display name and device geometry, never credentials or screenshots. */
 object CalibrationReport {
     const val MARKER = "[COACH_CALIBRATION_V1]"
     const val END = "[/COACH_CALIBRATION_V1]"
