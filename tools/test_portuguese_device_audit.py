@@ -72,3 +72,29 @@ class DeviceTextAuditTest(unittest.TestCase):
         finally:
             namespace.clear()
             namespace.update(state)
+
+    def test_language_selection_retries_until_portuguese_state_is_visible(self):
+        state = dict(namespace)
+        try:
+            namespace['tap'] = Mock()
+            namespace['window'] = Mock(return_value='screen')
+            namespace['app_nodes'] = Mock(side_effect=[
+                *([[{'text': 'Continuar en Español'}]] * 8),
+                [{'text': 'Continuar em Português'}],
+            ])
+            namespace['time'] = Mock()
+            namespace['snapshot'] = Mock()
+            namespace['select_language_option'] = Mock()
+            # The helper is loaded below from the source so this test also
+            # protects the retry contract without booting an emulator.
+            source = ast.parse(Path(__file__).with_name('audit-portuguese-device.py').read_text())
+            helper = next(node for node in source.body
+                          if isinstance(node, ast.FunctionDef) and node.name == 'select_language_option')
+            exec(compile(ast.Module(body=[helper], type_ignores=[]),
+                         'audit-portuguese-device.py', 'exec'), namespace)
+            namespace['select_language_option'](('Português', 'Portugués'), 'Continuar em Português')
+            self.assertEqual(2, namespace['tap'].call_count)
+            namespace['snapshot'].assert_not_called()
+        finally:
+            namespace.clear()
+            namespace.update(state)
