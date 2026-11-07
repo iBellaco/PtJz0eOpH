@@ -80,7 +80,7 @@ fun CalibrationControls(
 }
 
 @Composable
-fun CalibrationSendButton() {
+fun CalibrationSendButton(onBeforeSend: (() -> Unit)? = null) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     var sending by remember { mutableStateOf(false) }
@@ -90,12 +90,25 @@ fun CalibrationSendButton() {
     val dayKey = remember { java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.ROOT).format(java.util.Date()) }
     val sentToday = remember(dayKey) { prefs.getInt("sent_$dayKey", 0) }
     LaunchedEffect(sentToday) { limitReached = sentToday >= 5 }
-    val send = localizedString(R.string.calibration_send)
+    val send = localizedString(R.string.calibration_save_and_send)
     val pending = localizedString(R.string.calibration_sending)
     val success = localizedString(R.string.calibration_sent)
     val failure = localizedString(R.string.calibration_send_failed)
     val login = localizedString(R.string.calibration_verified_required)
-    CoachButton(enabled = !sending && !limitReached, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp).testTag("calibration_send_support"), onClick = {
+    CoachButton(enabled = !sending, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp).testTag("calibration_send_support"), onClick = {
+        // Persist the device-specific calibration before attempting the cloud
+        // report. The same action is intentionally used for both operations so
+        // closing the overlay or losing connectivity never discards the local
+        // coordinates.
+        val saved = runCatching { onBeforeSend?.invoke() }.isSuccess
+        if (!saved) {
+            Toast.makeText(context, failure, Toast.LENGTH_LONG).show()
+            return@CoachButton
+        }
+        if (limitReached) {
+            Toast.makeText(context, tr("Límite diario alcanzado"), Toast.LENGTH_LONG).show()
+            return@CoachButton
+        }
         val account = runCatching { com.google.firebase.auth.FirebaseAuth.getInstance().currentUser }.getOrNull()
         if (account == null || !account.isEmailVerified) {
             Toast.makeText(context, login, Toast.LENGTH_LONG).show()

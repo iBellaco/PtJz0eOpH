@@ -616,11 +616,14 @@ fun LiteRTEngineViewerDialog(
                             onStep = { calibrationStep = it },
                             onMove = { x, y, size -> modifyDetectionCircle(x, y, size) },
                             onReset = { DraftVisionScanner.resetCalibration(context) },
-                            onSave = {
-                                DraftVisionScanner.saveCalibrationForDevice(context)
-                                Toast.makeText(context, savedCoordinatesMessage, Toast.LENGTH_SHORT).show()
-                            },
-                            report = { CalibrationSendButton() }
+                            // Guardar y enviar es una sola acción para que la
+                            // calibración no dependa de dos botones separados.
+                            report = {
+                                CalibrationSendButton {
+                                    DraftVisionScanner.saveCalibrationForDevice(context)
+                                    Toast.makeText(context, savedCoordinatesMessage, Toast.LENGTH_SHORT).show()
+                                }
+                            }
                         )
                     }
                 }

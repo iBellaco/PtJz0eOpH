@@ -103,6 +103,26 @@ class DraftRecommendationQualityTest {
         assertTrue(filtered.recommendations.all { it.champion.id in favoriteIds })
     }
 
+    @Test
+    fun `favorite filter stays off until five lane favorites exist`() {
+        val favorites = WildRiftRepository.champions
+            .filter { it.primaryRole == LaneRole.MID || it.secondaryRoles.contains(LaneRole.MID) }
+            .take(4)
+        val favoriteIds = favorites.map { it.id }.toSet()
+        assertEquals(4, WildRiftRepository.favoriteChampionCountForRole(LaneRole.MID, favoriteIds))
+
+        val result = WildRiftRepository.analyzeDraft(
+            myRole = LaneRole.MID,
+            allies = emptyList(),
+            enemies = emptyList(),
+            isFirstPick = true,
+            favoriteChampionIds = favoriteIds,
+            favoriteOnlyRecommendations = true
+        )
+
+        assertTrue(result.recommendations.any { it.champion.id !in favoriteIds })
+    }
+
     @Test fun `blind advice without allies never duplicates tactics as synergy in either language`() {
         for (lang in listOf("es", "pt")) {
             val result = WildRiftRepository.analyzeDraft(myRole = LaneRole.MID,

@@ -1054,6 +1054,7 @@ fun DraftAnalysisTab(
         if (shouldShowDraftRecommendations(activeRole, isFirstPick, hasDraftSelection)) {
             val recommendationRole = requireNotNull(activeRole)
             val favoriteFilterAvailable = favoriteRecommendationCount >= 5
+            val favoriteMinimumMessage = tabContext.getString(com.example.R.string.draft_favorite_minimum)
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -1079,8 +1080,17 @@ fun DraftAnalysisTab(
                 }
                 Switch(
                     checked = favoriteOnlyRecommendations && favoriteFilterAvailable,
-                    onCheckedChange = onToggleFavoriteOnlyRecommendations,
-                    enabled = favoriteFilterAvailable,
+                    onCheckedChange = { requested ->
+                        if (requested && !favoriteFilterAvailable) {
+                            Toast.makeText(tabContext, favoriteMinimumMessage, Toast.LENGTH_LONG).show()
+                        } else {
+                            onToggleFavoriteOnlyRecommendations(requested)
+                        }
+                    },
+                    // Keep the control tappable when unavailable so the user
+                    // receives the explicit five-favorites requirement instead
+                    // of a switch that appears broken.
+                    enabled = true,
                     modifier = Modifier.testTag("draft_favorite_recommendations_toggle"),
                     colors = SwitchDefaults.colors(
                         checkedThumbColor = Color.White,
