@@ -51,12 +51,14 @@ class LiteRTViewerNavigationTest {
         compose.onNodeWithTag("draft_estimated_roles").assertDoesNotExist()
     }
 
-    @Test fun `Hub multidispositivo no expone controles manuales del visor`() {
+    @Test fun `Hub multidispositivo expone visor y controles de depuracion autorizados`() {
         val state = overlayState(false)
         renderOverlay(state)
-        compose.onNodeWithTag("btn_live_vision_toggle").assertDoesNotExist()
-        compose.onNodeWithTag("btn_debug_overlay").assertDoesNotExist()
+        compose.waitForIdle()
+        compose.onNodeWithTag("btn_live_vision_toggle").assertIsDisplayed()
+        compose.onNodeWithTag("btn_debug_overlay").assertIsDisplayed()
         compose.onNodeWithTag("btn_minimize_hub").assertIsDisplayed()
+        compose.onNodeWithTag("overlay_auto_scan_status").assertIsDisplayed()
         compose.runOnIdle {
             assertEquals("yuumi", state.allies[4]?.id)
             assertEquals("darius", state.enemies[0]?.id)

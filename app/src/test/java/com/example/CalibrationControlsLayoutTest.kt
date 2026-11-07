@@ -58,7 +58,7 @@ class CalibrationControlsLayoutTest {
             CompositionLocalProvider(LocalDensity provides Density(1f, font)) {
                 MyApplicationTheme {
                     Box(Modifier.width(width.dp).padding(12.dp).verticalScroll(rememberScrollState())) {
-                        CalibrationControls(step, { step = it }, { _,_,_ -> }, {}, {})
+                        CalibrationControls(step, { step = it }, { _,_,_ -> }, {}, {}, onSave = {})
                     }
                 }
             }
@@ -68,7 +68,7 @@ class CalibrationControlsLayoutTest {
                 compose.runOnIdle { language = lang; AppLanguage.select(context, language); width = w; font = scale }
                 compose.waitForIdle()
                 val tags = listOf("vision_calibration_up", "vision_calibration_left", "vision_calibration_right", "vision_calibration_down",
-                    "calibration_size_increase", "calibration_size_decrease", "calibration_step_0_1p", "calibration_step_0_5p", "calibration_step_1_0p", "calibration_step_2_0p", "vision_calibration_reset_device")
+                    "calibration_size_increase", "calibration_size_decrease", "calibration_step_0_1p", "calibration_step_0_5p", "calibration_step_1_0p", "calibration_step_2_0p", "calibration_save_device", "vision_calibration_reset_device")
                 for (tag in tags) {
                     val node = compose.onNodeWithTag(tag).assertIsDisplayed()
                     node.assertWidthIsAtLeast(48.dp).assertHeightIsAtLeast(48.dp)

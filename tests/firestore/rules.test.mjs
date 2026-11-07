@@ -225,6 +225,17 @@ try {
     await assertFails(getDoc(doc(other,`users/user/messages/${id}`)));
     await assertFails(setDoc(doc(unverified,'support_reports/unverified-coordinates'),value));
   });
+  await test('device calibration reports are admin-only and do not require an inbox mirror', async()=>{
+    const id='admin-only-calibration';
+    const value={...ticket(id,'COORDENADAS'), tag:'COORDENADAS', type:'COORDENADAS', staffVisible:false,
+      adminOnly:true, title:'Coordenadas del escáner', description:'modelo=Dispositivo de prueba; pantalla=1920x1080',
+      content:'modelo=Dispositivo de prueba; pantalla=1920x1080'};
+    await assertSucceeds(setDoc(doc(user,'support_reports',id),value));
+    await assertSucceeds(getDoc(doc(admin,'support_reports',id)));
+    await assertFails(getDoc(doc(moderator,'support_reports',id)));
+    await assertFails(getDoc(doc(user,'support_reports',id)));
+    await assertFails(getDoc(doc(other,'support_reports',id)));
+  });
   await test('owner and moderator can read support but another user cannot', async () => {
     await assertSucceeds(getDoc(doc(user, 'support_reports', 'ticket'))); await assertSucceeds(getDoc(doc(moderator, 'support_reports', 'ticket'))); await assertFails(getDoc(doc(other, 'support_reports', 'ticket')));
     await assertSucceeds(getDocs(query(collection(moderator, 'support_reports'), where('staffVisible', '==', true)))); await assertFails(getDocs(collection(moderator, 'support_reports')));

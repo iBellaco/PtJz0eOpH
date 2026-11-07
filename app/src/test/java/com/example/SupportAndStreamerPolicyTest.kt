@@ -65,6 +65,12 @@ class SupportAndStreamerPolicyTest {
         listOf("SOLVED", "SOLUCIONADO", "RESUELTO", "CLOSED").forEach { assertTrue(SupportConversationPolicy.isClosed(it)) }
         assertFalse(SupportConversationPolicy.isClosed("READ"))
     }
+    @Test fun `calibration reports are restricted to administrators`() {
+        assertTrue(SupportConversationPolicy.isAdministratorOnly("COORDENADAS"))
+        assertTrue(SupportConversationPolicy.isAdministratorOnly("CALIBRACION"))
+        assertFalse(SupportConversationPolicy.canView("moderador", "COORDENADAS"))
+        assertTrue(SupportConversationPolicy.canView("admin", "COORDENADAS"))
+    }
     @Test fun `valid platform channels normalize to safe URLs`() {
         mapOf("https://www.tiktok.com/@coach.test/live" to "TikTok", "https://www.youtube.com/@coachcanal/live?utm_source=test" to "YouTube", "https://youtube.com/@canal%C3%A7%C3%A3o" to "YouTube",
             "https://youtube.com/channel/UC1234567890123456789012" to "YouTube", "https://m.twitch.tv/coach_test/" to "Twitch", "https://kick.com/coach-test" to "Kick").forEach { (url, platform) ->
