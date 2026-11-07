@@ -203,6 +203,27 @@ def finish_onboarding(label):
     raise AssertionError("Onboarding did not reach the dashboard after activating: " + label)
 
 
+def select_language_option(labels, continue_label):
+    """Retry a language-row tap until the localized continuation state is visible.
+
+    The cold emulator can publish the accessibility tree before the first
+    Compose pointer event reaches the row.  A single tap then leaves the
+    Spanish continuation label visible even though the APK is healthy.  Keep
+    the assertion meaningful by retrying the same user action and requiring
+    the expected localized state before moving on.
+    """
+    for attempt in range(4):
+        tap(labels, attempts=8)
+        for _ in range(8):
+            if any(node.get("text") == continue_label for node in app_nodes(window())):
+                print("PORTUGUESE_DEVICE_LANGUAGE_SELECTED:", attempt + 1, flush=True)
+                return
+            time.sleep(0.25)
+        print("PORTUGUESE_DEVICE_LANGUAGE_RETRY:", attempt + 1, flush=True)
+    snapshot("language-selection-stalled")
+    raise AssertionError("Language selection did not reach: " + continue_label)
+
+
 def back():
     adb("shell", "input", "keyevent", "KEYCODE_BACK")
     time.sleep(0.8)
@@ -235,7 +256,7 @@ if MODE in ("pt", "both"):
     adb("shell", "input", "keyevent", "KEYCODE_WAKEUP")
     adb("shell", "wm", "dismiss-keyguard")
     adb("shell", "am", "start", "-W", "-n", APP + "/com.example.MainActivity")
-    tap(("Português", "Portugués"))
+    select_language_option(("Português", "Portugués"), "Continuar em Português")
     snapshot("language-portuguese")
     tap("Continuar em Português")
     snapshot("privacy")
