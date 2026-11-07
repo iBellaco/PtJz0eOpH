@@ -47,8 +47,16 @@ object EconomyServiceClient {
     ): Map<String, Any> {
         val user = AuthManager.getAuth()?.currentUser ?: error(appTr("Inicia sesión"))
         check(!AuthManager.isGuestOrUnauthenticated(user)) { appTr("Inicia sesión") }
-        val token = withTimeoutOrNull(10_000L) { user.getIdToken(false).await() }
+        var token = withTimeoutOrNull(10_000L) { user.getIdToken(false).await() }
             ?: throw IllegalStateException(appTr("No se pudo enviar la solicitud. Comprueba tu conexión y vuelve a intentarlo."))
+        // Custom administrator claims can be granted while the admin panel is
+        // already open. Refresh once for privileged operations so moderation
+        // and administrator sponsorship do not fall through to a slow queue
+        // merely because the cached ID token is stale.
+        if (action in setOf("SPONSOR_RESOLVE", "ADJUST", "RESOLVE", "ROLE", "PREMIUM_GRANT", "PREMIUM_REMOVE", "SPONSOR") &&
+            token.claims["admin"] != true) {
+            token = withTimeoutOrNull(10_000L) { user.getIdToken(true).await() } ?: token
+        }
         check(AuthManager.getAuth()?.currentUser?.uid == user.uid) { appTr("Inicia sesión") }
         val admin = token.claims["admin"] == true
         val isSponsorResolution = action == "SPONSOR_RESOLVE"
@@ -109,9 +117,9 @@ object EconomyServiceClient {
         // retry their privileged command even when a previous attempt left a
         // durable queue row; this avoids locking the admin UI behind a stale
         // pending request without permitting a second balance change.
-        val direct = if (alreadyQueued && !retryQueuedDirect) null else try {
+        suspend fun directCall(timeoutMillis: Long): Map<String, Any>? = try {
             @Suppress("UNCHECKED_CAST")
-            withTimeoutOrNull(if (isSponsorResolution || isImmediateAdminAction) 30_000L else 15_000L) {
+            withTimeoutOrNull(timeoutMillis) {
                 FirebaseFunctions.getInstance("us-central1").getHttpsCallable("coachEconomy").call(payload).await().data as? Map<String, Any>
             } ?: error("direct_service_timeout")
         } catch (error: FirebaseFunctionsException) {
@@ -125,6 +133,13 @@ object EconomyServiceClient {
         } catch (error: CancellationException) {
             throw error
         } catch (_: Exception) { null }
+
+        var direct = if (alreadyQueued && !retryQueuedDirect) null else
+            directCall(if (isSponsorResolution || isImmediateAdminAction) 12_000L else 15_000L)
+        // A transient cold start or a refreshed admin token can make the first
+        // callable attempt fail. Retry the same id once before creating a queue
+        // row; server operations are idempotent on this identifier.
+        if (direct == null && isImmediateAdminAction) direct = directCall(8_000L)
         direct?.let { result ->
             check(AuthManager.getAuth()?.currentUser?.uid == user.uid) { appTr("Inicia sesión") }
             if (result["ok"] == true) {
@@ -178,7 +193,7 @@ object EconomyServiceClient {
         if (!EconomyRequestPolicy.shouldAwaitQueuedResult(action, awaitQueuedResult)) {
             throw EconomyPendingException()
         }
-        val result = withTimeoutOrNull(if (action == "SPONSOR_RESOLVE" || isImmediateAdminAction) 30_000L else 8_000L) {
+        val result = withTimeoutOrNull(if (action == "SPONSOR_RESOLVE" || isImmediateAdminAction) 12_000L else 8_000L) {
             suspendCancellableCoroutine<Map<String, Any>> { continuation ->
                 var listener: ListenerRegistration? = null
                 listener = FirebaseFirestore.getInstance().collection("economy_results")

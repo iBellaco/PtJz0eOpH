@@ -234,6 +234,13 @@ fun MetaAndDraftScreen(
     val favoriteRecommendationCount = activeRole?.let {
         WildRiftRepository.favoriteChampionCountForRole(it, favoriteChampionIds)
     } ?: 0
+    LaunchedEffect(activeRole, favoriteRecommendationCount) {
+        // A saved preference must never leave the filter visually enabled
+        // after the user removes one of the five required lane favorites.
+        if (favoriteRecommendationCount < 5 && favoriteOnlyRecommendations) {
+            favoriteOnlyRecommendations = false
+        }
+    }
     val analysis = remember(activeRole, isFirstPick, allySlots.toList(), enemySlots.toList(), lang,
         favoriteChampionIds, favoriteOnlyRecommendations) {
         WildRiftRepository.analyzeDraft(

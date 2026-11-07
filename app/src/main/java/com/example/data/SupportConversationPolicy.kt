@@ -8,6 +8,9 @@ object SupportConversationPolicy {
     const val SYSTEM_GREETING = "Hola. El sistema ha recibido tu mensaje. El equipo de Coach te responderá aquí. Ningún miembro del staff te pedirá información privada sobre tu cuenta de juego ni sobre tu vida personal."
     const val PORTUGUESE_SYSTEM_GREETING = "Olá. O sistema recebeu sua mensagem. A equipe do Coach responderá por aqui."
     fun isSponsor(tag: String): Boolean = tag.trim().uppercase(Locale.ROOT) in setOf("PATROCINADOR", "PATROCINIO", "SPONSOR", "PUBLICIDAD")
+    fun isCoordinateReport(data: Map<String, Any>): Boolean = listOf("tag", "type", "category")
+        .mapNotNull { data[it] as? String }
+        .any { it.trim().uppercase(Locale.ROOT) in setOf("COORDENADAS", "CALIBRACION", "CALIBRAÇÃO") }
     fun isAdministratorOnly(tag: String): Boolean = isSponsor(tag) || tag.trim().uppercase(Locale.ROOT) in setOf(
         "PAGO", "PAYMENT", "PAGAMENTO", "SUSCRIPCION", "SUSCRIPCIÓN", "SUBSCRIPTION", "ASSINATURA",
         "COORDENADAS", "CALIBRACION", "CALIBRAÇÃO"

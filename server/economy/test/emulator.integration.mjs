@@ -155,6 +155,21 @@ try {
     await call('SPONSOR', 'sponsor_valid_price', {notice, expectedCost: 27});
     assert.equal((await db.doc('pending_sponsor_ads/sponsor_valid_price').get()).get('chargedEssence'), 27);
   });
+  await test('signed administrator can create and publish a sponsor without a secondary role', async () => {
+    const id = 'admin_sponsor_submission';
+    const notice = {title: 'Anuncio administrativo', content: 'Contenido administrativo', videoUrl: '', expandedImageUrl: '', externalUrl: '', durationValue: 1, durationUnit: 'day'};
+    const before = (await db.doc(`users/${admin.uid}`).get()).get('blueEssence');
+    await call('SPONSOR', id, {notice, expectedCost: 27}, admin);
+    assert.equal((await db.doc(`pending_sponsor_ads/${id}`).get()).get('userId'), admin.uid);
+    assert.equal((await db.doc(`users/${admin.uid}`).get()).get('blueEssence'), before - 27);
+    await call('SPONSOR_RESOLVE', 'admin_sponsor_approval', {sponsorId: id, approved: true}, admin);
+    const approved = await db.doc(`pending_sponsor_ads/${id}`).get();
+    assert.equal(approved.get('isApproved'), true);
+    assert.ok((await db.doc('system_config/app_notices').get()).get('notices').some(n => n.id === id));
+    const registry = await db.doc('system_config/app_notices').get();
+    await db.doc('system_config/app_notices').update({notices: (registry.get('notices') ?? []).filter(n => n.id !== id)});
+    await db.doc(`pending_sponsor_ads/${id}`).delete();
+  });
   await test('an unaccepted sponsor receives exactly one refund after seven server days', async () => {
     const now = Date.now(), profile = db.doc(`users/${owner.uid}`), before = (await profile.get()).get('blueEssence');
     await db.doc('pending_sponsor_ads/sponsor_valid_price').update({createdAt: now - 7 * 86400000 - 1000});

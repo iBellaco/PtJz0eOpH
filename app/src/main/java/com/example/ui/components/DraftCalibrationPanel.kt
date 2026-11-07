@@ -444,11 +444,14 @@ fun DraftCalibrationPanel(
                     DraftVisionScanner.resetCalibration(context)
                     config = DraftVisionScanner.alignedConfigFlow.value
                 },
-                onSave = {
-                    DraftVisionScanner.saveCalibrationForDevice(context)
-                    Toast.makeText(context, savedCoordinatesMessage, Toast.LENGTH_SHORT).show()
+                // Guardar y enviar es una sola acción: conserva la calibración
+                // local aunque el reporte remoto tarde o no tenga conexión.
+                report = {
+                    CalibrationSendButton {
+                        DraftVisionScanner.saveCalibrationForDevice(context)
+                        Toast.makeText(context, savedCoordinatesMessage, Toast.LENGTH_SHORT).show()
+                    }
                 },
-                report = { CalibrationSendButton() },
                 directionTagPrefix = "draft_calibration",
                 sizeTagPrefix = "draft_calibration_size",
                 stepTagPrefix = "draft_calibration_step",

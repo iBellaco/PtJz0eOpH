@@ -58,7 +58,11 @@ object PanelNotificationStore {
                     val query = if (admin) db.collection("support_reports") else db.collection("support_reports").whereEqualTo("staffVisible", true)
                     listeners += query.addSnapshotListener { snapshot, error ->
                         publish(next, NotificationPanel.SUPPORT, if (error == null) snapshot?.documents.orEmpty().filter {
-                            UserPanelNotificationPolicy.staffNeedsAttention(it.data.orEmpty(), admin) && it.getString("userId") != next.uid
+                            val data = it.data.orEmpty()
+                            val ownAdminCoordinate = admin && data["adminOnly"] == true &&
+                                SupportConversationPolicy.isCoordinateReport(data) && it.getString("userId") == next.uid
+                            UserPanelNotificationPolicy.staffNeedsAttention(data, admin) &&
+                                (it.getString("userId") != next.uid || ownAdminCoordinate)
                         }.associate { "support:${it.id}" to PanelReadRepository.revision(it.data.orEmpty()) } else emptyMap())
                     }
                 }
