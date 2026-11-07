@@ -68,6 +68,9 @@ class SupportAndStreamerPolicyTest {
     @Test fun `calibration reports are restricted to administrators`() {
         assertTrue(SupportConversationPolicy.isAdministratorOnly("COORDENADAS"))
         assertTrue(SupportConversationPolicy.isAdministratorOnly("CALIBRACION"))
+        assertTrue(SupportConversationPolicy.isCoordinateReport(mapOf("tag" to "COORDENADAS")))
+        assertTrue(SupportConversationPolicy.isCoordinateReport(mapOf("type" to "calibração")))
+        assertFalse(SupportConversationPolicy.isCoordinateReport(mapOf("tag" to "SOPORTE")))
         assertFalse(SupportConversationPolicy.canView("moderador", "COORDENADAS"))
         assertTrue(SupportConversationPolicy.canView("admin", "COORDENADAS"))
     }

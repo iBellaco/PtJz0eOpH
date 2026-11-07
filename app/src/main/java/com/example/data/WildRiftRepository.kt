@@ -600,6 +600,12 @@ object WildRiftRepository {
         val uniqueCandidates = candidates.groupBy { it.id }.values.map { profiles -> profiles.firstOrNull { it.primaryRole == myRole } ?: profiles.first() }
         val compatible = if (lane != null) uniqueCandidates.filter { MatchupKnowledge.relation(it,lane,myRole ?: it.primaryRole) != MatchupRelation.UNFAVORABLE } else uniqueCandidates
         val rankedCandidates = compatible.ifEmpty { uniqueCandidates }
+        val noFavorableFavorite = favoriteFilterActive && lane != null && compatible.isEmpty() && uniqueCandidates.isNotEmpty()
+        val favoriteFallbackAdvice = if (noFavorableFavorite) {
+            t(lang,
+                "Nenhuma das suas favoritas tem confronto favorável contra ${lane!!.getLocalizedName(lang)}; esta lista mostra a opção menos desfavorável segundo a composição e a pontuação de draft.",
+                "Ninguno de tus favoritos tiene un enfrentamiento favorable contra ${lane!!.getLocalizedName(lang)}; se muestra la opción menos desfavorable según la composición y la puntuación del draft.")
+        } else ""
         val serverLabel = "Global Meta"
 
         val recommendations = rankedCandidates.map { champ ->
@@ -656,8 +662,8 @@ object WildRiftRepository {
                     else t(lang,"PRIMEIRA SELEÇÃO PARA ESTA ROTA", "PRIMERA SELECCIÓN PARA ESTA LÍNEA")
 
                 val possibleWeaknesses = MatchupKnowledge.related(champ,champions,MatchupRelation.UNFAVORABLE).take(3)
-                val reason = t(lang,"Seleção inicial de ${champ.getLocalizedName(lang)}: compare a versatilidade, os rivais possíveis e a utilidade para a equipe. $roleContextAdvice",
-                    "Primera selección de ${champ.getLocalizedName(lang)}: compara la versatilidad, los rivales posibles y la utilidad para el equipo. $roleContextAdvice")
+                val reason = t(lang,"Seleção inicial de ${champ.getLocalizedName(lang)}: compare a versatilidade, os rivais possíveis e a utilidade para a equipe. $roleContextAdvice $favoriteFallbackAdvice",
+                    "Primera selección de ${champ.getLocalizedName(lang)}: compara la versatilidad, los rivales posibles y la utilidad para el equipo. $roleContextAdvice $favoriteFallbackAdvice")
                 val knownSynergies = MatchupKnowledge.synergies(champ, activeAllies)
                 synergyText = if (comboSynergies.isNotEmpty()) comboSynergies.distinct().joinToString(" • ")
                     else if (knownSynergies.isNotEmpty()) t(lang,
@@ -686,6 +692,7 @@ object WildRiftRepository {
                 val directSynergies = MatchupKnowledge.synergies(champ,activeAllies).map { it.getLocalizedName(lang) }
 
                 val badge = when {
+                    noFavorableFavorite -> t(lang, "MELHOR OPÇÃO ENTRE SUAS FAVORITAS", "MEJOR OPCIÓN ENTRE TUS FAVORITOS")
                     lane != null && MatchupKnowledge.relation(champ,lane,effectiveRole) == MatchupRelation.UNFAVORABLE -> t(lang,"CONFRONTO DESFAVORÁVEL", "ENFRENTAMIENTO DESFAVORABLE")
                     lane != null && MatchupKnowledge.relation(champ,lane,effectiveRole) == MatchupRelation.VARIABLE -> t(lang,"CONFRONTO VARIÁVEL", "ENFRENTAMIENTO VARIABLE")
                     directWeaknesses.isNotEmpty() -> t(lang,"RISCO CONTRA ${directWeaknesses.joinToString()}","RIESGO CONTRA ${directWeaknesses.joinToString()}")
@@ -717,6 +724,7 @@ object WildRiftRepository {
                 } else {
                     reasonParts.add(0, roleContextAdvice)
                 }
+                if (favoriteFallbackAdvice.isNotBlank()) reasonParts.add(0, favoriteFallbackAdvice)
 
                 synergyText = if (comboSynergies.isNotEmpty()) {
                     comboSynergies.joinToString(" • ")

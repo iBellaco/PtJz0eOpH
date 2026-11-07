@@ -65,6 +65,12 @@ fun SponsorCpmPanelDialog(
     val authUser = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser
     val userEmail = authUser?.email ?: "patrocinador@coach.app"
     val coroutineScope = rememberCoroutineScope()
+    LaunchedEffect(authUser?.uid) {
+        // The administrator claim may have been granted while this panel was
+        // open. Refresh only when the panel is entered so the sponsor form is
+        // not disabled by a stale token and no continuous monitoring is added.
+        if (authUser != null) com.example.util.AuthManager.refreshClaims()
+    }
     var remoteOwnAds by remember(authUser?.uid) { mutableStateOf<List<AppNotice>?>(null) }
     var remoteStatuses by remember(authUser?.uid) { mutableStateOf(emptyMap<String, String>()) }
     var adsUnavailable by remember(authUser?.uid) { mutableStateOf(false) }
@@ -75,6 +81,7 @@ fun SponsorCpmPanelDialog(
     var sendingIds by remember(authUser?.uid) { mutableStateOf(emptySet<String>()) }
     var submissionMessage by remember(authUser?.uid) { mutableStateOf<String?>(null) }
     val canSubmit = sessionPanelAccess(com.example.model.RolePanel.SPONSOR)
+    val isAdministrator = sessionPanelAccess(com.example.model.RolePanel.ADMINISTRATION)
     fun submit(submission: com.example.data.SponsorSubmission): Boolean {
         if (submission.notice.id in sendingIds) return false
         if (!outbox.save(submission)) {
@@ -818,7 +825,11 @@ fun SponsorCpmPanelDialog(
                     Spacer(modifier = Modifier.height(8.dp))
                     val parsedBudgetVal = autoBudget.replace(',', '.').toDoubleOrNull() ?: 10.0
                     val requiredEssences = (parsedBudgetVal * 10).toLong()
-                    val hasEnoughEssence = currentBlueEssence >= requiredEssences
+                    // The server remains authoritative for the balance. Do not
+                    // block an administrator with a stale balance snapshot while
+                    // the profile is synchronizing; a real insufficient balance
+                    // is still rejected atomically by the economy service.
+                    val hasEnoughEssence = isAdministrator || currentBlueEssence >= requiredEssences
 
                     Surface(
                         shape = RoundedCornerShape(8.dp),
@@ -863,7 +874,7 @@ fun SponsorCpmPanelDialog(
                             Toast.makeText(context, com.example.util.appTr("El título del anuncio es obligatorio"), Toast.LENGTH_SHORT).show()
                             return@Button
                         }
-                        if (currentBlueEssence < requiredEssences) {
+                        if (!isAdministrator && currentBlueEssence < requiredEssences) {
                             Toast.makeText(context, com.example.util.appTr("No tienes suficientes esencias azules ($requiredEssences EA requeridas). Recarga para publicar."), Toast.LENGTH_LONG).show()
                             showBuyEssenceDialog = true
                             return@Button
@@ -873,7 +884,7 @@ fun SponsorCpmPanelDialog(
                         val propStart = System.currentTimeMillis()
                         val propEnd = AppNoticeManager.calculateExpirationMillis(propStart, durationValueInt, selectedDurationUnit)
 
-                        val hasOverlap = allNotices.any { notice ->
+                        val hasOverlap = !isAdministrator && (allNotices.any { notice ->
                             val isPubTag = notice.tag.equals("Publicidad", ignoreCase = true) || notice.tag.equals("Ads", ignoreCase = true) || notice.tag.equals("PUBLICIDAD", ignoreCase = true)
                             val isExpired = notice.expiresAtMillis > 0L && notice.expiresAtMillis <= propStart
                             if (isPubTag && !isExpired) {
@@ -885,7 +896,7 @@ fun SponsorCpmPanelDialog(
                             val existingStart = if (notice.approvedAtMillis > 0L) notice.approvedAtMillis else propStart
                             val existingEnd = if (notice.expiresAtMillis > 0L) notice.expiresAtMillis else AppNoticeManager.calculateExpirationMillis(existingStart, notice.durationValue, notice.durationUnit)
                             kotlin.math.max(propStart, existingStart) < kotlin.math.min(propEnd, existingEnd)
-                        }
+                        })
 
                         if (hasOverlap) {
                             Toast.makeText(context, com.example.util.appTr("⚠️ El horario o fechas seleccionadas ya están ocupadas por otro anuncio. No se puede publicar ni descontar esencias azules."), Toast.LENGTH_LONG).show()
