@@ -166,8 +166,13 @@ try {
     const approved = await db.doc(`pending_sponsor_ads/${id}`).get();
     assert.equal(approved.get('isApproved'), true);
     assert.ok((await db.doc('system_config/app_notices').get()).get('notices').some(n => n.id === id));
+    const publicAd = await db.doc(`app_notices/${id}`).get();
+    assert.equal(publicAd.exists, true);
+    assert.equal(publicAd.get('tag'), 'PUBLICIDAD');
+    assert.equal(publicAd.get('sponsorEmail'), undefined);
     const registry = await db.doc('system_config/app_notices').get();
     await db.doc('system_config/app_notices').update({notices: (registry.get('notices') ?? []).filter(n => n.id !== id)});
+    await db.doc(`app_notices/${id}`).delete();
     await db.doc(`pending_sponsor_ads/${id}`).delete();
   });
   await test('an unaccepted sponsor receives exactly one refund after seven server days', async () => {
@@ -187,12 +192,14 @@ try {
       createdAt:now - 8 * 86400000,chargedEssence:27});
     await profile.collection('economy_operations').doc(id).set({kind:'SPONSOR',cost:27});
     await db.doc(`pending_sponsor_ads/${id}`).update({status:'PENDING'});
+    await db.doc(`app_notices/${id}`).set({id,title:'Retirar',tag:'PUBLICIDAD',isApproved:true,isEnabled:true});
     const source = db.doc(`economy_requests/${owner.uid}~${id}`);
     await source.set({userId:owner.uid, operationId:id, status:'REVIEW', payload:{action:'SPONSOR',id}});
     await call('SPONSOR_RESOLVE', 'sponsor_reject_history_resolve', {sponsorId:id, approved:false}, admin);
     assert.equal((await source.get()).get('status'), 'COMPLETED');
     assert.equal((await db.doc(`economy_results/${owner.uid}~${id}`).get()).get('result.approved'), false);
     assert.equal((await db.doc(`pending_sponsor_ads/${id}`).get()).get('status'),'REJECTED');
+    assert.equal((await db.doc(`app_notices/${id}`).get()).exists,false);
     assert.ok((await db.doc(`pending_sponsor_ads/${id}`).get()).get('refundedAtMillis'));
     assert.equal((await profile.get()).get('blueEssence'),before + 27);
     assert.equal((await profile.collection('economy_operations').doc(`sponsor_refund_${id}`).get()).get('cost'),27);
@@ -263,6 +270,7 @@ try {
     assert.equal((await profile.get()).get('blueEssence'),before-27);
     assert.equal((await db.doc(`pending_sponsor_ads/${id}`).get()).get('isApproved'),true);
     assert.ok((await db.doc('system_config/app_notices').get()).get('notices').some(n=>n.id===id));
+    assert.equal((await db.doc(`app_notices/${id}`).get()).exists,true);
   });
   await test('an interrupted worker recovers an expired lease without charging the committed operation again',async()=>{
     const request=queued('queue_lost_commit_01');

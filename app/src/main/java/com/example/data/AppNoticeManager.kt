@@ -92,6 +92,16 @@ internal fun mergeSponsorNotices(
     return merged to changed
 }
 
+internal fun mergePublicSponsorNotices(
+    base: List<AppNotice>,
+    previousPublic: List<AppNotice>,
+    currentPublic: List<AppNotice>
+): List<AppNotice> {
+    val publicIds = (previousPublic.asSequence() + currentPublic.asSequence())
+        .mapTo(mutableSetOf()) { it.id }
+    return base.filterNot { it.id in publicIds } + currentPublic
+}
+
 object AppNoticeManager {
     private const val TAG = "AppNoticeManager"
     private const val PREFS_NAME = "wild_rift_app_notices_prefs"
@@ -103,6 +113,8 @@ object AppNoticeManager {
     private const val FIRESTORE_DOC_NOTICES = "app_notices"
 
     private var firestoreListener: ListenerRegistration? = null
+    private var publicSponsorListener: ListenerRegistration? = null
+    private var publicSponsorNotices: List<AppNotice> = emptyList()
     private var authStateListener: FirebaseAuth.AuthStateListener? = null
     private var isAuthenticatingAnonymously = false
 
@@ -194,6 +206,9 @@ object AppNoticeManager {
                 .addOnFailureListener {
                     // Si aún no está en caché de Firestore, se usará la caché local ya cargada
                 }
+            db.collection("app_notices").get(Source.CACHE)
+                .addOnSuccessListener { processPublicSponsorSnapshot(appContext, it) }
+                .addOnFailureListener { }
         } catch (_: Exception) {}
     }
 
@@ -208,6 +223,7 @@ object AppNoticeManager {
                     ensureAuthAndSync(context)
                 } else {
                     attachFirestoreListener(context, force = true)
+                    attachPublicSponsorListener(context, force = true)
                     syncFromCloud(context)
                 }
             }
@@ -222,6 +238,7 @@ object AppNoticeManager {
         // Iniciar Firestore y fetch de inmediato sin esperar autenticación
         fetchFromFirestoreCache(appContext)
         attachFirestoreListener(appContext, force = false)
+        attachPublicSponsorListener(appContext, force = false)
         executeCloudFetch(appContext, null)
 
         // En segundo plano sin bloquear la UI ni la carga inicial
@@ -229,6 +246,7 @@ object AppNoticeManager {
         if (auth?.currentUser == null) {
             com.example.util.GuestAuthHelper.ensureAuth {
                 attachFirestoreListener(appContext, force = true)
+                attachPublicSponsorListener(appContext, force = true)
                 executeCloudFetch(appContext, null)
             }
         }
@@ -238,10 +256,12 @@ object AppNoticeManager {
         val appContext = context.applicationContext
         // Inmediato desde caché y en paralelo desde la nube
         fetchFromFirestoreCache(appContext)
+        attachPublicSponsorListener(appContext, force = false)
         // An explicit refresh must not settle on a stale local snapshot after
         // an administrator publishes a sponsor notice. The listener still
         // handles offline updates; this read is authoritative when online.
         executeCloudFetch(appContext, onComplete, Source.SERVER)
+        executePublicSponsorFetch(appContext, Source.SERVER)
     }
 
     private fun executeCloudFetch(
@@ -270,6 +290,40 @@ object AppNoticeManager {
             Log.e(TAG, "Excepción en executeCloudFetch: ${e.message}")
             onComplete?.invoke(false)
         }
+    }
+
+    private fun executePublicSponsorFetch(appContext: Context, source: Source) {
+        try {
+            FirebaseFirestore.getInstance().collection("app_notices")
+                .get(source)
+                .addOnSuccessListener { processPublicSponsorSnapshot(appContext, it) }
+                .addOnFailureListener { error ->
+                    Log.w(TAG, "Error sincronizando anuncios patrocinados públicos: ${error.message}")
+                }
+        } catch (error: Exception) {
+            Log.w(TAG, "No se pudo sincronizar anuncios patrocinados públicos: ${error.message}")
+        }
+    }
+
+    private fun mergePublicSponsors(base: List<AppNotice>): List<AppNotice> {
+        return mergePublicSponsorNotices(base, publicSponsorNotices, publicSponsorNotices)
+    }
+
+    private fun processPublicSponsorSnapshot(
+        context: Context,
+        snapshot: com.google.firebase.firestore.QuerySnapshot
+    ) {
+        val previous = publicSponsorNotices
+        publicSponsorNotices = snapshot.documents.mapNotNull { document ->
+            val data = document.data ?: return@mapNotNull null
+            if (data["isApproved"] != true || data["isEnabled"] != true) return@mapNotNull null
+            SponsorReviewPolicy.notice(document.id, data)
+        }
+        val combined = mergePublicSponsorNotices(_notices.value, previous, publicSponsorNotices)
+        _notices.value = combined
+        saveNoticesToPrefs(context, combined)
+        preloadMedia(context, publicSponsorNotices)
+        Log.d(TAG, "Sincronizados ${publicSponsorNotices.size} anuncios patrocinados públicos")
     }
 
     private fun processFirestoreSnapshot(context: Context, snapshot: com.google.firebase.firestore.DocumentSnapshot) {
@@ -311,10 +365,11 @@ object AppNoticeManager {
                         )
                     )
                 }
-                _notices.value = parsedNotices
-                saveNoticesToPrefs(context, parsedNotices)
-                preloadMedia(context, parsedNotices)
-                Log.d(TAG, "Sincronizados exitosamente ${parsedNotices.size} anuncios desde Firestore para todos los dispositivos.")
+                val combined = mergePublicSponsors(parsedNotices)
+                _notices.value = combined
+                saveNoticesToPrefs(context, combined)
+                preloadMedia(context, combined)
+                Log.d(TAG, "Sincronizados exitosamente ${combined.size} anuncios desde Firestore para todos los dispositivos.")
             }
         } catch (e: Exception) {
             Log.e(TAG, "Error procesando snapshot de Firestore: ${e.message}")
@@ -352,6 +407,33 @@ object AppNoticeManager {
         } catch (e: Exception) {
             Log.e(TAG, "No se pudo iniciar listener de Firestore: ${e.message}")
             firestoreListener = null
+        }
+    }
+
+    private fun attachPublicSponsorListener(context: Context, force: Boolean = false) {
+        if (force) {
+            try {
+                publicSponsorListener?.remove()
+            } catch (_: Exception) { }
+            publicSponsorListener = null
+        }
+        if (publicSponsorListener != null) return
+        try {
+            publicSponsorListener = FirebaseFirestore.getInstance().collection("app_notices")
+                .addSnapshotListener { snapshot, error ->
+                    if (error != null) {
+                        Log.w(TAG, "Error escuchando anuncios patrocinados públicos: ${error.message}")
+                        try {
+                            publicSponsorListener?.remove()
+                        } catch (_: Exception) { }
+                        publicSponsorListener = null
+                        return@addSnapshotListener
+                    }
+                    if (snapshot != null) processPublicSponsorSnapshot(context, snapshot)
+                }
+        } catch (error: Exception) {
+            Log.w(TAG, "No se pudo iniciar el listener de patrocinio público: ${error.message}")
+            publicSponsorListener = null
         }
     }
 
