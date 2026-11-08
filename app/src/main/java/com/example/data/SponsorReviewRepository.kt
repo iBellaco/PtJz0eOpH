@@ -71,6 +71,7 @@ object SponsorReviewRepository {
         val db = FirebaseFirestore.getInstance()
         val adRef = db.collection("pending_sponsor_ads").document(id)
         val registryRef = db.collection("system_config").document("app_notices")
+        val publicNoticeRef = db.collection("app_notices").document(id)
         val suffix = if (approve) "approve" else "reject"
         // A fresh identifier prevents an old REVIEW row from blocking a new,
         // already-authorized moderation decision. The server remains
@@ -88,8 +89,9 @@ object SponsorReviewRepository {
             val alreadyApproved = data["isApproved"] == true
             val rejected = data["status"] in setOf("REJECTED", "REFUNDED") ||
                 ((data["refundedAtMillis"] as? Number)?.toLong() ?: 0L) > 0L
-            if ((approve && alreadyApproved) || (!approve && rejected)) return@runTransaction true
-            check(!alreadyApproved && !rejected) { appTr("La solicitud ya fue resuelta") }
+            check(!(approve && rejected) && !(!approve && alreadyApproved)) {
+                appTr("La solicitud ya fue resuelta")
+            }
 
             val registry = tx.get(registryRef)
             @Suppress("UNCHECKED_CAST")
@@ -107,15 +109,28 @@ object SponsorReviewRepository {
                 }
                 val maximum = when (unit) { "hour" -> 12; "day", "" -> 3; "week" -> 2; "month" -> 6; else -> 3 }
                 val duration = ((data["durationValue"] as? Number)?.toInt() ?: 1).coerceIn(1, maximum)
+                val previousApprovedAt = (data["approvedAtMillis"] as? Number)?.toLong() ?: 0L
+                val previousExpiresAt = (data["expiresAtMillis"] as? Number)?.toLong() ?: 0L
                 val changes = mapOf<String, Any>(
                     "isApproved" to true,
                     "isEnabled" to true,
-                    "approvedAtMillis" to now,
-                    "expiresAtMillis" to now + unitMillis * duration
+                    "approvedAtMillis" to previousApprovedAt.takeIf { alreadyApproved && it > 0L }.let { it ?: now },
+                    "expiresAtMillis" to previousExpiresAt.takeIf { alreadyApproved && it > 0L }.let {
+                        it ?: (now + unitMillis * duration)
+                    }
                 )
-                tx.update(adRef, changes)
-                tx.set(registryRef, mapOf("notices" to (notices + SponsorReviewPolicy.publicNotice(id, data + changes))), SetOptions.merge())
+                if (!alreadyApproved) tx.update(adRef, changes)
+                val publicNotice = SponsorReviewPolicy.publicNotice(id, data + changes)
+                tx.set(registryRef, mapOf("notices" to (notices + publicNotice)), SetOptions.merge())
+                // A dedicated public document avoids losing the publication if
+                // another device still holds an old copy of the shared list.
+                tx.set(publicNoticeRef, publicNotice)
             } else {
+                if (rejected) {
+                    tx.set(registryRef, mapOf("notices" to notices), SetOptions.merge())
+                    tx.delete(publicNoticeRef)
+                    return@runTransaction true
+                }
                 // The visible decision is committed immediately. A private,
                 // signed queue row in the same transaction asks the trusted
                 // worker to verify the original charge and refund it exactly
@@ -123,6 +138,7 @@ object SponsorReviewRepository {
                 tx.get(queueRef)
                 tx.update(adRef, mapOf("status" to "REJECTED", "isApproved" to false, "isEnabled" to false))
                 tx.set(registryRef, mapOf("notices" to notices), SetOptions.merge())
+                tx.delete(publicNoticeRef)
                 val payload = mutableMapOf<String, Any>(
                     "action" to "SPONSOR_RESOLVE",
                     "id" to operationId,
