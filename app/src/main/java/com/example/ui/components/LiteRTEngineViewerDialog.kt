@@ -79,11 +79,27 @@ import com.example.service.screen.LiteRTVisionClassifier
 import com.example.service.screen.TenthPickDiagnosticManager
 import com.example.service.screen.VisionCalibrationConfig
 
-enum class CircleTarget(val title: String, val isAlly: Boolean, val slotIndex: Int? = null, val isBan: Boolean = false) {
+enum class CircleTarget(
+    val title: String,
+    val isAlly: Boolean,
+    val slotIndex: Int? = null,
+    val isBan: Boolean = false,
+    val banIndex: Int? = null
+) {
     ALLY_COLUMN_X("Columna Aliado X", true),
     ENEMY_COLUMN_X("Columna Rival X", false),
-    ALLY_BANS("Baneo aliado", true, isBan = true),
-    ENEMY_BANS("Baneo rival", false, isBan = true),
+    ALLY_BANS("Baneos aliados (grupo)", true, isBan = true),
+    ENEMY_BANS("Baneos rivales (grupo)", false, isBan = true),
+    ALLY_BAN_1("Baneo aliado 1", true, isBan = true, banIndex = 0),
+    ALLY_BAN_2("Baneo aliado 2", true, isBan = true, banIndex = 1),
+    ALLY_BAN_3("Baneo aliado 3", true, isBan = true, banIndex = 2),
+    ALLY_BAN_4("Baneo aliado 4", true, isBan = true, banIndex = 3),
+    ALLY_BAN_5("Baneo aliado 5", true, isBan = true, banIndex = 4),
+    ENEMY_BAN_1("Baneo rival 1", false, isBan = true, banIndex = 0),
+    ENEMY_BAN_2("Baneo rival 2", false, isBan = true, banIndex = 1),
+    ENEMY_BAN_3("Baneo rival 3", false, isBan = true, banIndex = 2),
+    ENEMY_BAN_4("Baneo rival 4", false, isBan = true, banIndex = 3),
+    ENEMY_BAN_5("Baneo rival 5", false, isBan = true, banIndex = 4),
     ALLY_SLOT_1("Aliado 1", true, 0),
     ALLY_SLOT_2("Aliado 2", true, 1),
     ALLY_SLOT_3("Aliado 3", true, 2),
@@ -127,10 +143,14 @@ fun LiteRTEngineViewerDialog(
     fun modifyDetectionCircle(deltaX: Float = 0f, deltaY: Float = 0f, deltaSize: Float = 0f) {
         // Read the latest committed value even before Compose consumes the next flow emission.
         val calibrationConfig = DraftVisionScanner.alignedConfigFlow.value
-        val updated = if (selectedTarget.isBan) calibrationConfig.withObservedBanRow(selectedTarget.isAlly,
-            observedBans.filter { (it.side == com.example.service.screen.BanSide.ALLY) == selectedTarget.isAlly }
-                .sortedBy { it.index }.mapNotNull { it.region }).adjustBanRow(
-            selectedTarget.isAlly, deltaX, deltaY, deltaSize) else selectedTarget.slotIndex?.let { index ->
+        val updated = if (selectedTarget.isBan) {
+            val observedConfig = calibrationConfig.withObservedBanRow(selectedTarget.isAlly,
+                observedBans.filter { (it.side == com.example.service.screen.BanSide.ALLY) == selectedTarget.isAlly }
+                    .sortedBy { it.index }.mapNotNull { it.region })
+            selectedTarget.banIndex?.let { index ->
+                observedConfig.adjustBanSlot(selectedTarget.isAlly, index, deltaX, deltaY, deltaSize)
+            } ?: observedConfig.adjustBanRow(selectedTarget.isAlly, deltaX, deltaY, deltaSize)
+        } else selectedTarget.slotIndex?.let { index ->
             calibrationConfig.adjustDraftSlot(selectedTarget.isAlly, index, deltaX, deltaY, deltaSize)
         } ?: calibrationConfig.adjustDraftColumn(
             isAlly = selectedTarget.isAlly,
@@ -583,14 +603,29 @@ fun LiteRTEngineViewerDialog(
                             observedBans.filter { (it.side == com.example.service.screen.BanSide.ALLY) == selectedTarget.isAlly }
                                 .sortedBy { it.index }.mapNotNull { it.region }) else calibrationConfig
                         val slotIndex = selectedTarget.slotIndex
+                        val banIndex = selectedTarget.banIndex
                         val selectedX = if (selectedTarget.isBan) {
-                            (if (selectedTarget.isAlly) displayConfig.allyBanXRatios else displayConfig.enemyBanXRatios).first()
+                            (if (selectedTarget.isAlly) displayConfig.allyBanXRatios else displayConfig.enemyBanXRatios)
+                                .let { xs -> if (banIndex != null) listOf(xs[banIndex]) else xs }
                         } else if (slotIndex != null) {
-                            if (selectedTarget.isAlly) displayConfig.getAllySlotX(slotIndex) else displayConfig.getEnemySlotX(slotIndex)
-                        } else if (selectedTarget.isAlly) displayConfig.allyAvatarCenterX else displayConfig.enemyAvatarCenterX
-                        val selectedY = if (selectedTarget.isBan) listOf(if (selectedTarget.isAlly) displayConfig.allyBanYRatio else displayConfig.enemyBanYRatio) else (if (selectedTarget.isAlly) displayConfig.allySlotYRatios else displayConfig.enemySlotYRatios).let { ys -> if (slotIndex != null) listOf(ys[slotIndex]) else ys }
-                        val selectedDiameter = if (selectedTarget.isBan) listOf(displayConfig.banDiameterRatio) else (if (selectedTarget.isAlly) displayConfig.allySlotDiameterRatios else displayConfig.enemySlotDiameterRatios).let { ds -> if (slotIndex != null) listOf(ds[slotIndex]) else ds }
-                        val currentCoordsText = "${com.example.util.tr(selectedTarget.title)}: X=${(selectedX * 100).format(2)}% | Y=${((selectedY.minOrNull() ?: 0f) * 100).format(2)}–${((selectedY.maxOrNull() ?: 0f) * 100).format(2)}% | ⌀=${(selectedDiameter.average().toFloat() * 100).format(2)}%"
+                            listOf(if (selectedTarget.isAlly) displayConfig.getAllySlotX(slotIndex) else displayConfig.getEnemySlotX(slotIndex))
+                        } else listOf(if (selectedTarget.isAlly) displayConfig.allyAvatarCenterX else displayConfig.enemyAvatarCenterX)
+                        val selectedY = if (selectedTarget.isBan) {
+                            (if (selectedTarget.isAlly) displayConfig.allyBanYRatios else displayConfig.enemyBanYRatios)
+                                .let { ys -> if (banIndex != null) listOf(ys[banIndex]) else ys }
+                        } else (if (selectedTarget.isAlly) displayConfig.allySlotYRatios else displayConfig.enemySlotYRatios)
+                            .let { ys -> if (slotIndex != null) listOf(ys[slotIndex]) else ys }
+                        val selectedDiameter = if (selectedTarget.isBan) {
+                            (if (selectedTarget.isAlly) displayConfig.allyBanDiameterRatios else displayConfig.enemyBanDiameterRatios)
+                                .let { ds -> if (banIndex != null) listOf(ds[banIndex]) else ds }
+                        } else (if (selectedTarget.isAlly) displayConfig.allySlotDiameterRatios else displayConfig.enemySlotDiameterRatios)
+                            .let { ds -> if (slotIndex != null) listOf(ds[slotIndex]) else ds }
+                        fun range(values: List<Float>): String {
+                            val min = (values.minOrNull() ?: 0f) * 100
+                            val max = (values.maxOrNull() ?: 0f) * 100
+                            return if (kotlin.math.abs(max - min) < .0001f) "${min.format(2)}%" else "${min.format(2)}–${max.format(2)}%"
+                        }
+                        val currentCoordsText = "${com.example.util.tr(selectedTarget.title)}: X=${range(selectedX)} | Y=${range(selectedY)} | ⌀=${range(selectedDiameter)}"
 
                         Box(
                             modifier = Modifier

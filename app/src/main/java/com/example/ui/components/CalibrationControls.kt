@@ -18,6 +18,7 @@ import androidx.compose.ui.text.style.TextAlign
 import com.example.BuildConfig
 import com.example.R
 import com.example.data.CalibrationReport
+import com.example.data.CalibrationUserName
 import com.example.data.FeedbackRepository
 import com.example.service.screen.DraftVisionScanner
 import com.example.service.screen.VisionCalibrationConfig
@@ -120,16 +121,16 @@ fun CalibrationSendButton(onBeforeSend: (() -> Unit)? = null) {
                 try {
                     val metrics = context.resources.displayMetrics
                     val snapshot = DraftVisionScanner.calibrationReportSnapshot()
-                    val displayName = account.displayName?.trim().orEmpty()
-                        .ifBlank { account.email?.substringBefore("@")?.trim().orEmpty() }
-                        .ifBlank { "Invocador" }
-                    val coordinates = "usuario=$displayName\n${snapshot.config.toFormattedCoordinatesString()}"
+                    val displayName = CalibrationUserName.resolve(account)
+                    val coordinates = snapshot.config.toFormattedCoordinatesString()
                     val payload = CalibrationReport.build(
                         "${Build.MANUFACTURER} ${Build.MODEL}; API ${Build.VERSION.SDK_INT}",
                         "${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})",
                         "${metrics.widthPixels}x${metrics.heightPixels}; density=${metrics.density}; font=${context.resources.configuration.fontScale}; orientation=${context.resources.configuration.orientation}",
                         if (snapshot.width > 0) "${snapshot.width}x${snapshot.height}" else "not_observed",
-                        coordinates
+                        coordinates,
+                        userName = displayName,
+                        language = AppLanguage.current.value
                     )
                     val title = if (AppLanguage.current.value == "pt") "Coordenadas do scanner" else "Coordenadas del escáner"
                     val result = FeedbackRepository.submitFeedback(

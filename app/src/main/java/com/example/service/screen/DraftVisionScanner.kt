@@ -450,8 +450,9 @@ object DraftVisionScanner {
     fun updateCalibration(context: android.content.Context, newConfig: VisionCalibrationConfig) {
         val old = calibrationConfig
         if (old.allyBanXRatios != newConfig.allyBanXRatios || old.enemyBanXRatios != newConfig.enemyBanXRatios ||
-            old.allyBanYRatio != newConfig.allyBanYRatio || old.enemyBanYRatio != newConfig.enemyBanYRatio ||
-            old.banDiameterRatio != newConfig.banDiameterRatio || old.manualAllyBans != newConfig.manualAllyBans ||
+            old.allyBanYRatios != newConfig.allyBanYRatios || old.enemyBanYRatios != newConfig.enemyBanYRatios ||
+            old.allyBanDiameterRatios != newConfig.allyBanDiameterRatios ||
+            old.enemyBanDiameterRatios != newConfig.enemyBanDiameterRatios || old.manualAllyBans != newConfig.manualAllyBans ||
             old.manualEnemyBans != newConfig.manualEnemyBans) {
             // Calibration moves the viewer regions, never revokes a confirmed ban.
             bannedPortraitScanner.recalibrate(newConfig)

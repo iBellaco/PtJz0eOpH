@@ -81,6 +81,7 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material.icons.filled.SportsEsports
 import androidx.compose.material.icons.filled.SupportAgent
+import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
@@ -139,6 +140,7 @@ enum class FeedbackCategoryTab(val titleKey: String, val icon: ImageVector) {
     SUGGESTIONS("Sugerencias", Icons.Default.Lightbulb),
     BUILDS("Builds", Icons.Default.SportsEsports),
     SUPPORT("Soporte", Icons.Default.SupportAgent),
+    CALIBRATION("Coordenadas", Icons.Default.Tune),
     VERIFY("Verificar", Icons.Default.VerifiedUser),
     SUBSCRIPTIONS("Suscripciones", Icons.Default.WorkspacePremium),
     SPONSOR("Patrocinador", Icons.Default.Star)
@@ -156,6 +158,7 @@ fun getFeedbackCategory(report: FeedbackReport): String {
         rawType in listOf("PAGO", "PAYMENT", "PAGAMENTO") -> "PAGO"
         rawType in listOf("SUSCRIPCION", "SUSCRIPCIÓN", "SUBSCRIPTION", "ASSINATURA") -> "SUBSCRIPTION"
         com.example.data.SupportConversationPolicy.isSponsor(rawType) -> "PATROCINADOR"
+        rawType in listOf("COORDENADAS", "CALIBRACION", "CALIBRAÇÃO") -> "CALIBRATION"
         rawType in listOf("BUG", "ERROR", "BUG_REPORT", "BUG / ERROR") -> "BUG"
         rawType in listOf("BUILD_SUGGESTION", "BUILD", "SUGERIR BUILD", "SUGERENCIA DE BUILD") || parseBuildSuggestionFromText(desc, title) != null -> "BUILD"
         rawType == "VERIFICAR" -> "VERIFY"
@@ -264,12 +267,12 @@ fun AdminFeedbackBottomSheet(
 
     // Reportes visibles según el rol del usuario (Los reportes de Patrocinador son exclusivos del Administrador)
     val visibleReports = remember(reports, isAdmin) {
-        if (isAdmin) reports else reports.filter { getFeedbackCategory(it) !in setOf("PATROCINADOR", "PAGO", "SUBSCRIPTION") }
+        if (isAdmin) reports else reports.filter { getFeedbackCategory(it) !in setOf("PATROCINADOR", "PAGO", "SUBSCRIPTION", "CALIBRATION") }
     }
 
     val availableTabs = remember(isAdmin) {
         if (isAdmin) FeedbackCategoryTab.entries else FeedbackCategoryTab.entries.filter {
-            it !in setOf(FeedbackCategoryTab.SPONSOR, FeedbackCategoryTab.SUBSCRIPTIONS)
+            it !in setOf(FeedbackCategoryTab.SPONSOR, FeedbackCategoryTab.SUBSCRIPTIONS, FeedbackCategoryTab.CALIBRATION)
         }
     }
 
@@ -279,17 +282,19 @@ fun AdminFeedbackBottomSheet(
     val suggestionList = remember(visibleReports) { visibleReports.filter { getFeedbackCategory(it) == "SUGGESTION" } }
     val buildList = remember(visibleReports) { visibleReports.filter { getFeedbackCategory(it) == "BUILD" } }
     val supportList = remember(visibleReports) { visibleReports.filter { getFeedbackCategory(it) == "SUPPORT" } }
+    val calibrationList = remember(visibleReports) { visibleReports.filter { getFeedbackCategory(it) == "CALIBRATION" } }
     val verifyList = remember(visibleReports) { visibleReports.filter { getFeedbackCategory(it) == "VERIFY" } }
     val subscriptionList = remember(visibleReports) { visibleReports.filter { getFeedbackCategory(it) == "SUBSCRIPTION" } }
     val sponsorList = remember(visibleReports) { visibleReports.filter { getFeedbackCategory(it) == "PATROCINADOR" } }
 
-    val currentCategoryItems = remember(visibleReports, currentCategoryTab, bugList, suggestionList, buildList, supportList, verifyList, subscriptionList, sponsorList) {
+    val currentCategoryItems = remember(visibleReports, currentCategoryTab, bugList, suggestionList, buildList, supportList, calibrationList, verifyList, subscriptionList, sponsorList) {
         when (currentCategoryTab) {
             FeedbackCategoryTab.ALL -> visibleReports
             FeedbackCategoryTab.BUGS -> bugList
             FeedbackCategoryTab.SUGGESTIONS -> suggestionList
             FeedbackCategoryTab.BUILDS -> buildList
             FeedbackCategoryTab.SUPPORT -> supportList
+            FeedbackCategoryTab.CALIBRATION -> calibrationList
             FeedbackCategoryTab.VERIFY -> verifyList
             FeedbackCategoryTab.SUBSCRIPTIONS -> subscriptionList
             FeedbackCategoryTab.SPONSOR -> sponsorList
@@ -346,6 +351,7 @@ fun AdminFeedbackBottomSheet(
                 FeedbackCategoryTab.SUGGESTIONS -> cat == "SUGGESTION"
                 FeedbackCategoryTab.BUILDS -> cat == "BUILD"
                 FeedbackCategoryTab.SUPPORT -> cat == "SUPPORT"
+                FeedbackCategoryTab.CALIBRATION -> cat == "CALIBRATION"
                 FeedbackCategoryTab.VERIFY -> cat == "VERIFY"
                 FeedbackCategoryTab.SUBSCRIPTIONS -> cat == "SUBSCRIPTION"
                 FeedbackCategoryTab.SPONSOR -> cat == "PATROCINADOR"
@@ -526,6 +532,7 @@ fun AdminFeedbackBottomSheet(
                         FeedbackCategoryTab.SUGGESTIONS -> suggestionList.size
                         FeedbackCategoryTab.BUILDS -> buildList.size
                         FeedbackCategoryTab.SUPPORT -> supportList.size
+                        FeedbackCategoryTab.CALIBRATION -> calibrationList.size
                         FeedbackCategoryTab.VERIFY -> verifyList.size
                         FeedbackCategoryTab.SUBSCRIPTIONS -> subscriptionList.size
                         FeedbackCategoryTab.SPONSOR -> sponsorList.size
@@ -577,6 +584,7 @@ fun AdminFeedbackBottomSheet(
                             FeedbackCategoryTab.SUGGESTIONS -> suggestionList.size
                             FeedbackCategoryTab.BUILDS -> buildList.size
                             FeedbackCategoryTab.SUPPORT -> supportList.size
+                            FeedbackCategoryTab.CALIBRATION -> calibrationList.size
                             FeedbackCategoryTab.VERIFY -> verifyList.size
                             FeedbackCategoryTab.SUBSCRIPTIONS -> subscriptionList.size
                             FeedbackCategoryTab.SPONSOR -> sponsorList.size
@@ -599,7 +607,8 @@ fun AdminFeedbackBottomSheet(
 
                 if (currentCategoryTab == FeedbackCategoryTab.ALL ||
                     currentCategoryTab == FeedbackCategoryTab.BUGS ||
-                    currentCategoryTab == FeedbackCategoryTab.SUPPORT) {
+                    currentCategoryTab == FeedbackCategoryTab.SUPPORT ||
+                    currentCategoryTab == FeedbackCategoryTab.CALIBRATION) {
                     item {
                         StatusFilterChip(
                             label = tr("️ Leídos"),
@@ -816,7 +825,7 @@ fun AdminFeedbackBottomSheet(
                                         Toast.makeText(context, com.example.util.appTr(if (ok) "Estado actualizado" else "No se pudo sincronizar el estado. Inténtalo de nuevo."), Toast.LENGTH_SHORT).show()
                                     }
                                 },
-                                onReply = if (getFeedbackCategory(report) == "SUBSCRIPTION") null else ({ reportToReply = report }),
+                                onReply = if (getFeedbackCategory(report) in setOf("SUBSCRIPTION", "CALIBRATION")) null else ({ reportToReply = report }),
                                 onReviewVerification = if (getFeedbackCategory(report) == "VERIFY") ({ approved -> verificationReview = report to approved }) else null,
                                 onDelete = if (isAdmin) ({ reportToDelete = report }) else null,
                                 onCopy = {
@@ -888,7 +897,7 @@ fun AdminFeedbackBottomSheet(
             userName = rep.parsedUserName ?: "",
             userId = rep.userId,
             initialReply = "",
-            tag = if (getFeedbackCategory(rep) == "VERIFY") "VERIFICAR" else if (rep.type.uppercase() in setOf("PAGO", "PAYMENT", "PAGAMENTO")) "PAGO" else if (isSponsorItem) "PATROCINADOR" else "SOPORTE",
+            tag = if (getFeedbackCategory(rep) == "VERIFY") "VERIFICAR" else if (getFeedbackCategory(rep) == "CALIBRATION") "COORDENADAS" else if (rep.type.uppercase() in setOf("PAGO", "PAYMENT", "PAGAMENTO")) "PAGO" else if (isSponsorItem) "PATROCINADOR" else "SOPORTE",
             isFirestoreDoc = false,
             onDismiss = { reportToReply = null },
             onReplySent = { newReply, markedAsRead ->

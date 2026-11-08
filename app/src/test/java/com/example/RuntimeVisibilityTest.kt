@@ -697,7 +697,7 @@ class RuntimeVisibilityTest(private val screen: String) {
             "moderation-admin", "moderation-claim", "moderation-secondary" -> {
                 compose.onNodeWithText(appTr("Bandeja de Moderación")).assertExists()
                 compose.onNodeWithText(appTr("Abrir Reportes de Soporte")).performClick()
-                compose.onNodeWithText(appTr("Panel de Reportes & Sugerencias")).assertExists()
+                compose.onNodeWithText(appTr("Panel de Reportes & Sugerencias")).assertIsDisplayed()
                 if (screen != "moderation-secondary") compose.onNodeWithContentDescription(appTr("Eliminar solucionados")).assertExists()
             }
             "profile-admin-expiring-roles", "profile-admin-expiring-roles-es" -> {
