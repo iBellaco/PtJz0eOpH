@@ -20,12 +20,14 @@ class SponsorReviewPolicyTest {
     @Test fun publicationUsesRemoteContentAndExcludesPrivateAccountingFields() {
         val data = mapOf<String, Any>("title" to "Oferta", "videoUrl" to "https://example.test/ad.mp4",
             "durationValue" to 3L, "durationUnit" to "day", "titleColor" to "#FFFFFF",
-            "isApproved" to true, "userId" to "private-user", "chargedEssence" to 200L)
+            "isApproved" to true, "userId" to "private-user", "chargedEssence" to 200L,
+            "sponsorEmail" to "private@example.test")
         val publication = SponsorReviewPolicy.publicNotice("ad-123", data)
         assertEquals("ad-123", publication["id"])
         assertEquals("Oferta", publication["title"])
         assertFalse(publication.containsKey("userId"))
         assertFalse(publication.containsKey("chargedEssence"))
+        assertFalse(publication.containsKey("sponsorEmail"))
         val notice = SponsorReviewPolicy.notice("ad-123", data)
         assertEquals(3, notice.durationValue)
         assertEquals("https://example.test/ad.mp4", notice.videoUrl)

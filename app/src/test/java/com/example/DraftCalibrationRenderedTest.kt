@@ -52,6 +52,8 @@ class DraftCalibrationRenderedTest {
                     .assert(hasAnyAncestor(hasTestTag(group)))
                 for (index in 1..5) compose.onNodeWithTag("calibration_target_${side}_slot_$index", useUnmergedTree = true)
                     .assert(hasAnyAncestor(hasTestTag(group)))
+                for (index in 1..5) compose.onNodeWithTag("calibration_target_${side}_ban_$index", useUnmergedTree = true)
+                    .assert(hasAnyAncestor(hasTestTag(group)))
             }
             for (ally in listOf(true, false)) {
                 compose.onNodeWithTag(if (ally) "calibration_target_ally_bans" else "calibration_target_enemy_bans").performScrollTo().performClick()
@@ -66,11 +68,37 @@ class DraftCalibrationRenderedTest {
                 assertEquals((if (ally) before.allyBanYRatio else before.enemyBanYRatio) + .005f,
                     if (ally) DraftVisionScanner.calibrationConfig.allyBanYRatio else DraftVisionScanner.calibrationConfig.enemyBanYRatio, .00001f)
                 press("vision_calibration_up"); press("calibration_size_increase")
-                assertEquals(before.banDiameterRatio + .005f, DraftVisionScanner.calibrationConfig.banDiameterRatio, .00001f)
+                val beforeDiameters = if (ally) before.allyBanDiameterRatios else before.enemyBanDiameterRatios
+                val enlargedDiameters = if (ally) DraftVisionScanner.calibrationConfig.allyBanDiameterRatios else DraftVisionScanner.calibrationConfig.enemyBanDiameterRatios
+                beforeDiameters.indices.forEach { assertEquals(beforeDiameters[it] + .005f, enlargedDiameters[it], .00001f) }
                 press("calibration_size_decrease")
                 assertEquals(before.allySlotYRatios, DraftVisionScanner.calibrationConfig.allySlotYRatios)
                 assertEquals(before.enemySlotXRatios, DraftVisionScanner.calibrationConfig.enemySlotXRatios)
                 assertEquals(DraftVisionScanner.calibrationConfig, VisionCalibrationConfig.loadFromPrefs(context))
+            }
+        } finally { DraftVisionScanner.updateCalibration(context, original) }
+    }
+
+    @Test fun eachBanCanMoveAndResizeWithoutChangingItsNeighbours() {
+        val context = RuntimeEnvironment.getApplication()
+        val original = DraftVisionScanner.calibrationConfig
+        try {
+            DraftVisionScanner.updateCalibration(context, VisionCalibrationConfig().copy(manualAllyBans = true, manualEnemyBans = true))
+            compose.setContent { MyApplicationTheme { LiteRTEngineViewerDialog({}, initializeDiagnostics = false) } }
+            for (ally in listOf(true, false)) for (index in 0..4) {
+                val side = if (ally) "ally" else "enemy"
+                compose.onNodeWithTag("calibration_target_${side}_ban_${index + 1}").performScrollTo().performClick()
+                val before = DraftVisionScanner.calibrationConfig
+                fun press(tag: String) { compose.onNodeWithTag(tag).performScrollTo().performClick(); compose.waitForIdle() }
+                press("vision_calibration_right"); press("vision_calibration_down"); press("calibration_size_increase")
+                val changed = DraftVisionScanner.calibrationConfig
+                val beforeRegions = before.banRegions(ally)
+                val changedRegions = changed.banRegions(ally)
+                assertEquals(beforeRegions[index].x + .005f, changedRegions[index].x, .00001f)
+                assertEquals(beforeRegions[index].y + .005f, changedRegions[index].y, .00001f)
+                assertEquals(beforeRegions[index].radius + .0025f, changedRegions[index].radius, .00001f)
+                for (other in 0..4) if (other != index) assertEquals(beforeRegions[other], changedRegions[other])
+                DraftVisionScanner.updateCalibration(context, before)
             }
         } finally { DraftVisionScanner.updateCalibration(context, original) }
     }

@@ -45,7 +45,8 @@ internal class BannedPortraitScanner {
             if(revision != capturedRevision || !isCurrent()) return@synchronized confirmedIds()
             updateFrame(observations, bitmap)
             if (config.manualAllyBans || config.manualEnemyBans) slots = slots.map {
-                it.copy(region = it.region?.copy(radius = config.banDiameterRatio / 2f))
+                val manual = if (it.side == BanSide.ALLY) config.manualAllyBans else config.manualEnemyBans
+                if (manual) it.copy(region = config.banRegions(it.side == BanSide.ALLY)[it.index]) else it
             }
             confirmedIds()
         }

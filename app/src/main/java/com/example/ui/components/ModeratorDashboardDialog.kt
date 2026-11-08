@@ -58,10 +58,6 @@ fun ModeratorDashboardDialog(
     var selectedTab by remember { mutableStateOf(0) } // 0 = Soporte, 1 = Usuarios
     var showSupportPanelDialog by remember { mutableStateOf(false) }
 
-    if (showSupportPanelDialog) {
-        AdminFeedbackBottomSheet(onDismiss = { showSupportPanelDialog = false })
-    }
-
     Dialog(
         onDismissRequest = {
             if (showSupportPanelDialog) {
@@ -263,6 +259,12 @@ fun ModeratorDashboardDialog(
                 }
             }
         }
+    }
+
+    // Compose the child sheet after the full-screen parent dialog so the first
+    // opening is always above it instead of peeking out from the bottom edge.
+    if (showSupportPanelDialog) {
+        AdminFeedbackBottomSheet(onDismiss = { showSupportPanelDialog = false })
     }
 }
 

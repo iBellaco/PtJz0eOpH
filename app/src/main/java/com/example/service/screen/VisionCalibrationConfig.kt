@@ -3,6 +3,9 @@ package com.example.service.screen
 import android.content.Context
 import android.content.SharedPreferences
 
+private fun List<Float>.averageOr(fallback: Float): Float =
+    if (isEmpty()) fallback else average().toFloat()
+
 /**
  * Modelo de calibración geométrica de las áreas de escaneo de selección de campeones (Draft).
  * Los valores están expresados en ratios normalizados (0.0f a 1.0f) respecto a la pantalla/captura.
@@ -75,9 +78,10 @@ data class VisionCalibrationConfig(
     // Ban rows have their own geometry, independent from player slots and tenth pick.
     val allyBanXRatios: List<Float> = listOf(.028f, .064f, .100f, .136f, .172f),
     val enemyBanXRatios: List<Float> = listOf(.826f, .863f, .900f, .937f, .974f),
-    val allyBanYRatio: Float = .052f,
-    val enemyBanYRatio: Float = .052f,
-    val banDiameterRatio: Float = .060f,
+    val allyBanYRatios: List<Float> = List(5) { .052f },
+    val enemyBanYRatios: List<Float> = List(5) { .052f },
+    val allyBanDiameterRatios: List<Float> = List(5) { .060f },
+    val enemyBanDiameterRatios: List<Float> = List(5) { .060f },
     val manualAllyBans: Boolean = false,
     val manualEnemyBans: Boolean = false,
 
@@ -100,6 +104,11 @@ data class VisionCalibrationConfig(
     val topAllyXRatios: List<Float> = listOf(0.028f, 0.063f, 0.098f, 0.133f, 0.168f),
     val topEnemyXRatios: List<Float> = listOf(0.834f, 0.869f, 0.904f, 0.939f, 0.974f)
 ) {
+    /** Aggregate values retained for diagnostics and migration from row-only calibration. */
+    val allyBanYRatio: Float get() = allyBanYRatios.averageOr(.052f)
+    val enemyBanYRatio: Float get() = enemyBanYRatios.averageOr(.052f)
+    val banDiameterRatio: Float get() = (allyBanDiameterRatios + enemyBanDiameterRatios).averageOr(.060f)
+
     fun getAllySlotX(slotIdx: Int): Float = allySlotXRatios.getOrElse(slotIdx) { allyAvatarCenterX }
     fun getEnemySlotX(slotIdx: Int): Float = enemySlotXRatios.getOrElse(slotIdx) { enemyAvatarCenterX }
     fun getSlotDiameter(isAlly: Boolean, slotIdx: Int): Float =
@@ -157,27 +166,53 @@ data class VisionCalibrationConfig(
                      deltaDiameter: Float = 0f): VisionCalibrationConfig {
         val xs = (if (isAlly) allyBanXRatios else enemyBanXRatios)
             .map { (it + deltaX).coerceIn(if (isAlly) .01f else .55f, if (isAlly) .45f else .99f) }
-        val y = ((if (isAlly) allyBanYRatio else enemyBanYRatio) + deltaY).coerceIn(.025f, .10f)
-        val diameter = (banDiameterRatio + deltaDiameter).coerceIn(.03f, .09f)
-        return if (isAlly) copy(allyBanXRatios = xs, allyBanYRatio = y,
-            banDiameterRatio = diameter, manualAllyBans = true)
-        else copy(enemyBanXRatios = xs, enemyBanYRatio = y,
-            banDiameterRatio = diameter, manualEnemyBans = true)
+        val ys = (if (isAlly) allyBanYRatios else enemyBanYRatios)
+            .map { (it + deltaY).coerceIn(.025f, .10f) }
+        val diameters = (if (isAlly) allyBanDiameterRatios else enemyBanDiameterRatios)
+            .map { (it + deltaDiameter).coerceIn(.03f, .09f) }
+        return if (isAlly) copy(allyBanXRatios = xs, allyBanYRatios = ys,
+            allyBanDiameterRatios = diameters, manualAllyBans = true)
+        else copy(enemyBanXRatios = xs, enemyBanYRatios = ys,
+            enemyBanDiameterRatios = diameters, manualEnemyBans = true)
+    }
+
+    /** Moves/resizes one ban portrait without changing the other four. */
+    fun adjustBanSlot(isAlly: Boolean, slotIndex: Int, deltaX: Float = 0f,
+                      deltaY: Float = 0f, deltaDiameter: Float = 0f): VisionCalibrationConfig {
+        require(slotIndex in 0..4)
+        val xs = List(5) { (if (isAlly) allyBanXRatios else enemyBanXRatios).getOrElse(it) { 0f } }.toMutableList()
+        val ys = List(5) { (if (isAlly) allyBanYRatios else enemyBanYRatios).getOrElse(it) { .052f } }.toMutableList()
+        val diameters = List(5) { (if (isAlly) allyBanDiameterRatios else enemyBanDiameterRatios).getOrElse(it) { .060f } }.toMutableList()
+        xs[slotIndex] = (xs[slotIndex] + deltaX).coerceIn(if (isAlly) .01f else .55f, if (isAlly) .45f else .99f)
+        ys[slotIndex] = (ys[slotIndex] + deltaY).coerceIn(.025f, .10f)
+        diameters[slotIndex] = (diameters[slotIndex] + deltaDiameter).coerceIn(.03f, .09f)
+        return if (isAlly) copy(allyBanXRatios = xs, allyBanYRatios = ys,
+            allyBanDiameterRatios = diameters, manualAllyBans = true)
+        else copy(enemyBanXRatios = xs, enemyBanYRatios = ys,
+            enemyBanDiameterRatios = diameters, manualEnemyBans = true)
     }
 
     /** Start manual movement at the row actually seen on this phone, never at another phone's defaults. */
     internal fun withObservedBanRow(isAlly: Boolean, regions: List<BanRegion>): VisionCalibrationConfig {
         if ((if (isAlly) manualAllyBans else manualEnemyBans) || regions.size != 5) return this
-        val y = regions.map { it.y }.average().toFloat()
-        val diameter = (regions.map { it.radius }.average().toFloat() * 2f).coerceIn(.03f, .09f)
-        return if (isAlly) copy(allyBanXRatios = regions.map { it.x }, allyBanYRatio = y, banDiameterRatio = diameter)
-        else copy(enemyBanXRatios = regions.map { it.x }, enemyBanYRatio = y, banDiameterRatio = diameter)
+        val ys = regions.map { it.y }
+        val diameters = regions.map { (it.radius * 2f).coerceIn(.03f, .09f) }
+        return if (isAlly) copy(allyBanXRatios = regions.map { it.x }, allyBanYRatios = ys,
+            allyBanDiameterRatios = diameters)
+        else copy(enemyBanXRatios = regions.map { it.x }, enemyBanYRatios = ys,
+            enemyBanDiameterRatios = diameters)
     }
 
-    internal fun banRegions(isAlly: Boolean): List<BanRegion> =
-        (if (isAlly) allyBanXRatios else enemyBanXRatios).map {
-            BanRegion(it, if (isAlly) allyBanYRatio else enemyBanYRatio, banDiameterRatio / 2f)
-        }
+    internal fun banRegions(isAlly: Boolean): List<BanRegion> {
+        val xs = if (isAlly) allyBanXRatios else enemyBanXRatios
+        val ys = if (isAlly) allyBanYRatios else enemyBanYRatios
+        val diameters = if (isAlly) allyBanDiameterRatios else enemyBanDiameterRatios
+        return List(5) { index -> BanRegion(
+            xs.getOrElse(index) { 0f },
+            ys.getOrElse(index) { .052f },
+            diameters.getOrElse(index) { .060f } / 2f
+        ) }
+    }
 
     fun toFormattedCoordinatesString(): String {
         val sb = StringBuilder()
@@ -192,9 +227,9 @@ data class VisionCalibrationConfig(
         sb.append("  - Top 10º Pick Rival (5º Rival X): ${(topEnemy5XRatio * 100).format(2)}% (${topEnemy5XRatio}f)\n")
         sb.append("  - Top 10º Pick Aliado (5º Aliado X): ${(topAlly5XRatio * 100).format(2)}% (${topAlly5XRatio}f)\n\n")
 
-        sb.append("• Baneos: ⌀=${(banDiameterRatio * 100).format(2)}%\n")
-        sb.append("  - Baneo aliado: X=$allyBanXRatios | Y=$allyBanYRatio | Manual=$manualAllyBans\n")
-        sb.append("  - Baneo rival: X=$enemyBanXRatios | Y=$enemyBanYRatio | Manual=$manualEnemyBans\n\n")
+        sb.append("• Baneos individuales:\n")
+        sb.append("  - Aliados: X=$allyBanXRatios | Y=$allyBanYRatios | ⌀=$allyBanDiameterRatios | Manual=$manualAllyBans\n")
+        sb.append("  - Rivales: X=$enemyBanXRatios | Y=$enemyBanYRatios | ⌀=$enemyBanDiameterRatios | Manual=$manualEnemyBans\n\n")
         sb.append("• Slots Aliados (Posición X, Y y Diámetro):\n")
         val roles = listOf("TOP", "JUNGLE", "MID", "ADC", "SUPPORT")
         for (i in 0..4) {
@@ -239,9 +274,10 @@ VisionCalibrationConfig(
     topEnemy5XRatio = ${topEnemy5XRatio}f,
     allyBanXRatios = listOf(${allyBanXRatios.joinToString(", ") { "${it}f" }}),
     enemyBanXRatios = listOf(${enemyBanXRatios.joinToString(", ") { "${it}f" }}),
-    allyBanYRatio = ${allyBanYRatio}f,
-    enemyBanYRatio = ${enemyBanYRatio}f,
-    banDiameterRatio = ${banDiameterRatio}f,
+    allyBanYRatios = listOf(${allyBanYRatios.joinToString(", ") { "${it}f" }}),
+    enemyBanYRatios = listOf(${enemyBanYRatios.joinToString(", ") { "${it}f" }}),
+    allyBanDiameterRatios = listOf(${allyBanDiameterRatios.joinToString(", ") { "${it}f" }}),
+    enemyBanDiameterRatios = listOf(${enemyBanDiameterRatios.joinToString(", ") { "${it}f" }}),
     manualAllyBans = $manualAllyBans,
     manualEnemyBans = $manualEnemyBans,
     topAllyXRatios = listOf(${topAllyXRatios.joinToString(", ") { "${it}f" }}),
@@ -259,6 +295,11 @@ VisionCalibrationConfig(
             putFloat("nameBandScale", nameBandScale)
             allyBanXRatios.forEachIndexed { i, x -> putFloat("ban_ally_x_$i", x) }
             enemyBanXRatios.forEachIndexed { i, x -> putFloat("ban_enemy_x_$i", x) }
+            allyBanYRatios.forEachIndexed { i, y -> putFloat("ban_ally_y_$i", y) }
+            enemyBanYRatios.forEachIndexed { i, y -> putFloat("ban_enemy_y_$i", y) }
+            allyBanDiameterRatios.forEachIndexed { i, diameter -> putFloat("ban_ally_diameter_$i", diameter) }
+            enemyBanDiameterRatios.forEachIndexed { i, diameter -> putFloat("ban_enemy_diameter_$i", diameter) }
+            // Aggregate keys keep older installations able to read the profile.
             putFloat("ban_ally_y", allyBanYRatio)
             putFloat("ban_enemy_y", enemyBanYRatio)
             putFloat("ban_diameter", banDiameterRatio)
@@ -310,6 +351,10 @@ VisionCalibrationConfig(
             enemySlotDiameterRatios.forEachIndexed { i, value -> putFloat(prefix + "enemy_slot_diam_$i", value) }
             allyBanXRatios.forEachIndexed { i, value -> putFloat(prefix + "ally_ban_x_$i", value) }
             enemyBanXRatios.forEachIndexed { i, value -> putFloat(prefix + "enemy_ban_x_$i", value) }
+            allyBanYRatios.forEachIndexed { i, value -> putFloat(prefix + "ally_ban_y_$i", value) }
+            enemyBanYRatios.forEachIndexed { i, value -> putFloat(prefix + "enemy_ban_y_$i", value) }
+            allyBanDiameterRatios.forEachIndexed { i, value -> putFloat(prefix + "ally_ban_diameter_$i", value) }
+            enemyBanDiameterRatios.forEachIndexed { i, value -> putFloat(prefix + "enemy_ban_diameter_$i", value) }
             putFloat(prefix + "topAvatarYRatio", topAvatarYRatio)
             putFloat(prefix + "topAvatarDiameterRatio", topAvatarDiameterRatio)
             putFloat(prefix + "topAlly5XRatio", topAlly5XRatio)
@@ -321,7 +366,7 @@ VisionCalibrationConfig(
     }
 
     companion object {
-        private const val CURRENT_CALIBRATION_VERSION = 9
+        private const val CURRENT_CALIBRATION_VERSION = 10
         private fun deviceModelKey(): String =
             "${android.os.Build.MANUFACTURER}:${android.os.Build.MODEL}".lowercase(java.util.Locale.ROOT)
 
@@ -385,9 +430,10 @@ VisionCalibrationConfig(
                 enemySlotDiameterRatios = (0..4).map { f("enemy_slot_diam_$it", base.enemySlotDiameterRatios[it]) },
                 allyBanXRatios = (0..4).map { f("ally_ban_x_$it", base.allyBanXRatios[it]) },
                 enemyBanXRatios = (0..4).map { f("enemy_ban_x_$it", base.enemyBanXRatios[it]) },
-                allyBanYRatio = f("allyBanYRatio", base.allyBanYRatio),
-                enemyBanYRatio = f("enemyBanYRatio", base.enemyBanYRatio),
-                banDiameterRatio = f("banDiameterRatio", base.banDiameterRatio),
+                allyBanYRatios = (0..4).map { f("ally_ban_y_$it", f("allyBanYRatio", base.allyBanYRatios[it])) },
+                enemyBanYRatios = (0..4).map { f("enemy_ban_y_$it", f("enemyBanYRatio", base.enemyBanYRatios[it])) },
+                allyBanDiameterRatios = (0..4).map { f("ally_ban_diameter_$it", f("banDiameterRatio", base.allyBanDiameterRatios[it])) },
+                enemyBanDiameterRatios = (0..4).map { f("enemy_ban_diameter_$it", f("banDiameterRatio", base.enemyBanDiameterRatios[it])) },
                 manualAllyBans = b("manualAllyBans", base.manualAllyBans),
                 manualEnemyBans = b("manualEnemyBans", base.manualEnemyBans),
                 topAvatarYRatio = f("topAvatarYRatio", base.topAvatarYRatio),
@@ -454,6 +500,14 @@ VisionCalibrationConfig(
                 }
                 val allyD = (0..4).map { idx -> prefs.getFloat("ally_slot_diam_$idx", default.allySlotDiameterRatios[idx]) }
                 val enemyD = (0..4).map { idx -> prefs.getFloat("enemy_slot_diam_$idx", default.enemySlotDiameterRatios[idx]) }
+                val allyBanY = (0..4).map { idx -> prefs.getFloat("ban_ally_y_$idx",
+                    prefs.getFloat("ban_ally_y", default.allyBanYRatios[idx])) }
+                val enemyBanY = (0..4).map { idx -> prefs.getFloat("ban_enemy_y_$idx",
+                    prefs.getFloat("ban_enemy_y", default.enemyBanYRatios[idx])) }
+                val allyBanD = (0..4).map { idx -> prefs.getFloat("ban_ally_diameter_$idx",
+                    prefs.getFloat("ban_diameter", default.allyBanDiameterRatios[idx])) }
+                val enemyBanD = (0..4).map { idx -> prefs.getFloat("ban_enemy_diameter_$idx",
+                    prefs.getFloat("ban_diameter", default.enemyBanDiameterRatios[idx])) }
 
                 val migrated = VisionCalibrationConfig(
                     allyAvatarCenterX = migratedAllyX,
@@ -465,16 +519,24 @@ VisionCalibrationConfig(
                     enemySlotXRatios = enemyX,
                     allySlotDiameterRatios = allyD,
                     enemySlotDiameterRatios = enemyD,
+                    allyBanXRatios = (0..4).map { prefs.getFloat("ban_ally_x_$it", default.allyBanXRatios[it]) },
+                    enemyBanXRatios = (0..4).map { prefs.getFloat("ban_enemy_x_$it", default.enemyBanXRatios[it]) },
+                    allyBanYRatios = allyBanY,
+                    enemyBanYRatios = enemyBanY,
+                    allyBanDiameterRatios = allyBanD,
+                    enemyBanDiameterRatios = enemyBanD,
+                    manualAllyBans = prefs.getBoolean("ban_manual_ally", false),
+                    manualEnemyBans = prefs.getBoolean("ban_manual_enemy", false),
                     allyOcrMinX = prefs.getFloat("allyOcrMinX", default.allyOcrMinX),
                     allyOcrMaxX = prefs.getFloat("allyOcrMaxX", default.allyOcrMaxX),
                     enemyOcrMinX = prefs.getFloat("enemyOcrMinX", default.enemyOcrMinX),
                     enemyOcrMaxX = prefs.getFloat("enemyOcrMaxX", default.enemyOcrMaxX),
-                    topAvatarYRatio = default.topAvatarYRatio,
-                    topAvatarDiameterRatio = default.topAvatarDiameterRatio,
-                    topAlly5XRatio = default.topAlly5XRatio,
-                    topEnemy5XRatio = default.topEnemy5XRatio,
-                    topAllyXRatios = default.topAllyXRatios,
-                    topEnemyXRatios = default.topEnemyXRatios
+                    topAvatarYRatio = prefs.getFloat("topAvatarYRatio", default.topAvatarYRatio),
+                    topAvatarDiameterRatio = prefs.getFloat("topAvatarDiameterRatio", default.topAvatarDiameterRatio),
+                    topAlly5XRatio = prefs.getFloat("topAlly5XRatio", default.topAlly5XRatio),
+                    topEnemy5XRatio = prefs.getFloat("topEnemy5XRatio", default.topEnemy5XRatio),
+                    topAllyXRatios = (0..4).map { prefs.getFloat("top_ally_x_$it", default.topAllyXRatios[it]) },
+                    topEnemyXRatios = (0..4).map { prefs.getFloat("top_enemy_x_$it", default.topEnemyXRatios[it]) }
                 )
                 migrated.saveToPrefs(context)
                 prefs.edit().putInt("calibration_version", CURRENT_CALIBRATION_VERSION).apply()
@@ -516,9 +578,14 @@ VisionCalibrationConfig(
                 topEnemyXRatios = topEnemyX,
                 allyBanXRatios = (0..4).map { prefs.getFloat("ban_ally_x_$it", default.allyBanXRatios[it]) },
                 enemyBanXRatios = (0..4).map { prefs.getFloat("ban_enemy_x_$it", default.enemyBanXRatios[it]) },
-                allyBanYRatio = prefs.getFloat("ban_ally_y", default.allyBanYRatio),
-                enemyBanYRatio = prefs.getFloat("ban_enemy_y", default.enemyBanYRatio),
-                banDiameterRatio = prefs.getFloat("ban_diameter", default.banDiameterRatio),
+                allyBanYRatios = (0..4).map { prefs.getFloat("ban_ally_y_$it",
+                    prefs.getFloat("ban_ally_y", default.allyBanYRatios[it])) },
+                enemyBanYRatios = (0..4).map { prefs.getFloat("ban_enemy_y_$it",
+                    prefs.getFloat("ban_enemy_y", default.enemyBanYRatios[it])) },
+                allyBanDiameterRatios = (0..4).map { prefs.getFloat("ban_ally_diameter_$it",
+                    prefs.getFloat("ban_diameter", default.allyBanDiameterRatios[it])) },
+                enemyBanDiameterRatios = (0..4).map { prefs.getFloat("ban_enemy_diameter_$it",
+                    prefs.getFloat("ban_diameter", default.enemyBanDiameterRatios[it])) },
                 manualAllyBans = prefs.getBoolean("ban_manual_ally", false),
                 manualEnemyBans = prefs.getBoolean("ban_manual_enemy", false)
             )

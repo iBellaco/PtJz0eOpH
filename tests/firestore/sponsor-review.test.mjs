@@ -1,7 +1,7 @@
 import {readFileSync} from 'node:fs';
 import assert from 'node:assert/strict';
 import {initializeTestEnvironment, assertFails, assertSucceeds} from '@firebase/rules-unit-testing';
-import {doc, setDoc, getDoc, getDocs, collection, query, where, runTransaction, updateDoc} from 'firebase/firestore';
+import {doc, setDoc, getDoc, getDocs, collection, query, where, runTransaction, updateDoc, serverTimestamp} from 'firebase/firestore';
 const env = await initializeTestEnvironment({projectId:'demo-coach-tests', firestore:{host:'127.0.0.1',port:8088,
   rules:readFileSync(new URL('../../firestore.rules',import.meta.url),'utf8')}});
 const admin = env.authenticatedContext('admin',{admin:true,email_verified:true}).firestore();
@@ -19,7 +19,14 @@ async function resolve(store,id,approve) {
       const changes={isApproved:true,isEnabled:true,approvedAtMillis:1000,expiresAtMillis:86401000};
       tx.update(ref,changes);
       tx.set(registry,{notices:[...notices,{id,title:data.title,tag:'PUBLICIDAD',...changes}]},{merge:true});
-    } else { tx.update(ref,{status:'REJECTED',isApproved:false,isEnabled:false}); tx.set(registry,{notices},{merge:true}); }
+    } else {
+      const operationId=`sponsor_review_${id}_reject_test`, queue=doc(store,'economy_requests',`admin~${operationId}`);
+      await tx.get(queue);
+      tx.update(ref,{status:'REJECTED',isApproved:false,isEnabled:false});
+      tx.set(registry,{notices},{merge:true});
+      tx.set(queue,{userId:'admin',operationId,payload:{action:'SPONSOR_RESOLVE',id:operationId,sponsorId:id,approved:false},
+        status:'PENDING',schema:2,createdAt:serverTimestamp(),authTime:0});
+    }
   });
 }
 try {
@@ -49,6 +56,7 @@ try {
   await assert.rejects(resolve(admin,'approve',true));
   await assertSucceeds(resolve(admin,'reject',false));
   assert.equal((await getDoc(doc(owner,'pending_sponsor_ads/reject'))).get('status'),'REJECTED');
+  assert.equal((await getDoc(doc(admin,'economy_requests/admin~sponsor_review_reject_reject_test'))).get('payload.action'),'SPONSOR_RESOLVE');
   await assertFails(updateDoc(doc(owner,'pending_sponsor_ads/reject'),{status:'PENDING'}));
   await assertFails(updateDoc(doc(admin,'pending_sponsor_ads/reject'),{isApproved:true,isEnabled:true}));
   await assertFails(updateDoc(doc(admin,'pending_sponsor_ads/refunded'),{isApproved:true}));
