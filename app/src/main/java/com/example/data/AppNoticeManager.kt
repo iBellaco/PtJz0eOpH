@@ -6,6 +6,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.firestore.SetOptions
+import com.google.firebase.firestore.Source
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -37,6 +38,59 @@ data class AppNotice(
     val isApproved: Boolean = true, // false until admin accepts it if published by sponsor
     val sponsorEmail: String = "" // email of the sponsor who published it
 )
+
+private fun sponsorStateRank(notice: AppNotice): Int = when {
+    notice.isApproved && notice.isEnabled -> 3
+    notice.isApproved -> 2
+    notice.isEnabled -> 1
+    else -> 0
+}
+
+/**
+ * Reconcile the private sponsor mirror without allowing a stale pending row to
+ * replace an already published notice. The previous append-only merge kept a
+ * locally cached ad disabled after an administrator approved it.
+ */
+internal fun mergeSponsorNotices(
+    current: List<AppNotice>,
+    incoming: List<AppNotice>
+): Pair<List<AppNotice>, Boolean> {
+    if (incoming.isEmpty()) return current to false
+    val merged = current.toMutableList()
+    var changed = false
+
+    incoming.forEach { candidate ->
+        if (candidate.id.isBlank()) return@forEach
+        val index = merged.indexOfFirst { it.id == candidate.id }
+        if (index < 0) {
+            merged += candidate
+            changed = true
+            return@forEach
+        }
+
+        val existing = merged[index]
+        val candidateRank = sponsorStateRank(candidate)
+        val existingRank = sponsorStateRank(existing)
+        val candidateIsNewer = candidate.approvedAtMillis > existing.approvedAtMillis ||
+            candidate.expiresAtMillis > existing.expiresAtMillis
+        val shouldReplace = candidateRank > existingRank ||
+            (candidateRank == existingRank && candidateRank >= 2 && candidateIsNewer)
+        if (shouldReplace && candidate != existing) {
+            // Public registry entries intentionally omit sponsorEmail; retain
+            // a locally known value for the sponsor's own status panel.
+            merged[index] = candidate.copy(
+                videoUrl = candidate.videoUrl.ifBlank { existing.videoUrl },
+                expandedImageUrl = candidate.expandedImageUrl.ifBlank { existing.expandedImageUrl },
+                externalUrl = candidate.externalUrl.ifBlank { existing.externalUrl },
+                titleColor = candidate.titleColor.ifBlank { existing.titleColor },
+                contentColor = candidate.contentColor.ifBlank { existing.contentColor },
+                sponsorEmail = candidate.sponsorEmail.ifBlank { existing.sponsorEmail }
+            )
+            changed = true
+        }
+    }
+    return merged to changed
+}
 
 object AppNoticeManager {
     private const val TAG = "AppNoticeManager"
@@ -184,14 +238,21 @@ object AppNoticeManager {
         val appContext = context.applicationContext
         // Inmediato desde caché y en paralelo desde la nube
         fetchFromFirestoreCache(appContext)
-        executeCloudFetch(appContext, onComplete)
+        // An explicit refresh must not settle on a stale local snapshot after
+        // an administrator publishes a sponsor notice. The listener still
+        // handles offline updates; this read is authoritative when online.
+        executeCloudFetch(appContext, onComplete, Source.SERVER)
     }
 
-    private fun executeCloudFetch(appContext: Context, onComplete: ((Boolean) -> Unit)?) {
+    private fun executeCloudFetch(
+        appContext: Context,
+        onComplete: ((Boolean) -> Unit)?,
+        source: Source = Source.DEFAULT
+    ) {
         try {
             val db = FirebaseFirestore.getInstance()
             db.collection(FIRESTORE_COLLECTION).document(FIRESTORE_DOC_NOTICES)
-                .get()
+                .get(source)
                 .addOnSuccessListener { snapshot ->
                     if (snapshot != null && snapshot.exists()) {
                         processFirestoreSnapshot(appContext, snapshot)
@@ -794,19 +855,15 @@ object AppNoticeManager {
         }
 
         if (listToAdd.isNotEmpty()) {
-            val current = _notices.value.toMutableList()
-            var changed = false
-            for (pending in listToAdd) {
-                val idx = current.indexOfFirst { it.id == pending.id }
-                if (idx == -1) {
-                    current.add(pending)
-                    changed = true
-                }
-            }
+            val (current, changed) = mergeSponsorNotices(_notices.value, listToAdd)
             if (changed) {
                 _notices.value = current
                 saveNoticesToPrefs(appContext, current)
-                pushNoticesToFirestore(appContext, current)
+                // pending_sponsor_ads is already the source of truth for this
+                // private mirror. Writing the merged cache back to the public
+                // registry could let a stale device erase a freshly approved
+                // announcement for every user.
+                preloadMedia(appContext, current)
                 Log.d(TAG, "Sincronizados ${listToAdd.size} patrocinios en AppNoticeManager")
             }
         }
