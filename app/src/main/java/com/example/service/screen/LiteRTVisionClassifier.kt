@@ -191,8 +191,9 @@ object LiteRTVisionClassifier {
                 fun y(value: Float) = (value * bitmap.height - bounds.top) / bounds.height()
                 val localConfig = config.copy(
                     allyBanXRatios = config.allyBanXRatios.map(::x), enemyBanXRatios = config.enemyBanXRatios.map(::x),
-                    allyBanYRatio = y(config.allyBanYRatio), enemyBanYRatio = y(config.enemyBanYRatio),
-                    banDiameterRatio = config.banDiameterRatio * bitmap.height / bounds.height())
+                    allyBanYRatios = config.allyBanYRatios.map(::y), enemyBanYRatios = config.enemyBanYRatios.map(::y),
+                    allyBanDiameterRatios = config.allyBanDiameterRatios.map { it * bitmap.height / bounds.height() },
+                    enemyBanDiameterRatios = config.enemyBanDiameterRatios.map { it * bitmap.height / bounds.height() })
                 val masks = exclusions.mapNotNull { rect ->
                     android.graphics.Rect(rect).takeIf { it.intersect(bounds) }?.apply { offset(-bounds.left, -bounds.top) }
                 }

@@ -1,5 +1,13 @@
 package com.example.data
 
+import com.example.util.AuthManager
+import com.example.util.appTr
+import com.google.firebase.firestore.FieldValue
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.SetOptions
+import kotlinx.coroutines.tasks.await
+import java.util.UUID
+
 object SponsorReviewPolicy {
     fun pending(data: Map<String, Any>): Boolean = data["isApproved"] == false &&
         (data["refundedAtMillis"] as? Number)?.toLong().let { it == null || it == 0L } &&
@@ -8,7 +16,7 @@ object SponsorReviewPolicy {
     fun publicNotice(id: String, data: Map<String, Any>): Map<String, Any> =
         data.filterKeys { it in setOf("title", "content", "videoUrl", "expandedImageUrl", "externalUrl",
             "titleColor", "contentColor", "budget", "budgetUnit", "durationValue", "durationUnit",
-            "isApproved", "isEnabled", "approvedAtMillis", "expiresAtMillis", "sponsorEmail") } +
+            "isApproved", "isEnabled", "approvedAtMillis", "expiresAtMillis") } +
             mapOf("id" to id, "tag" to "PUBLICIDAD")
 
     fun notice(id: String, d: Map<String, Any>) = AppNotice(
@@ -23,7 +31,7 @@ object SponsorReviewPolicy {
         sponsorEmail=d["sponsorEmail"] as? String ?: "")
 }
 
-/** Resolve from server data; success means both moderation and publication committed. */
+/** Commits an existing moderation decision immediately; only pre-charge submissions use recovery queueing. */
 object SponsorReviewRepository {
     /** Include durable submissions even before the worker creates the charged advertisement. */
     fun observe(onChange: (List<Map<String, Any>>) -> Unit, onError: () -> Unit): List<com.google.firebase.firestore.ListenerRegistration> {
@@ -55,10 +63,106 @@ object SponsorReviewRepository {
     }
     suspend fun resolve(id: String, approve: Boolean, queuedRequestId: String? = null) {
         require(id.matches(Regex("[a-zA-Z0-9_-]{8,80}")))
+        val user = AuthManager.getAuth()?.currentUser ?: error(appTr("Inicia sesión"))
+        check(!AuthManager.isGuestOrUnauthenticated(user)) { appTr("Inicia sesión") }
+        val token = user.getIdToken(true).await()
+        check(token.claims["admin"] == true) { appTr("No tienes permisos para esta operación") }
+
+        val db = FirebaseFirestore.getInstance()
+        val adRef = db.collection("pending_sponsor_ads").document(id)
+        val registryRef = db.collection("system_config").document("app_notices")
         val suffix = if (approve) "approve" else "reject"
-        val fields = mapOf<String, Any>("sponsorId" to id, "approved" to approve) +
-            (queuedRequestId?.let { mapOf("queuedRequestId" to it) } ?: emptyMap())
-        EconomyServiceClient.call("SPONSOR_RESOLVE", fields,
-            "sponsor_review_${id.take(40)}_$suffix")
+        // A fresh identifier prevents an old REVIEW row from blocking a new,
+        // already-authorized moderation decision. The server remains
+        // idempotent on the advertisement/refund itself.
+        val operationId = "sponsor_review_${id.take(32)}_${suffix}_${UUID.randomUUID().toString().take(8)}"
+        val queueRef = db.collection("economy_requests").document("${user.uid}~$operationId")
+        val authTime = (token.claims["auth_time"] as? Number)?.toLong() ?: 0L
+        val cleanQueuedRequestId = queuedRequestId?.takeIf { it.matches(Regex("[a-zA-Z0-9_~-]{8,210}")) }
+
+        val resolvedDirectly = db.runTransaction { tx ->
+            val ad = tx.get(adRef)
+            if (!ad.exists()) return@runTransaction false
+
+            val data = ad.data.orEmpty()
+            val alreadyApproved = data["isApproved"] == true
+            val rejected = data["status"] in setOf("REJECTED", "REFUNDED") ||
+                ((data["refundedAtMillis"] as? Number)?.toLong() ?: 0L) > 0L
+            if ((approve && alreadyApproved) || (!approve && rejected)) return@runTransaction true
+            check(!alreadyApproved && !rejected) { appTr("La solicitud ya fue resuelta") }
+
+            val registry = tx.get(registryRef)
+            @Suppress("UNCHECKED_CAST")
+            val notices = ((registry.get("notices") as? List<Map<String, Any>>).orEmpty())
+                .filterNot { it["id"] == id }
+            val now = System.currentTimeMillis()
+
+            if (approve) {
+                val unit = data["durationUnit"]?.toString()?.lowercase().orEmpty()
+                val unitMillis = when (unit) {
+                    "hour" -> 60L * 60L * 1000L
+                    "week" -> 7L * 24L * 60L * 60L * 1000L
+                    "month" -> 30L * 24L * 60L * 60L * 1000L
+                    else -> 24L * 60L * 60L * 1000L
+                }
+                val maximum = when (unit) { "hour" -> 12; "day", "" -> 3; "week" -> 2; "month" -> 6; else -> 3 }
+                val duration = ((data["durationValue"] as? Number)?.toInt() ?: 1).coerceIn(1, maximum)
+                val changes = mapOf<String, Any>(
+                    "isApproved" to true,
+                    "isEnabled" to true,
+                    "approvedAtMillis" to now,
+                    "expiresAtMillis" to now + unitMillis * duration
+                )
+                tx.update(adRef, changes)
+                tx.set(registryRef, mapOf("notices" to (notices + SponsorReviewPolicy.publicNotice(id, data + changes))), SetOptions.merge())
+            } else {
+                // The visible decision is committed immediately. A private,
+                // signed queue row in the same transaction asks the trusted
+                // worker to verify the original charge and refund it exactly
+                // once; the UI no longer waits on an unavailable callable.
+                tx.get(queueRef)
+                tx.update(adRef, mapOf("status" to "REJECTED", "isApproved" to false, "isEnabled" to false))
+                tx.set(registryRef, mapOf("notices" to notices), SetOptions.merge())
+                val payload = mutableMapOf<String, Any>(
+                    "action" to "SPONSOR_RESOLVE",
+                    "id" to operationId,
+                    "sponsorId" to id,
+                    "approved" to false
+                )
+                cleanQueuedRequestId?.let { payload["queuedRequestId"] = it }
+                tx.set(queueRef, mapOf(
+                    "userId" to user.uid,
+                    "operationId" to operationId,
+                    "payload" to payload,
+                    "status" to "PENDING",
+                    "schema" to 2,
+                    "createdAt" to FieldValue.serverTimestamp(),
+                    "authTime" to authTime
+                ))
+            }
+            true
+        }.await()
+
+        if (!resolvedDirectly) {
+            // A just-submitted advertisement can still live only in the
+            // private queue. Submit the signed recovery command immediately;
+            // do not block the button on the optional callable endpoint.
+            val payload = mutableMapOf<String, Any>(
+                "action" to "SPONSOR_RESOLVE",
+                "id" to operationId,
+                "sponsorId" to id,
+                "approved" to approve
+            )
+            cleanQueuedRequestId?.let { payload["queuedRequestId"] = it }
+            queueRef.set(mapOf(
+                "userId" to user.uid,
+                "operationId" to operationId,
+                "payload" to payload,
+                "status" to "PENDING",
+                "schema" to 2,
+                "createdAt" to FieldValue.serverTimestamp(),
+                "authTime" to authTime
+            )).await()
+        }
     }
 }

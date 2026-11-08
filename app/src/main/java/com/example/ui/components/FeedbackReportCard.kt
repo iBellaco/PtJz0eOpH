@@ -122,7 +122,7 @@ internal fun ComprehensiveFeedbackCard(
     val context = LocalContext.current
     var expanded by remember { mutableStateOf(false) }
     val itemCategory = remember(report) { getFeedbackCategory(report) }
-    val isBugOrSupport = itemCategory in setOf("BUG", "SUPPORT", "PATROCINADOR", "PAGO")
+    val isBugOrSupport = itemCategory in setOf("BUG", "SUPPORT", "CALIBRATION", "PATROCINADOR", "PAGO")
     val canContinueConversation = onReply != null && !com.example.data.SupportConversationPolicy.isClosed(currentStatus)
 
     val isReadOrSolved = currentStatus == FeedbackRepository.STATUS_READ ||
@@ -158,6 +158,7 @@ internal fun ComprehensiveFeedbackCard(
         "PATROCINADOR" -> Triple(HextechGold, Icons.Default.Star, "PATROCINADOR")
         "BUG" -> Triple(DangerRed, Icons.Default.BugReport, "BUG / ERROR")
         "SUPPORT" -> Triple(HextechCyan, Icons.Default.SupportAgent, "SOPORTE")
+        "CALIBRATION" -> Triple(HextechCyan, Icons.Default.Tune, "COORDENADAS · SOLO ADMINISTRACIÓN")
         "VERIFY" -> Triple(HextechCyan, Icons.Default.VerifiedUser, "VERIFICAR")
         "BUILD" -> Triple(HextechGold, Icons.Default.SportsEsports, "BUILD SUGERIDA")
         else -> Triple(Color(0xFFFFB74D), Icons.Default.Lightbulb, "SUGERENCIA")
@@ -732,6 +733,22 @@ internal fun ComprehensiveFeedbackCard(
                         )
                         Spacer(modifier = Modifier.weight(1f))
                         Icon(Icons.Default.ContentCopy, contentDescription = null, tint = HextechGold.copy(alpha = 0.5f), modifier = Modifier.size(11.dp))
+                    }
+
+                    if (!report.parsedUserName.isNullOrBlank()) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(6.dp),
+                            modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp, horizontal = 4.dp)
+                        ) {
+                            Icon(Icons.Default.Person, contentDescription = null, tint = HextechCyan, modifier = Modifier.size(13.dp))
+                            Text(
+                                text = com.example.util.tr("Usuario: ${report.parsedUserName}"),
+                                color = HextechCyan,
+                                fontSize = 10.5.sp,
+                                fontWeight = FontWeight.Medium
+                            )
+                        }
                     }
 
                     if (!report.parsedEmail.isNullOrBlank()) {

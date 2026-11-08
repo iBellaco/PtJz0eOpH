@@ -43,7 +43,12 @@ import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.ui.input.pointer.pointerInput
 import kotlin.math.roundToInt
 
-enum class CalibrationTarget(val title: String, val subtitle: String) {
+enum class CalibrationTarget(
+    val title: String,
+    val subtitle: String,
+    val banSide: Boolean? = null,
+    val banIndex: Int? = null
+) {
     GLOBAL_ALLY_X("Columna Aliados X", "Mover horizontalmente todos los avatares aliados verticales"),
     GLOBAL_ENEMY_X("Columna Rivales X", "Mover horizontalmente todos los avatares rivales verticales"),
     AVATAR_SIZE("Tamaño Avatar Slots (⌀)", "Agrandar o reducir radio de escaneo de retratos en slots"),
@@ -57,6 +62,18 @@ enum class CalibrationTarget(val title: String, val subtitle: String) {
     ENEMY_SLOT_2("Rival 3", "Ajuste vertical Y del slot 3 rival"),
     ENEMY_SLOT_3("Rival 4", "Ajuste vertical Y del slot 4 rival"),
     ENEMY_SLOT_4("Rival 5 (Slot Inferior)", "Ajuste vertical Y del slot 5 rival (abajo derecha)"),
+    ALLY_BANS("Baneos aliados (grupo)", "Mover o redimensionar los cinco baneos aliados", true),
+    ENEMY_BANS("Baneos rivales (grupo)", "Mover o redimensionar los cinco baneos rivales", false),
+    ALLY_BAN_1("Baneo aliado 1", "Ajuste individual del baneo aliado 1", true, 0),
+    ALLY_BAN_2("Baneo aliado 2", "Ajuste individual del baneo aliado 2", true, 1),
+    ALLY_BAN_3("Baneo aliado 3", "Ajuste individual del baneo aliado 3", true, 2),
+    ALLY_BAN_4("Baneo aliado 4", "Ajuste individual del baneo aliado 4", true, 3),
+    ALLY_BAN_5("Baneo aliado 5", "Ajuste individual del baneo aliado 5", true, 4),
+    ENEMY_BAN_1("Baneo rival 1", "Ajuste individual del baneo rival 1", false, 0),
+    ENEMY_BAN_2("Baneo rival 2", "Ajuste individual del baneo rival 2", false, 1),
+    ENEMY_BAN_3("Baneo rival 3", "Ajuste individual del baneo rival 3", false, 2),
+    ENEMY_BAN_4("Baneo rival 4", "Ajuste individual del baneo rival 4", false, 3),
+    ENEMY_BAN_5("Baneo rival 5", "Ajuste individual del baneo rival 5", false, 4),
     GLOBAL_Y("Mover Todos los Slots (Y)", "Desplazar verticalmente todas las casillas")
 }
 
@@ -88,7 +105,11 @@ fun DraftCalibrationPanel(
         val effectiveDeltaX = deltaX
         val effectiveDeltaY = deltaY
 
-        val updated = when (selectedTarget) {
+        val updated = selectedTarget.banSide?.let { ally ->
+            selectedTarget.banIndex?.let { index ->
+                cur.adjustBanSlot(ally, index, effectiveDeltaX, effectiveDeltaY, effectiveDeltaSize)
+            } ?: cur.adjustBanRow(ally, effectiveDeltaX, effectiveDeltaY, effectiveDeltaSize)
+        } ?: when (selectedTarget) {
             CalibrationTarget.GLOBAL_ALLY_X -> cur.copy(
                 allyAvatarCenterX = (cur.allyAvatarCenterX + effectiveDeltaX).coerceIn(0.01f, 0.45f),
                 allySlotXRatios = cur.allySlotXRatios.map { (it + effectiveDeltaX).coerceIn(0.01f, 0.45f) }
@@ -156,6 +177,7 @@ fun DraftCalibrationPanel(
                 allySlotYRatios = cur.allySlotYRatios.map { (it + effectiveDeltaY).coerceIn(0.05f, 0.95f) },
                 enemySlotYRatios = cur.enemySlotYRatios.map { (it + effectiveDeltaY).coerceIn(0.05f, 0.95f) }
             )
+            else -> cur
         }
         updateAndApply(updated)
     }
