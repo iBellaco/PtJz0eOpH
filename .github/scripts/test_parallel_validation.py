@@ -26,6 +26,9 @@ class ParallelValidationTest(unittest.TestCase):
     def test_spanish_recheck_builds_current_apks_and_keeps_the_full_default_matrix(self):
         workflow = yaml.safe_load((WORKFLOWS / 'fix-error.yml').read_text())
         jobs = workflow['jobs']
+        preflight = jobs['catalog-preflight']
+        self.assertIn('always()', preflight['if'])
+        self.assertIn("needs.validation-scope.result == 'success'", preflight['if'])
         recheck = jobs['targeted-red-magic-release']
         matrix = recheck['strategy']['matrix']['include']
         self.assertEqual({'espanol-instalado', 'titulos-cortos', 'redmagic-secuencia-completa',

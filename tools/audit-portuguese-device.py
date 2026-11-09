@@ -15,8 +15,24 @@ OUT = Path("app/build/reports/spanish-device" if MODE == "es" else "app/build/re
 OUT.mkdir(parents=True, exist_ok=True)
 APP = "com.Coach"
 source = Path("app/src/test/java/com/example/SpanishUiResidue.kt").read_text()
-literal = re.search(r'val pattern = Regex\(\s*("(?:[^"\\]|\\.)*")', source).group(1)
-pattern = json.loads(literal).replace(r"\p{L}\p{N}_", r"\w").replace(r"\p{L}", r"[^\W\d_]")
+
+
+def extract_kotlin_regex_pattern(kotlin_source):
+    """Read every concatenated Kotlin string used by SpanishUiResidue.pattern."""
+    expression = re.search(
+        r"val pattern = Regex\((.*?),\s*RegexOption\.",
+        kotlin_source,
+        re.DOTALL,
+    )
+    if expression is None:
+        raise AssertionError("SpanishUiResidue.pattern declaration not found")
+    literals = re.findall(r'"(?:[^"\\]|\\.)*"', expression.group(1))
+    if not literals:
+        raise AssertionError("SpanishUiResidue.pattern has no Kotlin string literals")
+    return "".join(json.loads(literal) for literal in literals)
+
+
+pattern = extract_kotlin_regex_pattern(source).replace(r"\p{L}\p{N}_", r"\w").replace(r"\p{L}", r"[^\W\d_]")
 SPANISH = re.compile(pattern, re.IGNORECASE)
 findings = []
 authored_texts = []
