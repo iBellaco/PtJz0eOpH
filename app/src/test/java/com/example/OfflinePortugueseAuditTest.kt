@@ -179,8 +179,62 @@ class OfflinePortugueseAuditTest {
         assertEquals("Estado: RESOLVIDO", catalog.translate("pt", "Estado: RESUELTO"))
         assertEquals("Estado: ELIMINADO", catalog.translate("es", "Estado: ELIMINADO"))
         val subscription = catalog.translate("pt", "Necesitas al menos 15 de Esencia Naranja para suscribirte.")
-        assertTrue(subscription, subscription.contains("15 de Essência Laranja"))
+        assertTrue(subscription, subscription.contains("15 Essências Laranja"))
         assertFalse(subscription, subscription.contains("Esencia Naranja"))
+    }
+
+    @Test fun `all interface labels use Brazilian Portuguese and Wild Rift terminology`() {
+        val interfaceExamples = mapOf(
+            "Actividad" to "Atividade",
+            "Mayor tasa registrada" to "Maior taxa registrada",
+            "Sin cinco partidas terminadas contra un mismo rival" to
+                "Sem cinco partidas concluídas contra o mesmo adversário",
+            "Perfiles" to "Perfis",
+            "Patrocinios" to "Patrocínios",
+            "Anuncio: " to "Anúncio: ",
+            "¡Todo al día! No tienes solicitudes pendientes" to
+                "Tudo em dia! Você não tem solicitações pendentes",
+            "Gestionar perfil" to "Gerenciar perfil",
+            "Cambios guardados" to "Alterações salvas",
+            "Resumen de datos" to "Resumo dos dados",
+            "Ocultar detalles de almacenamiento" to "Ocultar detalhes do armazenamento",
+            "En vivo · consulta automática" to "Ao vivo · consulta automática",
+            "Publicar Anuncio CPM/RPM" to "Publicar anúncio CPM/RPM",
+            "Máximo 2 MB por imagen" to "Máximo de 2 MB por imagem",
+            "Wild Rift Drafting Coach" to "Coach de Draft do Wild Rift",
+            "Draft Coach" to "Coach de Draft",
+            "Sin resultados" to "Sem resultados"
+        )
+        interfaceExamples.forEach { (source, expected) ->
+            assertEquals(source, expected, catalog.translate("pt", source))
+        }
+
+        val wildRiftTerms = mapOf(
+            "Jungla" to "Selva",
+            "Línea Central" to "Rota do Meio",
+            "Línea de Barón" to "Rota do Barão",
+            "Línea de Dragón" to "Rota do Dragão",
+            "Soporte" to "Suporte",
+            "Tirador" to "Atirador",
+            "Baneos aliados" to "Banimentos aliados",
+            "Filtrar por Línea" to "Filtrar por Rota",
+            "Objetos Situacionales" to "Itens situacionais",
+            "Hechizos de Invocador" to "Feitiços de Invocador"
+        )
+        wildRiftTerms.forEach { (source, expected) ->
+            assertEquals(source, expected, catalog.translate("pt", source))
+        }
+
+        val brazilian = catalog.translate(
+            "pt",
+            "El archivo no cumple con el tamaño o proporción recomendada para banner horizontal"
+        )
+        assertEquals(
+            "O arquivo não atende ao tamanho nem à proporção recomendados para o banner horizontal.",
+            brazilian
+        )
+        assertFalse(Regex("(?i)\\b(?:ficheiro|utilizador|percentagem|subscrever|introduza)\\b")
+            .containsMatchIn(brazilian))
     }
 }
 
