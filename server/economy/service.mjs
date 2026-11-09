@@ -100,6 +100,16 @@ export async function executeEconomy(db, auth, raw, clock = Date.now, {requested
       const settled = current.isApproved === true || current.status === 'REFUNDED' || Number(current.refundedAtMillis ?? 0) > 0;
       if (settled) {
         ensure(input.approved === current.isApproved, 'failed-precondition', 'La solicitud ya fue resuelta');
+        const registry = await tx.get(db.doc('system_config/app_notices'));
+        const notices = (registry.get('notices') ?? []).filter(n => n && n.id !== input.sponsorId);
+        if (input.approved) {
+          const published = publicSponsorNotice(input.sponsorId, current);
+          tx.set(db.doc('system_config/app_notices'), {notices: [...notices, published]}, {merge: true});
+          tx.set(db.doc(`app_notices/${input.sponsorId}`), published);
+        } else {
+          tx.set(db.doc('system_config/app_notices'), {notices}, {merge: true});
+          tx.delete(db.doc(`app_notices/${input.sponsorId}`));
+        }
         return {ok: true, account: visible(account, uid)};
       }
       const registry = await tx.get(db.doc('system_config/app_notices'));
@@ -141,8 +151,10 @@ export async function executeEconomy(db, auth, raw, clock = Date.now, {requested
         const maximum = {hour: 12, day: 3, week: 2, month: 6}[unit] ?? 3;
         const changes = {isApproved: true, isEnabled: true, status: 'APROBADA', approvedAtMillis: now,
           expiresAtMillis: now + unitMillis * integer(current.durationValue, 1, maximum)};
+        const published = publicSponsorNotice(input.sponsorId, {...current, ...changes});
         tx.update(requestRef, changes);
-        tx.set(db.doc('system_config/app_notices'), {notices: [...notices, publicSponsorNotice(input.sponsorId, {...current, ...changes})]}, {merge: true});
+        tx.set(db.doc('system_config/app_notices'), {notices: [...notices, published]}, {merge: true});
+        tx.set(db.doc(`app_notices/${input.sponsorId}`), published);
         record = receipt(input.id, now, 'SPONSOR_APPROVAL', 'Anuncio patrocinado aprobado', '0 EA');
         metadata = {kind: 'SPONSOR_RESOLUTION', sponsorId: input.sponsorId, approved: true, refunded: 0};
       } else {
@@ -156,6 +168,7 @@ export async function executeEconomy(db, auth, raw, clock = Date.now, {requested
         tx.set(profile.collection('subscription_history').doc(refundId), refundRecord);
         tx.update(requestRef, {status: 'REJECTED', isApproved: false, isEnabled: false, refundedAtMillis: now});
         tx.set(db.doc('system_config/app_notices'), {notices}, {merge: true});
+        tx.delete(db.doc(`app_notices/${input.sponsorId}`));
         record = receipt(input.id, now, 'SPONSOR_REJECTION', 'Anuncio patrocinado rechazado y reembolsado', `+${refund} EA`);
         metadata = {kind: 'SPONSOR_RESOLUTION', sponsorId: input.sponsorId, approved: false, refunded: refund};
       }

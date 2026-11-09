@@ -81,6 +81,11 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
 
   catalog-preflight:
+    # Keep the mandatory preflight in the graph even when an upstream job
+    # exposes outputs for selective suites.  The explicit success check still
+    # prevents running it after a failed scope calculation, while avoiding a
+    # silent skipped job that can mark the workflow red without diagnostics.
+    if: ${{ always() && needs.validation-scope.result == 'success' }}
     needs: validation-scope
     name: Comprobaciones previas de catálogos, idiomas y planes de prueba
     runs-on: ubuntu-latest

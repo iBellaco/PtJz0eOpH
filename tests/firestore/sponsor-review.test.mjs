@@ -10,7 +10,8 @@ const stranger = env.authenticatedContext('stranger',{email_verified:true}).fire
 const missingAdmin = env.authenticatedContext('missing-admin',{admin:true,email_verified:true}).firestore();
 const bannedAdmin = env.authenticatedContext('banned-admin',{admin:true,email_verified:true}).firestore();
 async function resolve(store,id,approve) {
-  const ref=doc(store,'pending_sponsor_ads',id), registry=doc(store,'system_config/app_notices');
+  const ref=doc(store,'pending_sponsor_ads',id), registry=doc(store,'system_config/app_notices'),
+    publicRef=doc(store,`app_notices/${id}`);
   return runTransaction(store,async tx=>{
     const request=await tx.get(ref), current=await tx.get(registry), data=request.data();
     assert.ok(data && !data.isApproved && !data.refundedAtMillis && data.status !== 'REJECTED');
@@ -18,12 +19,15 @@ async function resolve(store,id,approve) {
     if(approve) {
       const changes={isApproved:true,isEnabled:true,approvedAtMillis:1000,expiresAtMillis:86401000};
       tx.update(ref,changes);
-      tx.set(registry,{notices:[...notices,{id,title:data.title,tag:'PUBLICIDAD',...changes}]},{merge:true});
+      const published={id,title:data.title,tag:'PUBLICIDAD',...changes};
+      tx.set(registry,{notices:[...notices,published]},{merge:true});
+      tx.set(publicRef,published);
     } else {
       const operationId=`sponsor_review_${id}_reject_test`, queue=doc(store,'economy_requests',`admin~${operationId}`);
       await tx.get(queue);
       tx.update(ref,{status:'REJECTED',isApproved:false,isEnabled:false});
       tx.set(registry,{notices},{merge:true});
+      tx.delete(publicRef);
       tx.set(queue,{userId:'admin',operationId,payload:{action:'SPONSOR_RESOLVE',id:operationId,sponsorId:id,approved:false},
         status:'PENDING',schema:2,createdAt:serverTimestamp(),authTime:0});
     }
@@ -39,6 +43,7 @@ try {
       await setDoc(doc(db,'users',uid),{role,banned});
     }
     await setDoc(doc(db,'system_config/app_notices'),{streamerIntervalValue:15,notices:[{id:'existing',title:'Conservar'}]});
+    await setDoc(doc(db,'app_notices/reject'),{id:'reject',title:'Retirar',tag:'PUBLICIDAD',isApproved:true,isEnabled:true});
     for(const id of ['approve','reject','refunded']) await setDoc(doc(db,'pending_sponsor_ads',id),{
       userId:'owner',title:'Oferta',isApproved:false,isEnabled:false,...(id==='refunded'?{refundedAtMillis:123}:{})});
   });
@@ -53,9 +58,14 @@ try {
   const registry=await getDoc(doc(admin,'system_config/app_notices'));
   assert.deepEqual(registry.get('notices').map(n=>n.id),['existing','approve']);
   assert.equal(registry.get('streamerIntervalValue'),15);
+  const publicAd=await assertSucceeds(getDoc(doc(stranger,'app_notices/approve')));
+  assert.equal(publicAd.get('tag'),'PUBLICIDAD');
+  assert.equal(publicAd.get('isApproved'),true);
+  assert.equal(publicAd.get('sponsorEmail'),undefined);
   await assert.rejects(resolve(admin,'approve',true));
   await assertSucceeds(resolve(admin,'reject',false));
   assert.equal((await getDoc(doc(owner,'pending_sponsor_ads/reject'))).get('status'),'REJECTED');
+  assert.equal((await getDoc(doc(stranger,'app_notices/reject'))).exists(),false);
   assert.equal((await getDoc(doc(admin,'economy_requests/admin~sponsor_review_reject_reject_test'))).get('payload.action'),'SPONSOR_RESOLVE');
   await assertFails(updateDoc(doc(owner,'pending_sponsor_ads/reject'),{status:'PENDING'}));
   await assertFails(updateDoc(doc(admin,'pending_sponsor_ads/reject'),{isApproved:true,isEnabled:true}));

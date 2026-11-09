@@ -788,7 +788,7 @@ internal fun FloatingOverlayContent(
                         } else {
                             Image(
                                 painter = painterResource(id = com.example.R.drawable.ic_overlay_logo),
-                                contentDescription = "Wild Rift Drafting Coach",
+                                contentDescription = tr("Wild Rift Drafting Coach"),
                                 contentScale = ContentScale.Crop,
                                 modifier = Modifier
                                     .size(if (isCompactBubble) 32.dp else 42.dp)

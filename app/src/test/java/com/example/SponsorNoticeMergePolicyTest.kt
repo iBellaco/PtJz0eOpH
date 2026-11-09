@@ -1,6 +1,7 @@
 package com.example
 
 import com.example.data.AppNotice
+import com.example.data.mergePublicSponsorNotices
 import com.example.data.mergeSponsorNotices
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -43,5 +44,26 @@ class SponsorNoticeMergePolicyTest {
         assertFalse(changed)
         assertEquals("Oferta publicada", merged.single().title)
         assertTrue(merged.single().isApproved)
+    }
+
+    @Test
+    fun dedicatedPublicDocumentOverridesPendingCacheAndDisappearsWhenDeleted() {
+        val pending = AppNotice(id = "ad-12345678", title = "Pendiente", isApproved = false, isEnabled = false)
+        val published = pending.copy(
+            title = "Publicidad visible",
+            tag = "PUBLICIDAD",
+            isApproved = true,
+            isEnabled = true,
+            approvedAtMillis = 100L,
+            expiresAtMillis = 86_500L
+        )
+
+        val visible = mergePublicSponsorNotices(listOf(pending), emptyList(), listOf(published))
+        assertEquals(1, visible.size)
+        assertEquals("Publicidad visible", visible.single().title)
+        assertTrue(visible.single().isEnabled)
+
+        val removed = mergePublicSponsorNotices(visible, listOf(published), emptyList())
+        assertTrue(removed.isEmpty())
     }
 }
