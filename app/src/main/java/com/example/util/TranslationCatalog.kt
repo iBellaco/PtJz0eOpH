@@ -119,6 +119,41 @@ class TranslationCatalog(private val portuguese: Map<String, String>, private va
     /** Normalizes frequent Spanish leftovers found in offline Portuguese catalog and champion data. */
     private object PortugueseTextCleanup {
         private val replacements = listOf(
+            // Brazilian Portuguese is the only Portuguese variant exposed by
+            // Coach. Normalize old Portugal-oriented catalog entries before
+            // they reach any screen or generated Wild Rift explanation.
+            "ficheiros" to "arquivos", "ficheiro" to "arquivo",
+            "utilizadores" to "usuários", "utilizador" to "usuário",
+            "percentagens" to "porcentagens", "percentagem" to "porcentagem",
+            "aplicações" to "aplicativos", "aplicação" to "aplicativo",
+            "subscrever" to "assinar", "subscritos" to "inscritos",
+            "subscritas" to "inscritas", "subscrito" to "inscrito", "subscrita" to "inscrita",
+            "Introduza" to "Digite", "introduza" to "digite",
+            "libertar" to "liberar", "actuais" to "atuais", "actual" to "atual",
+            "items" to "itens", "Items" to "Itens",
+            // High-confidence Spanish residues that previously passed the
+            // source audit because they resemble Portuguese words.
+            "En vivo" to "Ao vivo", "en vivo" to "ao vivo",
+            "Actividad" to "Atividade", "actividad" to "atividade",
+            "Anuncios" to "Anúncios", "anuncios" to "anúncios",
+            "Anuncio" to "Anúncio", "anuncio" to "anúncio",
+            "Cambios" to "Alterações", "cambios" to "alterações",
+            "Gestionar" to "Gerenciar", "gestionar" to "gerenciar",
+            "Resumen" to "Resumo", "resumen" to "resumo",
+            "Detalles" to "Detalhes", "detalles" to "detalhes",
+            "Mayor" to "Maior", "mayor" to "maior",
+            "Perfiles" to "Perfis", "perfiles" to "perfis",
+            "Patrocinios" to "Patrocínios", "patrocinios" to "patrocínios",
+            "Imágenes" to "Imagens", "imágenes" to "imagens",
+            "Imagen" to "Imagem", "imagen" to "imagem",
+            "Ahorro" to "Economia", "ahorro" to "economia",
+            "Sin resultados" to "Sem resultados", "sin resultados" to "sem resultados",
+            "Panel" to "Painel", "panel" to "painel",
+            "Toca para" to "Toque para", "toca para" to "toque para",
+            "Recarrega" to "Recarregue", "recarrega" to "recarregue",
+            "Pinche" to "Faça o gesto de pinça", "pinche" to "faça o gesto de pinça",
+            "límpialos" to "limpe-os", "Guarda o anúncio" to "Salve o anúncio",
+            "Adjuntado" to "Anexado", "adjuntado" to "anexado",
             "Invocación Estelar" to "Invocação Estelar",
             "Juego Medio/Tardío" to "Jogo Médio/Tardio",
             "Asesinos" to "Assassinos", "asesinos" to "assassinos",
