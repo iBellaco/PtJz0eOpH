@@ -15,27 +15,64 @@ object CalibrationReport {
         capture: String,
         coordinates: String,
         userName: String = "Usuario",
-        language: String = "es"
+        language: String = "es",
+        androidVersion: String = ""
     ): String {
         fun field(value: String) = value.replace('\n', ' ').replace('\r', ' ').take(200)
         require(coordinates.isNotBlank() && coordinates.length < 12000)
         require(!coordinates.contains(MARKER) && !coordinates.contains(END))
-        val pt = language == "pt"
+        val cleanDevice = field(device).substringBefore(';').trim()
+        val cleanDisplay = field(display).substringBefore(';').trim()
+        val cleanAndroid = field(androidVersion).ifBlank {
+            Regex("API\\s+([0-9]+)", RegexOption.IGNORE_CASE).find(field(device))?.value
+                ?: "No disponible"
+        }
+        val cleanUser = field(userName).takeUnless { it.contains("@") || it.equals("Invocador", ignoreCase = true) }
+            ?.ifBlank { null } ?: if (language.equals("pt", ignoreCase = true)) "Usuário" else "Usuario"
+        val pt = language.equals("pt", ignoreCase = true)
+        val userLabel = if (pt) "Usuário" else "Usuario"
+        val screenLabel = if (pt) "Tela" else "Pantalla"
+        val coordinatesLabel = if (pt) "Coordenadas" else "Coordenadas"
         val cleanCoordinates = coordinates.lineSequence()
             .filterNot { it.trimStart().startsWith("usuario=", ignoreCase = true) }
             .joinToString("\n").trim()
         return buildString {
             appendLine(MARKER)
-            appendLine(if (pt) "ETIQUETA: COORDENADAS DO SCANNER — SOMENTE ADMINISTRAÇÃO" else "ETIQUETA: COORDENADAS DEL ESCÁNER — SOLO ADMINISTRACIÓN")
-            appendLine("${if (pt) "Usuário" else "Usuario"}: ${field(userName)}")
-            appendLine("${if (pt) "Dispositivo" else "Dispositivo"}: ${field(device)}")
-            appendLine("${if (pt) "Tela" else "Pantalla"}: ${field(display)}")
-            appendLine("${if (pt) "Captura analisada" else "Captura analizada"}: ${field(capture)}")
-            appendLine("Coach: ${field(app)}")
-            appendLine(if (pt) "--- COORDENADAS SALVAS ---" else "--- COORDENADAS GUARDADAS ---")
+            appendLine("COORDENADAS")
+            appendLine("$userLabel: $cleanUser")
+            appendLine("Dispositivo: $cleanDevice")
+            appendLine("$screenLabel: $cleanDisplay")
+            appendLine("Android: $cleanAndroid")
+            appendLine("$coordinatesLabel:")
             appendLine(cleanCoordinates)
             append(END)
         }
+    }
+
+    /**
+     * Returns the short human-readable payload shown in the support list and
+     * conversation. The version markers remain available for copying/parsing,
+     * but are not useful to the person reviewing the coordinates.
+     */
+    fun displayText(text: String): String? {
+        val envelope = extract(text) ?: return null
+        val firstBreak = envelope.indexOf('\n')
+        if (firstBreak < 0) return null
+        val body = envelope.substring(firstBreak + 1)
+        val end = body.lastIndexOf('\n')
+        return body.substring(0, if (end >= 0) end else body.length)
+            .lineSequence()
+            .filterNot { line ->
+                val normalized = line.trim().uppercase(java.util.Locale.ROOT)
+                normalized.startsWith("---") ||
+                    normalized.startsWith("ETIQUETA:") ||
+                    normalized.startsWith("CAPTURA ANALIZADA:") ||
+                    normalized.startsWith("CAPTURA ANALISADA:") ||
+                    normalized.startsWith("COACH:")
+            }
+            .joinToString("\n")
+            .trim()
+            .takeIf { it.isNotBlank() }
     }
 
     fun extract(text: String): String? {

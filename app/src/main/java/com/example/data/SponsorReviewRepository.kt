@@ -114,12 +114,13 @@ object SponsorReviewRepository {
                 val changes = mapOf<String, Any>(
                     "isApproved" to true,
                     "isEnabled" to true,
+                    "status" to "APROBADA",
                     "approvedAtMillis" to previousApprovedAt.takeIf { alreadyApproved && it > 0L }.let { it ?: now },
                     "expiresAtMillis" to previousExpiresAt.takeIf { alreadyApproved && it > 0L }.let {
                         it ?: (now + unitMillis * duration)
                     }
                 )
-                if (!alreadyApproved) tx.update(adRef, changes)
+                tx.update(adRef, changes)
                 val publicNotice = SponsorReviewPolicy.publicNotice(id, data + changes)
                 tx.set(registryRef, mapOf("notices" to (notices + publicNotice)), SetOptions.merge())
                 // A dedicated public document avoids losing the publication if
@@ -135,7 +136,6 @@ object SponsorReviewRepository {
                 // signed queue row in the same transaction asks the trusted
                 // worker to verify the original charge and refund it exactly
                 // once; the UI no longer waits on an unavailable callable.
-                tx.get(queueRef)
                 tx.update(adRef, mapOf("status" to "REJECTED", "isApproved" to false, "isEnabled" to false))
                 tx.set(registryRef, mapOf("notices" to notices), SetOptions.merge())
                 tx.delete(publicNoticeRef)
