@@ -92,7 +92,60 @@ object SponsorReviewRepository {
 
         val resolvedDirectly = db.runTransaction { tx ->
             val ad = tx.get(adRef)
-            if (!ad.exists()) return@runTransaction false
+            if (!ad.exists()) {
+                // A queued submission may be the only record when the paid
+                // callable is unavailable. An administrator can commit the
+                // moderation decision directly; the trusted worker later
+                // settles the original queue row without charging twice.
+                val sourceId = cleanQueuedRequestId ?: return@runTransaction false
+                val source = tx.get(db.collection("economy_requests").document(sourceId))
+                val sourcePayload = source.get("payload") as? Map<String, Any>
+                val sourceNotice = sourcePayload?.get("notice") as? Map<String, Any>
+                check(source.exists() && source.getString("status") in setOf("PENDING", "PROCESSING", "REVIEW") && sourceNotice != null) {
+                    appTr("La solicitud ya fue resuelta")
+                }
+                check(source.getString("operationId") == id) { appTr("La solicitud ya fue resuelta") }
+                val sourceUserId = source.getString("userId") ?: ""
+                check(sourceUserId.matches(Regex("[a-zA-Z0-9_-]{1,128}"))) { appTr("La solicitud ya fue resuelta") }
+                val registry = tx.get(registryRef)
+                @Suppress("UNCHECKED_CAST")
+                val notices = ((registry.get("notices") as? List<Map<String, Any>>).orEmpty())
+                    .filterNot { it["id"] == id }
+                val now = System.currentTimeMillis()
+                val unit = sourceNotice["durationUnit"]?.toString()?.lowercase().orEmpty()
+                val unitMillis = when (unit) {
+                    "hour" -> 60L * 60L * 1000L
+                    "week" -> 7L * 24L * 60L * 60L * 1000L
+                    "month" -> 30L * 24L * 60L * 60L * 1000L
+                    else -> 24L * 60L * 60L * 1000L
+                }
+                val maximum = when (unit) { "hour" -> 12; "day", "" -> 3; "week" -> 2; "month" -> 6; else -> 3 }
+                val duration = ((sourceNotice["durationValue"] as? Number)?.toInt() ?: 1).coerceIn(1, maximum)
+                val decision = mapOf<String, Any>(
+                    "id" to id, "title" to (sourceNotice["title"]?.toString() ?: ""),
+                    "content" to (sourceNotice["content"]?.toString() ?: ""),
+                    "videoUrl" to (sourceNotice["videoUrl"]?.toString() ?: ""),
+                    "expandedImageUrl" to (sourceNotice["expandedImageUrl"]?.toString() ?: ""),
+                    "externalUrl" to (sourceNotice["externalUrl"]?.toString() ?: ""),
+                    "titleColor" to (sourceNotice["titleColor"]?.toString() ?: "#FFD700"),
+                    "tag" to "PUBLICIDAD", "durationValue" to duration, "durationUnit" to unit.ifBlank { "day" },
+                    "isApproved" to approve, "isEnabled" to approve, "status" to if (approve) "APROBADA" else "REJECTED",
+                    "approvedAtMillis" to if (approve) now else 0L,
+                    "expiresAtMillis" to if (approve) now + unitMillis * duration else 0L,
+                    "userId" to sourceUserId, "manualAdminDecision" to true,
+                    "manualDecisionBy" to user.uid, "createdAt" to (source.getTimestamp("createdAt")?.toDate()?.time ?: now)
+                )
+                tx.set(adRef, decision)
+                if (approve) {
+                    val publicNotice = SponsorReviewPolicy.publicNotice(id, decision)
+                    tx.set(registryRef, mapOf("notices" to (notices + publicNotice)), SetOptions.merge())
+                    tx.set(publicNoticeRef, publicNotice)
+                } else {
+                    tx.set(registryRef, mapOf("notices" to notices), SetOptions.merge())
+                    tx.delete(publicNoticeRef)
+                }
+                return@runTransaction true
+            }
 
             val data = ad.data.orEmpty()
             val alreadyApproved = data["isApproved"] == true

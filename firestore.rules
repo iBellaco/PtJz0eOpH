@@ -312,7 +312,12 @@ service cloud.firestore {
             && request.resource.data.isEnabled == false)
           || (request.resource.data.status == 'APROBADA' && request.resource.data.isApproved == true
             && request.resource.data.isEnabled == true));
-      allow create: if false;
+      allow create: if isAdmin()
+        && request.resource.data.get('manualAdminDecision', false) == true
+        && request.resource.data.get('id', '') == id
+        && request.resource.data.get('status', '') in ['APROBADA','REJECTED']
+        && request.resource.data.get('isApproved', false) == (request.resource.data.status == 'APROBADA')
+        && request.resource.data.get('isEnabled', false) == (request.resource.data.status == 'APROBADA');
       allow delete: if isAdmin();
     }
     // Avisos públicos y notificaciones generales
