@@ -309,7 +309,9 @@ service cloud.firestore {
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['isApproved','isEnabled','approvedAtMillis','expiresAtMillis','status'])
         && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['status'])
           || (request.resource.data.status == 'REJECTED' && request.resource.data.isApproved == false
-            && request.resource.data.isEnabled == false));
+            && request.resource.data.isEnabled == false)
+          || (request.resource.data.status == 'APROBADA' && request.resource.data.isApproved == true
+            && request.resource.data.isEnabled == true));
       allow create: if false;
       allow delete: if isAdmin();
     }
