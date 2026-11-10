@@ -1,7 +1,7 @@
 import {readFileSync} from 'node:fs';
 import assert from 'node:assert/strict';
 import {initializeTestEnvironment, assertFails, assertSucceeds} from '@firebase/rules-unit-testing';
-import {doc, setDoc, getDoc, getDocs, collection, query, where, runTransaction, updateDoc, serverTimestamp} from 'firebase/firestore';
+import {doc, setDoc, getDoc, getDocFromServer, getDocs, getDocsFromServer, collection, query, where, runTransaction, updateDoc, serverTimestamp} from 'firebase/firestore';
 const env = await initializeTestEnvironment({projectId:'demo-coach-tests', firestore:{host:'127.0.0.1',port:8088,
   rules:readFileSync(new URL('../../firestore.rules',import.meta.url),'utf8')}});
 const admin = env.authenticatedContext('admin',{admin:true,email_verified:true}).firestore();
@@ -14,12 +14,18 @@ async function resolve(store,id,approve) {
     publicRef=doc(store,`app_notices/${id}`);
   return runTransaction(store,async tx=>{
     const request=await tx.get(ref), current=await tx.get(registry), data=request.data();
-    assert.ok(data && !data.isApproved && !data.refundedAtMillis && data.status !== 'REJECTED');
+    assert.ok(data && !data.refundedAtMillis && !['REJECTED','REFUNDED'].includes(data.status));
+    assert.ok(approve || !data.isApproved);
     const notices=(current.data()?.notices??[]).filter(n=>n.id!==id);
     if(approve) {
-      const changes={isApproved:true,isEnabled:true,approvedAtMillis:1000,expiresAtMillis:86401000};
+      // Mirror SponsorReviewRepository.resolve, including the status transition.
+      const now=Date.now();
+      const changes={status:'APROBADA',isApproved:true,isEnabled:true,
+        approvedAtMillis:data.isApproved ? data.approvedAtMillis : now,
+        expiresAtMillis:data.isApproved ? data.expiresAtMillis : now+86400000};
       tx.update(ref,changes);
-      const published={id,title:data.title,tag:'PUBLICIDAD',...changes};
+      const {status,...publicChanges}=changes;
+      const published={id,title:data.title,tag:'PUBLICIDAD',...publicChanges};
       tx.set(registry,{notices:[...notices,published]},{merge:true});
       tx.set(publicRef,published);
     } else {
@@ -53,6 +59,10 @@ try {
   await assertFails(resolve(missingAdmin,'approve',true));
   await assertFails(resolve(bannedAdmin,'approve',true));
   assert.equal((await getDoc(doc(owner,'pending_sponsor_ads/approve'))).get('isApproved'),false);
+  // Invalid transitions must remain forbidden even for an active administrator.
+  await assertFails(updateDoc(doc(admin,'pending_sponsor_ads/approve'),{status:'APROBADA',isApproved:false,isEnabled:true}));
+  await assertFails(updateDoc(doc(admin,'pending_sponsor_ads/approve'),{status:'APROBADA',isApproved:true,isEnabled:false}));
+  await assertFails(updateDoc(doc(admin,'pending_sponsor_ads/approve'),{status:'ARBITRARY'}));
   await assertSucceeds(resolve(admin,'approve',true));
   assert.equal((await getDoc(doc(owner,'pending_sponsor_ads/approve'))).get('isApproved'),true);
   const registry=await getDoc(doc(admin,'system_config/app_notices'));
@@ -62,7 +72,19 @@ try {
   assert.equal(publicAd.get('tag'),'PUBLICIDAD');
   assert.equal(publicAd.get('isApproved'),true);
   assert.equal(publicAd.get('sponsorEmail'),undefined);
-  await assert.rejects(resolve(admin,'approve',true));
+  await assertSucceeds(resolve(admin,'approve',true));
+  // Reopen with a fresh session and bypass the cache: the approval must persist,
+  // leave the pending list, and be readable/renderable on another user's Home.
+  const reopened=env.authenticatedContext('admin',{admin:true,email_verified:true}).firestore();
+  const saved=await getDocFromServer(doc(reopened,'pending_sponsor_ads/approve'));
+  assert.equal(saved.get('status'),'APROBADA');
+  const pending=await getDocsFromServer(query(collection(reopened,'pending_sponsor_ads'),where('isApproved','==',false)));
+  assert.ok(!pending.docs.some(row=>row.id==='approve'));
+  const home=await getDocsFromServer(collection(stranger,'app_notices'));
+  const visible=home.docs.find(row=>row.id==='approve');
+  assert.ok(visible && visible.get('isApproved') && visible.get('isEnabled') && visible.get('title') && visible.get('expiresAtMillis')>Date.now());
+  assert.equal(saved.get('expiresAtMillis'),publicAd.get('expiresAtMillis'));
+  await assertFails(updateDoc(doc(admin,'pending_sponsor_ads/approve'),{status:'PENDING',isApproved:false}));
   await assertSucceeds(resolve(admin,'reject',false));
   assert.equal((await getDoc(doc(owner,'pending_sponsor_ads/reject'))).get('status'),'REJECTED');
   assert.equal((await getDoc(doc(stranger,'app_notices/reject'))).exists(),false);
@@ -72,5 +94,5 @@ try {
   await assertFails(updateDoc(doc(admin,'pending_sponsor_ads/refunded'),{isApproved:true}));
   // The old client sent this extra field; rules reject it.
   await assertFails(updateDoc(doc(admin,'pending_sponsor_ads/approve'),{approvedAt:1000}));
-  console.log('PASS sponsor ownership, active administrator, atomic publication, repeat approval, rejection and refunded protection');
+  console.log('PASS exact Android approval payload, server-confirmed reopening, public Home visibility, idempotent approval, ownership, rejection and refunded protection');
 } finally { await env.cleanup(); }
