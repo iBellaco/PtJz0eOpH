@@ -10,6 +10,8 @@ import com.google.firebase.firestore.Source
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -45,6 +47,10 @@ private fun sponsorStateRank(notice: AppNotice): Int = when {
     notice.isEnabled -> 1
     else -> 0
 }
+
+/** Never let a late cache callback erase a feed already confirmed by the server. */
+internal fun shouldApplyNoticeSnapshot(fromCache: Boolean, hasServerSnapshot: Boolean): Boolean =
+    !fromCache || !hasServerSnapshot
 
 /**
  * Reconcile the private sponsor mirror without allowing a stale pending row to
@@ -115,6 +121,10 @@ object AppNoticeManager {
     private var firestoreListener: ListenerRegistration? = null
     private var publicSponsorListener: ListenerRegistration? = null
     private var publicSponsorNotices: List<AppNotice> = emptyList()
+    private var hasServerPublicSnapshot = false
+    private var hasServerRegistrySnapshot = false
+    private val mediaScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    private val preloadedImages = java.util.concurrent.ConcurrentHashMap.newKeySet<String>()
     private var authStateListener: FirebaseAuth.AuthStateListener? = null
     private var isAuthenticatingAnonymously = false
 
@@ -199,7 +209,8 @@ object AppNoticeManager {
             db.collection(FIRESTORE_COLLECTION).document(FIRESTORE_DOC_NOTICES)
                 .get(com.google.firebase.firestore.Source.CACHE)
                 .addOnSuccessListener { snapshot ->
-                    if (snapshot != null && snapshot.exists()) {
+                    if (snapshot != null && snapshot.exists() &&
+                        shouldApplyNoticeSnapshot(true, hasServerRegistrySnapshot)) {
                         processFirestoreSnapshot(appContext, snapshot)
                     }
                 }
@@ -207,7 +218,10 @@ object AppNoticeManager {
                     // Si aún no está en caché de Firestore, se usará la caché local ya cargada
                 }
             db.collection("app_notices").get(Source.CACHE)
-                .addOnSuccessListener { processPublicSponsorSnapshot(appContext, it) }
+                .addOnSuccessListener {
+                    if (shouldApplyNoticeSnapshot(true, hasServerPublicSnapshot))
+                        processPublicSponsorSnapshot(appContext, it)
+                }
                 .addOnFailureListener { }
         } catch (_: Exception) {}
     }
@@ -224,7 +238,6 @@ object AppNoticeManager {
                 } else {
                     attachFirestoreListener(context, force = true)
                     attachPublicSponsorListener(context, force = true)
-                    syncFromCloud(context)
                 }
             }
             auth.addAuthStateListener(authStateListener!!)
@@ -236,10 +249,8 @@ object AppNoticeManager {
     private fun ensureAuthAndSync(context: Context) {
         val appContext = context.applicationContext
         // Iniciar Firestore y fetch de inmediato sin esperar autenticación
-        fetchFromFirestoreCache(appContext)
         attachFirestoreListener(appContext, force = false)
         attachPublicSponsorListener(appContext, force = false)
-        executeCloudFetch(appContext, null)
 
         // En segundo plano sin bloquear la UI ni la carga inicial
         val auth = try { FirebaseAuth.getInstance() } catch (_: Exception) { null }
@@ -247,7 +258,6 @@ object AppNoticeManager {
             com.example.util.GuestAuthHelper.ensureAuth {
                 attachFirestoreListener(appContext, force = true)
                 attachPublicSponsorListener(appContext, force = true)
-                executeCloudFetch(appContext, null)
             }
         }
     }
@@ -255,13 +265,10 @@ object AppNoticeManager {
     fun syncFromCloud(context: Context, onComplete: ((Boolean) -> Unit)? = null) {
         val appContext = context.applicationContext
         // Inmediato desde caché y en paralelo desde la nube
-        fetchFromFirestoreCache(appContext)
         attachPublicSponsorListener(appContext, force = false)
-        // An explicit refresh must not settle on a stale local snapshot after
-        // an administrator publishes a sponsor notice. The listener still
-        // handles offline updates; this read is authoritative when online.
+        // The public listener is the single source of sponsor publications.
+        // A second one-shot query can finish out of order and clear a newer ad.
         executeCloudFetch(appContext, onComplete, Source.SERVER)
-        executePublicSponsorFetch(appContext, Source.SERVER)
     }
 
     private fun executeCloudFetch(
@@ -275,7 +282,10 @@ object AppNoticeManager {
                 .get(source)
                 .addOnSuccessListener { snapshot ->
                     if (snapshot != null && snapshot.exists()) {
-                        processFirestoreSnapshot(appContext, snapshot)
+                        if (shouldApplyNoticeSnapshot(snapshot.metadata.isFromCache, hasServerRegistrySnapshot)) {
+                            if (!snapshot.metadata.isFromCache) hasServerRegistrySnapshot = true
+                            processFirestoreSnapshot(appContext, snapshot)
+                        }
                         onComplete?.invoke(true)
                     } else {
                         Log.d(TAG, "Documento de anuncios en Firestore no encontrado.")
@@ -292,19 +302,6 @@ object AppNoticeManager {
         }
     }
 
-    private fun executePublicSponsorFetch(appContext: Context, source: Source) {
-        try {
-            FirebaseFirestore.getInstance().collection("app_notices")
-                .get(source)
-                .addOnSuccessListener { processPublicSponsorSnapshot(appContext, it) }
-                .addOnFailureListener { error ->
-                    Log.w(TAG, "Error sincronizando anuncios patrocinados públicos: ${error.message}")
-                }
-        } catch (error: Exception) {
-            Log.w(TAG, "No se pudo sincronizar anuncios patrocinados públicos: ${error.message}")
-        }
-    }
-
     private fun mergePublicSponsors(base: List<AppNotice>): List<AppNotice> {
         return mergePublicSponsorNotices(base, publicSponsorNotices, publicSponsorNotices)
     }
@@ -313,16 +310,31 @@ object AppNoticeManager {
         context: Context,
         snapshot: com.google.firebase.firestore.QuerySnapshot
     ) {
-        val previous = publicSponsorNotices
-        publicSponsorNotices = snapshot.documents.mapNotNull { document ->
+        val next = snapshot.documents.mapNotNull { document ->
             val data = document.data ?: return@mapNotNull null
             if (data["isApproved"] != true || data["isEnabled"] != true) return@mapNotNull null
             SponsorReviewPolicy.notice(document.id, data)
         }
+        applyPublicSponsors(context, next)
+    }
+
+    /** Show an ad immediately after its public document is verified from the server. */
+    fun acceptVerifiedSponsor(context: Context, id: String, data: Map<String, Any>) {
+        if (!SponsorReviewPolicy.visibleOnHome(data, System.currentTimeMillis())) return
+        hasServerPublicSnapshot = true
+        applyPublicSponsors(context, publicSponsorNotices.filterNot { it.id == id } +
+            SponsorReviewPolicy.notice(id, data))
+    }
+
+    private fun applyPublicSponsors(context: Context, next: List<AppNotice>) {
+        val previous = publicSponsorNotices
+        publicSponsorNotices = next
         val combined = mergePublicSponsorNotices(_notices.value, previous, publicSponsorNotices)
-        _notices.value = combined
-        saveNoticesToPrefs(context, combined)
-        preloadMedia(context, publicSponsorNotices)
+        if (combined != _notices.value) {
+            _notices.value = combined
+            saveNoticesToPrefs(context, combined)
+            preloadMedia(context, publicSponsorNotices)
+        }
         Log.d(TAG, "Sincronizados ${publicSponsorNotices.size} anuncios patrocinados públicos")
     }
 
@@ -366,9 +378,11 @@ object AppNoticeManager {
                     )
                 }
                 val combined = mergePublicSponsors(parsedNotices)
-                _notices.value = combined
-                saveNoticesToPrefs(context, combined)
-                preloadMedia(context, combined)
+                if (combined != _notices.value) {
+                    _notices.value = combined
+                    saveNoticesToPrefs(context, combined)
+                    preloadMedia(context, combined)
+                }
                 Log.d(TAG, "Sincronizados exitosamente ${combined.size} anuncios desde Firestore para todos los dispositivos.")
             }
         } catch (e: Exception) {
@@ -401,7 +415,10 @@ object AppNoticeManager {
                         return@addSnapshotListener
                     }
                     if (snapshot != null && snapshot.exists()) {
-                        processFirestoreSnapshot(context, snapshot)
+                        if (shouldApplyNoticeSnapshot(snapshot.metadata.isFromCache, hasServerRegistrySnapshot)) {
+                            if (!snapshot.metadata.isFromCache) hasServerRegistrySnapshot = true
+                            processFirestoreSnapshot(context, snapshot)
+                        }
                     }
                 }
         } catch (e: Exception) {
@@ -429,7 +446,11 @@ object AppNoticeManager {
                         publicSponsorListener = null
                         return@addSnapshotListener
                     }
-                    if (snapshot != null) processPublicSponsorSnapshot(context, snapshot)
+                    if (snapshot != null &&
+                        shouldApplyNoticeSnapshot(snapshot.metadata.isFromCache, hasServerPublicSnapshot)) {
+                        if (!snapshot.metadata.isFromCache) hasServerPublicSnapshot = true
+                        processPublicSponsorSnapshot(context, snapshot)
+                    }
                 }
         } catch (error: Exception) {
             Log.w(TAG, "No se pudo iniciar el listener de patrocinio público: ${error.message}")
@@ -525,52 +546,31 @@ object AppNoticeManager {
         }
     }
 
-    /**
-     * Precarga en segundo plano todas las imágenes y videos para que los anuncios
-     * carguen a máxima velocidad (0ms de espera) al ser vistos por el usuario.
-     */
+    /** Preload only visible image thumbnails; videos and expanded media load on demand. */
     fun preloadMedia(context: Context, list: List<AppNotice>) {
         val appContext = context.applicationContext
-        kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO).launch {
-            try {
-                val imageLoader = coil.Coil.imageLoader(appContext)
-                for (notice in list) {
-                    if (!notice.isEnabled) continue
-                    val vUrl = notice.videoUrl.trim()
-                    val expUrl = notice.expandedImageUrl.trim()
-                    if (vUrl.isNotBlank()) {
-                        if (com.example.ui.components.NoticeMediaUtils.isVideo(appContext, vUrl)) {
-                            if (vUrl.startsWith("http://", ignoreCase = true) || vUrl.startsWith("https://", ignoreCase = true)) {
-                                com.example.util.NoticeMediaStorageManager.cacheVideoFromUrl(appContext, vUrl)
-                            }
-                        } else {
-                            val model: Any = if (vUrl.startsWith("data:image/")) {
-                                com.example.util.NoticeMediaStorageManager.decodeDataUriToBytes(vUrl) ?: vUrl
-                            } else vUrl
-                            val req = coil.request.ImageRequest.Builder(appContext)
-                                .data(model)
+        list.asSequence().filter { it.isEnabled && it.isApproved }
+            .map { it.videoUrl.trim() }
+            .filter { it.startsWith("https://", ignoreCase = true) }
+            .filterNot { com.example.ui.components.NoticeMediaUtils.isVideo(appContext, it) }
+            .distinct().take(2).forEach { url ->
+                if (!preloadedImages.add(url)) return@forEach
+                mediaScope.launch {
+                    try {
+                        coil.Coil.imageLoader(appContext).enqueue(
+                            coil.request.ImageRequest.Builder(appContext)
+                                .data(url)
+                                .size(512, 512)
                                 .memoryCachePolicy(coil.request.CachePolicy.ENABLED)
                                 .diskCachePolicy(coil.request.CachePolicy.ENABLED)
                                 .build()
-                            imageLoader.enqueue(req)
-                        }
-                    }
-                    if (expUrl.isNotBlank()) {
-                        val expModel: Any = if (expUrl.startsWith("data:image/")) {
-                            com.example.util.NoticeMediaStorageManager.decodeDataUriToBytes(expUrl) ?: expUrl
-                        } else expUrl
-                        val req = coil.request.ImageRequest.Builder(appContext)
-                            .data(expModel)
-                            .memoryCachePolicy(coil.request.CachePolicy.ENABLED)
-                            .diskCachePolicy(coil.request.CachePolicy.ENABLED)
-                            .build()
-                        imageLoader.enqueue(req)
+                        )
+                    } catch (error: Exception) {
+                        preloadedImages.remove(url)
+                        Log.w(TAG, "Error en precarga de imagen: ${error.message}")
                     }
                 }
-            } catch (e: Exception) {
-                Log.w(TAG, "Error en precarga de medios: ${e.message}")
             }
-        }
     }
 
     fun saveAllNoticesAndInterval(
