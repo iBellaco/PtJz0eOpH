@@ -95,4 +95,10 @@ try {
   // The old client sent this extra field; rules reject it.
   await assertFails(updateDoc(doc(admin,'pending_sponsor_ads/approve'),{approvedAt:1000}));
   console.log('PASS exact Android approval payload, server-confirmed reopening, public Home visibility, idempotent approval, ownership, rejection and refunded protection');
-} finally { await env.cleanup(); }
+} finally {
+  // cleanup() closes clients but does not remove emulator documents. This
+  // suite publishes a live ad; leaving it behind changes occupancy-based
+  // pricing in the economy suite that runs next in CI.
+  try { await env.clearFirestore(); }
+  finally { await env.cleanup(); }
+}
