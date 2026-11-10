@@ -86,6 +86,7 @@ import androidx.compose.ui.unit.sp
 import com.example.MainActivity
 import com.example.R
 import com.example.data.WildRiftRepository
+import com.example.data.local.FavoriteChampionsManager
 import com.example.model.Champion
 import com.example.model.DraftSlot
 import com.example.model.LaneRole
@@ -112,6 +113,26 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import kotlin.math.roundToInt
+
+private data class AutoScanPulse(val alpha: Float, val scale: Float)
+
+@Composable
+private fun activeAutoScanPulse(): AutoScanPulse {
+    val transition = rememberInfiniteTransition(label = "auto_scan_pulse")
+    val alpha by transition.animateFloat(
+        initialValue = 0.32f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(tween(650), RepeatMode.Reverse),
+        label = "auto_scan_text_alpha"
+    )
+    val scale by transition.animateFloat(
+        initialValue = 0.90f,
+        targetValue = 1.08f,
+        animationSpec = infiniteRepeatable(tween(650), RepeatMode.Reverse),
+        label = "auto_scan_text_scale"
+    )
+    return AutoScanPulse(alpha, scale)
+}
 
 @Composable
 internal fun FloatingOverlayContent(
@@ -140,6 +161,11 @@ internal fun FloatingOverlayContent(
     val haptic = LocalHapticFeedback.current
     val currentLang = com.example.util.currentAppLanguage()
     var activeRole by state::activeRole
+
+    LaunchedEffect(Unit) {
+        FavoriteChampionsManager.init(context)
+    }
+    val favoriteChampionIds by FavoriteChampionsManager.favoritesFlow.collectAsStateWithLifecycle()
 
     val sharedPrefs = remember { context.getSharedPreferences("app_prefs", android.content.Context.MODE_PRIVATE) }
     // Los botones del visor deben aparecer de inmediato para una sesión de
@@ -210,15 +236,7 @@ internal fun FloatingOverlayContent(
     var isScanning by state::isScanning
     var autoScanEnabled by state::autoScanEnabled
     var scanNoticeMessage by state::scanNoticeMessage
-    val autoScanTextAlpha = rememberInfiniteTransition(label = "auto_scan_text_pulse").animateFloat(
-        initialValue = 0.62f,
-        targetValue = 1f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(850),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "auto_scan_text_alpha"
-    )
+    val autoScanPulse = if (autoScanEnabled) activeAutoScanPulse() else AutoScanPulse(0.86f, 1f)
 
     val geometryPreviewVisible by DraftVisionScanner.showCalibrationBoxes.collectAsStateWithLifecycle()
     val previewReadiness = remember(screenCaptureManager) {
@@ -297,14 +315,32 @@ internal fun FloatingOverlayContent(
         enemies.getOrNull(roleIndex)
     }
 
-    val analysis = remember(activeRole, isFirstPick, allies.toList(), enemies.toList(), explicitEnemyOpponent, bannedIds) {
+    val favoriteRecommendationCount = remember(activeRole, favoriteChampionIds) {
+        WildRiftRepository.favoriteChampionCountForRole(activeRole, favoriteChampionIds)
+    }
+    var favoriteOnlyRecommendations by remember {
+        mutableStateOf(sharedPrefs.getBoolean("draft_favorite_only_recommendations", false))
+    }
+    LaunchedEffect(favoriteOnlyRecommendations) {
+        sharedPrefs.edit().putBoolean("draft_favorite_only_recommendations", favoriteOnlyRecommendations).apply()
+    }
+    LaunchedEffect(activeRole, favoriteRecommendationCount) {
+        if (favoriteRecommendationCount < 5 && favoriteOnlyRecommendations) {
+            favoriteOnlyRecommendations = false
+        }
+    }
+
+    val analysis = remember(activeRole, isFirstPick, allies.toList(), enemies.toList(), explicitEnemyOpponent, bannedIds,
+        favoriteChampionIds, favoriteOnlyRecommendations) {
         WildRiftRepository.analyzeDraft(
             myRole = activeRole,
             allies = allies.filterNotNull(),
             enemies = enemies.filterNotNull(),
             enemyLaneOpponent = explicitEnemyOpponent,
             isFirstPick = isFirstPick,
-            bannedChampionIds = bannedIds
+            bannedChampionIds = bannedIds,
+            favoriteChampionIds = favoriteChampionIds,
+            favoriteOnlyRecommendations = favoriteOnlyRecommendations
         )
     }
 
@@ -976,7 +1012,9 @@ internal fun FloatingOverlayContent(
                                             fontSize = 8.5.sp,
                                             fontWeight = FontWeight.Bold,
                                             maxLines = 1,
-                                            modifier = Modifier.alpha(if (autoScanEnabled) autoScanTextAlpha.value else 0.86f)
+                                            modifier = Modifier
+                                                .alpha(if (autoScanEnabled) autoScanPulse.alpha else 0.86f)
+                                                .scale(if (autoScanEnabled) autoScanPulse.scale else 1f)
                                         )
                                     }
                                 }
@@ -1250,6 +1288,9 @@ internal fun FloatingOverlayContent(
                                             allySpells = state.allySpells,
                                             enemySpells = state.enemySpells,
                                             analysis = analysis,
+                                            favoriteOnlyRecommendations = favoriteOnlyRecommendations,
+                                            favoriteRecommendationCount = favoriteRecommendationCount,
+                                            onToggleFavoriteOnlyRecommendations = { favoriteOnlyRecommendations = it },
                                             selectedChampionDetail = selectedChampionDetail,
                                             onSelectChampion = { champion ->
                                                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
@@ -1329,8 +1370,8 @@ internal fun FloatingOverlayContent(
                                 verticalAlignment = Alignment.CenterVertically,
                                 modifier = Modifier
                                     .clip(RoundedCornerShape(6.dp))
-                                    .background(if (autoScanEnabled) autoScanColor.copy(alpha = 0.12f) else Color.Transparent)
-                                    .border(1.dp, if (autoScanEnabled) autoScanColor.copy(alpha = 0.6f) else Color.Transparent, RoundedCornerShape(6.dp))
+                                    .background(if (autoScanEnabled) autoScanColor.copy(alpha = 0.06f + autoScanPulse.alpha * 0.10f) else Color.Transparent)
+                                    .border(1.dp, if (autoScanEnabled) autoScanColor.copy(alpha = 0.35f + autoScanPulse.alpha * 0.35f) else Color.Transparent, RoundedCornerShape(6.dp))
                                     .padding(start = 4.dp, end = 1.dp, top = 1.dp, bottom = 1.dp)
                                     .testTag("overlay_auto_scan_status")
                             ) {
@@ -1350,8 +1391,8 @@ internal fun FloatingOverlayContent(
                                     fontWeight = if (autoScanEnabled) FontWeight.Bold else FontWeight.Normal,
                                     modifier = Modifier
                                         .padding(end = 4.dp)
-                                        .alpha(if (autoScanEnabled) autoScanTextAlpha.value else 0.86f)
-                                        .scale(if (autoScanEnabled) 0.98f + (autoScanTextAlpha.value * 0.04f) else 1f)
+                                        .alpha(if (autoScanEnabled) autoScanPulse.alpha else 0.86f)
+                                        .scale(if (autoScanEnabled) autoScanPulse.scale else 1f)
                                         .testTag("overlay_auto_scan_label")
                                 )
                                 if (!isPremium) {
