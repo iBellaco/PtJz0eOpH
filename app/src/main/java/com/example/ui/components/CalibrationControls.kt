@@ -15,7 +15,6 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.text.style.TextAlign
-import com.example.BuildConfig
 import com.example.R
 import com.example.data.CalibrationReport
 import com.example.data.CalibrationUserName
@@ -124,13 +123,14 @@ fun CalibrationSendButton(onBeforeSend: (() -> Unit)? = null) {
                     val displayName = CalibrationUserName.resolve(account)
                     val coordinates = snapshot.config.toFormattedCoordinatesString()
                     val payload = CalibrationReport.build(
-                        "${Build.MANUFACTURER} ${Build.MODEL}; API ${Build.VERSION.SDK_INT}",
-                        "${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})",
-                        "${metrics.widthPixels}x${metrics.heightPixels}; density=${metrics.density}; font=${context.resources.configuration.fontScale}; orientation=${context.resources.configuration.orientation}",
-                        if (snapshot.width > 0) "${snapshot.width}x${snapshot.height}" else "not_observed",
+                        "${Build.MANUFACTURER} ${Build.MODEL}",
+                        "",
+                        "${metrics.widthPixels}x${metrics.heightPixels}",
+                        "",
                         coordinates,
                         userName = displayName,
-                        language = AppLanguage.current.value
+                        language = AppLanguage.current.value,
+                        androidVersion = "${Build.VERSION.RELEASE} (API ${Build.VERSION.SDK_INT})"
                     )
                     val title = if (AppLanguage.current.value == "pt") "Coordenadas do scanner" else "Coordenadas del escáner"
                     val result = FeedbackRepository.submitFeedback(

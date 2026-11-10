@@ -104,19 +104,29 @@ fun SupportReplyDialog(
         )
     }
 
+    val isCalibrationReport = tag.trim().uppercase(Locale.ROOT) in
+        setOf("COORDENADAS", "CALIBRACION", "CALIBRAÇÃO")
+    fun displaySupportText(text: String): String = if (isCalibrationReport) {
+        com.example.data.CalibrationReport.displayText(text)
+            ?: com.example.data.SupportTicketPresentation.cleanBody(text)
+    } else text
+    val visibleReportDescription = remember(reportDescription, isCalibrationReport) {
+        displaySupportText(reportDescription)
+    }
+
     // Historial reactivo de la conversación
     var conversationMessages by remember {
         mutableStateOf(SupportReplyManager.getConversation(context, reportId))
     }
 
     // Inicializar con mensaje inicial del usuario si la conversación no lo tiene
-    LaunchedEffect(reportId, reportDescription) {
-        if (conversationMessages.none { it.senderRole.equals("USER", ignoreCase = true) } && reportDescription.isNotBlank()) {
+    LaunchedEffect(reportId, visibleReportDescription) {
+        if (conversationMessages.none { it.senderRole.equals("USER", ignoreCase = true) } && visibleReportDescription.isNotBlank()) {
             val initial = com.example.data.SupportMessageEntry(
                 id = "${reportId}_initial",
                 senderName = resolvedUserName.ifBlank { "Invocador" },
                 senderRole = "USER",
-                text = reportDescription,
+                text = visibleReportDescription,
                 timestampMillis = System.currentTimeMillis(),
                 isGreeting = false
             )
@@ -138,6 +148,7 @@ fun SupportReplyDialog(
                     }
 
                     val desc = snapshot.getString("description") ?: snapshot.getString("content") ?: reportDescription
+                    val visibleDesc = displaySupportText(desc)
                     val remoteConv = snapshot.get("conversation") as? List<Map<String, Any>>
                     val parsed = if (!remoteConv.isNullOrEmpty()) {
                         remoteConv.mapNotNull { item ->
@@ -146,7 +157,7 @@ fun SupportReplyDialog(
                                 id = item["id"] as? String ?: java.util.UUID.randomUUID().toString(),
                                 senderName = item["senderName"] as? String ?: "Soporte",
                                 senderRole = item["senderRole"] as? String ?: "SUPPORT",
-                                text = text,
+                                text = displaySupportText(text),
                                 timestampMillis = (item["timestampMillis"] as? Number)?.toLong() ?: System.currentTimeMillis(),
                                 isGreeting = (item["isGreeting"] as? Boolean) ?: false,
                                 senderEmail = (item["senderEmail"] as? String) ?: (item["authorEmail"] as? String)
@@ -155,13 +166,13 @@ fun SupportReplyDialog(
                     } else emptyList()
 
                     val hasUserInitial = parsed.any { it.senderRole.equals("USER", ignoreCase = true) }
-                    val fullList = if (!hasUserInitial && desc.isNotBlank()) {
+                    val fullList = if (!hasUserInitial && visibleDesc.isNotBlank()) {
                         listOf(
                             com.example.data.SupportMessageEntry(
                                 id = "${reportId}_initial",
                                 senderName = resolvedUserName.ifBlank { "Invocador" },
                                 senderRole = "USER",
-                                text = desc,
+                                text = visibleDesc,
                                 timestampMillis = snapshot.getTimestamp("createdAt")?.toDate()?.time ?: System.currentTimeMillis(),
                                 isGreeting = false
                             )
@@ -358,7 +369,7 @@ fun SupportReplyDialog(
                                 ) { Text(com.example.util.localizedString(com.example.R.string.calibration_copy)) }
                             }
                             Text(
-                                text = com.example.util.tr(reportDescription),
+                                text = com.example.util.tr(visibleReportDescription),
                                 color = TextSecondary,
                                 fontSize = 11.5.sp,
                                 lineHeight = 15.5.sp
@@ -483,7 +494,7 @@ fun SupportReplyDialog(
                                         }
                                         Spacer(modifier = Modifier.height(6.dp))
                                         Text(
-                                            text = if (msg.senderRole == "SYSTEM") com.example.util.localizedString(com.example.R.string.support_system_greeting) else com.example.util.tr(msg.text),
+                                            text = if (msg.senderRole == "SYSTEM") com.example.util.localizedString(com.example.R.string.support_system_greeting) else com.example.util.tr(displaySupportText(msg.text)),
                                             color = Color.White,
                                             fontSize = 12.sp,
                                             lineHeight = 16.sp

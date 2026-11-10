@@ -348,21 +348,37 @@ object FeedbackRepository {
         try {
             val db = FirebaseFirestore.getInstance()
             val ref = db.collection("support_reports").document(id)
-            db.runTransaction { transaction ->
-                val ticket = transaction.get(ref)
-                if (onlySolved && SupportTicketPresentation.status(ticket.getString("status").orEmpty()) != STATUS_SOLVED) return@runTransaction
-                val owner = ticket.getString("userId").orEmpty()
-                val ownerRef = owner.takeIf { it.isNotBlank() }?.let { db.collection("users").document(it) }
-                val account = ownerRef?.let { transaction.get(it) }
-                transaction.delete(ref)
-                if (ownerRef != null) {
-                    transaction.delete(ownerRef.collection("messages").document(id))
+            // Delete the canonical ticket directly. A transaction that also
+            // touched the owner's profile could be rejected by a concurrent
+            // profile update, leaving the ticket visible and forcing repeated
+            // taps even though the administrator had permission to remove it.
+            val ticket = ref.get(com.google.firebase.firestore.Source.SERVER).await()
+            if (!ticket.exists()) return@withContext Result.success(Unit)
+            if (onlySolved && SupportTicketPresentation.status(ticket.getString("status").orEmpty()) != STATUS_SOLVED) {
+                return@withContext Result.failure(IllegalStateException("El reporte todavía no está solucionado"))
+            }
+            val owner = ticket.getString("userId").orEmpty()
+            val ownerRef = owner.takeIf { it.isNotBlank() }?.let { db.collection("users").document(it) }
+            val batch = db.batch()
+            batch.delete(ref)
+            ownerRef?.let { batch.delete(it.collection("messages").document(id)) }
+            batch.commit().await()
+
+            // Legacy private-message mirrors are best-effort cleanup. The
+            // canonical support report is already gone even if an old profile
+            // schema cannot be updated by this device.
+            if (ownerRef != null) {
+                runCatching {
+                    val account = ownerRef.get(com.google.firebase.firestore.Source.SERVER).await()
                     @Suppress("UNCHECKED_CAST")
-                    val old = account?.get("privateMessages") as? List<Map<String, Any>>
-                    if (old != null) transaction.update(ownerRef, "privateMessages",
-                        old.filterNot { it["id"] == id || it["reportId"] == id || it["ticketId"] == id })
-                }
-            }.await()
+                    val old = account.get("privateMessages") as? List<Map<String, Any>>
+                    if (old != null) {
+                        ownerRef.update("privateMessages", old.filterNot {
+                            it["id"] == id || it["reportId"] == id || it["ticketId"] == id
+                        }).await()
+                    }
+                }.onFailure { error -> Log.w(TAG, "No se pudo limpiar el espejo antiguo del reporte $id: ${error.message}") }
+            }
             Result.success(Unit)
         } catch (error: Exception) {
             Log.e(TAG, "No se pudo eliminar el reporte $id", error)
