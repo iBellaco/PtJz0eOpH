@@ -710,6 +710,12 @@ private fun CoachContent(
     onToggleFavoriteOnlyRecommendations: (Boolean) -> Unit
 ) {
     val coachContext = androidx.compose.ui.platform.LocalContext.current
+    val favoriteFilterLabel = coachContext.getString(com.example.R.string.draft_favorite_recommendations_title)
+    val favoriteAvailableLabel = coachContext.getString(
+        com.example.R.string.draft_favorite_recommendations_available,
+        favoriteRecommendationCount
+    )
+    val favoriteMinimumLabel = coachContext.getString(com.example.R.string.draft_favorite_minimum)
     Column(modifier = Modifier.fillMaxWidth()) {
         // 2. SELECTOR DE MI ROL / LÍNEA
         Row(
@@ -960,7 +966,7 @@ private fun CoachContent(
         ) {
             Column(Modifier.weight(1f)) {
                 Text(
-                    text = tr("Recomendar solo mis favoritos de esta línea"),
+                    text = favoriteFilterLabel,
                     color = if (favoriteFilterAvailable) HextechCyan else TextMuted,
                     fontSize = 9.sp,
                     fontWeight = FontWeight.Bold,
@@ -969,10 +975,9 @@ private fun CoachContent(
                 )
                 Text(
                     text = if (favoriteFilterAvailable) {
-                        tr("Favoritos de esta línea: {0} · también aplica al primer pick")
-                            .replace("{0}", favoriteRecommendationCount.toString())
+                        favoriteAvailableLabel
                     } else {
-                        tr("Añade al menos 5 favoritos de esta línea para activarlo")
+                        favoriteMinimumLabel
                     },
                     color = TextMuted,
                     fontSize = 7.5.sp,

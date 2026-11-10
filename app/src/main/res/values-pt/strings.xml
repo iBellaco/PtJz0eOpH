@@ -27,6 +27,8 @@
     <string name="draft_collecting">Seleção em andamento: faltam confirmações.</string>
     <string name="draft_roles_estimated">Rotas inimigas estimadas. Use o seletor da posição para corrigir; as escolhas manuais são preservadas.</string>
     <string name="draft_favorite_minimum">Você precisa de pelo menos 5 campeões favoritos nesta rota para ativar este filtro.</string>
+    <string name="draft_favorite_recommendations_title">Recomendar apenas meus favoritos desta rota</string>
+    <string name="draft_favorite_recommendations_available">Favoritos nesta rota: %1$d · também se aplica à primeira escolha</string>
     <string name="calibration_send">Enviar coordenadas</string>
     <string name="calibration_save_and_send">Salvar e enviar coordenadas</string>
     <string name="calibration_sending">Enviando ao suporte…</string>

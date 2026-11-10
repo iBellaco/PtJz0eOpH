@@ -27,6 +27,8 @@
     <string name="draft_collecting">Selección en curso: faltan confirmaciones.</string>
     <string name="draft_roles_estimated">Líneas rivales estimadas. Usa el selector del puesto para corregirlas; las elecciones manuales se conservan.</string>
     <string name="draft_favorite_minimum">Necesitas al menos 5 campeones favoritos de esta línea para activar este filtro.</string>
+    <string name="draft_favorite_recommendations_title">Recomendar solo mis favoritos de esta línea</string>
+    <string name="draft_favorite_recommendations_available">Favoritos de esta línea: %1$d · también aplica al primer pick</string>
     <string name="calibration_send">Enviar coordenadas</string>
     <string name="calibration_save_and_send">Guardar y enviar coordenadas</string>
     <string name="calibration_sending">Enviando a soporte…</string>
