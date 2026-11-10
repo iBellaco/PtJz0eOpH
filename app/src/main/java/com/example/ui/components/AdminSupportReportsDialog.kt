@@ -94,12 +94,14 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.example.data.SupportReplyManager
+import com.example.data.CalibrationReport
 import com.example.data.remote.model.FeedbackReport
 import com.example.data.FeedbackRepository
 import com.example.ui.theme.DangerRed
@@ -176,7 +178,12 @@ fun AdminSupportReportsDialog(
             val id = fb.id ?: return@mapNotNull null
             UnifiedSupportReport(
                 id = id, firestoreDocId = id, isFirestoreDoc = true, rawFeedbackReport = fb,
-                type = fb.type, title = fb.title, description = fb.cleanDescription.substringBefore("[IMAGE_BASE64]").trim(),
+                type = fb.type, title = fb.title,
+                description = if (fb.type.trim().uppercase(Locale.ROOT) in setOf("COORDENADAS", "CALIBRACION", "CALIBRAÇÃO")) {
+                    CalibrationReport.displayText(fb.description)
+                        ?: CalibrationReport.displayText(fb.cleanDescription)
+                        ?: fb.cleanDescription.substringBefore("[IMAGE_BASE64]").trim()
+                } else fb.cleanDescription.substringBefore("[IMAGE_BASE64]").trim(),
                 userId = fb.userId, userEmail = fb.parsedEmail.orEmpty(), userName = fb.parsedUserName.orEmpty(),
                 photosBase64 = fb.photosBase64, status = fb.status ?: FeedbackRepository.STATUS_PENDING,
                 appVersion = fb.appVersion, device = fb.deviceInfo.substringBefore("[IMAGE_BASE64]").trim(),
@@ -930,6 +937,7 @@ private fun UnifiedReportAdminCard(
                     val typeLabel = when {
                         isSponsor -> "⭐ PATROCINADOR"
                         report.type.equals("SOPORTE", ignoreCase = true) -> "🎧 SOPORTE"
+                        report.type.trim().uppercase(Locale.ROOT) in setOf("COORDENADAS", "CALIBRACION", "CALIBRAÇÃO") -> "COORDENADAS"
                         report.type.equals("BUG", ignoreCase = true) -> "🐛 BUG"
                         report.type.equals("SUGGESTION", ignoreCase = true) -> "💡 SUGERENCIA"
                         else -> "📝 ${report.type}"
@@ -1026,7 +1034,7 @@ private fun UnifiedReportAdminCard(
                         Spacer(modifier = Modifier.width(4.dp))
                         IconButton(
                             onClick = onDelete,
-                            modifier = Modifier.size(28.dp)
+                            modifier = Modifier.size(48.dp).testTag("support_report_delete")
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Delete,
@@ -1066,7 +1074,9 @@ private fun UnifiedReportAdminCard(
                 horizontalArrangement = Arrangement.spacedBy(10.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                val isCalibration = report.type.trim().uppercase(Locale.ROOT) in setOf("COORDENADAS", "CALIBRACION", "CALIBRAÇÃO")
                 val emailOrName = when {
+                    isCalibration && report.userName.isNotBlank() -> report.userName
                     isAdmin && report.userEmail.isNotBlank() -> report.userEmail
                     report.userName.isNotBlank() && (isAdmin || !report.userName.contains("@")) -> report.userName
                     else -> "Usuario de la App"

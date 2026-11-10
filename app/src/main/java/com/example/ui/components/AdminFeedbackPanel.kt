@@ -37,7 +37,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -75,7 +74,6 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.TabRowDefaults
@@ -83,9 +81,9 @@ import androidx.compose.material.icons.filled.SportsEsports
 import androidx.compose.material.icons.filled.SupportAgent
 import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material3.ScrollableTabRow
+import androidx.compose.material3.Surface
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import com.example.data.SupportReplyManager
@@ -174,9 +172,20 @@ fun AdminFeedbackBottomSheet(
 ) {
     val userRole by com.example.util.SubscriptionManager.userRole.collectAsState()
     val secondaryRole by com.example.util.SubscriptionManager.secondaryRole.collectAsState()
+    val adminClaim by com.example.util.AuthManager.isAdminClaim.collectAsState()
+    val permissionsLoading by com.example.util.AuthManager.permissionsLoading.collectAsState()
 
-    // Explicit UI navigation logic verification: permitido para admin y moderador
-    if (userRole != "admin" && userRole != "moderador" && secondaryRole != "moderador" && !com.example.util.AuthManager.isCurrentUserAdmin()) {
+    // The parent panel can be opened immediately after authentication while
+    // the signed permissions are still loading. Do not dismiss the sheet from
+    // that transient empty state; doing so made the first opening disappear
+    // and required a second tap.
+    val canView = com.example.model.RolePanelAccess.canOpen(
+        com.example.model.RolePanel.MODERATION,
+        userRole,
+        secondaryRole,
+        adminClaim
+    )
+    if (!permissionsLoading && !canView) {
         LaunchedEffect(Unit) {
             onDismiss()
         }
@@ -185,8 +194,6 @@ fun AdminFeedbackBottomSheet(
 
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-
     var currentCategoryTab by remember { mutableStateOf(FeedbackCategoryTab.ALL) }
     var selectedSubFilter by remember { mutableStateOf("ALL") }
     var searchQuery by remember { mutableStateOf("") }
@@ -380,16 +387,25 @@ fun AdminFeedbackBottomSheet(
         }
     }
 
-    ModalBottomSheet(
+    // This panel used to be a ModalBottomSheet nested inside the full-screen
+    // moderation dialog. On the first tap the opening pointer could reach the
+    // sheet scrim, dismissing it immediately and leaving only the landing view.
+    // A full-screen dialog gives the reports a stable surface on the first open.
+    androidx.compose.ui.window.Dialog(
         onDismissRequest = onDismiss,
-        sheetState = sheetState,
-        containerColor = HextechDarkBg,
-        dragHandle = null,
-        modifier = Modifier
-            .fillMaxHeight(0.92f)
-            .statusBarsPadding()
-            .testTag("admin_feedback_panel")
+        properties = androidx.compose.ui.window.DialogProperties(
+            usePlatformDefaultWidth = false,
+            dismissOnBackPress = false,
+            dismissOnClickOutside = false
+        )
     ) {
+        Surface(
+            modifier = Modifier
+                .fillMaxSize()
+                .statusBarsPadding()
+                .testTag("admin_feedback_panel"),
+            color = HextechDarkBg
+        ) {
         BackHandler(enabled = true) {
             when {
                 previewImageBitmap != null -> previewImageBitmap = null
@@ -830,10 +846,15 @@ fun AdminFeedbackBottomSheet(
                                 onDelete = if (isAdmin) ({ reportToDelete = report }) else null,
                                 onCopy = {
                                     val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                                    val descriptionForCopy = if (getFeedbackCategory(report) == "CALIBRATION") {
+                                        com.example.data.CalibrationReport.displayText(report.description)
+                                            ?: com.example.data.CalibrationReport.displayText(report.cleanDescription)
+                                            ?: report.cleanDescription
+                                    } else report.cleanDescription
                                     val textToCopy = """
                                         [${report.type}] ${report.title}
                                         Estado: $currentStatus
-                                        Descripción: ${report.cleanDescription}
+                                        Descripción: $descriptionForCopy
                                         Versión: ${report.appVersion}
                                         Dispositivo: ${report.deviceInfo}
                                         Fecha: ${report.createdAt ?: "N/A"}
@@ -848,6 +869,7 @@ fun AdminFeedbackBottomSheet(
                     }
                 }
             }
+        }
         }
     }
 

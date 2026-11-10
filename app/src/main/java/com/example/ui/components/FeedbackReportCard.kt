@@ -89,6 +89,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.data.remote.model.FeedbackReport
+import com.example.data.CalibrationReport
 import com.example.data.FeedbackRepository
 import com.example.model.WildRiftItem
 import com.example.ui.theme.DangerRed
@@ -158,7 +159,7 @@ internal fun ComprehensiveFeedbackCard(
         "PATROCINADOR" -> Triple(HextechGold, Icons.Default.Star, "PATROCINADOR")
         "BUG" -> Triple(DangerRed, Icons.Default.BugReport, "BUG / ERROR")
         "SUPPORT" -> Triple(HextechCyan, Icons.Default.SupportAgent, "SOPORTE")
-        "CALIBRATION" -> Triple(HextechCyan, Icons.Default.Tune, "COORDENADAS · SOLO ADMINISTRACIÓN")
+        "CALIBRATION" -> Triple(HextechCyan, Icons.Default.Tune, "COORDENADAS")
         "VERIFY" -> Triple(HextechCyan, Icons.Default.VerifiedUser, "VERIFICAR")
         "BUILD" -> Triple(HextechGold, Icons.Default.SportsEsports, "BUILD SUGERIDA")
         else -> Triple(Color(0xFFFFB74D), Icons.Default.Lightbulb, "SUGERENCIA")
@@ -280,13 +281,18 @@ internal fun ComprehensiveFeedbackCard(
                 }
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    IconButton(onClick = onCopy, modifier = Modifier.size(26.dp)) {
+                    IconButton(onClick = onCopy, modifier = Modifier.size(48.dp).testTag("feedback_copy")) {
                         Icon(Icons.Default.ContentCopy, contentDescription = tr("Copiar"), tint = TextMuted, modifier = Modifier.size(15.dp))
                     }
-                    if (onDelete != null) IconButton(onClick = onDelete, modifier = Modifier.size(26.dp)) {
-                        Icon(Icons.Default.Delete, contentDescription = tr("Eliminar"), tint = DangerRed.copy(alpha = 0.8f), modifier = Modifier.size(15.dp))
+                    if (onDelete != null) IconButton(
+                        onClick = onDelete,
+                        modifier = Modifier
+                            .size(48.dp)
+                            .testTag("feedback_delete")
+                    ) {
+                        Icon(Icons.Default.Delete, contentDescription = tr("Eliminar"), tint = DangerRed.copy(alpha = 0.8f), modifier = Modifier.size(18.dp))
                     }
-                    IconButton(onClick = { expanded = !expanded }, modifier = Modifier.size(26.dp)) {
+                    IconButton(onClick = { expanded = !expanded }, modifier = Modifier.size(48.dp).testTag("feedback_expand")) {
                         Icon(
                             imageVector = if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
                             contentDescription = com.example.util.trNullable(if (expanded) tr("Contraer") else tr("Expandir")),
@@ -345,8 +351,14 @@ internal fun ComprehensiveFeedbackCard(
             Spacer(modifier = Modifier.height(5.dp))
 
             // RENDERIZADO DE SUGERENCIA DE BUILD GRÁFICA O DESCRIPCIÓN ESTÁNDAR
-            val cleanDescription = remember(report.cleanDescription) {
-                cleanDescriptionText(report.cleanDescription)
+            val cleanDescription = remember(report.cleanDescription, report.description, itemCategory) {
+                if (itemCategory == "CALIBRATION") {
+                    CalibrationReport.displayText(report.description)
+                        ?: CalibrationReport.displayText(report.cleanDescription)
+                        ?: cleanDescriptionText(report.cleanDescription)
+                } else {
+                    cleanDescriptionText(report.cleanDescription)
+                }
             }
 
             if (parsedBuild != null) {
