@@ -34,6 +34,16 @@ class SponsorReviewPolicyTest {
         assertEquals("#FFFFFF", notice.titleColor)
     }
 
+    @Test fun approvalOnlyClaimsVisibilityForRenderableCurrentPublication() {
+        val published = mapOf<String, Any>("tag" to "PUBLICIDAD", "title" to "Oferta",
+            "isApproved" to true, "isEnabled" to true, "expiresAtMillis" to 2000L)
+        assertTrue(SponsorReviewPolicy.visibleOnHome(published, 1000L))
+        assertFalse(SponsorReviewPolicy.visibleOnHome(published, 2000L))
+        assertFalse(SponsorReviewPolicy.visibleOnHome(published - "title", 1000L))
+        assertFalse(SponsorReviewPolicy.visibleOnHome(published + ("isEnabled" to false), 1000L))
+        assertFalse(SponsorReviewPolicy.visibleOnHome(published + ("tag" to "OFERTAS"), 1000L))
+    }
+
     @Test fun sharedQueueCountsAnAdOnceAndClearsItWhenResolved() {
         val events = setOf("sponsor:ad-123")
         val summary = PanelNotificationPolicy.combine(emptySet(), emptyMap(),

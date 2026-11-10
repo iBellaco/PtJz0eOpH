@@ -2,6 +2,7 @@ package com.example
 
 import com.example.data.AppNotice
 import com.example.data.mergePublicSponsorNotices
+import com.example.data.shouldApplyNoticeSnapshot
 import com.example.data.mergeSponsorNotices
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -9,6 +10,13 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class SponsorNoticeMergePolicyTest {
+    @Test
+    fun delayedCacheCannotReplaceServerConfirmedPublication() {
+        assertTrue(shouldApplyNoticeSnapshot(fromCache = true, hasServerSnapshot = false))
+        assertTrue(shouldApplyNoticeSnapshot(fromCache = false, hasServerSnapshot = true))
+        assertFalse(shouldApplyNoticeSnapshot(fromCache = true, hasServerSnapshot = true))
+    }
+
     @Test
     fun approvedServerRowReplacesLocallyCachedPendingRow() {
         val pending = AppNotice(id = "ad-12345678", title = "Oferta", isApproved = false, isEnabled = false)

@@ -5,6 +5,8 @@ import com.example.util.appTr
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
+import com.google.firebase.firestore.Source
+import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.coroutines.tasks.await
 import java.util.UUID
 
@@ -18,6 +20,13 @@ object SponsorReviewPolicy {
             "titleColor", "contentColor", "budget", "budgetUnit", "durationValue", "durationUnit",
             "isApproved", "isEnabled", "approvedAtMillis", "expiresAtMillis") } +
             mapOf("id" to id, "tag" to "PUBLICIDAD")
+
+    fun visibleOnHome(data: Map<String, Any>, now: Long): Boolean =
+        data["isApproved"] == true && data["isEnabled"] == true &&
+            data["tag"]?.toString()?.uppercase() == "PUBLICIDAD" &&
+            ((data["expiresAtMillis"] as? Number)?.toLong() ?: 0L).let { it == 0L || it > now } &&
+            (data["title"]?.toString()?.isNotBlank() == true ||
+                data["content"]?.toString()?.isNotBlank() == true)
 
     fun notice(id: String, d: Map<String, Any>) = AppNotice(
         id=id, title=d["title"] as? String ?: "", content=d["content"] as? String ?: "",
@@ -160,25 +169,30 @@ object SponsorReviewRepository {
         }.await()
 
         if (!resolvedDirectly) {
-            // A just-submitted advertisement can still live only in the
-            // private queue. Submit the signed recovery command immediately;
-            // do not block the button on the optional callable endpoint.
+            // A queued submission has no advertisement to publish yet. Resolve
+            // it through the trusted service now; a queued fallback is NOT an
+            // approval and must never be reported as visible to the moderator.
             val payload = mutableMapOf<String, Any>(
-                "action" to "SPONSOR_RESOLVE",
-                "id" to operationId,
                 "sponsorId" to id,
                 "approved" to approve
             )
             cleanQueuedRequestId?.let { payload["queuedRequestId"] = it }
-            queueRef.set(mapOf(
-                "userId" to user.uid,
-                "operationId" to operationId,
-                "payload" to payload,
-                "status" to "PENDING",
-                "schema" to 2,
-                "createdAt" to FieldValue.serverTimestamp(),
-                "authTime" to authTime
-            )).await()
+            EconomyServiceClient.call("SPONSOR_RESOLVE", payload, operationId,
+                awaitQueuedResult = false)
+        }
+        if (approve) {
+            // Do not claim that the advertisement is on Inicio until the
+            // canonical public document can be read from the server. A cache
+            // hit or a successfully enqueued command is insufficient.
+            val published = withTimeoutOrNull(8_000L) {
+                publicNoticeRef.get(Source.SERVER).await()
+            }
+            if (published == null ||
+                !SponsorReviewPolicy.visibleOnHome(published.data.orEmpty(), System.currentTimeMillis())) {
+                throw EconomyUnconfirmedException()
+            }
+            AppNoticeManager.acceptVerifiedSponsor(
+                com.google.firebase.FirebaseApp.getInstance().applicationContext, id, published.data.orEmpty())
         }
     }
 }

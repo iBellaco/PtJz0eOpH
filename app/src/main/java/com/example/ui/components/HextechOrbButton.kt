@@ -44,6 +44,22 @@ import com.example.util.tr
 import kotlin.math.cos
 import kotlin.math.sin
 
+private data class OrbAnimation(val pulse: Float, val outer: Float, val inner: Float, val glow: Float)
+
+@Composable
+private fun activeOrbAnimation(): OrbAnimation {
+    val transition = rememberInfiniteTransition(label = "runeterra_orb_anim")
+    val pulse by transition.animateFloat(1f, 1.06f,
+        infiniteRepeatable(tween(750, easing = FastOutSlowInEasing), RepeatMode.Reverse), label = "orb_pulse")
+    val outer by transition.animateFloat(0f, 360f,
+        infiniteRepeatable(tween(6000, easing = FastOutSlowInEasing), RepeatMode.Restart), label = "outer_rotation")
+    val inner by transition.animateFloat(360f, 0f,
+        infiniteRepeatable(tween(4000, easing = FastOutSlowInEasing), RepeatMode.Restart), label = "inner_rotation")
+    val glow by transition.animateFloat(0.65f, 0.95f,
+        infiniteRepeatable(tween(750, easing = FastOutSlowInEasing), RepeatMode.Reverse), label = "glow_alpha")
+    return OrbAnimation(pulse, outer, inner, glow)
+}
+
 /**
  * Orbe Circular Hextech / Arcano de Activación (Inspirado en Runaterra de League of Legends):
  * - Por defecto (Piltover): Orbe cristalino con anillos de energía Hextech rotativos, engranajes dorados y pulso cian/zafiro.
@@ -67,51 +83,10 @@ fun HextechOrbButton(
     val surfaceColor = theme.surface
     val bgDark = theme.background
 
-    val infiniteTransition = rememberInfiniteTransition(label = "runeterra_orb_anim")
-
-    // 1. Animación de pulsación rítmica del orbe (respiración de energía)
-    val pulseScale by infiniteTransition.animateFloat(
-        initialValue = 1.0f,
-        targetValue = if (isActive) 1.06f else 1.02f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(if (isActive) 750 else 1500, easing = FastOutSlowInEasing),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "orb_pulse"
-    )
-
-    // 2. Rotación continua de los anillos externos de runas/engranajes
-    val outerRotation by infiniteTransition.animateFloat(
-        initialValue = 0f,
-        targetValue = 360f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(if (isActive) 6000 else 14000, easing = FastOutSlowInEasing),
-            repeatMode = RepeatMode.Restart
-        ),
-        label = "outer_rotation"
-    )
-
-    // 3. Rotación inversa del anillo interior
-    val innerRotation by infiniteTransition.animateFloat(
-        initialValue = 360f,
-        targetValue = 0f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(if (isActive) 4000 else 10000, easing = FastOutSlowInEasing),
-            repeatMode = RepeatMode.Restart
-        ),
-        label = "inner_rotation"
-    )
-
-    // 4. Intensidad del resplandor de fondo
-    val glowAlpha by infiniteTransition.animateFloat(
-        initialValue = if (isActive) 0.65f else 0.35f,
-        targetValue = if (isActive) 0.95f else 0.60f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(if (isActive) 750 else 1500, easing = FastOutSlowInEasing),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "glow_alpha"
-    )
+    // Inicio queda estático cuando el asistente está detenido: cuatro animaciones
+    // infinitas repintaban ambos canvas aun con el escáner desactivado.
+    val (pulseScale, outerRotation, innerRotation, glowAlpha) =
+        if (isActive) activeOrbAnimation() else OrbAnimation(1f, 0f, 0f, 0.35f)
 
     val energyTint by animateColorAsState(
         targetValue = if (isActive) primaryLight else secondaryLight,

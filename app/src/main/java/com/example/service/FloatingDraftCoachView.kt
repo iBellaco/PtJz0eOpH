@@ -66,6 +66,7 @@ import com.example.ui.theme.HextechDarkBg
 import com.example.ui.theme.HextechGold
 import com.example.ui.theme.HextechGoldLight
 import com.example.ui.theme.HextechSurface
+import com.example.ui.theme.HextechSurfaceVariant
 import com.example.ui.theme.TextMuted
 import com.example.ui.theme.TextPrimary
 import com.example.ui.theme.TextSecondary
@@ -102,7 +103,10 @@ internal fun FloatingDraftCoachView(
     onClearAll: () -> Unit,
     onManualEdit: () -> Unit,
     onOpenLiteRTViewer: () -> Unit = {},
-    unassignedAllies: List<Champion> = emptyList()
+    unassignedAllies: List<Champion> = emptyList(),
+    favoriteOnlyRecommendations: Boolean = false,
+    favoriteRecommendationCount: Int = 0,
+    onToggleFavoriteOnlyRecommendations: (Boolean) -> Unit = {}
 ) {
     val isPremium by com.example.util.SubscriptionManager.isPremium.collectAsStateWithLifecycle()
     val currentLanguage = com.example.util.currentAppLanguage()
@@ -192,7 +196,10 @@ internal fun FloatingDraftCoachView(
             onSaveDraftClick = onSaveDraftClick,
             isSavedRecently = isSavedRecently,
             onClearAll = onClearAll,
-            isPremium = isPremium
+            isPremium = isPremium,
+            favoriteOnlyRecommendations = favoriteOnlyRecommendations,
+            favoriteRecommendationCount = favoriteRecommendationCount,
+            onToggleFavoriteOnlyRecommendations = onToggleFavoriteOnlyRecommendations
         )
     }
 }
@@ -697,8 +704,18 @@ private fun CoachContent(
     onSaveDraftClick: () -> Unit,
     isSavedRecently: Boolean,
     onClearAll: () -> Unit,
-    isPremium: Boolean
+    isPremium: Boolean,
+    favoriteOnlyRecommendations: Boolean,
+    favoriteRecommendationCount: Int,
+    onToggleFavoriteOnlyRecommendations: (Boolean) -> Unit
 ) {
+    val coachContext = androidx.compose.ui.platform.LocalContext.current
+    val favoriteFilterLabel = coachContext.getString(com.example.R.string.draft_favorite_recommendations_title)
+    val favoriteAvailableLabel = coachContext.getString(
+        com.example.R.string.draft_favorite_recommendations_available,
+        favoriteRecommendationCount
+    )
+    val favoriteMinimumLabel = coachContext.getString(com.example.R.string.draft_favorite_minimum)
     Column(modifier = Modifier.fillMaxWidth()) {
         // 2. SELECTOR DE MI ROL / LÍNEA
         Row(
@@ -935,6 +952,62 @@ private fun CoachContent(
         Spacer(modifier = Modifier.height(6.dp))
 
         // 3. MEJORES PICKS RECOMENDADOS POR EL COACH
+        val favoriteFilterAvailable = favoriteRecommendationCount >= 5
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(6.dp))
+                .background(if (favoriteOnlyRecommendations && favoriteFilterAvailable) HextechCyan.copy(alpha = 0.10f) else HextechSurface)
+                .border(1.dp, if (favoriteOnlyRecommendations && favoriteFilterAvailable) HextechCyan.copy(alpha = 0.65f) else HextechCardBorder, RoundedCornerShape(6.dp))
+                .padding(start = 6.dp, end = 2.dp, top = 3.dp, bottom = 3.dp)
+                .testTag("overlay_favorite_recommendations_filter"),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            Column(Modifier.weight(1f)) {
+                Text(
+                    text = favoriteFilterLabel,
+                    color = if (favoriteFilterAvailable) HextechCyan else TextMuted,
+                    fontSize = 9.sp,
+                    fontWeight = FontWeight.Bold,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+                Text(
+                    text = if (favoriteFilterAvailable) {
+                        favoriteAvailableLabel
+                    } else {
+                        favoriteMinimumLabel
+                    },
+                    color = TextMuted,
+                    fontSize = 7.5.sp,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+            androidx.compose.material3.Switch(
+                checked = favoriteOnlyRecommendations && favoriteFilterAvailable,
+                onCheckedChange = { requested ->
+                    if (requested && !favoriteFilterAvailable) {
+                        android.widget.Toast.makeText(
+                            coachContext,
+                            coachContext.getString(com.example.R.string.draft_favorite_minimum),
+                            android.widget.Toast.LENGTH_LONG
+                        ).show()
+                    } else {
+                        onToggleFavoriteOnlyRecommendations(requested)
+                    }
+                },
+                modifier = Modifier.size(40.dp).testTag("overlay_favorite_recommendations_toggle"),
+                colors = androidx.compose.material3.SwitchDefaults.colors(
+                    checkedThumbColor = Color.White,
+                    checkedTrackColor = HextechCyan,
+                    uncheckedThumbColor = TextMuted,
+                    uncheckedTrackColor = HextechSurfaceVariant
+                )
+            )
+        }
+        Spacer(modifier = Modifier.height(5.dp))
         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
             analysis.recommendations.take(4).forEach { pick ->
                 Card(

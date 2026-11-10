@@ -222,7 +222,8 @@ fun SponsorCpmPanelDialog(
     var currentMinute by remember { mutableStateOf(System.currentTimeMillis() / 60000L) }
     LaunchedEffect(Unit) {
         while (true) {
-            kotlinx.coroutines.delay(10000L) // check every 10s is fine
+            // Prices change on minute boundaries, not every ten seconds.
+            kotlinx.coroutines.delay(60_000L - System.currentTimeMillis() % 60_000L)
             currentMinute = System.currentTimeMillis() / 60000L
         }
     }

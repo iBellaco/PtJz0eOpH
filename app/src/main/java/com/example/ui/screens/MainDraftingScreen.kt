@@ -473,10 +473,10 @@ fun MainDraftingScreen(
                     notice.isEnabled && notice.isApproved && isNotExpired && (notice.content.isNotBlank() || notice.title.isNotBlank())
                 }
 
-                // Sincronizar anuncios desde la nube al cargar la pantalla
+                // Los avisos ya tienen listeners activos desde el arranque; no
+                // repetir lecturas ni consultar todas las solicitudes privadas
+                // cada vez que Inicio entra en composición.
                 LaunchedEffect(Unit) {
-                    com.example.data.AppNoticeManager.syncFromCloud(context)
-                    com.example.data.AppNoticeManager.syncPendingSponsors(context)
                     com.example.data.GlobalAnnouncementManager.refreshFromCloud(context)
                 }
 
