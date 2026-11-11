@@ -80,7 +80,7 @@ class RuntimeBehaviorTest {
     @Test fun `every champion and lane exposes exactly three six and twenty four unique relations`() {
         WildRiftRepository.initChampions(RuntimeEnvironment.getApplication(), forceReload = true)
         val roster = WildRiftRepository.baseChampionsList
-        assertEquals(142, roster.size)
+        assertEquals(143, roster.size)
         var profiles = 0
         for (champion in roster) for (role in (listOf(champion.primaryRole) + champion.secondaryRoles).distinct()) {
             val result = com.example.util.ChampionRoleMatchupAdvisor.getMatchups(champion, role)

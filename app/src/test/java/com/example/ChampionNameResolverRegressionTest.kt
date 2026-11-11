@@ -52,8 +52,8 @@ class ChampionNameResolverRegressionTest {
 
     @Test fun all142DisplayNamesResolveToTheRealCatalogEntryAndPortrait() {
         val catalog = WildRiftRepository.champions.toList()
-        assertEquals(142, catalog.size)
-        assertEquals(142, catalog.map { it.id }.distinct().size)
+        assertEquals(143, catalog.size)
+        assertEquals(143, catalog.map { it.id }.distinct().size)
         for (champion in catalog) {
             assertFalse("Internal identifier shown as name: ${champion.id}", champion.name.contains('_'))
             for (text in listOf(champion.name, champion.name.uppercase(java.util.Locale.ROOT))) {

@@ -8,4 +8,4 @@ fun regionalPercent(champion: com.example.model.Champion, value: Double): String
         String.format(java.util.Locale.US, "%.2f%%", value) else "—"
 
 fun championStatPercent(champion: com.example.model.Champion, rawValue: Double, metricType: String = "wr"): String =
-    regionalPercent(champion, rawValue)
+    if (champion.tier == "SIN DATOS") "—" else regionalPercent(champion, rawValue)

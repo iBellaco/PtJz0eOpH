@@ -141,7 +141,7 @@ fun TierListTab(
     val rawChampionsToDisplay = remember(selectedLane, showFavoritesOnly, favorites, syncState, currentRegion, metaRevision, liveTick, WildRiftRepository.champions.toList()) {
         val champs = if (selectedLane == null) WildRiftRepository.champions.toList()
         else WildRiftRepository.champions.filter { publishedChampionRoles(it).contains(selectedLane) }
-        val visibleTiers = champs.filter { it.tier in setOf("S+", "S", "A+", "A", "B", "C") }
+        val visibleTiers = champs.filter { it.tier in setOf("S+", "S", "A+", "A", "B", "C", "SIN DATOS") }
         if (showFavoritesOnly) visibleTiers.filter { it.id in favorites } else visibleTiers
     }
 
@@ -157,6 +157,7 @@ fun TierListTab(
     val tierS = championsToDisplay.filter { (it.tier == "S") && it !in tierSPlus }
     val tierB = championsToDisplay.filter { it.tier == "B" }
     val tierC = championsToDisplay.filter { it.tier == "C" }
+    val tierWithoutData = championsToDisplay.filter { it.tier == "SIN DATOS" }
     val tierA = championsToDisplay.filter { (it.tier == "A+" || it.tier == "A") && it !in tierSPlus && it !in tierS }
 
     LazyColumn(
@@ -411,6 +412,13 @@ fun TierListTab(
                         tierName = "TIER $tier", tierColor = section.first,
                         champions = section.second, selectedLane = selectedLane, onSelectChampion = onSelectChampion)
                 }
+            }
+
+            if (tierWithoutData.isNotEmpty()) item {
+                TierSectionCard(isOverlay = isOverlay, showTrend = false,
+                    tierName = tr("Nuevo: sin datos competitivos"), tierColor = TierBColor,
+                    champions = tierWithoutData, selectedLane = selectedLane,
+                    onSelectChampion = onSelectChampion)
             }
 
             item {

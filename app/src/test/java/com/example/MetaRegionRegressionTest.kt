@@ -162,8 +162,12 @@ class MetaRegionRegressionTest {
     }
 
     @Test fun `the complete roster always has displayable baseline statistics`() {
-        assertEquals(142, WildRiftRepository.champions.size)
+        assertEquals(143, WildRiftRepository.champions.size)
         WildRiftRepository.champions.forEach { champion ->
+            if (champion.tier == "SIN DATOS") {
+                assertEquals("—", com.example.util.championStatPercent(champion, champion.winrate, "wr"))
+                return@forEach
+            }
             assertNotEquals(champion.id, "—", com.example.util.championStatPercent(champion, champion.winrate, "wr"))
             assertNotEquals(champion.id, "—", com.example.util.championStatPercent(champion, champion.pickRate, "pick"))
             assertNotEquals(champion.id, "—", com.example.util.championStatPercent(champion, champion.banRate, "ban"))
@@ -171,7 +175,7 @@ class MetaRegionRegressionTest {
     }
 
     @Test fun `tier cards and details match for every published lane in the complete roster`() {
-        assertEquals(142, WildRiftRepository.champions.size)
+        assertEquals(143, WildRiftRepository.champions.size)
         WildRiftRepository.champions.forEach { champion ->
             publishedChampionRoles(champion).forEach { role ->
                 val card = tierDisplayedStats(champion, role)

@@ -298,7 +298,10 @@ service cloud.firestore {
       allow create: if validCommand();
       allow update: if validCommand() && resource.data.userId == request.auth.uid
         && resource.data.status in ['COMPLETED','FAILED'];
-      allow delete: if false;
+      // A confirmed administrator decision may retire the original sponsor
+      // submission in the same atomic transaction. Other economy commands,
+      // including administrator adjustment commands, remain undeletable.
+      allow delete: if isAdmin() && resource.data.payload.action == 'SPONSOR';
     }
     match /cash_redemptions/{id} {
       allow read: if isAdmin();

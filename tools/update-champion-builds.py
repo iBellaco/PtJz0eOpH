@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Refresh the 142 champions / 300 lane builds from the user-maintained item catalog."""
+"""Refresh the champion and lane builds from the user-maintained item catalog."""
 import argparse, json, re
 from build_coaching import PROFILES, overview, element
 from pathlib import Path
@@ -48,7 +48,7 @@ def main(check=False):
     builds=read(ASSETS/'champions_creator_builds.json')
     paths=[RAW/f'champions_part{i}.json' for i in (1,2)]
     parts=[read(p) for p in paths]; champions={c['id']:c for part in parts for c in part}
-    assert len(champions)==142 and len(builds)==300
+    assert len(champions)==143 and len(builds)==302
     assert set(PROFILES)==set(champions), 'Every champion needs an authored coaching profile'
     translations=read(ASSETS/'translations_pt.json')
     phrases=read(ASSETS/'build_catalog_translations_pt.json')
@@ -148,7 +148,7 @@ def main(check=False):
     output(ASSETS/'champions_creator_builds.json',builds,check)
     output(ASSETS/'translations_pt.json',translations,check)
     for path,part in zip(paths,parts): output(path,part,check)
-    print('BUILD_REFRESH: 142 champions, 300 lane builds; catalog-backed effects and bilingual champion-specific advice')
+    print('BUILD_REFRESH: 143 champions, 302 lane builds; catalog-backed effects and bilingual champion-specific advice')
 
 if __name__=='__main__':
     parser=argparse.ArgumentParser();parser.add_argument('--check',action='store_true');main(parser.parse_args().check)

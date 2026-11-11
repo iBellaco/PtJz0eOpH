@@ -28531,5 +28531,186 @@
     "winrateDelta": 0.25,
     "pickRateDelta": 0.18,
     "banRateDelta": 0.35
+  },
+  {
+    "id": "sylas",
+    "name": "Sylas",
+    "title": "El Desencadenado",
+    "ddragonId": "Sylas",
+    "avatarUrl": "file:///android_asset/champions/sylas.png",
+    "primaryRole": "MID",
+    "secondaryRoles": [
+      "JUNGLE"
+    ],
+    "tier": "SIN DATOS",
+    "winrate": 0,
+    "pickRate": 0,
+    "banRate": 0,
+    "damageType": "MAGIC",
+    "summary": "Sylas, el Desencadenado, usa las cadenas que lo aprisionaron para combatir y puede robar la habilidad definitiva de un rival.",
+    "advantageAgainst": [],
+    "counteredBy": [],
+    "synergies": [],
+    "tacticalAdvice": "Guarda H3 para entrar cuando el rival haya gastado su control. Entre habilidades, consume las cargas de Arranque de petricita con ataques; elige la H4 rival que cambie la siguiente pelea.",
+    "recommendedRunes": "Conquistador, Triunfo, Leyenda: Velocidad, Último Esfuerzo, Revestimiento de Huesos",
+    "runeTreeDetails": "Precisión / Valor: Conquistador • Triunfo • Leyenda: Velocidad • Último Esfuerzo • Revestimiento de Huesos",
+    "primaryRuneIconUrl": "file:///android_asset/runes/conqueror.png",
+    "recommendedSpells": [
+      "Destello",
+      "Prender"
+    ],
+    "spellsIcons": [],
+    "coreItems": [
+      "Vara de las edades",
+      "Perdición del liche",
+      "Sombrero mortal de Rabadon"
+    ],
+    "coreItemsIcons": [
+      "file:///android_asset/offline_images/3961150fddbbe87f5e4b119da3cf03ff.webp",
+      "file:///android_asset/offline_images/49358858c22a8313bd7c2a47b405e5fd.webp",
+      "file:///android_asset/offline_images/3e238358c02090087ae206fc310ad98a.webp"
+    ],
+    "situationalItems": [
+      "Creagrietas",
+      "Bastón del Vacío",
+      "Morellonomicón",
+      "Corona de la Reina Fragmentada",
+      "Tridente de Oceánida"
+    ],
+    "situationalItemsIcons": [
+      "file:///android_asset/offline_images/8ab6dc6493eda1a50bf731f8fa715087.webp",
+      "file:///android_asset/offline_images/a67295fc9713d5227ce1e8037c3e2779.webp",
+      "file:///android_asset/offline_images/0c0fefe5c38af6fc40ea24c5539672b0.webp",
+      "file:///android_asset/offline_images/85536ee1d624a04cb68019aebba6d66e.webp",
+      "file:///android_asset/offline_images/f800a2be044a17e73fe7079161df361a.webp"
+    ],
+    "skillOrder": "H1 > H2 > H3 (priorizar H4)",
+    "skills": [
+      {
+        "slot": "P",
+        "slotName": "Pasiva",
+        "name": "Arranque de petricita",
+        "description": "Tras usar una habilidad, Sylas acumula una carga. Su siguiente ataque consume una carga y hace girar sus cadenas, causando daño mágico adicional a los enemigos cercanos. Mientras tenga una carga, obtiene velocidad de ataque.",
+        "iconUrl": "https://ddragon.leagueoflegends.com/cdn/16.21.1/img/passive/SylasP.png",
+        "cooldown": ""
+      },
+      {
+        "slot": "1",
+        "slotName": "H1",
+        "name": "Latigazo de cadenas",
+        "description": "Sylas cruza sus cadenas en una zona, inflige daño y ralentiza. Después, una explosión mágica causa daño en el punto donde se cruzan.",
+        "iconUrl": "https://ddragon.leagueoflegends.com/cdn/16.21.1/img/spell/SylasQ.png",
+        "cooldown": ""
+      },
+      {
+        "slot": "2",
+        "slotName": "H2",
+        "name": "Matarreyes",
+        "description": "Sylas arremete contra un enemigo, le inflige daño y se cura si es un campeón.",
+        "iconUrl": "https://ddragon.leagueoflegends.com/cdn/16.21.1/img/spell/SylasW.png",
+        "cooldown": ""
+      },
+      {
+        "slot": "3",
+        "slotName": "H3",
+        "name": "Fuga / Abducción",
+        "description": "Sylas se desliza a una ubicación. Puede lanzar de nuevo sus cadenas para acercarse al enemigo alcanzado.",
+        "iconUrl": "https://ddragon.leagueoflegends.com/cdn/16.21.1/img/spell/SylasE.png",
+        "cooldown": ""
+      },
+      {
+        "slot": "4",
+        "slotName": "H4",
+        "name": "Apropiación",
+        "description": "Sylas roba la habilidad definitiva de un campeón enemigo y puede lanzarla.",
+        "iconUrl": "https://ddragon.leagueoflegends.com/cdn/16.21.1/img/spell/SylasR.png",
+        "cooldown": ""
+      }
+    ],
+    "isRanged": false,
+    "isFrontline": false,
+    "wildRiftFireUrl": "",
+    "wrMetaUrl": "https://wr-meta.com/397-sylas.html",
+    "wildRiftCoreUrl": "",
+    "bestBuildWrUrl": "",
+    "spells": [],
+    "primaryRunes": [
+      "Conquistador"
+    ],
+    "build2Runes": "Conquistador,Triunfo,Leyenda: Velocidad,Último Esfuerzo,Revestimiento de Huesos",
+    "build2Spells": [],
+    "builds": [
+      {
+        "id": "sylas_mid",
+        "title": "Build Línea Central • Criterio Coach",
+        "role": "mid",
+        "coreItems": [
+          "Vara de las edades",
+          "Perdición del liche",
+          "Sombrero mortal de Rabadon"
+        ],
+        "items": [
+          "Vara de las edades",
+          "Perdición del liche",
+          "Sombrero mortal de Rabadon"
+        ],
+        "situationalItems": [
+          "Creagrietas",
+          "Bastón del Vacío",
+          "Morellonomicón",
+          "Corona de la Reina Fragmentada",
+          "Tridente de Oceánida"
+        ],
+        "bootBase": "Botas de maná",
+        "bootUpgrade": "Botas del lanzahechizos",
+        "situationalBoots": [
+          "Botas de mercurio"
+        ],
+        "runes": "Conquistador, Triunfo, Leyenda: Velocidad, Último Esfuerzo, Revestimiento de Huesos",
+        "spells": [
+          "Destello",
+          "Prender"
+        ]
+      },
+      {
+        "id": "sylas_jungle",
+        "title": "Build Jungla (Línea Flex) • Criterio Coach",
+        "role": "jungle",
+        "coreItems": [
+          "Perdición del liche",
+          "Creagrietas",
+          "Sombrero mortal de Rabadon"
+        ],
+        "items": [
+          "Perdición del liche",
+          "Creagrietas",
+          "Sombrero mortal de Rabadon"
+        ],
+        "situationalItems": [
+          "Vara de las edades",
+          "Bastón del Vacío",
+          "Morellonomicón",
+          "Corona de la Reina Fragmentada",
+          "Tridente de Oceánida",
+          "Malla de espinas",
+          "Fuerza de la naturaleza"
+        ],
+        "bootBase": "Botas de maná",
+        "bootUpgrade": "Botas del lanzahechizos",
+        "situationalBoots": [
+          "Botas de mercurio"
+        ],
+        "runes": "Conquistador, Triunfo, Leyenda: Velocidad, Último Esfuerzo, Revestimiento de Huesos",
+        "spells": [
+          "Aplastar",
+          "Destello"
+        ]
+      }
+    ],
+    "hasRegionalStats": false,
+    "cnTier": "",
+    "winrateDelta": 0,
+    "pickRateDelta": 0,
+    "banRateDelta": 0
   }
 ]

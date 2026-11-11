@@ -99,7 +99,7 @@ class OfflinePortugueseAuditTest {
             }
         }
         inspect(builds)
-        assertEquals(300, builds.length())
+        assertEquals(302, builds.length())
         assertTrue(descriptions > 3000)
     }
 

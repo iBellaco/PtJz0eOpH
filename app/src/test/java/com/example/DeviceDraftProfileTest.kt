@@ -124,6 +124,18 @@ class DeviceDraftProfileTest {
             "HONOR", "BVL-N49", 2800, 1280)!!.enemyAvatarCenterX)
         assertNull(VisionCalibrationConfig.measuredDefaultForCapture("unknown", "unknown", 2340, 1080))
     }
+    @Test fun oppoCph2791UsesItsExactMeasuredCaptureProfile() {
+        val oppo = VisionCalibrationConfig.measuredDefaultForCapture("OPPO", "CPH2791", 2354, 1080)
+        assertNotNull(oppo)
+        assertEquals(.12803629f, oppo!!.allyAvatarCenterX)
+        assertEquals(.90703124f, oppo.enemyAvatarCenterX)
+        assertEquals(.17041795f, oppo.topAlly5XRatio)
+        assertEquals(.9736258f, oppo.topEnemy5XRatio)
+        assertEquals(.18950696f, oppo.enemySlotYRatios.first())
+        assertEquals(.72302145f, oppo.enemySlotYRatios.last())
+        assertNull(VisionCalibrationConfig.measuredDefaultForCapture("OPPO", "CPH2791", 2340, 1080))
+        assertNull(VisionCalibrationConfig.measuredDefaultForCapture("OPPO", "another", 2354, 1080))
+    }
     @Test fun nineConfirmedTitlesIdentifyTheSideRegardlessOfAnEarlierWrongPrefix() {
         val all = List(5) { true }
         val ninth = listOf(true, true, true, true, false)

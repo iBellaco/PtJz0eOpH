@@ -13,9 +13,9 @@ class BuildCoachingRegressionTest {
 
     @Test fun `all champions have independent plans instead of their first item note`() {
         val all=builds()
-        assertEquals(142,all.map { it.championId }.distinct().size)
-        assertEquals(300,all.map { it.coachAdvice }.distinct().size)
-        assertEquals(142,all.map { it.coachAdvice.substringAfter("Regla aplicable: ") }.distinct().size)
+        assertEquals(143,all.map { it.championId }.distinct().size)
+        assertEquals(302,all.map { it.coachAdvice }.distinct().size)
+        assertEquals(143,all.map { it.coachAdvice.substringAfter("Regla aplicable: ") }.distinct().size)
         assertTrue(all.all { com.example.data.local.CustomChampionBuildsManager.isBundledOfficialBuild(it) })
         for (build in all) {
             assertTrue(build.coachAdvice.contains(build.championName))

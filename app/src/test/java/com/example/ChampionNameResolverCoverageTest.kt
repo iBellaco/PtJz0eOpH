@@ -19,7 +19,7 @@ class ChampionNameResolverCoverageTest {
         WildRiftRepository.initChampions(RuntimeEnvironment.getApplication(), forceReload = true)
         val snapshot = WildRiftRepository.championSnapshot()
         val ids = snapshot.map { it.id }
-        assertEquals(142, ids.size)
+        assertEquals(143, ids.size)
         val iterator = snapshot.iterator()
         val first = iterator.next()
         // Deterministically interrupt iteration with the same replacement that
@@ -45,7 +45,7 @@ class ChampionNameResolverCoverageTest {
     @Test fun everyBundledChampionHasAnExactTitleResolution() {
         WildRiftRepository.initChampions(RuntimeEnvironment.getApplication(), forceReload = true)
         val champions = WildRiftRepository.baseChampionsList
-        assertEquals(142, champions.size)
+        assertEquals(143, champions.size)
         champions.forEach { champion ->
             val resolved = ChampionNameResolver.findChampionInNameBand(
                 champion.name.uppercase(), champions)

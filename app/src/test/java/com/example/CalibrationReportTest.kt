@@ -7,6 +7,13 @@ import org.junit.Assert.*
 import org.junit.Test
 
 class CalibrationReportTest {
+    @Test fun titleIdentifiesTheSenderSubscriptionWithoutExposingIdentity() {
+        assertEquals("Coordenadas del escáner · Usuario Premium", CalibrationReport.title(true, "es"))
+        assertEquals("Coordenadas del escáner · Usuario gratuito", CalibrationReport.title(false, "es"))
+        assertEquals("Coordenadas do scanner · Usuário Premium", CalibrationReport.title(true, "pt"))
+        assertEquals("Coordenadas do scanner · Usuário gratuito", CalibrationReport.title(false, "pt"))
+    }
+
     @Test fun exactCoordinatesSurviveSupportEnvelopeAndCopy() {
         val coordinates = VisionCalibrationConfig().copy(allyAvatarCenterX = .105f).toFormattedCoordinatesString()
         val report = CalibrationReport.build("model\ninjection", "1.1", "1080x2400", "2400x1080", coordinates, userName = "Tester")

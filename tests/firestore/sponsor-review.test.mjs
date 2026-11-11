@@ -9,11 +9,12 @@ const owner = env.authenticatedContext('owner',{email_verified:true}).firestore(
 const stranger = env.authenticatedContext('stranger',{email_verified:true}).firestore();
 const missingAdmin = env.authenticatedContext('missing-admin',{admin:true,email_verified:true}).firestore();
 const bannedAdmin = env.authenticatedContext('banned-admin',{admin:true,email_verified:true}).firestore();
-async function resolve(store,id,approve) {
+async function resolve(store,id,approve,sourceId=null) {
   const ref=doc(store,'pending_sponsor_ads',id), registry=doc(store,'system_config/app_notices'),
     publicRef=doc(store,`app_notices/${id}`);
   return runTransaction(store,async tx=>{
     const request=await tx.get(ref), current=await tx.get(registry), data=request.data();
+    const source=sourceId ? await tx.get(doc(store,'economy_requests',sourceId)) : null;
     assert.ok(data && !data.refundedAtMillis && !['REJECTED','REFUNDED'].includes(data.status));
     assert.ok(approve || !data.isApproved);
     const notices=(current.data()?.notices??[]).filter(n=>n.id!==id);
@@ -37,6 +38,7 @@ async function resolve(store,id,approve) {
       tx.set(queue,{userId:'admin',operationId,payload:{action:'SPONSOR_RESOLVE',id:operationId,sponsorId:id,approved:false},
         status:'PENDING',schema:2,createdAt:serverTimestamp(),authTime:0});
     }
+    if(source?.exists()) tx.delete(source.ref);
   });
 }
 try {
@@ -52,8 +54,16 @@ try {
     await setDoc(doc(db,'app_notices/reject'),{id:'reject',title:'Retirar',tag:'PUBLICIDAD',isApproved:true,isEnabled:true});
     for(const id of ['approve','reject','refunded']) await setDoc(doc(db,'pending_sponsor_ads',id),{
       userId:'owner',title:'Oferta',isApproved:false,isEnabled:false,...(id==='refunded'?{refundedAtMillis:123}:{})});
+    await setDoc(doc(db,'pending_sponsor_ads/queued_approval'),{
+      userId:'owner',title:'Oferta en cola',isApproved:false,isEnabled:false,status:'PENDING'});
+    await setDoc(doc(db,'economy_requests/owner~queued_approval'),{
+      userId:'owner',operationId:'queued_approval',status:'PENDING',schema:2,
+      payload:{action:'SPONSOR',id:'queued_approval'}});
+    await setDoc(doc(db,'economy_requests/admin_adjustment'),{
+      userId:'admin',operationId:'admin_adjustment',status:'PENDING',schema:2,
+      payload:{action:'ADJUST',id:'admin_adjustment'}});
   });
-  assert.equal((await assertSucceeds(getDocs(query(collection(owner,'pending_sponsor_ads'),where('userId','==','owner'))))).size,3);
+  assert.equal((await assertSucceeds(getDocs(query(collection(owner,'pending_sponsor_ads'),where('userId','==','owner'))))).size,4);
   await assertFails(getDoc(doc(stranger,'pending_sponsor_ads/approve')));
   await assertFails(resolve(owner,'approve',true));
   await assertFails(resolve(missingAdmin,'approve',true));
@@ -84,6 +94,11 @@ try {
   const visible=home.docs.find(row=>row.id==='approve');
   assert.ok(visible && visible.get('isApproved') && visible.get('isEnabled') && visible.get('title') && visible.get('expiresAtMillis')>Date.now());
   assert.equal(saved.get('expiresAtMillis'),publicAd.get('expiresAtMillis'));
+  await assertSucceeds(resolve(admin,'queued_approval',true,'owner~queued_approval'));
+  await env.withSecurityRulesDisabled(async context => {
+    assert.equal((await getDoc(doc(context.firestore(),'economy_requests/owner~queued_approval'))).exists(),false);
+  });
+  await assertFails(deleteDoc(doc(admin,'economy_requests/admin_adjustment')));
   await assertFails(updateDoc(doc(admin,'pending_sponsor_ads/approve'),{status:'PENDING',isApproved:false}));
   await assertSucceeds(resolve(admin,'reject',false));
   assert.equal((await getDoc(doc(owner,'pending_sponsor_ads/reject'))).get('status'),'REJECTED');

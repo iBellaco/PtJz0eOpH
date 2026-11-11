@@ -104,8 +104,8 @@
     "passivePt": "Líder: Cada 4º ataque contra campeões ou monstros épicos causa dano físico adicional equivalente a 160% do dano de ataque base mais 5% da vida máxima (campeões de ataque à distância causam 40% desse dano), aumentando para 240% do dano de ataque base mais 9% da vida máxima contra estruturas (campeões de ataque à distância causam 40% desse dano)."
   },
   "luden_s_echo": {
-    "passive": "Eco: Tu siguiente habilidad de daño o ataque potenciado inflige 75 más 8% de daño mágico al objetivo principal y hasta a 4 enemigos cercanos más, enfriamiento de 9 s. Por cada objetivo secundario que no alcance hasta un máximo, Eco inflige 20 más un 1,2% de daño adicional al objetivo principal.",
-    "passivePt": "Eco: Sua próxima habilidade de dano ou ataque fortalecido causa 75 mais 8% de dano mágico ao alvo principal e a até 4 inimigos próximos adicionais, tempo de recarga de 9 s. Para cada alvo secundário não atingido, até o máximo, Eco causa 20 mais 1,2% de dano adicional ao alvo principal."
+    "passive": "Eco discordante: Tu siguiente habilidad de daño o ataque potenciado inflige 80 + 9% de poder de habilidad al objetivo principal y hasta a 4 enemigos cercanos más (9 s de enfriamiento). Por cada objetivo secundario no alcanzado, inflige 22,5 + 1,4% de poder de habilidad adicional al objetivo principal.",
+    "passivePt": "Eco Dissonante: Sua próxima habilidade de dano ou ataque fortalecido causa 80 + 9% de poder de habilidade ao alvo principal e a até 4 inimigos próximos (9 s de tempo de recarga). Para cada alvo secundário não atingido, causa 22,5 + 1,4% de poder de habilidade adicional ao alvo principal."
   },
   "rabadon_s_deathcap": {
     "passive": "Sobrexplosión: Aumenta el poder de habilidad un 30%.",
