@@ -8,9 +8,19 @@ import com.google.firebase.firestore.SetOptions
 import com.google.firebase.firestore.Source
 import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.coroutines.tasks.await
+import java.util.Locale
 import java.util.UUID
 
 object SponsorReviewPolicy {
+    private val sponsorTags = setOf(
+        "PATROCINADOR", "PATROCINIO", "SPONSOR", "PUBLICIDAD", "PUBLICIDADES",
+        "PAGO", "PAYMENT", "PAGAMENTO"
+    )
+
+    /** Identifies both private sponsor mirrors and approved public notices. */
+    fun isSponsorNotice(notice: AppNotice): Boolean =
+        notice.sponsorEmail.isNotBlank() || notice.tag.trim().uppercase(Locale.ROOT) in sponsorTags
+
     fun pending(data: Map<String, Any>): Boolean = data["isApproved"] == false &&
         (data["refundedAtMillis"] as? Number)?.toLong().let { it == null || it == 0L } &&
         data["status"] !in setOf("REFUNDED", "REJECTED")

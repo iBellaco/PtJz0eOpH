@@ -136,6 +136,21 @@ class DeviceDraftProfileTest {
         assertNull(VisionCalibrationConfig.measuredDefaultForCapture("OPPO", "CPH2791", 2340, 1080))
         assertNull(VisionCalibrationConfig.measuredDefaultForCapture("OPPO", "another", 2354, 1080))
     }
+    @Test fun motorolaMotoG56UsesItsExactMeasuredCaptureProfile() {
+        val moto = VisionCalibrationConfig.measuredDefaultForCapture("motorola", "moto g56 5G", 2400, 1080)
+        assertNotNull(moto)
+        assertEquals(.1171875f, moto!!.allyAvatarCenterX)
+        assertEquals(.91421247f, moto.enemyAvatarCenterX)
+        assertEquals(.16712953f, moto.topAlly5XRatio)
+        assertEquals(.9741347f, moto.topEnemy5XRatio)
+        assertEquals(.1892361f, moto.allySlotYRatios.first())
+        assertEquals(.7256944f, moto.allySlotYRatios.last())
+        assertEquals(.1f, moto.allySlotDiameterRatios.last())
+        assertEquals(.91421247f, moto.enemySlotXRatios.first())
+        assertEquals(.722f, moto.enemySlotYRatios.last())
+        assertNull(VisionCalibrationConfig.measuredDefaultForCapture("motorola", "moto g56 5G", 2340, 1080))
+        assertNull(VisionCalibrationConfig.measuredDefaultForCapture("motorola", "another", 2400, 1080))
+    }
     @Test fun nineConfirmedTitlesIdentifyTheSideRegardlessOfAnEarlierWrongPrefix() {
         val all = List(5) { true }
         val ninth = listOf(true, true, true, true, false)

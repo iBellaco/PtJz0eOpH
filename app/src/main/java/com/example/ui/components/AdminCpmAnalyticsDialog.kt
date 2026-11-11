@@ -52,6 +52,7 @@ import com.example.data.NoticeMetrics
 import com.example.ui.theme.*
 import java.text.SimpleDateFormat
 import java.util.*
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -65,6 +66,7 @@ fun AdminCpmAnalyticsDialog(
     val startDateMs by AppNoticeAnalyticsManager.trackingStartDate.collectAsState()
     val isSyncing by AppNoticeAnalyticsManager.isSyncing.collectAsState()
     val lastSyncTime by AppNoticeAnalyticsManager.lastSyncTime.collectAsState()
+    val coroutineScope = rememberCoroutineScope()
 
     LaunchedEffect(Unit) {
         AppNoticeAnalyticsManager.syncFromCloud(context)
@@ -76,6 +78,7 @@ fun AdminCpmAnalyticsDialog(
     var showResetConfirmDialog by remember { mutableStateOf(false) }
     var showRecommendationInfoDialog by remember { mutableStateOf(false) }
     var noticeToDelete by remember { mutableStateOf<AppNotice?>(null) }
+    var deletingNoticeId by remember { mutableStateOf<String?>(null) }
     var cpmInputText by remember { mutableStateOf(String.format(Locale.US, "%.2f", baseCpmRate)) }
     var selectedTagFilter by remember { mutableStateOf("TODAS") }
 
@@ -169,13 +172,35 @@ fun AdminCpmAnalyticsDialog(
             confirmButton = {
                 Button(
                     onClick = {
-                        AppNoticeManager.deleteNotice(context, targetNotice.id)
-                        Toast.makeText(context, com.example.util.appTr("Anuncio eliminado exitosamente"), Toast.LENGTH_SHORT).show()
-                        noticeToDelete = null
+                        if (deletingNoticeId == targetNotice.id) return@Button
+                        if (com.example.data.SponsorReviewPolicy.isSponsorNotice(targetNotice)) {
+                            deletingNoticeId = targetNotice.id
+                            coroutineScope.launch {
+                                try {
+                                    AppNoticeManager.deleteSponsorNotice(context, targetNotice.id)
+                                    AppNoticeAnalyticsManager.deleteNoticeMetrics(context, targetNotice.id)
+                                    Toast.makeText(context, com.example.util.appTr("Anuncio patrocinado eliminado permanentemente"), Toast.LENGTH_SHORT).show()
+                                    noticeToDelete = null
+                                } catch (error: Exception) {
+                                    Toast.makeText(context, error.message ?: context.getString(com.example.R.string.sponsor_delete_failed), Toast.LENGTH_LONG).show()
+                                } finally {
+                                    deletingNoticeId = null
+                                }
+                            }
+                        } else {
+                            AppNoticeManager.deleteNotice(context, targetNotice.id)
+                            Toast.makeText(context, com.example.util.appTr("Anuncio eliminado exitosamente"), Toast.LENGTH_SHORT).show()
+                            noticeToDelete = null
+                        }
                     },
+                    enabled = deletingNoticeId != targetNotice.id,
                     colors = ButtonDefaults.buttonColors(containerColor = DangerRed, contentColor = Color.White)
                 ) {
-                    Text(tr("Eliminar"), fontWeight = FontWeight.Bold)
+                    if (deletingNoticeId == targetNotice.id) {
+                        CircularProgressIndicator(modifier = Modifier.size(16.dp), color = Color.White, strokeWidth = 2.dp)
+                    } else {
+                        Text(tr("Eliminar"), fontWeight = FontWeight.Bold)
+                    }
                 }
             },
             dismissButton = {
