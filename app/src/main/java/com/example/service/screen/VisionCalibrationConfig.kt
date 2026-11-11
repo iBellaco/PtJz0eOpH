@@ -455,8 +455,22 @@ VisionCalibrationConfig(
             }
         }
 
+        /**
+         * Initial geometry measured on a physical device. It is deliberately
+         * stricter than [captureProfileKey]: model and exact capture dimensions
+         * must match, and a saved capture profile is resolved before this value.
+         */
+        internal fun measuredDefaultForCapture(
+            manufacturer: String,
+            model: String,
+            width: Int,
+            height: Int
+        ): VisionCalibrationConfig? =
+            MeasuredDeviceCalibrationDefaults.forCapture(manufacturer, model, width, height)
+
         /** Shared starting geometry; viewport/rings determine the actual positions.
-         * No manufacturer/model may select hard-coded player coordinates. */
+         * Exact physical measurements are selected separately only when the capture
+         * also matches; this generic fallback remains model-independent. */
         @Suppress("UNUSED_PARAMETER")
         internal fun defaultsForDevice(manufacturer: String, model: String): VisionCalibrationConfig = VisionCalibrationConfig()
 

@@ -84,8 +84,10 @@ escáner.
 
 El escáner automático es multidispositivo: su ámbito son los dispositivos Android
 compatibles con Wild Rift y con los permisos de captura/superposición disponibles.
-Adaptar por dimensiones reales de captura, viewport y evidencia visual; nunca
-por coordenadas fijas de fabricante/modelo. Mantener estable la geometría entre
+Adaptar por dimensiones reales de captura, viewport y evidencia visual. Las
+mediciones físicas entregadas por el propietario pueden usarse como valor inicial
+solo con fabricante, modelo y dimensiones exactas; una calibración guardada
+prevalece y no se comparten perfiles solo por resolución. Mantener estable la geometría entre
 fotogramas: no acumular escalas sobre estimaciones anteriores. Verificar secuencias,
 no solo imágenes aisladas. Este objetivo no equivale a compatibilidad física ya
 comprobada con todos los dispositivos; registrar las pruebas pendientes.

@@ -377,25 +377,35 @@ object DraftVisionScanner {
     private val geometryStability = DraftGeometryStability()
     private var calibrationContext: android.content.Context? = null
     private var activeCaptureProfile: String? = null
+    private var activeCaptureDimensions: Pair<Int, Int>? = null
+    private var activeFrameRelativeProfile = false
     private var globalCalibrationConfig = VisionCalibrationConfig()
     @Synchronized
     internal fun configForFrame(bitmap: Bitmap, refreshGeometry: Boolean = false): VisionCalibrationConfig {
         val profile = VisionCalibrationConfig.captureProfileKey(bitmap.width, bitmap.height)
-        if (profile != activeCaptureProfile) {
+        val dimensions = bitmap.width to bitmap.height
+        if (profile != activeCaptureProfile || dimensions != activeCaptureDimensions) {
             val profileConfig = calibrationContext?.let { context ->
                 VisionCalibrationConfig.loadProfileFromPrefs(context, profile)
             }
             val hasProfiles = calibrationContext?.let { VisionCalibrationConfig.hasCaptureProfiles(it) } ?: false
-            val selected = profileConfig ?: if (activeCaptureProfile == null && !hasProfiles) globalCalibrationConfig
-                else VisionCalibrationConfig.defaultsForDevice(android.os.Build.MANUFACTURER, android.os.Build.MODEL)
+            val generic = VisionCalibrationConfig.defaultsForDevice(android.os.Build.MANUFACTURER, android.os.Build.MODEL)
+            val measured = VisionCalibrationConfig.measuredDefaultForCapture(
+                android.os.Build.MANUFACTURER, android.os.Build.MODEL, bitmap.width, bitmap.height)
+            val customizedGlobal = globalCalibrationConfig != generic
+            val keepCustomizedGlobal = activeCaptureProfile == null && !hasProfiles && customizedGlobal
+            val selected = profileConfig ?: if (keepCustomizedGlobal) globalCalibrationConfig
+                else measured ?: if (activeCaptureProfile == null && !hasProfiles) globalCalibrationConfig else generic
+            activeFrameRelativeProfile = profileConfig != null || (!keepCustomizedGlobal && measured != null)
             calibrationConfig = selected
             calibrationConfigFlow.value = selected
             alignedConfigFlow.value = selected
             activeCaptureProfile = profile
+            activeCaptureDimensions = dimensions
             alignedBase = null
         }
         val defaults = VisionCalibrationConfig.defaultsForDevice(android.os.Build.MANUFACTURER, android.os.Build.MODEL)
-        val manual = calibrationConfig.allySlotXRatios != defaults.allySlotXRatios ||
+        val manual = activeFrameRelativeProfile || calibrationConfig.allySlotXRatios != defaults.allySlotXRatios ||
             calibrationConfig.enemySlotXRatios != defaults.enemySlotXRatios ||
             calibrationConfig.allySlotYRatios != defaults.allySlotYRatios ||
             calibrationConfig.enemySlotYRatios != defaults.enemySlotYRatios ||
@@ -439,6 +449,8 @@ object DraftVisionScanner {
         alignedViewportFlow.value = Rect()
         calibrationContext = context.applicationContext
         activeCaptureProfile = null
+        activeCaptureDimensions = null
+        activeFrameRelativeProfile = false
         calibrationConfig = VisionCalibrationConfig.loadFromPrefs(context)
         globalCalibrationConfig = calibrationConfig
         calibrationConfigFlow.value = calibrationConfig
@@ -486,6 +498,8 @@ object DraftVisionScanner {
         alignedConfigFlow.value = calibrationConfig
         alignedBase = null
         activeCaptureProfile = null
+        activeCaptureDimensions = null
+        activeFrameRelativeProfile = false
         calibrationConfig.saveToPrefs(context)
     }
 

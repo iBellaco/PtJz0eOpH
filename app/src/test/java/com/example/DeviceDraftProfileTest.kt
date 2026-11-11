@@ -94,6 +94,36 @@ class DeviceDraftProfileTest {
             assertEquals("$brand/$model",VisionCalibrationConfig(),VisionCalibrationConfig.defaultsForDevice(brand,model))
         }
     }
+    @Test fun measuredDefaultsRequireTheExactDeviceAndCaptureDimensions() {
+        val samsungS948 = VisionCalibrationConfig.measuredDefaultForCapture(
+            "Samsung", "SM-S948B", 3120, 1440)
+        assertNotNull(samsungS948)
+        assertEquals(.1171875f, samsungS948!!.allyAvatarCenterX)
+        assertEquals(.91328126f, samsungS948.enemyAvatarCenterX)
+        assertEquals(.19071549f, samsungS948.allySlotYRatios.first())
+
+        // Orientation may swap width and height, but another model or another
+        // capture size must never inherit these coordinates.
+        assertEquals(samsungS948, VisionCalibrationConfig.measuredDefaultForCapture(
+            "samsung", "sm-s948b", 1440, 3120))
+        assertNull(VisionCalibrationConfig.measuredDefaultForCapture(
+            "Samsung", "SM-S938B", 3120, 1440))
+        assertNull(VisionCalibrationConfig.measuredDefaultForCapture(
+            "Samsung", "SM-S948B", 2340, 1080))
+    }
+    @Test fun sameResolutionDoesNotShareCoordinatesBetweenMeasuredPhones() {
+        val a156 = VisionCalibrationConfig.measuredDefaultForCapture("samsung", "SM-A156U", 2340, 1080)
+        val s942 = VisionCalibrationConfig.measuredDefaultForCapture("samsung", "SM-S942B", 2340, 1080)
+        val s938 = VisionCalibrationConfig.measuredDefaultForCapture("samsung", "SM-S938B", 2340, 1080)
+        assertNotNull(a156); assertNotNull(s942); assertNotNull(s938)
+        assertNotEquals(a156!!.allyAvatarCenterX, s942!!.allyAvatarCenterX)
+        assertNotEquals(s942.enemyAvatarCenterX, s938!!.enemyAvatarCenterX)
+        assertEquals(.11862696f, VisionCalibrationConfig.measuredDefaultForCapture(
+            "Xiaomi", "2412DPC0AG", 2712, 1220)!!.allyAvatarCenterX)
+        assertEquals(.90703124f, VisionCalibrationConfig.measuredDefaultForCapture(
+            "HONOR", "BVL-N49", 2800, 1280)!!.enemyAvatarCenterX)
+        assertNull(VisionCalibrationConfig.measuredDefaultForCapture("unknown", "unknown", 2340, 1080))
+    }
     @Test fun nineConfirmedTitlesIdentifyTheSideRegardlessOfAnEarlierWrongPrefix() {
         val all = List(5) { true }
         val ninth = listOf(true, true, true, true, false)

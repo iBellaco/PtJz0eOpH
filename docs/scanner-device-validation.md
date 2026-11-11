@@ -34,7 +34,9 @@ No convertir las imágenes redimensionadas ni un emulador en registros físicos.
 ## Respaldo de coordenadas aportadas
 
 Las mediciones normalizadas recibidas para Samsung SM-A156U, Xiaomi 2412DPC0AG,
-Samsung SM-S942B, HONOR BVL-N49 y Samsung SM-S938B se conservan en
-`docs/scanner-calibration-backup.json`. El archivo sirve como respaldo y
-comparación entre dimensiones; no selecciona coordenadas automáticamente por
-marca o modelo ni sustituye una validación física del dispositivo.
+Samsung SM-S942B, HONOR BVL-N49, Samsung SM-S938B y Samsung SM-S948B se conservan
+en `docs/scanner-calibration-backup.json`. También son valores iniciales cuando
+coinciden fabricante, modelo y dimensiones exactas de captura. Una calibración
+guardada por el usuario siempre prevalece. No se reutiliza un perfil en otro
+modelo solo porque comparta resolución, y el registro no sustituye una validación
+física de la secuencia completa.

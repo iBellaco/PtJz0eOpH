@@ -1,10 +1,10 @@
 {
-  "schema": 1,
-  "purpose": "Respaldo de mediciones normalizadas aportadas por el propietario para comparar dimensiones de captura.",
+  "schema": 2,
+  "purpose": "Respaldo de mediciones normalizadas aportadas por el propietario y fuente de revisión de los valores iniciales exactos.",
   "coordinateSpace": "captured_frame",
   "values": "ratios normalizados entre 0 y 1",
-  "usage": "evidence_only",
-  "warning": "Estos perfiles no son presets automáticos por fabricante o modelo. El escáner debe adaptar la geometría al viewport observado y estas mediciones solo sirven como respaldo y comparación.",
+  "usage": "backup_and_exact_device_capture_defaults",
+  "warning": "Un perfil solo puede usarse como valor inicial si coinciden fabricante, modelo y dimensiones exactas de captura y no existe una calibración guardada. Nunca se comparte únicamente por resolución.",
   "profiles": [
     {
       "profileId": "samsung-sm-a156u-2340x1080",
@@ -148,6 +148,34 @@
         },
         "allySlots": {"x": [0.072, 0.072, 0.072, 0.072, 0.072], "y": [0.188, 0.324, 0.458, 0.591, 0.725], "diameter": [0.11, 0.11, 0.11, 0.11, 0.105]},
         "enemySlots": {"x": [0.959, 0.959, 0.959, 0.959, 0.959], "y": [0.188, 0.324, 0.457, 0.59, 0.722], "diameter": [0.11, 0.11, 0.11, 0.11, 0.11]}
+      }
+    },
+    {
+      "profileId": "samsung-sm-s948b-3120x1440",
+      "device": {
+        "manufacturer": "samsung",
+        "model": "SM-S948B",
+        "androidApi": 37,
+        "androidVersion": "17",
+        "width": 3120,
+        "height": 1440
+      },
+      "calibration": {
+        "avatarDiameterRatio": 0.11,
+        "allyAvatarCenterX": 0.1171875,
+        "enemyAvatarCenterX": 0.91328126,
+        "top": {
+          "avatarYRatio": 0.045,
+          "avatarDiameterRatio": 0.072,
+          "ally5XRatio": 0.17138515,
+          "enemy5XRatio": 0.9734761
+        },
+        "bans": {
+          "ally": {"x": [0.028564192, 0.06528959, 0.102014974, 0.13874036, 0.17546576], "y": [0.052, 0.052, 0.052, 0.052, 0.052], "diameter": [0.06, 0.06, 0.06, 0.06, 0.06], "manual": false},
+          "enemy": {"x": [0.8224939, 0.86023945, 0.897985, 0.9357306, 0.9734761], "y": [0.052, 0.052, 0.052, 0.052, 0.052], "diameter": [0.06, 0.06, 0.06, 0.06, 0.06], "manual": false}
+        },
+        "allySlots": {"x": [0.1171875, 0.1171875, 0.1171875, 0.1171875, 0.1171875], "y": [0.19071549, 0.32604176, 0.45937794, 0.5917191, 0.7250552], "diameter": [0.11, 0.11, 0.11, 0.11, 0.105]},
+        "enemySlots": {"x": [0.91328126, 0.91328126, 0.91328126, 0.91328126, 0.91328126], "y": [0.18790826, 0.32473567, 0.45854485, 0.592354, 0.7251571], "diameter": [0.11, 0.11, 0.11, 0.11, 0.11]}
       }
     }
   ]

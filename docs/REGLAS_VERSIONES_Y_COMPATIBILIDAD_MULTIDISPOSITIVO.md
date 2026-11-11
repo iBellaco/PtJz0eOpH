@@ -60,7 +60,10 @@ preselecciones o selecciones del escáner superpuesto.
 
 - La geometría debe calcularse a partir de las dimensiones reales de la captura,
   el viewport y los insets disponibles.
-- No se deben introducir coordenadas específicas de una marca o modelo.
+- Las mediciones físicas entregadas por el propietario pueden actuar como valor
+  inicial únicamente con fabricante, modelo y dimensiones exactas de captura.
+  Una calibración guardada prevalece y una resolución igual no permite compartir
+  el perfil con otro modelo. Sin coincidencia exacta se usa la geometría adaptativa.
 - Cada perfil usado para validar el overlay debe indicar que es compatible con
   Wild Rift y con la superposición antes de incluirse en la matriz del escáner.
 - Las pruebas deben cubrir cambios de relación de aspecto y tamaño dentro del
