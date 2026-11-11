@@ -41462,5 +41462,269 @@
     "ratingSum": 50,
     "voteCount": 10,
     "coachAdvice": "Diagnóstico del error/situación: Zyra · Jungla. Lanzar el control sin semillas colocadas pierde las plantas que mantienen al rival en tu zona de daño.\nDecisión Soberano: Semillas antes de la habilidad que las activa.\nMicro y Macro detalle: H4 asegura permanencia en la zona después del control, no sustituye la preparación. Elige el campamento de salida por el siguiente objetivo y por la ruta que permite ejecutar esta secuencia, no por perseguir al primer rival.\nRegla aplicable: Semillas preparadas antes de control y Tuercespinas."
+  },
+  {
+    "id": "sylas_mid_coach_73f",
+    "championId": "sylas",
+    "championName": "Sylas",
+    "buildTitle": "Build Línea Central • Criterio Coach",
+    "role": "Línea Central",
+    "coreItems": [
+      "Vara de las edades",
+      "Perdición del liche",
+      "Sombrero mortal de Rabadon"
+    ],
+    "situationalItems": [
+      "Creagrietas",
+      "Bastón del Vacío",
+      "Morellonomicón",
+      "Corona de la Reina Fragmentada",
+      "Tridente de Oceánida"
+    ],
+    "runes": "Conquistador, Triunfo, Leyenda: Velocidad, Último Esfuerzo, Revestimiento de Huesos",
+    "spells": [
+      "Destello",
+      "Prender"
+    ],
+    "coreItemsWithDesc": [
+      {
+        "itemName": "Vara de las edades",
+        "description": "Diagnóstico del error/situación: Sylas · Línea Central · Vara de las edades. La compra apuesta por una pelea posterior; retrasarla pierde parte de la progresión que buscabas.\nDecisión Soberano: Compara el tiempo hasta la próxima disputa con la maduración del objeto antes de elegir una compra de escalado.\nMicro y Macro detalle: Conecta H1 para preparar el intercambio y alterna habilidad con ataque de Arranque de petricita.\nRegla aplicable: Reserva H3 para responder al control y roba con H4 la definitiva que cambie la siguiente pelea."
+      },
+      {
+        "itemName": "Perdición del liche",
+        "description": "Diagnóstico del error/situación: Sylas · Línea Central · Perdición del liche. La compra exige insertar un ataque después de una habilidad sin exponerte a la respuesta rival.\nDecisión Soberano: Habilidad y ataque seguro antes de otra habilidad; no cruces la protección solo por consumir el golpe.\nMicro y Macro detalle: Conecta H1 para preparar el intercambio y alterna habilidad con ataque de Arranque de petricita.\nRegla aplicable: Reserva H3 para responder al control y roba con H4 la definitiva que cambie la siguiente pelea."
+      },
+      {
+        "itemName": "Sombrero mortal de Rabadon",
+        "description": "Diagnóstico del error/situación: Sylas · Línea Central · Sombrero mortal de Rabadon. Necesitas amplificar el poder de habilidad ya acumulado; adelantarlo no resuelve por sí solo maná, acceso ni defensa.\nDecisión Soberano: Compra después de asegurar que puedes ejecutar tu rotación; más poder no recupera una habilidad fallada.\nMicro y Macro detalle: Conecta H1 para preparar el intercambio y alterna habilidad con ataque de Arranque de petricita.\nRegla aplicable: Reserva H3 para responder al control y roba con H4 la definitiva que cambie la siguiente pelea."
+      }
+    ],
+    "situationalItemsWithDesc": [
+      {
+        "itemName": "Creagrietas",
+        "description": "Diagnóstico del error/situación: Sylas · Línea Central · Creagrietas. Tu ventaja depende de permanecer en combate, no de entrar y salir con un único impacto.\nDecisión Soberano: Mantén la pelea solo mientras puedas repetir tu daño sin perder la herramienta defensiva del campeón.\nMicro y Macro detalle: Conecta H1 para preparar el intercambio y alterna habilidad con ataque de Arranque de petricita.\nRegla aplicable: Reserva H3 para responder al control y roba con H4 la definitiva que cambie la siguiente pelea."
+      },
+      {
+        "itemName": "Bastón del Vacío",
+        "description": "Diagnóstico del error/situación: Sylas · Línea Central · Bastón del Vacío. La resistencia mágica rival ya reduce tu rotación; otro objeto de poder puro puede rendir menos.\nDecisión Soberano: Verifica la resistencia de los objetivos que realmente puedes golpear antes de adelantar penetración.\nMicro y Macro detalle: Conecta H1 para preparar el intercambio y alterna habilidad con ataque de Arranque de petricita.\nRegla aplicable: Reserva H3 para responder al control y roba con H4 la definitiva que cambie la siguiente pelea."
+      },
+      {
+        "itemName": "Morellonomicón",
+        "description": "Diagnóstico del error/situación: Sylas · Línea Central · Morellonomicón. La curación rival ocurre durante tu daño mágico y puede neutralizar el intercambio.\nDecisión Soberano: Aplica daño cuando llegue la curación; no lo compres por un sanador al que tu rotación nunca alcanza.\nMicro y Macro detalle: Conecta H1 para preparar el intercambio y alterna habilidad con ataque de Arranque de petricita.\nRegla aplicable: Reserva H3 para responder al control y roba con H4 la definitiva que cambie la siguiente pelea."
+      },
+      {
+        "itemName": "Corona de la Reina Fragmentada",
+        "description": "Diagnóstico del error/situación: Sylas · Línea Central · Corona de la Reina Fragmentada. El daño de entrada rival te elimina antes de poder usar tu herramienta defensiva.\nDecisión Soberano: Evita perder la protección ante hostigamiento menor justo antes de la pelea que necesitas soportar.\nMicro y Macro detalle: Conecta H1 para preparar el intercambio y alterna habilidad con ataque de Arranque de petricita.\nRegla aplicable: Reserva H3 para responder al control y roba con H4 la definitiva que cambie la siguiente pelea."
+      },
+      {
+        "itemName": "Tridente de Oceánida",
+        "description": "Diagnóstico del error/situación: Sylas · Línea Central · Tridente de Oceánida. Los escudos rivales absorben tu ventana de daño mágico o de apoyo antes de que tu equipo pueda rematar.\nDecisión Soberano: Aplica una habilidad cuando el escudo decide la pelea; no lo adelantes si el objetivo protegido nunca entra en tu alcance.\nMicro y Macro detalle: Conecta H1 para preparar el intercambio y alterna habilidad con ataque de Arranque de petricita.\nRegla aplicable: Reserva H3 para responder al control y roba con H4 la definitiva que cambie la siguiente pelea."
+      }
+    ],
+    "coreRunes": [
+      {
+        "runeName": "Conquistador",
+        "iconUrl": "file:///android_asset/runes/conqueror.png",
+        "description": "Diagnóstico del error/situación: Sylas · Línea Central · Conquistador. Entrar con H3 antes de identificar el control rival deja a Sylas sin ruta de salida ni tiempo para consumir su pasiva.\nDecisión Soberano: Mantén la cadena de ataques y habilidades sobre una pelea sostenible; retirarte después de un golpe no aprovecha el combate largo.\nMicro y Macro detalle: Conecta H1 para preparar el intercambio y alterna habilidad con ataque de Arranque de petricita.\nRegla aplicable: Reserva H3 para responder al control y roba con H4 la definitiva que cambie la siguiente pelea."
+      },
+      {
+        "runeName": "Triunfo",
+        "iconUrl": "file:///android_asset/runes/triumph.webp",
+        "description": "Diagnóstico del error/situación: Sylas · Línea Central · Triunfo. Entrar con H3 antes de identificar el control rival deja a Sylas sin ruta de salida ni tiempo para consumir su pasiva.\nDecisión Soberano: Busca un primer derribo alcanzable y usa la recuperación para reposicionar antes de perseguir el segundo.\nMicro y Macro detalle: Conecta H1 para preparar el intercambio y alterna habilidad con ataque de Arranque de petricita.\nRegla aplicable: Reserva H3 para responder al control y roba con H4 la definitiva que cambie la siguiente pelea."
+      },
+      {
+        "runeName": "Leyenda: Velocidad",
+        "iconUrl": "file:///android_asset/offline_images/first_strike_rune.webp",
+        "description": "Diagnóstico del error/situación: Sylas · Línea Central · Leyenda: Velocidad. Entrar con H3 antes de identificar el control rival deja a Sylas sin ruta de salida ni tiempo para consumir su pasiva.\nDecisión Soberano: Acumula velocidad de habilidades con súbditos, monstruos y derribos; conserva maná o energía para aprovechar una segunda rotación de H1/H2/H3.\nMicro y Macro detalle: Conecta H1 para preparar el intercambio y alterna habilidad con ataque de Arranque de petricita.\nRegla aplicable: Reserva H3 para responder al control y roba con H4 la definitiva que cambie la siguiente pelea."
+      },
+      {
+        "runeName": "Último Esfuerzo",
+        "iconUrl": "file:///android_asset/runes/last_stand.webp",
+        "description": "Diagnóstico del error/situación: Sylas · Línea Central · Último Esfuerzo. Entrar con H3 antes de identificar el control rival deja a Sylas sin ruta de salida ni tiempo para consumir su pasiva.\nDecisión Soberano: Continúa con poca vida solo si puedes usar tu herramienta defensiva y cerrar el objetivo antes de su respuesta.\nMicro y Macro detalle: Conecta H1 para preparar el intercambio y alterna habilidad con ataque de Arranque de petricita.\nRegla aplicable: Reserva H3 para responder al control y roba con H4 la definitiva que cambie la siguiente pelea."
+      },
+      {
+        "runeName": "Revestimiento de Huesos",
+        "iconUrl": "file:///android_asset/runes/bone_plating.webp",
+        "description": "Diagnóstico del error/situación: Sylas · Línea Central · Revestimiento de Huesos. Entrar con H3 antes de identificar el control rival deja a Sylas sin ruta de salida ni tiempo para consumir su pasiva.\nDecisión Soberano: Evita perder la protección a un golpe menor antes de la ráfaga rival; cambia distancia mientras vuelve a estar disponible.\nMicro y Macro detalle: Conecta H1 para preparar el intercambio y alterna habilidad con ataque de Arranque de petricita.\nRegla aplicable: Reserva H3 para responder al control y roba con H4 la definitiva que cambie la siguiente pelea."
+      }
+    ],
+    "situationalRunes": [],
+    "coreSpells": [
+      {
+        "spellName": "Destello",
+        "iconUrl": "file:///android_asset/spells/flash.webp",
+        "description": ""
+      },
+      {
+        "spellName": "Prender",
+        "iconUrl": "file:///android_asset/spells/ignite.webp",
+        "description": "Diagnóstico del error/situación: Sylas · Línea Central · Prender. Entrar con H3 antes de identificar el control rival deja a Sylas sin ruta de salida ni tiempo para consumir su pasiva.\nDecisión Soberano: Sincroniza daño y heridas graves con el intento rival de curarse durante tu ventana de remate.\nMicro y Macro detalle: Conecta H1 para preparar el intercambio y alterna habilidad con ataque de Arranque de petricita.\nRegla aplicable: Reserva H3 para responder al control y roba con H4 la definitiva que cambie la siguiente pelea."
+      }
+    ],
+    "situationalSpells": [
+      {
+        "spellName": "Barrera",
+        "iconUrl": "file:///android_asset/spells/barrier.webp",
+        "description": "Diagnóstico del error/situación: Sylas · Línea Central · Barrera. Entrar con H3 antes de identificar el control rival deja a Sylas sin ruta de salida ni tiempo para consumir su pasiva.\nDecisión Soberano: Actívala cuando llegue la ráfaga que no puedes esquivar y aprovecha la protección para terminar tu secuencia o salir.\nMicro y Macro detalle: Conecta H1 para preparar el intercambio y alterna habilidad con ataque de Arranque de petricita.\nRegla aplicable: Reserva H3 para responder al control y roba con H4 la definitiva que cambie la siguiente pelea."
+      },
+      {
+        "spellName": "Limpiar",
+        "iconUrl": "file:///android_asset/spells/cleanse.webp",
+        "description": "Diagnóstico del error/situación: Sylas · Línea Central · Limpiar. Entrar con H3 antes de identificar el control rival deja a Sylas sin ruta de salida ni tiempo para consumir su pasiva.\nDecisión Soberano: Responde al control que realmente niega tu salida; confirma que el efecto observado sea eliminable antes de confiar en este hechizo.\nMicro y Macro detalle: Conecta H1 para preparar el intercambio y alterna habilidad con ataque de Arranque de petricita.\nRegla aplicable: Reserva H3 para responder al control y roba con H4 la definitiva que cambie la siguiente pelea."
+      }
+    ],
+    "bootsT2Item": {
+      "itemName": "Botas de maná",
+      "description": "Diagnóstico del error/situación: Sylas · Línea Central · Botas de maná. La tarea de esta compra es mantener maná para la siguiente rotación sin gastar tu habilidad de protección para acercarte.\nDecisión Soberano: Mantener maná para la siguiente rotación sin gastar tu habilidad de protección para acercarte.\nMicro y Macro detalle: Conecta H1 para preparar el intercambio y alterna habilidad con ataque de Arranque de petricita.\nRegla aplicable: Reserva H3 para responder al control y roba con H4 la definitiva que cambie la siguiente pelea."
+    },
+    "bootsT3Item": {
+      "itemName": "Botas del lanzahechizos",
+      "description": "Diagnóstico del error/situación: Sylas · Línea Central · Botas del lanzahechizos. La tarea de esta compra es convertir una segunda habilidad disponible en presión desde un ángulo seguro.\nDecisión Soberano: Convertir una segunda habilidad disponible en presión desde un ángulo seguro.\nMicro y Macro detalle: Conecta H1 para preparar el intercambio y alterna habilidad con ataque de Arranque de petricita.\nRegla aplicable: Reserva H3 para responder al control y roba con H4 la definitiva que cambie la siguiente pelea."
+    },
+    "situationalBootsT2Item": null,
+    "situationalBootsT3Item": null,
+    "creatorName": "Coach (Criterio Táctico)",
+    "creatorIsAdmin": true,
+    "ratingSum": 50,
+    "voteCount": 10,
+    "coachAdvice": "Diagnóstico del error/situación: Sylas · Línea Central. Entrar con H3 antes de identificar el control rival deja a Sylas sin ruta de salida ni tiempo para consumir su pasiva.\nDecisión Soberano: Conecta H1 para preparar el intercambio y alterna habilidad con ataque de Arranque de petricita.\nMicro y Macro detalle: Reserva H3 para responder al control y roba con H4 la definitiva que cambie la siguiente pelea. Empuja antes de salir solo si puedes conservar la herramienta citada para el río; sin ella, termina la oleada y evita la entrada a ciegas.\nRegla aplicable: Pasiva entre habilidades; H3 disponible antes de entrar."
+  },
+  {
+    "id": "sylas_jungle_coach_73f",
+    "championId": "sylas",
+    "championName": "Sylas",
+    "buildTitle": "Build Jungla (Línea Flex) • Criterio Coach",
+    "role": "Jungla (Flex)",
+    "coreItems": [
+      "Perdición del liche",
+      "Creagrietas",
+      "Sombrero mortal de Rabadon"
+    ],
+    "situationalItems": [
+      "Vara de las edades",
+      "Bastón del Vacío",
+      "Morellonomicón",
+      "Corona de la Reina Fragmentada",
+      "Tridente de Oceánida",
+      "Malla de espinas",
+      "Fuerza de la naturaleza"
+    ],
+    "runes": "Conquistador, Triunfo, Leyenda: Velocidad, Último Esfuerzo, Revestimiento de Huesos",
+    "spells": [
+      "Aplastar",
+      "Destello"
+    ],
+    "coreItemsWithDesc": [
+      {
+        "itemName": "Perdición del liche",
+        "description": "Diagnóstico del error/situación: Sylas · Jungla · Perdición del liche. La compra exige insertar un ataque después de una habilidad sin exponerte a la respuesta rival.\nDecisión Soberano: Habilidad y ataque seguro antes de otra habilidad; no cruces la protección solo por consumir el golpe.\nMicro y Macro detalle: Conecta H1 para preparar el intercambio y alterna habilidad con ataque de Arranque de petricita.\nRegla aplicable: Reserva H3 para responder al control y roba con H4 la definitiva que cambie la siguiente pelea."
+      },
+      {
+        "itemName": "Creagrietas",
+        "description": "Diagnóstico del error/situación: Sylas · Jungla · Creagrietas. Tu ventaja depende de permanecer en combate, no de entrar y salir con un único impacto.\nDecisión Soberano: Mantén la pelea solo mientras puedas repetir tu daño sin perder la herramienta defensiva del campeón.\nMicro y Macro detalle: Conecta H1 para preparar el intercambio y alterna habilidad con ataque de Arranque de petricita.\nRegla aplicable: Reserva H3 para responder al control y roba con H4 la definitiva que cambie la siguiente pelea."
+      },
+      {
+        "itemName": "Sombrero mortal de Rabadon",
+        "description": "Diagnóstico del error/situación: Sylas · Jungla · Sombrero mortal de Rabadon. Necesitas amplificar el poder de habilidad ya acumulado; adelantarlo no resuelve por sí solo maná, acceso ni defensa.\nDecisión Soberano: Compra después de asegurar que puedes ejecutar tu rotación; más poder no recupera una habilidad fallada.\nMicro y Macro detalle: Conecta H1 para preparar el intercambio y alterna habilidad con ataque de Arranque de petricita.\nRegla aplicable: Reserva H3 para responder al control y roba con H4 la definitiva que cambie la siguiente pelea."
+      }
+    ],
+    "situationalItemsWithDesc": [
+      {
+        "itemName": "Vara de las edades",
+        "description": "Diagnóstico del error/situación: Sylas · Jungla · Vara de las edades. La compra apuesta por una pelea posterior; retrasarla pierde parte de la progresión que buscabas.\nDecisión Soberano: Compara el tiempo hasta la próxima disputa con la maduración del objeto antes de elegir una compra de escalado.\nMicro y Macro detalle: Conecta H1 para preparar el intercambio y alterna habilidad con ataque de Arranque de petricita.\nRegla aplicable: Reserva H3 para responder al control y roba con H4 la definitiva que cambie la siguiente pelea."
+      },
+      {
+        "itemName": "Bastón del Vacío",
+        "description": "Diagnóstico del error/situación: Sylas · Jungla · Bastón del Vacío. La resistencia mágica rival ya reduce tu rotación; otro objeto de poder puro puede rendir menos.\nDecisión Soberano: Verifica la resistencia de los objetivos que realmente puedes golpear antes de adelantar penetración.\nMicro y Macro detalle: Conecta H1 para preparar el intercambio y alterna habilidad con ataque de Arranque de petricita.\nRegla aplicable: Reserva H3 para responder al control y roba con H4 la definitiva que cambie la siguiente pelea."
+      },
+      {
+        "itemName": "Morellonomicón",
+        "description": "Diagnóstico del error/situación: Sylas · Jungla · Morellonomicón. La curación rival ocurre durante tu daño mágico y puede neutralizar el intercambio.\nDecisión Soberano: Aplica daño cuando llegue la curación; no lo compres por un sanador al que tu rotación nunca alcanza.\nMicro y Macro detalle: Conecta H1 para preparar el intercambio y alterna habilidad con ataque de Arranque de petricita.\nRegla aplicable: Reserva H3 para responder al control y roba con H4 la definitiva que cambie la siguiente pelea."
+      },
+      {
+        "itemName": "Corona de la Reina Fragmentada",
+        "description": "Diagnóstico del error/situación: Sylas · Jungla · Corona de la Reina Fragmentada. El daño de entrada rival te elimina antes de poder usar tu herramienta defensiva.\nDecisión Soberano: Evita perder la protección ante hostigamiento menor justo antes de la pelea que necesitas soportar.\nMicro y Macro detalle: Conecta H1 para preparar el intercambio y alterna habilidad con ataque de Arranque de petricita.\nRegla aplicable: Reserva H3 para responder al control y roba con H4 la definitiva que cambie la siguiente pelea."
+      },
+      {
+        "itemName": "Tridente de Oceánida",
+        "description": "Diagnóstico del error/situación: Sylas · Jungla · Tridente de Oceánida. Los escudos rivales absorben tu ventana de daño mágico o de apoyo antes de que tu equipo pueda rematar.\nDecisión Soberano: Aplica una habilidad cuando el escudo decide la pelea; no lo adelantes si el objetivo protegido nunca entra en tu alcance.\nMicro y Macro detalle: Conecta H1 para preparar el intercambio y alterna habilidad con ataque de Arranque de petricita.\nRegla aplicable: Reserva H3 para responder al control y roba con H4 la definitiva que cambie la siguiente pelea."
+      },
+      {
+        "itemName": "Malla de espinas",
+        "description": "Diagnóstico del error/situación: Sylas · Jungla · Malla de espinas. La tarea de esta compra es responder a curaciones que deciden la pelea cuando puedes recibir ataques y aplicar heridas graves.\nDecisión Soberano: Responder a curaciones que deciden la pelea cuando puedes recibir ataques y aplicar heridas graves.\nMicro y Macro detalle: Conecta H1 para preparar el intercambio y alterna habilidad con ataque de Arranque de petricita.\nRegla aplicable: Reserva H3 para responder al control y roba con H4 la definitiva que cambie la siguiente pelea."
+      },
+      {
+        "itemName": "Fuerza de la naturaleza",
+        "description": "Diagnóstico del error/situación: Sylas · Jungla · Fuerza de la naturaleza. La tarea de esta compra es sostener la entrada contra aplicaciones mágicas repetidas y salir cuando termine tu recurso defensivo.\nDecisión Soberano: Sostener la entrada contra aplicaciones mágicas repetidas y salir cuando termine tu recurso defensivo.\nMicro y Macro detalle: Conecta H1 para preparar el intercambio y alterna habilidad con ataque de Arranque de petricita.\nRegla aplicable: Reserva H3 para responder al control y roba con H4 la definitiva que cambie la siguiente pelea."
+      }
+    ],
+    "coreRunes": [
+      {
+        "runeName": "Conquistador",
+        "iconUrl": "file:///android_asset/runes/conqueror.png",
+        "description": "Diagnóstico del error/situación: Sylas · Jungla · Conquistador. Entrar con H3 antes de identificar el control rival deja a Sylas sin ruta de salida ni tiempo para consumir su pasiva.\nDecisión Soberano: Mantén la cadena de ataques y habilidades sobre una pelea sostenible; retirarte después de un golpe no aprovecha el combate largo.\nMicro y Macro detalle: Conecta H1 para preparar el intercambio y alterna habilidad con ataque de Arranque de petricita.\nRegla aplicable: Reserva H3 para responder al control y roba con H4 la definitiva que cambie la siguiente pelea."
+      },
+      {
+        "runeName": "Triunfo",
+        "iconUrl": "file:///android_asset/runes/triumph.webp",
+        "description": "Diagnóstico del error/situación: Sylas · Jungla · Triunfo. Entrar con H3 antes de identificar el control rival deja a Sylas sin ruta de salida ni tiempo para consumir su pasiva.\nDecisión Soberano: Busca un primer derribo alcanzable y usa la recuperación para reposicionar antes de perseguir el segundo.\nMicro y Macro detalle: Conecta H1 para preparar el intercambio y alterna habilidad con ataque de Arranque de petricita.\nRegla aplicable: Reserva H3 para responder al control y roba con H4 la definitiva que cambie la siguiente pelea."
+      },
+      {
+        "runeName": "Leyenda: Velocidad",
+        "iconUrl": "file:///android_asset/offline_images/first_strike_rune.webp",
+        "description": "Diagnóstico del error/situación: Sylas · Jungla · Leyenda: Velocidad. Entrar con H3 antes de identificar el control rival deja a Sylas sin ruta de salida ni tiempo para consumir su pasiva.\nDecisión Soberano: Acumula velocidad de habilidades con súbditos, monstruos y derribos; conserva maná o energía para aprovechar una segunda rotación de H1/H2/H3.\nMicro y Macro detalle: Conecta H1 para preparar el intercambio y alterna habilidad con ataque de Arranque de petricita.\nRegla aplicable: Reserva H3 para responder al control y roba con H4 la definitiva que cambie la siguiente pelea."
+      },
+      {
+        "runeName": "Último Esfuerzo",
+        "iconUrl": "file:///android_asset/runes/last_stand.webp",
+        "description": "Diagnóstico del error/situación: Sylas · Jungla · Último Esfuerzo. Entrar con H3 antes de identificar el control rival deja a Sylas sin ruta de salida ni tiempo para consumir su pasiva.\nDecisión Soberano: Continúa con poca vida solo si puedes usar tu herramienta defensiva y cerrar el objetivo antes de su respuesta.\nMicro y Macro detalle: Conecta H1 para preparar el intercambio y alterna habilidad con ataque de Arranque de petricita.\nRegla aplicable: Reserva H3 para responder al control y roba con H4 la definitiva que cambie la siguiente pelea."
+      },
+      {
+        "runeName": "Revestimiento de Huesos",
+        "iconUrl": "file:///android_asset/runes/bone_plating.webp",
+        "description": "Diagnóstico del error/situación: Sylas · Jungla · Revestimiento de Huesos. Entrar con H3 antes de identificar el control rival deja a Sylas sin ruta de salida ni tiempo para consumir su pasiva.\nDecisión Soberano: Evita perder la protección a un golpe menor antes de la ráfaga rival; cambia distancia mientras vuelve a estar disponible.\nMicro y Macro detalle: Conecta H1 para preparar el intercambio y alterna habilidad con ataque de Arranque de petricita.\nRegla aplicable: Reserva H3 para responder al control y roba con H4 la definitiva que cambie la siguiente pelea."
+      }
+    ],
+    "situationalRunes": [],
+    "coreSpells": [
+      {
+        "spellName": "Aplastar",
+        "iconUrl": "file:///android_asset/spells/smite.webp",
+        "description": ""
+      },
+      {
+        "spellName": "Destello",
+        "iconUrl": "file:///android_asset/spells/flash.webp",
+        "description": ""
+      }
+    ],
+    "situationalSpells": [
+      {
+        "spellName": "Fantasmal",
+        "iconUrl": "file:///android_asset/spells/ghost.webp",
+        "description": "Diagnóstico del error/situación: Sylas · Jungla · Fantasmal. Entrar con H3 antes de identificar el control rival deja a Sylas sin ruta de salida ni tiempo para consumir su pasiva.\nDecisión Soberano: Actívalo antes del recorrido de persecución o retirada y usa tu control para que el rival no corte la cadena.\nMicro y Macro detalle: Conecta H1 para preparar el intercambio y alterna habilidad con ataque de Arranque de petricita.\nRegla aplicable: Reserva H3 para responder al control y roba con H4 la definitiva que cambie la siguiente pelea."
+      },
+      {
+        "spellName": "Limpiar",
+        "iconUrl": "file:///android_asset/spells/cleanse.webp",
+        "description": "Diagnóstico del error/situación: Sylas · Jungla · Limpiar. Entrar con H3 antes de identificar el control rival deja a Sylas sin ruta de salida ni tiempo para consumir su pasiva.\nDecisión Soberano: Responde al control que realmente niega tu salida; confirma que el efecto observado sea eliminable antes de confiar en este hechizo.\nMicro y Macro detalle: Conecta H1 para preparar el intercambio y alterna habilidad con ataque de Arranque de petricita.\nRegla aplicable: Reserva H3 para responder al control y roba con H4 la definitiva que cambie la siguiente pelea."
+      }
+    ],
+    "bootsT2Item": {
+      "itemName": "Botas de maná",
+      "description": "Diagnóstico del error/situación: Sylas · Jungla · Botas de maná. La tarea de esta compra es mantener maná para la siguiente rotación sin gastar tu habilidad de protección para acercarte.\nDecisión Soberano: Mantener maná para la siguiente rotación sin gastar tu habilidad de protección para acercarte.\nMicro y Macro detalle: Conecta H1 para preparar el intercambio y alterna habilidad con ataque de Arranque de petricita.\nRegla aplicable: Reserva H3 para responder al control y roba con H4 la definitiva que cambie la siguiente pelea."
+    },
+    "bootsT3Item": {
+      "itemName": "Botas del lanzahechizos",
+      "description": "Diagnóstico del error/situación: Sylas · Jungla · Botas del lanzahechizos. La tarea de esta compra es convertir una segunda habilidad disponible en presión desde un ángulo seguro.\nDecisión Soberano: Convertir una segunda habilidad disponible en presión desde un ángulo seguro.\nMicro y Macro detalle: Conecta H1 para preparar el intercambio y alterna habilidad con ataque de Arranque de petricita.\nRegla aplicable: Reserva H3 para responder al control y roba con H4 la definitiva que cambie la siguiente pelea."
+    },
+    "situationalBootsT2Item": null,
+    "situationalBootsT3Item": null,
+    "creatorName": "Coach (Criterio Táctico)",
+    "creatorIsAdmin": true,
+    "ratingSum": 50,
+    "voteCount": 10,
+    "coachAdvice": "Diagnóstico del error/situación: Sylas · Jungla. Entrar con H3 antes de identificar el control rival deja a Sylas sin ruta de salida ni tiempo para consumir su pasiva.\nDecisión Soberano: Conecta H1 para preparar el intercambio y alterna habilidad con ataque de Arranque de petricita.\nMicro y Macro detalle: Reserva H3 para responder al control y roba con H4 la definitiva que cambie la siguiente pelea. Elige el campamento de salida por el siguiente objetivo y por la ruta que permite ejecutar esta secuencia, no por perseguir al primer rival.\nRegla aplicable: Pasiva entre habilidades; H3 disponible antes de entrar."
   }
 ]

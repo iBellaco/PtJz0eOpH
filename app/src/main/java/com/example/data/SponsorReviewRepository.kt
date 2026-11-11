@@ -38,6 +38,24 @@ object SponsorReviewPolicy {
         isEnabled=d["isEnabled"] == true, approvedAtMillis=(d["approvedAtMillis"] as? Number)?.toLong() ?: 0,
         expiresAtMillis=(d["expiresAtMillis"] as? Number)?.toLong() ?: 0,
         sponsorEmail=d["sponsorEmail"] as? String ?: "")
+
+    /**
+     * Preserve the exact queue document identifier next to the canonical ad.
+     * The moderation transaction must never guess queue paths: a guessed path
+     * may not exist and Firestore correctly refuses cross-account reads of it.
+     */
+    fun mergePendingSources(
+        ads: List<Map<String, Any>>,
+        queued: List<Map<String, Any>>
+    ): List<Map<String, Any>> {
+        val queuedByAd = queued.associateBy { it["id"]?.toString().orEmpty() }
+        val known = ads.map { it["id"]?.toString().orEmpty() }.toSet()
+        return ads.filter(::pending).map { ad ->
+            val source = queuedByAd[ad["id"]?.toString().orEmpty()]
+            val sourceId = source?.get("queuedRequestId")?.toString()?.takeIf(String::isNotBlank)
+            if (sourceId == null) ad else ad + ("queuedRequestId" to sourceId)
+        } + queued.filter { it["id"]?.toString().orEmpty() !in known }
+    }
 }
 
 /** Commits an existing moderation decision immediately; only pre-charge submissions use recovery queueing. */
@@ -47,13 +65,16 @@ object SponsorReviewRepository {
         val db = com.google.firebase.firestore.FirebaseFirestore.getInstance()
         var ads = emptyList<Map<String, Any>>()
         var queued = emptyList<Map<String, Any>>()
+        var adsLoaded = false
+        var queueLoaded = false
         fun publish() {
-            val known = ads.map { it["id"] }.toSet()
-            onChange(ads.filter { SponsorReviewPolicy.pending(it) } + queued.filter { it["id"] !in known })
+            if (!adsLoaded || !queueLoaded) return
+            onChange(SponsorReviewPolicy.mergePendingSources(ads, queued))
         }
         val adListener = db.collection("pending_sponsor_ads").addSnapshotListener { snapshot, error ->
             if (error != null) { onError(); return@addSnapshotListener }
             ads = snapshot?.documents.orEmpty().map { it.data.orEmpty() + ("id" to it.id) }
+            adsLoaded = true
             publish()
         }
         val queueListener = db.collection("economy_requests").whereEqualTo("payload.action", "SPONSOR")
@@ -66,6 +87,7 @@ object SponsorReviewRepository {
                     notice + mapOf("id" to id, "queuedRequestId" to row.id, "isApproved" to false,
                         "createdAt" to (row.getTimestamp("createdAt")?.toDate()?.time ?: 0L))
                 }
+                queueLoaded = true
                 publish()
             }
         return listOf(adListener, queueListener)
@@ -160,15 +182,11 @@ object SponsorReviewRepository {
                 appTr("La solicitud ya fue resuelta")
             }
 
-            val ownerUid = data["userId"]?.toString().orEmpty()
-            val sourceIds = listOfNotNull(
-                cleanQueuedRequestId,
-                ownerUid.takeIf { it.isNotBlank() }?.let { "$it~$id" },
-                ownerUid.takeIf { it.isNotBlank() }
-            ).distinct()
-            // Older submissions used either uid~operationId or the legacy uid
-            // document. Read both before writing so a direct moderation decision
-            // can close every still-pending representation atomically.
+            // The realtime feed carries the exact source document when one is
+            // still pending. Do not probe guessed paths belonging to the
+            // sponsor: Firestore transactions validate reads even when the
+            // guessed document is absent.
+            val sourceIds = listOfNotNull(cleanQueuedRequestId).distinct()
             val sourceRows = sourceIds.map { tx.get(db.collection("economy_requests").document(it)) }
             val originalRows = sourceRows.filter { source ->
                 val payload = source.get("payload") as? Map<*, *>

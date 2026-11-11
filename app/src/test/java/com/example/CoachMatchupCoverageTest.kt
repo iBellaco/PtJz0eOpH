@@ -18,7 +18,7 @@ class CoachMatchupCoverageTest {
     }
     @Test fun `all bundled champions and playable roles have twenty four unique relationships per category`() {
         val champions=catalog()
-        assertEquals(142,champions.size)
+        assertEquals(143,champions.size)
         var profiles=0
         val coverage=org.json.JSONArray()
         for (champion in champions) for (role in listOf(champion.primaryRole)+champion.secondaryRoles) {
@@ -47,7 +47,7 @@ class CoachMatchupCoverageTest {
                 .put("synergies",result.synergies.size))
             profiles++
         }
-        assertEquals(300,profiles)
+        assertEquals(302,profiles)
         java.io.File("build/reports/portuguese-rendered").apply { mkdirs() }
             .resolve("premium-24-coverage.json").writeText(coverage.toString(2))
     }

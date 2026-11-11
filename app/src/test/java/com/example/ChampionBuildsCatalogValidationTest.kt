@@ -30,9 +30,9 @@ class ChampionBuildsCatalogValidationTest {
             json.decodeFromString<List<Champion>>(file.readText())
         }
 
-        assertEquals("Champion catalog must contain exactly 142 champions", 142, champions.size)
-        assertEquals("Official build catalog must contain exactly 300 lane builds", 300, builds.size)
-        assertEquals("All 142 champions must have official builds", 142, builds.map { it.championId }.distinct().size)
+        assertEquals("Champion catalog must contain exactly 143 champions", 143, champions.size)
+        assertEquals("Official build catalog must contain exactly 302 lane builds", 302, builds.size)
+        assertEquals("All 143 champions must have official builds", 143, builds.map { it.championId }.distinct().size)
 
         val expectedBuildKeys = champions.flatMap { champion ->
             val primary = "${champion.id.lowercase()}|${champion.primaryRole.displayName.lowercase()}"

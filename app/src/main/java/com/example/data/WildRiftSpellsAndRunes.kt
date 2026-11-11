@@ -249,7 +249,7 @@ object WildRiftSpellsAndRunes {
             name = "Aplastar",
             cooldown = "10s",
             iconUrl = "file:///android_asset/spells/smite.webp",
-            description = "Mapa aplicable: Wild Rift\n\nInflige 600 de daño verdadero a los monstruos, monstruos épicos o súbditos enemigos. Al utilizar Aplastar contra monstruos, recuperas 127 de vida (70 + 10%). Aplastar se convierte en Aplastamiento desalentador tras usarlo 3 veces.",
+            description = "Mapa aplicable: Wild Rift\n\nInflige 600 de daño verdadero a los monstruos, monstruos épicos o súbditos enemigos. Al utilizar Aplastar contra monstruos, recuperas 127 de vida (70 + 10%). Aplastar se convierte en Aplastamiento desalentador tras usarlo 3 veces. En la versión 7.3f, la quemadura de jungla inflige 18-158 de daño básico, más un 20% de armadura adicional y un 20% de resistencia mágica adicional. Conservación otorga 30 de oro, o 55 si el equipo va perdiendo.",
             category = "Combate & Daño"
         ),
 

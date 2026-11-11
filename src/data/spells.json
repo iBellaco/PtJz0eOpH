@@ -17,7 +17,7 @@
     "id": "smite",
     "name": "Castigo",
     "cooldown": 45,
-    "description": "Inflige daño verdadero masivo a monstruos de la jungla o súbditos y restaura vida. Evoluciona con campamentos.",
+    "description": "Inflige daño verdadero a monstruos de la jungla o súbditos y restaura vida. Evoluciona con campamentos. En la versión 7.3f, la quemadura causa 18-158 de daño básico y escala un 20% con armadura adicional y resistencia mágica adicional; Conservación concede 30 de oro, o 55 si el equipo va perdiendo.",
     "iconUrl": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/summoner-spells/11.png"
   },
   {

@@ -38,6 +38,9 @@ fun AdminBroadcastAnnouncementDialog(
     var message by remember { mutableStateOf("") }
     var isUrgent by remember { mutableStateOf(false) }
     var sendNotification by remember { mutableStateOf(false) }
+    var targetLanguage by remember {
+        mutableStateOf(com.example.util.AppLanguage.current.value)
+    }
     var isPublishing by remember { mutableStateOf(false) }
     var isDeactivating by remember { mutableStateOf(false) }
 
@@ -67,10 +70,28 @@ fun AdminBroadcastAnnouncementDialog(
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 Text(
-                    tr("Este anuncio se enviará en tiempo real a todos los dispositivos (con o sin sesión iniciada)."),
+                    tr("El anuncio llegará únicamente a los usuarios que tengan seleccionado el idioma elegido."),
                     color = TextSecondary,
                     fontSize = 12.sp
                 )
+
+                Text(tr("Idioma"), color = TextPrimary, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    listOf("es" to "Español", "pt" to "Portugués").forEach { (code, label) ->
+                        FilterChip(
+                            selected = targetLanguage == code,
+                            onClick = { targetLanguage = code },
+                            label = { Text(tr(label), fontSize = 12.sp) },
+                            leadingIcon = if (targetLanguage == code) {
+                                { Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(16.dp)) }
+                            } else null,
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
+                }
 
                 // Si hay un anuncio activo actualmente, mostrar ficha con opción de desactivarlo
                 if (activeAnnouncement != null && activeAnnouncement!!.active) {
@@ -126,7 +147,10 @@ fun AdminBroadcastAnnouncementDialog(
                             Button(
                                 onClick = {
                                     isDeactivating = true
-                                    com.example.data.GlobalAnnouncementManager.deactivateAnnouncement(context) { success, err ->
+                                    com.example.data.GlobalAnnouncementManager.deactivateAnnouncement(
+                                        context,
+                                        activeAnn.language
+                                    ) { success, err ->
                                         isDeactivating = false
                                         if (success) {
                                             Toast.makeText(context, com.example.util.appTr("Anuncio global desactivado"), Toast.LENGTH_SHORT).show()
@@ -213,11 +237,18 @@ fun AdminBroadcastAnnouncementDialog(
                         title = title,
                         message = message,
                         isUrgent = isUrgent,
-                        sendNotification = sendNotification
+                        sendNotification = sendNotification,
+                        language = targetLanguage
                     ) { success, err ->
                         isPublishing = false
                         if (success) {
-                            Toast.makeText(context, com.example.util.appTr("¡Anuncio global publicado a todos los dispositivos!"), Toast.LENGTH_SHORT).show()
+                            Toast.makeText(
+                                context,
+                                com.example.util.appTr("Anuncio global publicado") + ": " + com.example.util.appTr(
+                                    if (targetLanguage == "pt") "Portugués" else "Español"
+                                ),
+                                Toast.LENGTH_SHORT
+                            ).show()
                             onDismiss()
                         } else {
                             Toast.makeText(context, com.example.util.appTr("Error al publicar: $err"), Toast.LENGTH_LONG).show()

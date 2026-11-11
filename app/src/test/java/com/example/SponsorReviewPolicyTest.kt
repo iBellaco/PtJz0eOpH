@@ -52,4 +52,29 @@ class SponsorReviewPolicyTest {
         assertEquals(1, summary.total)
         assertEquals(0, PanelNotificationPolicy.combine(emptySet(), emptyMap(), emptyMap(), emptySet()).total)
     }
+
+    @Test fun pendingAdKeepsOnlyItsExactQueueDocumentForAtomicResolution() {
+        val ads = listOf(mapOf<String, Any>("id" to "sponsor_123", "isApproved" to false))
+        val queue = listOf(mapOf<String, Any>(
+            "id" to "sponsor_123",
+            "queuedRequestId" to "owner~sponsor_123",
+            "isApproved" to false
+        ))
+        val merged = SponsorReviewPolicy.mergePendingSources(ads, queue)
+        assertEquals(1, merged.size)
+        assertEquals("owner~sponsor_123", merged.single()["queuedRequestId"])
+
+        val unrelated = SponsorReviewPolicy.mergePendingSources(
+            ads,
+            listOf(mapOf("id" to "sponsor_456", "queuedRequestId" to "owner~sponsor_456"))
+        )
+        assertEquals(2, unrelated.size)
+        assertFalse(unrelated.first().containsKey("queuedRequestId"))
+
+        val resolved = SponsorReviewPolicy.mergePendingSources(
+            listOf(ads.single() + ("isApproved" to true)),
+            queue
+        )
+        assertTrue(resolved.isEmpty())
+    }
 }

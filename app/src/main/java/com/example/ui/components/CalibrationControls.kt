@@ -132,7 +132,10 @@ fun CalibrationSendButton(onBeforeSend: (() -> Unit)? = null) {
                         language = AppLanguage.current.value,
                         androidVersion = "${Build.VERSION.RELEASE} (API ${Build.VERSION.SDK_INT})"
                     )
-                    val title = if (AppLanguage.current.value == "pt") "Coordenadas do scanner" else "Coordenadas del escáner"
+                    val title = CalibrationReport.title(
+                        isPremium = com.example.util.SubscriptionManager.isPremium.value,
+                        language = AppLanguage.current.value
+                    )
                     val result = FeedbackRepository.submitFeedback(
                         "COORDENADAS", title, payload,
                         userName = displayName,

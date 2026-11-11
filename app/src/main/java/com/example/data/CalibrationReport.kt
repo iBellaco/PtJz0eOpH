@@ -8,6 +8,18 @@ object CalibrationReport {
     private const val LEGACY_END = "[/COACH_CALIBRATION_V1]"
     private const val LIMIT = 16000
 
+    fun title(isPremium: Boolean, language: String): String {
+        val pt = language.equals("pt", ignoreCase = true)
+        val base = if (pt) "Coordenadas do scanner" else "Coordenadas del escáner"
+        val tier = when {
+            isPremium && pt -> "Usuário Premium"
+            isPremium -> "Usuario Premium"
+            pt -> "Usuário gratuito"
+            else -> "Usuario gratuito"
+        }
+        return "$base · $tier"
+    }
+
     fun build(
         device: String,
         app: String,

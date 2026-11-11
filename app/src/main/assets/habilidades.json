@@ -7048,5 +7048,55 @@
     "description": "Zyra invoca un matorral retorcido en la ubicación objetivo, que inflige daño a los enemigos cuando se expande y los levanta por los aires al contraerse. Las plantas que se encuentren dentro del matorral se enfurecen.",
     "iconUrl": "https://ddragon.leagueoflegends.com/cdn/14.20.1/img/spell/ZyraR.png",
     "cooldown": "110/100/90s"
+  },
+  {
+    "championId": "sylas",
+    "championName": "Sylas",
+    "slot": "P",
+    "slotName": "Pasiva",
+    "name": "Arranque de petricita",
+    "description": "Tras usar una habilidad, Sylas acumula una carga. Su siguiente ataque consume una carga y hace girar sus cadenas, causando daño mágico adicional a los enemigos cercanos. Mientras tenga una carga, obtiene velocidad de ataque.",
+    "iconUrl": "https://ddragon.leagueoflegends.com/cdn/16.21.1/img/passive/SylasP.png",
+    "cooldown": ""
+  },
+  {
+    "championId": "sylas",
+    "championName": "Sylas",
+    "slot": "1",
+    "slotName": "H1",
+    "name": "Latigazo de cadenas",
+    "description": "Sylas cruza sus cadenas en una zona, inflige daño y ralentiza. Después, una explosión mágica causa daño en el punto donde se cruzan.",
+    "iconUrl": "https://ddragon.leagueoflegends.com/cdn/16.21.1/img/spell/SylasQ.png",
+    "cooldown": ""
+  },
+  {
+    "championId": "sylas",
+    "championName": "Sylas",
+    "slot": "2",
+    "slotName": "H2",
+    "name": "Matarreyes",
+    "description": "Sylas arremete contra un enemigo, le inflige daño y se cura si es un campeón.",
+    "iconUrl": "https://ddragon.leagueoflegends.com/cdn/16.21.1/img/spell/SylasW.png",
+    "cooldown": ""
+  },
+  {
+    "championId": "sylas",
+    "championName": "Sylas",
+    "slot": "3",
+    "slotName": "H3",
+    "name": "Fuga / Abducción",
+    "description": "Sylas se desliza a una ubicación. Puede lanzar de nuevo sus cadenas para acercarse al enemigo alcanzado.",
+    "iconUrl": "https://ddragon.leagueoflegends.com/cdn/16.21.1/img/spell/SylasE.png",
+    "cooldown": ""
+  },
+  {
+    "championId": "sylas",
+    "championName": "Sylas",
+    "slot": "4",
+    "slotName": "H4",
+    "name": "Apropiación",
+    "description": "Sylas roba la habilidad definitiva de un campeón enemigo y puede lanzarla.",
+    "iconUrl": "https://ddragon.leagueoflegends.com/cdn/16.21.1/img/spell/SylasR.png",
+    "cooldown": ""
   }
 ]

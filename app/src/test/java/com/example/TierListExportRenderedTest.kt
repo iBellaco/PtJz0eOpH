@@ -22,7 +22,7 @@ class TierListExportRenderedTest {
         val roster=WildRiftRepository.baseChampionsList.mapIndexed { i,c ->
             c.copy(tier=listOf("S+","S","A")[i%3],tierMovement=if(i%2==0)1 else -1)
         }
-        assertEquals(142,roster.size)
+        assertEquals(143,roster.size)
         roster.forEach { c -> context.assets.open(c.getLocalAvatarUri().removePrefix("file:///android_asset/")).close() }
         val bitmap=renderTierListImage(context,roster)
         try {

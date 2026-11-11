@@ -20,6 +20,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import org.json.JSONObject
 import java.text.SimpleDateFormat
@@ -37,7 +38,8 @@ data class GlobalAnnouncement(
     val isUrgent: Boolean = false,
     val sendNotification: Boolean = false,
     val timestamp: Long = 0L,
-    val active: Boolean = false
+    val active: Boolean = false,
+    val language: String = "es"
 ) {
     fun getFormattedDate(): String {
         return try {
@@ -47,6 +49,28 @@ data class GlobalAnnouncement(
         } catch (_: Exception) {
             "Reciente"
         }
+    }
+}
+
+/** Selects only the broadcast addressed to the language chosen inside Coach. */
+object GlobalAnnouncementPolicy {
+    const val TARGETED_SCHEMA = 1L
+
+    fun normalizeLanguage(value: String?): String =
+        if (value?.trim()?.lowercase(Locale.ROOT)?.startsWith("pt") == true) "pt" else "es"
+
+    fun field(language: String): String = "announcement_${normalizeLanguage(language)}"
+
+    @Suppress("UNCHECKED_CAST")
+    fun payloadForLanguage(data: Map<String, Any>, language: String): Map<String, Any>? {
+        val selected = normalizeLanguage(language)
+        val targeted = (data["targetedSchema"] as? Number)?.toLong() ?: 0L
+        if (targeted >= TARGETED_SCHEMA) {
+            val raw = data[field(selected)] as? Map<*, *> ?: return null
+            return raw.entries.associate { it.key.toString() to it.value as Any }
+        }
+        val legacyLanguage = data["language"]?.toString()?.takeIf(String::isNotBlank)
+        return if (legacyLanguage == null || normalizeLanguage(legacyLanguage) == selected) data else null
     }
 }
 
@@ -78,6 +102,8 @@ object GlobalAnnouncementManager {
     private var authStateListener: FirebaseAuth.AuthStateListener? = null
     private var isAuthenticatingAnonymously = false
     private var isInitialized = false
+    private val languageScope = CoroutineScope(Dispatchers.Main.immediate)
+    private var observedLanguage = ""
 
     fun init(context: Context) {
         val appContext = context.applicationContext
@@ -88,6 +114,19 @@ object GlobalAnnouncementManager {
 
             // 2. Monitorear cambios de sesión de usuario
             setupAuthStateListener(appContext)
+
+            // Reevaluate the targeted document immediately when the user
+            // changes the language inside the running application.
+            languageScope.launch {
+                com.example.util.AppLanguage.current.collect { selected ->
+                    val normalized = GlobalAnnouncementPolicy.normalizeLanguage(selected)
+                    if (observedLanguage.isNotEmpty() && observedLanguage != normalized) {
+                        clearActiveAnnouncement(appContext)
+                        refreshFromCloud(appContext)
+                    }
+                    observedLanguage = normalized
+                }
+            }
         }
 
         // 3. Garantizar autenticación anónima si no hay sesión iniciada y conectar listener
@@ -199,13 +238,23 @@ object GlobalAnnouncementManager {
 
     private fun processFirestoreSnapshot(context: Context, snapshot: com.google.firebase.firestore.DocumentSnapshot) {
         try {
-            val active = snapshot.getBoolean("active") ?: false
-            val title = snapshot.getString("title") ?: ""
-            val message = snapshot.getString("message") ?: ""
-            val isUrgent = snapshot.getBoolean("isUrgent") ?: false
-            val sendNotification = snapshot.getBoolean("sendNotification") ?: isUrgent
-            val timestamp = snapshot.getLong("timestamp") ?: 0L
-            val id = snapshot.getString("id") ?: "${title.hashCode()}_$timestamp"
+            val selectedLanguage = GlobalAnnouncementPolicy.normalizeLanguage(
+                com.example.util.AppLanguage.current.value
+            )
+            val payload = GlobalAnnouncementPolicy.payloadForLanguage(
+                snapshot.data.orEmpty(), selectedLanguage
+            ) ?: run {
+                clearActiveAnnouncement(context)
+                return
+            }
+            val active = payload["active"] as? Boolean ?: false
+            val title = payload["title"]?.toString().orEmpty()
+            val message = payload["message"]?.toString().orEmpty()
+            val isUrgent = payload["isUrgent"] as? Boolean ?: false
+            val sendNotification = payload["sendNotification"] as? Boolean ?: isUrgent
+            val timestamp = (payload["timestamp"] as? Number)?.toLong() ?: 0L
+            val id = payload["id"]?.toString()?.takeIf(String::isNotBlank)
+                ?: "${title.hashCode()}_$timestamp"
 
             if (!active || title.isBlank() || message.isBlank()) {
                 clearActiveAnnouncement(context)
@@ -219,7 +268,8 @@ object GlobalAnnouncementManager {
                 isUrgent = isUrgent,
                 sendNotification = sendNotification,
                 timestamp = timestamp,
-                active = true
+                active = true,
+                language = selectedLanguage
             )
 
             // Guardar en caché local
@@ -294,8 +344,10 @@ object GlobalAnnouncementManager {
                 put("title", announcement.title)
                 put("message", announcement.message)
                 put("isUrgent", announcement.isUrgent)
+                put("sendNotification", announcement.sendNotification)
                 put("timestamp", announcement.timestamp)
                 put("active", announcement.active)
+                put("language", announcement.language)
             }
             prefs.edit().putString(KEY_CACHED_JSON, json.toString()).apply()
         } catch (e: Exception) {
@@ -310,14 +362,18 @@ object GlobalAnnouncementManager {
             val json = JSONObject(rawJson)
             val active = json.optBoolean("active", false)
             if (!active) return
+            val language = GlobalAnnouncementPolicy.normalizeLanguage(json.optString("language", "es"))
+            if (language != GlobalAnnouncementPolicy.normalizeLanguage(com.example.util.AppLanguage.current.value)) return
 
             val announcement = GlobalAnnouncement(
                 id = json.optString("id", ""),
                 title = json.optString("title", ""),
                 message = json.optString("message", ""),
                 isUrgent = json.optBoolean("isUrgent", false),
+                sendNotification = json.optBoolean("sendNotification", false),
                 timestamp = json.optLong("timestamp", 0L),
-                active = true
+                active = true,
+                language = language
             )
 
             val lastDismissedId = prefs.getString(KEY_DISMISSED_ID, "") ?: ""
@@ -407,10 +463,12 @@ object GlobalAnnouncementManager {
         message: String,
         isUrgent: Boolean,
         sendNotification: Boolean,
+        language: String = com.example.util.AppLanguage.current.value,
         onComplete: (Boolean, String?) -> Unit
     ) {
         val newId = UUID.randomUUID().toString()
         val now = System.currentTimeMillis()
+        val targetLanguage = GlobalAnnouncementPolicy.normalizeLanguage(language)
         val announcementData = hashMapOf(
             "id" to newId,
             "title" to title.trim(),
@@ -418,13 +476,18 @@ object GlobalAnnouncementManager {
             "isUrgent" to isUrgent,
             "sendNotification" to sendNotification,
             "timestamp" to now,
-            "active" to true
+            "active" to true,
+            "language" to targetLanguage
+        )
+        val targetedUpdate = hashMapOf<String, Any>(
+            "targetedSchema" to GlobalAnnouncementPolicy.TARGETED_SCHEMA,
+            GlobalAnnouncementPolicy.field(targetLanguage) to announcementData
         )
 
         try {
             val db = FirebaseFirestore.getInstance()
             db.collection(FIRESTORE_COLLECTION).document(FIRESTORE_DOC_ANNOUNCEMENT)
-                .set(announcementData, SetOptions.merge())
+                .set(targetedUpdate, SetOptions.merge())
                 .addOnSuccessListener {
                     Log.d(TAG, "Anuncio global publicado en Firestore con id=$newId")
                     val announcement = GlobalAnnouncement(
@@ -434,10 +497,15 @@ object GlobalAnnouncementManager {
                         isUrgent = isUrgent,
                         sendNotification = sendNotification,
                         timestamp = now,
-                        active = true
+                        active = true,
+                        language = targetLanguage
                     )
-                    saveToLocalStorage(context, announcement)
-                    _currentAnnouncement.value = announcement
+                    if (targetLanguage == GlobalAnnouncementPolicy.normalizeLanguage(
+                            com.example.util.AppLanguage.current.value
+                        )) {
+                        saveToLocalStorage(context, announcement)
+                        _currentAnnouncement.value = announcement
+                    }
                     onComplete(true, null)
                 }
                 .addOnFailureListener { e ->
@@ -455,12 +523,19 @@ object GlobalAnnouncementManager {
      */
     fun deactivateAnnouncement(
         context: Context,
+        language: String = com.example.util.AppLanguage.current.value,
         onComplete: (Boolean, String?) -> Unit
     ) {
         try {
             val db = FirebaseFirestore.getInstance()
+            val targetLanguage = GlobalAnnouncementPolicy.normalizeLanguage(language)
             val updateData = hashMapOf<String, Any>(
-                "active" to false
+                "active" to false,
+                "targetedSchema" to GlobalAnnouncementPolicy.TARGETED_SCHEMA,
+                GlobalAnnouncementPolicy.field(targetLanguage) to mapOf(
+                    "active" to false,
+                    "language" to targetLanguage
+                )
             )
             db.collection(FIRESTORE_COLLECTION).document(FIRESTORE_DOC_ANNOUNCEMENT)
                 .set(updateData, SetOptions.merge())
