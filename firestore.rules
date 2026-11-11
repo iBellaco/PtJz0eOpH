@@ -98,7 +98,9 @@ service cloud.firestore {
           && request.time < resource.data.requestedAt + duration.value(60, 'd')
           && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status','cancelledAt'])
           && request.resource.data.status == 'CANCELLED' && request.resource.data.cancelledAt == request.time);
-      allow delete: if false;
+      allow delete: if isAdmin() || (signedIn()
+        && resource.data.userId == request.auth.uid
+        && resource.data.payload.action == 'SPONSOR');
     }
     function roleDeadline(data) {
       let value = data.get('premiumUntil', 0);
@@ -318,12 +320,15 @@ service cloud.firestore {
         && request.resource.data.get('status', '') in ['APROBADA','REJECTED']
         && request.resource.data.get('isApproved', false) == (request.resource.data.status == 'APROBADA')
         && request.resource.data.get('isEnabled', false) == (request.resource.data.status == 'APROBADA');
-      allow delete: if isAdmin();
+      allow delete: if isAdmin() || (signedIn()
+        && resource.data.get('userId', '') == request.auth.uid);
     }
     // Avisos públicos y notificaciones generales
     match /app_notices/{noticeId} {
       allow read: if true;
       allow write: if isAdmin();
+      allow delete: if isAdmin() || (signedIn()
+        && get(/databases/$(database)/documents/pending_sponsor_ads/$(noticeId)).data.get('userId', '') == request.auth.uid);
     }
     match /global_notifications/{notificationId} {
       allow read: if signedIn();

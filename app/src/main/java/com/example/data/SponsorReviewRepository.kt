@@ -133,7 +133,8 @@ object SponsorReviewRepository {
                     "approvedAtMillis" to if (approve) now else 0L,
                     "expiresAtMillis" to if (approve) now + unitMillis * duration else 0L,
                     "userId" to sourceUserId, "manualAdminDecision" to true,
-                    "manualDecisionBy" to user.uid, "createdAt" to (source.getTimestamp("createdAt")?.toDate()?.time ?: now)
+                    "manualDecisionBy" to user.uid, "queuedRequestId" to sourceId,
+                    "createdAt" to (source.getTimestamp("createdAt")?.toDate()?.time ?: now)
                 )
                 tx.set(adRef, decision)
                 if (approve) {

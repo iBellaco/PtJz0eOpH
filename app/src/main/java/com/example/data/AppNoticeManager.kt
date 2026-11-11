@@ -7,6 +7,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.firestore.SetOptions
 import com.google.firebase.firestore.Source
+import com.example.util.appTr
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -127,6 +128,43 @@ object AppNoticeManager {
     private val preloadedImages = java.util.concurrent.ConcurrentHashMap.newKeySet<String>()
     private var authStateListener: FirebaseAuth.AuthStateListener? = null
     private var isAuthenticatingAnonymously = false
+
+    /** Remove an advertisement, its private pending record and its queue row atomically. */
+    suspend fun deleteSponsorNotice(context: Context, id: String) = withContext(Dispatchers.IO) {
+        require(id.matches(Regex("[a-zA-Z0-9_-]{8,80}")))
+        val auth = com.example.util.AuthManager.getAuth()?.currentUser ?: error(appTr("Inicia sesión"))
+        check(!com.example.util.AuthManager.isGuestOrUnauthenticated(auth)) { appTr("Inicia sesión") }
+        val admin = com.example.util.AuthManager.isCurrentUserAdmin()
+        val db = FirebaseFirestore.getInstance()
+        val adRef = db.collection("pending_sponsor_ads").document(id)
+        val publicRef = db.collection("app_notices").document(id)
+        val registryRef = db.collection(FIRESTORE_COLLECTION).document(FIRESTORE_DOC_NOTICES)
+        db.runTransaction { tx ->
+            val ad = tx.get(adRef)
+            if (!ad.exists()) return@runTransaction false
+            check(admin || ad.getString("userId") == auth.uid) { appTr("No tienes permisos para eliminar este anuncio") }
+            val public = tx.get(publicRef)
+            val queueId = ad.getString("queuedRequestId")
+            val queue = queueId?.let { tx.get(db.collection("economy_requests").document(it)) }
+            val registry = if (admin) tx.get(registryRef) else null
+            tx.delete(publicRef)
+            tx.delete(adRef)
+            if (queue?.exists() == true) tx.delete(queue.reference)
+            if (admin && registry != null) {
+                @Suppress("UNCHECKED_CAST")
+                val notices = (registry.get("notices") as? List<Map<String, Any>>).orEmpty()
+                    .filterNot { it["id"] == id }
+                tx.set(registryRef, mapOf("notices" to notices), SetOptions.merge())
+            }
+            true
+        }.await()
+        val updated = _notices.value.filterNot { it.id == id }
+        if (updated != _notices.value) {
+            _notices.value = updated
+            saveNoticesToPrefs(context.applicationContext, updated)
+        }
+        true
+    }
 
     /**
      * Returns ids that are known by the server. A null result means that the server
@@ -377,7 +415,12 @@ object AppNoticeManager {
                         )
                     )
                 }
-                val combined = mergePublicSponsors(parsedNotices)
+                // Public sponsor documents are authoritative. A stale shared
+                // registry entry must not resurrect an ad deleted by its owner.
+                val publicIds = publicSponsorNotices.mapTo(mutableSetOf()) { it.id }
+                val combined = mergePublicSponsors(parsedNotices.filterNot {
+                    it.tag.equals("PUBLICIDAD", ignoreCase = true) && it.id !in publicIds
+                })
                 if (combined != _notices.value) {
                     _notices.value = combined
                     saveNoticesToPrefs(context, combined)

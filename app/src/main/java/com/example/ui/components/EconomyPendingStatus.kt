@@ -29,6 +29,7 @@ private fun observeRequest(): RequestView {
     val user = AuthManager.getAuth()?.currentUser
     val uid = user?.uid.takeUnless { AuthManager.isGuestOrUnauthenticated(user) }
     var state by remember(uid) { mutableStateOf(RequestView(loading = uid != null)) }
+    var resolvedSponsorIds by remember(uid) { mutableStateOf<Set<String>>(emptySet()) }
     var serviceCheckedAt by remember(uid) { mutableStateOf<Long?>(null) }
     var serviceObservedAt by remember(uid) { mutableLongStateOf(System.currentTimeMillis()) }
     LaunchedEffect(uid) {
@@ -43,6 +44,21 @@ private fun observeRequest(): RequestView {
         onDispose { listener?.remove() }
     }
     DisposableEffect(uid) {
+        val listener = uid?.let { ownerUid ->
+            FirebaseFirestore.getInstance().collection("pending_sponsor_ads")
+                .whereEqualTo("userId", ownerUid)
+                .addSnapshotListener(MetadataChanges.INCLUDE) { snapshot, error ->
+                    if (error == null && snapshot?.metadata?.isFromCache != true) {
+                        resolvedSponsorIds = snapshot?.documents.orEmpty().filter {
+                            it.getBoolean("isApproved") == true ||
+                                it.getString("status") in setOf("REJECTED", "REFUNDED")
+                        }.mapTo(mutableSetOf()) { it.id }
+                    }
+                }
+        }
+        onDispose { listener?.remove() }
+    }
+    DisposableEffect(uid) {
         val listener = uid?.let { FirebaseFirestore.getInstance().collection("economy_requests").whereEqualTo("userId", it)
             .addSnapshotListener(MetadataChanges.INCLUDE) { snapshot, error ->
                 if (error != null) state = state.copy(loading = false, unavailable = true)
@@ -52,7 +68,11 @@ private fun observeRequest(): RequestView {
                         fromCache = snapshot?.metadata?.isFromCache == true,
                         hasError = false,
                         rows = rows
-                    )
+                    ).filter { row ->
+                        val payload = row["payload"] as? Map<*, *>
+                        payload?.get("action") != "SPONSOR" ||
+                            payload["id"]?.toString() !in resolvedSponsorIds
+                    }
                         .sortedWith(compareByDescending<Map<String, Any>> { it["status"] in setOf("PENDING", "PROCESSING", "REVIEW") }
                             .thenByDescending { (it["createdAt"] as? Timestamp)?.toDate()?.time ?: 0L })
                     state = RequestView(requests.firstOrNull(), false,
@@ -72,7 +92,14 @@ private fun observeRequest(): RequestView {
             } else null
         onDispose { listener?.remove() }
     }
-    return state.copy(target = targetName, serviceCheckedAt = serviceCheckedAt, serviceObservedAt = serviceObservedAt)
+    val visibleRequests = state.requests.filter { row ->
+        val payload = row["payload"] as? Map<*, *>
+        payload?.get("action") != "SPONSOR" || payload["id"]?.toString() !in resolvedSponsorIds
+    }
+    return state.copy(
+        request = visibleRequests.firstOrNull(), requests = visibleRequests,
+        target = targetName, serviceCheckedAt = serviceCheckedAt, serviceObservedAt = serviceObservedAt
+    )
 }
 
 @Composable

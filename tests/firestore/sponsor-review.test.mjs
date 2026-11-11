@@ -1,7 +1,7 @@
 import {readFileSync} from 'node:fs';
 import assert from 'node:assert/strict';
 import {initializeTestEnvironment, assertFails, assertSucceeds} from '@firebase/rules-unit-testing';
-import {doc, setDoc, getDoc, getDocFromServer, getDocs, getDocsFromServer, collection, query, where, runTransaction, updateDoc, serverTimestamp} from 'firebase/firestore';
+import {doc, setDoc, getDoc, getDocFromServer, getDocs, getDocsFromServer, collection, query, where, runTransaction, updateDoc, deleteDoc, serverTimestamp} from 'firebase/firestore';
 const env = await initializeTestEnvironment({projectId:'demo-coach-tests', firestore:{host:'127.0.0.1',port:8088,
   rules:readFileSync(new URL('../../firestore.rules',import.meta.url),'utf8')}});
 const admin = env.authenticatedContext('admin',{admin:true,email_verified:true}).firestore();
@@ -94,6 +94,14 @@ try {
   await assertFails(updateDoc(doc(admin,'pending_sponsor_ads/refunded'),{isApproved:true}));
   // The old client sent this extra field; rules reject it.
   await assertFails(updateDoc(doc(admin,'pending_sponsor_ads/approve'),{approvedAt:1000}));
+  await env.withSecurityRulesDisabled(async context => {
+    const db = context.firestore();
+    await setDoc(doc(db,'pending_sponsor_ads/delete_me'), {id:'delete_me', userId:'owner', title:'Borrar', isApproved:true, isEnabled:true, status:'APROBADA'});
+    await setDoc(doc(db,'app_notices/delete_me'), {id:'delete_me', title:'Borrar', tag:'PUBLICIDAD', isApproved:true, isEnabled:true});
+  });
+  await assertSucceeds(deleteDoc(doc(owner,'app_notices/delete_me')));
+  await assertSucceeds(deleteDoc(doc(owner,'pending_sponsor_ads/delete_me')));
+  await assertFails(deleteDoc(doc(stranger,'pending_sponsor_ads/approve')));
   console.log('PASS exact Android approval payload, server-confirmed reopening, public Home visibility, idempotent approval, ownership, rejection and refunded protection');
 } finally {
   // cleanup() closes clients but does not remove emulator documents. This
