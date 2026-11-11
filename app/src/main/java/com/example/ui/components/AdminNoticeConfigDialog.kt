@@ -92,8 +92,29 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
     val isExpandedUrlValid = remember(expandedImageUrl) { NoticeMediaUtils.isValidNoticeMedia(expandedImageUrl) }
     val coroutineScope = rememberCoroutineScope()
     var isProcessingMedia by remember { mutableStateOf(false) }
+    var deletingNoticeId by remember { mutableStateOf<String?>(null) }
     var showManualVideoUrlInput by remember { mutableStateOf(false) }
     var showManualExpandedUrlInput by remember { mutableStateOf(false) }
+
+    fun removeNoticeFromAdminList(notice: com.example.data.AppNotice) {
+        if (!com.example.data.SponsorReviewPolicy.isSponsorNotice(notice)) {
+            noticesList = noticesList.filter { it.id != notice.id }
+            return
+        }
+        if (deletingNoticeId != null) return
+        deletingNoticeId = notice.id
+        coroutineScope.launch {
+            try {
+                com.example.data.AppNoticeManager.deleteSponsorNotice(context, notice.id)
+                noticesList = noticesList.filter { it.id != notice.id }
+                Toast.makeText(context, com.example.util.appTr("Anuncio patrocinado eliminado permanentemente"), Toast.LENGTH_SHORT).show()
+            } catch (error: Exception) {
+                Toast.makeText(context, error.message ?: context.getString(com.example.R.string.sponsor_delete_failed), Toast.LENGTH_LONG).show()
+            } finally {
+                deletingNoticeId = null
+            }
+        }
+    }
 
     val clipboardManager = remember { context.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as? android.content.ClipboardManager }
     fun copyToClipboard(label: String, text: String) {
@@ -576,11 +597,16 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                                                 externalUrl = ""
                                                 budgetText = ""
                                             }
-                                            noticesList = noticesList.filter { it.id != notice.id }
+                                            removeNoticeFromAdminList(notice)
                                         },
+                                        enabled = deletingNoticeId != notice.id,
                                         modifier = Modifier.size(28.dp)
                                     ) {
-                                        Icon(Icons.Default.Close, contentDescription = com.example.util.trNullable("Eliminar"), tint = DangerRed, modifier = Modifier.size(14.dp))
+                                        if (deletingNoticeId == notice.id) {
+                                            CircularProgressIndicator(color = DangerRed, strokeWidth = 2.dp, modifier = Modifier.size(14.dp))
+                                        } else {
+                                            Icon(Icons.Default.Close, contentDescription = com.example.util.trNullable("Eliminar"), tint = DangerRed, modifier = Modifier.size(14.dp))
+                                        }
                                     }
                                 }
                             }
@@ -593,7 +619,6 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                     Text(com.example.util.tr("Anuncios Expirados (${expiredNotices.size}):"), color = TextMuted, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                     Spacer(modifier = Modifier.height(4.dp))
                     expiredNotices.forEach { notice ->
-                        val originalIndex = noticesList.indexOfFirst { it.id == notice.id }
                         Surface(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -614,11 +639,16 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                                 }
                                 IconButton(
                                     onClick = {
-                                        noticesList = noticesList.filter { it.id != notice.id }
+                                        removeNoticeFromAdminList(notice)
                                     },
+                                    enabled = deletingNoticeId != notice.id,
                                     modifier = Modifier.size(28.dp)
                                 ) {
-                                    Icon(Icons.Default.Close, contentDescription = com.example.util.trNullable("Eliminar"), tint = DangerRed, modifier = Modifier.size(14.dp))
+                                    if (deletingNoticeId == notice.id) {
+                                        CircularProgressIndicator(color = DangerRed, strokeWidth = 2.dp, modifier = Modifier.size(14.dp))
+                                    } else {
+                                        Icon(Icons.Default.Close, contentDescription = com.example.util.trNullable("Eliminar"), tint = DangerRed, modifier = Modifier.size(14.dp))
+                                    }
                                 }
                             }
                         }

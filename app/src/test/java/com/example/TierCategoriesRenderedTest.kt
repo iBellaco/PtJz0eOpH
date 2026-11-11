@@ -42,4 +42,25 @@ class TierCategoriesRenderedTest {
             WildRiftRepository.champions.addAll(original)
         }
     }
+
+    @Test fun championsWithoutCompetitiveDataAreNotShownInTheTierList() {
+        WildRiftRepository.initChampions(RuntimeEnvironment.getApplication(), forceReload = true)
+        val original = WildRiftRepository.champions.toList()
+        val withData = original.first().copy(name = "Con datos", tier = "S")
+        val withoutData = original.first().copy(id = "sylas", name = "Sylas", tier = "SIN DATOS")
+        WildRiftRepository.champions.clear()
+        WildRiftRepository.champions.addAll(listOf(withData, withoutData))
+        try {
+            compose.setContent { MyApplicationTheme {
+                CompositionLocalProvider(LocalLanguage provides "es") { TierListTab(onSelectChampion = {}) }
+            } }
+            compose.onNodeWithTag("tier_list").performScrollToNode(hasText("Con datos", substring = true))
+            compose.onNodeWithText("Con datos", substring = true).assertIsDisplayed()
+            compose.onNodeWithText("Sylas", substring = true).assertDoesNotExist()
+            compose.onNodeWithText("Nuevo: sin datos competitivos", substring = true).assertDoesNotExist()
+        } finally {
+            WildRiftRepository.champions.clear()
+            WildRiftRepository.champions.addAll(original)
+        }
+    }
 }
