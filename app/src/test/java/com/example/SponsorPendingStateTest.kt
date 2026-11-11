@@ -5,6 +5,7 @@ import com.example.data.SponsorSubmission
 import com.example.data.authoritativePendingRequests
 import com.example.data.pendingSponsorIdsFromServer
 import com.example.data.staleSponsorSubmissionIds
+import com.example.ui.components.isSettledSponsorRequest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -41,5 +42,18 @@ class SponsorPendingStateTest {
         val fresh = SponsorSubmission(AppNotice(id = "fresh"), 500L, createdAtMillis = 99_500L)
         assertEquals(setOf("old"), staleSponsorSubmissionIds(listOf(old, fresh), emptySet(), 100_000L))
         assertEquals(emptySet<String>(), staleSponsorSubmissionIds(listOf(old), setOf("old"), 100_000L))
+    }
+
+    @Test fun settledSponsorMatchesLegacyAndCurrentIdentifiers() {
+        val row = mapOf<String, Any>(
+            "operationId" to "legacy-operation",
+            "payload" to mapOf(
+                "action" to "SPONSOR",
+                "id" to "legacy-operation",
+                "notice" to mapOf("id" to "publication-id")
+            )
+        )
+        assertTrue(isSettledSponsorRequest(row, setOf("publication-id")))
+        assertTrue(isSettledSponsorRequest(row, setOf("legacy-operation")))
     }
 }

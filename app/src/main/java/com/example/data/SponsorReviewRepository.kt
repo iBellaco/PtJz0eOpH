@@ -133,9 +133,14 @@ object SponsorReviewRepository {
                     "approvedAtMillis" to if (approve) now else 0L,
                     "expiresAtMillis" to if (approve) now + unitMillis * duration else 0L,
                     "userId" to sourceUserId, "manualAdminDecision" to true,
-                    "manualDecisionBy" to user.uid, "createdAt" to (source.getTimestamp("createdAt")?.toDate()?.time ?: now)
+                    "manualDecisionBy" to user.uid, "queuedRequestId" to sourceId,
+                    "createdAt" to (source.getTimestamp("createdAt")?.toDate()?.time ?: now)
                 )
                 tx.set(adRef, decision)
+                // This moderation transaction has already decided the queued
+                // submission. Remove the original pending row so the sponsor
+                // cannot keep seeing "en espera" while the worker is idle.
+                tx.delete(source.reference)
                 if (approve) {
                     val publicNotice = SponsorReviewPolicy.publicNotice(id, decision)
                     tx.set(registryRef, mapOf("notices" to (notices + publicNotice)), SetOptions.merge())
@@ -155,6 +160,22 @@ object SponsorReviewRepository {
                 appTr("La solicitud ya fue resuelta")
             }
 
+            val ownerUid = data["userId"]?.toString().orEmpty()
+            val sourceIds = listOfNotNull(
+                cleanQueuedRequestId,
+                ownerUid.takeIf { it.isNotBlank() }?.let { "$it~$id" },
+                ownerUid.takeIf { it.isNotBlank() }
+            ).distinct()
+            // Older submissions used either uid~operationId or the legacy uid
+            // document. Read both before writing so a direct moderation decision
+            // can close every still-pending representation atomically.
+            val sourceRows = sourceIds.map { tx.get(db.collection("economy_requests").document(it)) }
+            val originalRows = sourceRows.filter { source ->
+                val payload = source.get("payload") as? Map<*, *>
+                source.exists() && source.getString("status") in setOf("PENDING", "PROCESSING", "REVIEW") &&
+                    payload?.get("action") == "SPONSOR" &&
+                    (payload["id"]?.toString() == id || source.getString("operationId") == id)
+            }
             val registry = tx.get(registryRef)
             @Suppress("UNCHECKED_CAST")
             val notices = ((registry.get("notices") as? List<Map<String, Any>>).orEmpty())
@@ -188,10 +209,12 @@ object SponsorReviewRepository {
                 // A dedicated public document avoids losing the publication if
                 // another device still holds an old copy of the shared list.
                 tx.set(publicNoticeRef, publicNotice)
+                originalRows.forEach { tx.delete(it.reference) }
             } else {
                 if (rejected) {
                     tx.set(registryRef, mapOf("notices" to notices), SetOptions.merge())
                     tx.delete(publicNoticeRef)
+                    originalRows.forEach { tx.delete(it.reference) }
                     return@runTransaction true
                 }
                 // The visible decision is committed immediately. A private,
@@ -207,7 +230,6 @@ object SponsorReviewRepository {
                     "sponsorId" to id,
                     "approved" to false
                 )
-                cleanQueuedRequestId?.let { payload["queuedRequestId"] = it }
                 tx.set(queueRef, mapOf(
                     "userId" to user.uid,
                     "operationId" to operationId,
@@ -217,6 +239,9 @@ object SponsorReviewRepository {
                     "createdAt" to FieldValue.serverTimestamp(),
                     "authTime" to authTime
                 ))
+                // The new SPONSOR_RESOLVE row settles the charge/refund. The
+                // original submission is no longer a pending user request.
+                originalRows.forEach { tx.delete(it.reference) }
             }
             true
         }.await()

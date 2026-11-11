@@ -25,11 +25,20 @@ tiempos por fotograma; menos solicitudes no demuestra por sí solo menor latenci
 en un teléfono. Android puede bloquear el permiso de overlay mediante ajustes
 restringidos: Coach orienta al propietario, nunca elude esa protección.
 
+Actualización del propietario, 11 de noviembre de 2026: las coordenadas físicas
+que entregue el propietario se conservan y pueden usarse como geometría inicial
+solo al coincidir fabricante, modelo y dimensiones exactas de captura. Esta regla
+reemplaza la prohibición absoluta anterior de perfiles productivos. La calibración
+guardada por el usuario tiene prioridad. Una misma resolución no autoriza a
+compartir coordenadas entre modelos, porque viewport, barras e insets pueden
+variar. Sin coincidencia exacta continúa la adaptación por viewport y evidencia.
+
 ## Información que se observa
 
 Regla confirmada el 2 de noviembre de 2026: el escáner automático debe ser
-multidispositivo en Android compatible con Wild Rift. Las medidas proceden de
-la captura y del área visible del juego, sin presets por modelo. Una animación,
+multidispositivo en Android compatible con Wild Rift. Fuera de los perfiles
+exactos autorizados el 11 de noviembre, las medidas proceden de la captura y del
+área visible del juego. Una animación,
 un retrato cambiado o un puesto vacío no deben encoger repetidamente la geometría.
 Cada medición parte de la base del viewport. Los cambios se confirman temporalmente
 por puesto; no imponer una única posición horizontal a todos los aliados.
@@ -110,7 +119,8 @@ evitar el encogimiento acumulativo de los recortes. Una mediana horizontal para
 toda la columna aliada no basta cuando coexisten estados distintos. La décima
 selección conserva su excepción visual y sus condiciones descritas más abajo.
 Esta secuencia se aplica por dimensiones y evidencia visual a Android compatible
-con Wild Rift, sin perfiles especiales por fabricante o modelo.
+con Wild Rift. Los valores iniciales exactos autorizados no cambian las reglas
+de reconocimiento ni de confirmación temporal.
 
 Comprobaciones necesarias al implementar: mezclar puestos vacíos, preseleccionados
 y confirmados; cambiar o retirar una preselección; confirmar su título; ocultar
@@ -126,7 +136,8 @@ la insignia de maestría puede preceder el título. Guardar la relación
 slot → línea durante toda la selección, también al intercambiar campeones.
 El rival no muestra línea: cualquier asignación rival es una estimación.
 Primero aliado implica décimo rival; primero rival implica décimo aliado.
-Esta regla es compartida por todos los dispositivos, sin presets por marca.
+Esta regla de reconocimiento es compartida por todos los dispositivos; un perfil
+exacto solo aporta geometría inicial y nunca altera el orden de selección.
 
 Las pasadas rápidas del Hub usan como máximo dos solicitudes OCR nativas.
 La pasada periódica completa conserva todas las recuperaciones de texto.
@@ -181,7 +192,8 @@ caso; antes de navegar se mantienen las confirmaciones temporales y la correcci�
 del décimo provisional. Vaciar debe cerrar la ficha, detener la sesión y rechazar
 resultados pendientes de la sesión anterior, incluso si se vuelve a activar.
 La captura reportada de Oppo Find X9 Pro evidencia el juego con visor activo;
-no demuestra compatibilidad física ya validada ni autoriza presets por modelo.
+no demuestra compatibilidad física ya validada ni autoriza nuevos perfiles por
+modelo sin mediciones entregadas por el propietario.
 La columna rival se fija tras confirmar su geometría y solo se vuelve a medir
 al cambiar el viewport, dimensiones o calibración.
 

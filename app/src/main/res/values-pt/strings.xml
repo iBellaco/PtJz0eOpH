@@ -21,6 +21,7 @@
     <string name="sponsor_received">Envio recebido. Aguarde a confirmação do processamento; isso ainda não significa que o anúncio foi aprovado.</string>
     <string name="sponsor_check_submission">Consultar envio sem duplicá-lo</string>
     <string name="sponsor_review_confirmed">Anúncio enviado para análise. Ainda precisa de aprovação para ser publicado.</string>
+    <string name="sponsor_delete_failed">Não foi possível excluir o anúncio.</string>
     <string name="operation_storage_failed">Não foi possível salvar o estado do envio neste dispositivo. Verifique o espaço disponível e consulte seu estado antes de tentar novamente.</string>
     <string name="draft_provisional">Décima seleção provisória: pode mudar até o fim da seleção.</string>
     <string name="draft_confirmed">Seleção final confirmada.</string>

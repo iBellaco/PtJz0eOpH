@@ -315,7 +315,13 @@ class DraftSequenceMultiDeviceInstalledTest {
                             try {
                                 var realRead:DraftScanResult?=null
                                 repeat(2) { frameIndex ->
-                                    realRead=kotlinx.coroutines.withTimeout(60_000) {
+                                    // Keep the same bounded recovery budget used by
+                                    // staged OCR for narrow captures. Sequence 52
+                                    // completed all staged reads and its tenth pick,
+                                    // but a real 854x480 fixture exhausted the old
+                                    // unconditional 60-second limit here.
+                                    val realTimeoutMs = if (realFrame.width <= 960) 120_000L else 60_000L
+                                    realRead=kotlinx.coroutines.withTimeout(realTimeoutMs) {
                                         scanner.scanDraftFromBitmap(realFrame,context,fixture.firstPick,LaneRole.MID,namesOnly=true)
                                     }
                                     if(frameIndex==0 && (realRead!!.alliesBySlot.isNotEmpty() || realRead!!.enemiesBySlot.isNotEmpty()))

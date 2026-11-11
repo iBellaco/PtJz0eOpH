@@ -1008,37 +1008,29 @@ fun SponsorCpmPanelDialog(
                     onClick = {
                         val noticeId = targetNotice.id
                         noticeToDelete = null
-
-                        val updatedLocal = localPendingAds.filter { it.id != noticeId }
-                        localPendingAds = updatedLocal
-
-                        val jsonArray = org.json.JSONArray()
-                        updatedLocal.forEach { n ->
-                            val obj = org.json.JSONObject()
-                            obj.put("id", n.id)
-                            obj.put("title", n.title)
-                            obj.put("content", n.content)
-                            obj.put("videoUrl", n.videoUrl)
-                            obj.put("expandedImageUrl", n.expandedImageUrl)
-                            obj.put("externalUrl", n.externalUrl)
-                            obj.put("tag", n.tag)
-                            obj.put("titleColor", n.titleColor)
-                            obj.put("budget", n.budget)
-                            obj.put("budgetUnit", n.budgetUnit)
-                            obj.put("durationValue", n.durationValue)
-                            obj.put("durationUnit", n.durationUnit)
-                            obj.put("approvedAtMillis", n.approvedAtMillis)
-                            obj.put("expiresAtMillis", n.expiresAtMillis)
-                            obj.put("isApproved", n.isApproved)
-                            obj.put("isEnabled", n.isEnabled)
-                            obj.put("sponsorEmail", n.sponsorEmail)
-                            jsonArray.put(obj)
+                        coroutineScope.launch {
+                            try {
+                                AppNoticeManager.deleteSponsorNotice(context, noticeId)
+                                val updatedLocal = localPendingAds.filter { it.id != noticeId }
+                                localPendingAds = updatedLocal
+                                val jsonArray = org.json.JSONArray()
+                                updatedLocal.forEach { n ->
+                                    val obj = org.json.JSONObject().put("id", n.id).put("title", n.title)
+                                        .put("content", n.content).put("videoUrl", n.videoUrl)
+                                        .put("expandedImageUrl", n.expandedImageUrl).put("externalUrl", n.externalUrl)
+                                        .put("tag", n.tag).put("titleColor", n.titleColor).put("budget", n.budget)
+                                        .put("budgetUnit", n.budgetUnit).put("durationValue", n.durationValue)
+                                        .put("durationUnit", n.durationUnit).put("approvedAtMillis", n.approvedAtMillis)
+                                        .put("expiresAtMillis", n.expiresAtMillis).put("isApproved", n.isApproved)
+                                        .put("isEnabled", n.isEnabled).put("sponsorEmail", n.sponsorEmail)
+                                    jsonArray.put(obj)
+                                }
+                                prefs.edit().putString("pending_ads", jsonArray.toString()).apply()
+                                Toast.makeText(context, com.example.util.appTr("Anuncio eliminado permanentemente"), Toast.LENGTH_SHORT).show()
+                            } catch (error: Exception) {
+                                Toast.makeText(context, error.message ?: context.getString(com.example.R.string.sponsor_delete_failed), Toast.LENGTH_LONG).show()
+                            }
                         }
-                        prefs.edit().putString("pending_ads", jsonArray.toString()).apply()
-
-                        val updated = allNotices.filter { it.id != noticeId }
-                        AppNoticeManager.saveNotices(context, updated)
-                        Toast.makeText(context, com.example.util.appTr("Anuncio eliminado permanentemente"), Toast.LENGTH_SHORT).show()
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = DangerRed)
                 ) {
