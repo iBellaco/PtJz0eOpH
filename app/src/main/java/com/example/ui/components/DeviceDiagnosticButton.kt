@@ -29,10 +29,26 @@ fun DeviceDiagnosticButton(screenCaptureManager: ScreenCaptureManager? = null) {
     val scope = rememberCoroutineScope()
     var sending by remember { mutableStateOf(false) }
     var lastSent by remember { mutableLongStateOf(0L) }
+    var quota by remember(context) { mutableStateOf(DeviceDiagnosticQuota.usage(context)) }
     val label = androidx.compose.ui.res.stringResource(com.example.R.string.device_diagnostic)
-    LaunchedEffect(Unit) { DeviceDiagnosticTelemetry.start(context) }
+    LaunchedEffect(Unit) {
+        DeviceDiagnosticTelemetry.start(context)
+        quota = DeviceDiagnosticQuota.usage(context)
+    }
+    val buttonDescription = context.getString(
+        com.example.R.string.diagnostic_button_description,
+        quota.remaining,
+        DeviceDiagnosticQuota.MAX_PER_DAY
+    )
     IconButton(enabled = !sending, modifier = Modifier.size(48.dp).testTag("send_device_diagnostic"), onClick = {
         if (android.os.SystemClock.elapsedRealtime() - lastSent < 60_000 && lastSent != 0L) return@IconButton
+        val reservation = DeviceDiagnosticQuota.tryReserve(context)
+        if (reservation == null) {
+            quota = DeviceDiagnosticQuota.usage(context)
+            Toast.makeText(context, context.getString(com.example.R.string.diagnostic_limit_reached), Toast.LENGTH_LONG).show()
+            return@IconButton
+        }
+        quota = DeviceDiagnosticQuota.usage(context)
         sending = true
         scope.launch {
             try {
@@ -62,6 +78,7 @@ fun DeviceDiagnosticButton(screenCaptureManager: ScreenCaptureManager? = null) {
                     appendLine("Procesamiento último/promedio/mín-máx: ${DraftVisionScanner.lastProcessingDurationMs.value}/${DraftVisionScanner.processingAverageDurationMs.value}/${DraftVisionScanner.processingMinDurationMs.value}-${DraftVisionScanner.processingMaxDurationMs.value} ms")
                     appendLine("Fotogramas omitidos: ${DraftVisionScanner.framesSkippedCount.value}; procesando: ${DraftVisionScanner.isVisionEngineBusy.value}")
                     appendLine("Calibración: ${DraftVisionScanner.calibrationSourceFlow.value}; FPS del juego / latencia de red: no medidos")
+                    appendLine("Diagnósticos enviados hoy: ${quota.used}/${DeviceDiagnosticQuota.MAX_PER_DAY}")
                     val level = battery?.getIntExtra(BatteryManager.EXTRA_LEVEL, -1) ?: -1
                     val scale = battery?.getIntExtra(BatteryManager.EXTRA_SCALE, -1) ?: -1
                     appendLine("Batería: ${if (level >= 0 && scale > 0) "${level * 100 / scale}%" else "N/D"}; carga conectada: ${(battery?.getIntExtra(BatteryManager.EXTRA_PLUGGED, 0) ?: 0) != 0}")
@@ -81,14 +98,20 @@ fun DeviceDiagnosticButton(screenCaptureManager: ScreenCaptureManager? = null) {
                 FeedbackRepository.submitFeedback("DIAGNOSTICO", label, report, userName = name,
                     adminOnly = true, writeUserInboxCopy = false).getOrThrow()
                 lastSent = android.os.SystemClock.elapsedRealtime()
-                Toast.makeText(context, context.getString(com.example.R.string.diagnostic_sent), Toast.LENGTH_LONG).show()
-            } catch (cancelled: kotlinx.coroutines.CancellationException) { throw cancelled
+                quota = DeviceDiagnosticQuota.usage(context)
+                Toast.makeText(context, context.getString(com.example.R.string.diagnostic_sent_with_remaining, quota.remaining), Toast.LENGTH_LONG).show()
+            } catch (cancelled: kotlinx.coroutines.CancellationException) {
+                DeviceDiagnosticQuota.rollback(context, reservation)
+                quota = DeviceDiagnosticQuota.usage(context)
+                throw cancelled
             } catch (_: Exception) {
+                DeviceDiagnosticQuota.rollback(context, reservation)
+                quota = DeviceDiagnosticQuota.usage(context)
                 Toast.makeText(context, context.getString(com.example.R.string.calibration_send_failed), Toast.LENGTH_LONG).show()
             } finally { sending = false }
         }
     }) {
         if (sending) CircularProgressIndicator(Modifier.size(20.dp))
-        else Icon(Icons.Default.Speed, contentDescription = label, modifier = Modifier.size(20.dp))
+        else Icon(Icons.Default.Speed, contentDescription = buttonDescription, modifier = Modifier.size(20.dp))
     }
 }
