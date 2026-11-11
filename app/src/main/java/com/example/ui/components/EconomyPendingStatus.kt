@@ -24,6 +24,20 @@ private data class RequestView(val request: Map<String, Any>? = null, val loadin
     val serviceCheckedAt: Long? = null, val serviceObservedAt: Long = 0,
     val requests: List<Map<String, Any>> = emptyList())
 
+/** Match current and legacy identifiers for a sponsor command. */
+internal fun isSettledSponsorRequest(row: Map<String, Any>, settledIds: Set<String>): Boolean {
+    val payload = row["payload"] as? Map<*, *> ?: return false
+    if (payload["action"]?.toString() != "SPONSOR") return false
+    val ids = mutableSetOf<String>()
+    listOf("id", "sponsorId", "queuedRequestId").forEach { key ->
+        payload[key]?.toString()?.takeIf { it.isNotBlank() }?.let(ids::add)
+    }
+    row["operationId"]?.toString()?.takeIf { it.isNotBlank() }?.let(ids::add)
+    (payload["notice"] as? Map<*, *>)?.get("id")?.toString()
+        ?.takeIf { it.isNotBlank() }?.let(ids::add)
+    return ids.any { it in settledIds }
+}
+
 @Composable
 private fun observeRequest(): RequestView {
     val user = AuthManager.getAuth()?.currentUser
@@ -51,8 +65,12 @@ private fun observeRequest(): RequestView {
                     if (error == null && snapshot?.metadata?.isFromCache != true) {
                         resolvedSponsorIds = snapshot?.documents.orEmpty().filter {
                             it.getBoolean("isApproved") == true ||
-                                it.getString("status") in setOf("REJECTED", "REFUNDED")
-                        }.mapTo(mutableSetOf()) { it.id }
+                                it.getString("status")?.uppercase() in setOf("REJECTED", "REFUNDED")
+                        }.flatMapTo(mutableSetOf()) { document ->
+                            listOf(document.id, document.getString("id"),
+                                document.getString("queuedRequestId"), document.getString("operationId"))
+                                .filterNotNull().filter(String::isNotBlank)
+                        }
                     }
                 }
         }
@@ -68,11 +86,7 @@ private fun observeRequest(): RequestView {
                         fromCache = snapshot?.metadata?.isFromCache == true,
                         hasError = false,
                         rows = rows
-                    ).filter { row ->
-                        val payload = row["payload"] as? Map<*, *>
-                        payload?.get("action") != "SPONSOR" ||
-                            payload["id"]?.toString() !in resolvedSponsorIds
-                    }
+                    ).filterNot { row -> isSettledSponsorRequest(row, resolvedSponsorIds) }
                         .sortedWith(compareByDescending<Map<String, Any>> { it["status"] in setOf("PENDING", "PROCESSING", "REVIEW") }
                             .thenByDescending { (it["createdAt"] as? Timestamp)?.toDate()?.time ?: 0L })
                     state = RequestView(requests.firstOrNull(), false,
@@ -92,10 +106,7 @@ private fun observeRequest(): RequestView {
             } else null
         onDispose { listener?.remove() }
     }
-    val visibleRequests = state.requests.filter { row ->
-        val payload = row["payload"] as? Map<*, *>
-        payload?.get("action") != "SPONSOR" || payload["id"]?.toString() !in resolvedSponsorIds
-    }
+    val visibleRequests = state.requests.filterNot { row -> isSettledSponsorRequest(row, resolvedSponsorIds) }
     return state.copy(
         request = visibleRequests.firstOrNull(), requests = visibleRequests,
         target = targetName, serviceCheckedAt = serviceCheckedAt, serviceObservedAt = serviceObservedAt

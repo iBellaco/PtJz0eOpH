@@ -134,22 +134,57 @@ object AppNoticeManager {
         require(id.matches(Regex("[a-zA-Z0-9_-]{8,80}")))
         val auth = com.example.util.AuthManager.getAuth()?.currentUser ?: error(appTr("Inicia sesión"))
         check(!com.example.util.AuthManager.isGuestOrUnauthenticated(auth)) { appTr("Inicia sesión") }
-        val admin = com.example.util.AuthManager.isCurrentUserAdmin()
+        // The panel can be opened with a token whose admin claim is stale. Read
+        // a fresh token here so the delete path uses the same authority as the
+        // Firestore rules, even when the claim was granted while the panel was open.
+        val token = auth.getIdToken(true).await()
+        val admin = token.claims["admin"] == true && token.claims["email_verified"] == true
         val db = FirebaseFirestore.getInstance()
         val adRef = db.collection("pending_sponsor_ads").document(id)
         val publicRef = db.collection("app_notices").document(id)
         val registryRef = db.collection(FIRESTORE_COLLECTION).document(FIRESTORE_DOC_NOTICES)
-        db.runTransaction { tx ->
+        val initialAd = adRef.get(Source.SERVER).await()
+        val ownerUid = initialAd.getString("userId")?.takeIf { it.isNotBlank() }
+        check(initialAd.exists() || admin) { appTr("El anuncio ya no está disponible") }
+        check(admin || ownerUid == auth.uid) { appTr("No tienes permisos para eliminar este anuncio") }
+
+        // Newer rows keep queuedRequestId. Older builds did not, so also find
+        // matching sponsor commands by owner (or by id for an administrator).
+        val fallbackQuery = if (admin) {
+            // The rules authorize administrator queries when the action filter
+            // is explicit; filter the publication id locally to keep old rows
+            // compatible without requiring a new composite index.
+            db.collection("economy_requests").whereEqualTo("payload.action", "SPONSOR")
+        } else {
+            db.collection("economy_requests").whereEqualTo("userId", ownerUid ?: auth.uid)
+        }
+        val fallbackQueueRefs = fallbackQuery.get(Source.SERVER).await().documents
+            .filter { row ->
+                val payload = row.get("payload") as? Map<*, *>
+                val notice = payload?.get("notice") as? Map<*, *>
+                val payloadId = payload?.get("id")?.toString()
+                val noticeId = notice?.get("id")?.toString()
+                payload?.get("action") == "SPONSOR" && (payloadId == id || noticeId == id) &&
+                    row.getString("status") in setOf("PENDING", "PROCESSING", "REVIEW")
+            }.map { it.reference }
+
+        val removed = db.runTransaction { tx ->
             val ad = tx.get(adRef)
-            if (!ad.exists()) return@runTransaction false
-            check(admin || ad.getString("userId") == auth.uid) { appTr("No tienes permisos para eliminar este anuncio") }
-            val public = tx.get(publicRef)
+            if (ad.exists()) {
+                check(admin || ad.getString("userId") == auth.uid) { appTr("No tienes permisos para eliminar este anuncio") }
+            } else if (!admin) {
+                return@runTransaction false
+            }
             val queueId = ad.getString("queuedRequestId")
-            val queue = queueId?.let { tx.get(db.collection("economy_requests").document(it)) }
+            val queueRefs: List<com.google.firebase.firestore.DocumentReference> =
+                (fallbackQueueRefs + (queueId?.let {
+                    listOf(db.collection("economy_requests").document(it))
+                } ?: emptyList())).distinctBy { it.path }
+            val queues = queueRefs.map { tx.get(it) }
             val registry = if (admin) tx.get(registryRef) else null
             tx.delete(publicRef)
-            tx.delete(adRef)
-            if (queue?.exists() == true) tx.delete(queue.reference)
+            if (ad.exists()) tx.delete(adRef)
+            queues.filter { it.exists() }.forEach { tx.delete(it.reference) }
             if (admin && registry != null) {
                 @Suppress("UNCHECKED_CAST")
                 val notices = (registry.get("notices") as? List<Map<String, Any>>).orEmpty()
@@ -158,6 +193,7 @@ object AppNoticeManager {
             }
             true
         }.await()
+        check(removed) { appTr("El anuncio ya no está disponible") }
         val updated = _notices.value.filterNot { it.id == id }
         if (updated != _notices.value) {
             _notices.value = updated
