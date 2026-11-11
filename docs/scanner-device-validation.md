@@ -30,3 +30,11 @@ cualquier dimensión, skin, densidad ni distribución futura del juego.
 
 Para evidencia técnica con tiempos y huellas existe `tools/scanner-device-report.py`.
 No convertir las imágenes redimensionadas ni un emulador en registros físicos.
+
+## Respaldo de coordenadas aportadas
+
+Las mediciones normalizadas recibidas para Samsung SM-A156U, Xiaomi 2412DPC0AG,
+Samsung SM-S942B, HONOR BVL-N49 y Samsung SM-S938B se conservan en
+`docs/scanner-calibration-backup.json`. El archivo sirve como respaldo y
+comparación entre dimensiones; no selecciona coordenadas automáticamente por
+marca o modelo ni sustituye una validación física del dispositivo.

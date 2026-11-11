@@ -1028,7 +1028,7 @@ fun SponsorCpmPanelDialog(
                                 prefs.edit().putString("pending_ads", jsonArray.toString()).apply()
                                 Toast.makeText(context, com.example.util.appTr("Anuncio eliminado permanentemente"), Toast.LENGTH_SHORT).show()
                             } catch (error: Exception) {
-                                Toast.makeText(context, error.message ?: com.example.util.appTr("No se pudo eliminar el anuncio"), Toast.LENGTH_LONG).show()
+                                Toast.makeText(context, error.message ?: context.getString(com.example.R.string.sponsor_delete_failed), Toast.LENGTH_LONG).show()
                             }
                         }
                     },

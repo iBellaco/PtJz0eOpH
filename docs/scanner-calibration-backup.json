@@ -1,0 +1,154 @@
+{
+  "schema": 1,
+  "purpose": "Respaldo de mediciones normalizadas aportadas por el propietario para comparar dimensiones de captura.",
+  "coordinateSpace": "captured_frame",
+  "values": "ratios normalizados entre 0 y 1",
+  "usage": "evidence_only",
+  "warning": "Estos perfiles no son presets automáticos por fabricante o modelo. El escáner debe adaptar la geometría al viewport observado y estas mediciones solo sirven como respaldo y comparación.",
+  "profiles": [
+    {
+      "profileId": "samsung-sm-a156u-2340x1080",
+      "device": {
+        "manufacturer": "samsung",
+        "model": "SM-A156U",
+        "androidApi": 36,
+        "width": 2340,
+        "height": 1080,
+        "density": 2.4,
+        "fontScale": 0.9,
+        "orientation": 2
+      },
+      "calibration": {
+        "avatarDiameterRatio": 0.11,
+        "allyAvatarCenterX": 0.09200001,
+        "enemyAvatarCenterX": 0.934,
+        "top": {
+          "avatarYRatio": 0.045,
+          "avatarDiameterRatio": 0.072,
+          "ally5XRatio": 0.168,
+          "enemy5XRatio": 0.974
+        },
+        "bans": {
+          "ally": {"x": [0.028, 0.064, 0.1, 0.136, 0.172], "y": [0.052, 0.052, 0.052, 0.052, 0.052], "diameter": [0.06, 0.06, 0.06, 0.06, 0.06], "manual": false},
+          "enemy": {"x": [0.826, 0.863, 0.9, 0.937, 0.974], "y": [0.052, 0.052, 0.052, 0.052, 0.052], "diameter": [0.06, 0.06, 0.06, 0.06, 0.06], "manual": false}
+        },
+        "allySlots": {"x": [0.09200001, 0.09200001, 0.09200001, 0.09200001, 0.09200001], "y": [0.188, 0.324, 0.458, 0.591, 0.725], "diameter": [0.12, 0.12, 0.12, 0.12, 0.115]},
+        "enemySlots": {"x": [0.934, 0.934, 0.934, 0.934, 0.934], "y": [0.188, 0.324, 0.457, 0.59, 0.722], "diameter": [0.12, 0.12, 0.12, 0.12, 0.12]}
+      }
+    },
+    {
+      "profileId": "xiaomi-2412dpc0ag-2712x1220",
+      "device": {
+        "manufacturer": "Xiaomi",
+        "model": "2412DPC0AG",
+        "androidApi": 36,
+        "width": 2712,
+        "height": 1220,
+        "density": 3.3875,
+        "fontScale": 1.0,
+        "orientation": 2
+      },
+      "calibration": {
+        "avatarDiameterRatio": 0.11,
+        "allyAvatarCenterX": 0.11862696,
+        "enemyAvatarCenterX": 0.91106254,
+        "top": {
+          "avatarYRatio": 0.045,
+          "avatarDiameterRatio": 0.072,
+          "ally5XRatio": 0.16712953,
+          "enemy5XRatio": 0.9741347
+        },
+        "bans": {
+          "ally": {"x": [0.027854925, 0.0636684, 0.09948187, 0.13529535, 0.17110883], "y": [0.052, 0.052, 0.052, 0.052, 0.052], "diameter": [0.06, 0.06, 0.06, 0.06, 0.06], "manual": false},
+          "enemy": {"x": [0.82690156, 0.8637098, 0.9005181, 0.93732643, 0.9741347], "y": [0.052, 0.052, 0.052, 0.052, 0.052], "diameter": [0.06, 0.06, 0.06, 0.06, 0.06], "manual": false}
+        },
+        "allySlots": {"x": [0.11862696, 0.118875, 0.11862696, 0.11862696, 0.11862696], "y": [0.188, 0.32118055, 0.458, 0.591, 0.725], "diameter": [0.11, 0.11, 0.11, 0.11, 0.105]},
+        "enemySlots": {"x": [0.91106254, 0.91106254, 0.91106254, 0.91106254, 0.91106254], "y": [0.18750001, 0.3244269, 0.45833334, 0.5922398, 0.7251394], "diameter": [0.11, 0.11, 0.11, 0.11, 0.11]}
+      }
+    },
+    {
+      "profileId": "samsung-sm-s942b-2340x1080",
+      "device": {
+        "manufacturer": "samsung",
+        "model": "SM-S942B",
+        "androidApi": 37,
+        "androidVersion": "17",
+        "width": 2340,
+        "height": 1080
+      },
+      "calibration": {
+        "avatarDiameterRatio": 0.11,
+        "allyAvatarCenterX": 0.073450774,
+        "enemyAvatarCenterX": 0.9109375,
+        "top": {
+          "avatarYRatio": 0.045,
+          "avatarDiameterRatio": 0.072,
+          "ally5XRatio": 0.17138515,
+          "enemy5XRatio": 0.9734761
+        },
+        "bans": {
+          "ally": {"x": [0.07538463, 0.1119231, 0.14653845, 0.18499997, 0.22153842], "y": [0.05138889, 0.05138889, 0.05277778, 0.05138889, 0.05138889], "diameter": [0.06388889, 0.06388889, 0.06388889, 0.06388889, 0.06388889], "manual": true},
+          "enemy": {"x": [0.8224939, 0.86023945, 0.897985, 0.9357306, 0.9734761], "y": [0.052, 0.052, 0.052, 0.052, 0.052], "diameter": [0.06, 0.06, 0.06, 0.06, 0.06], "manual": false}
+        },
+        "allySlots": {"x": [0.090450786, 0.08984375, 0.08984375, 0.08984375, 0.08984375], "y": [0.189, 0.32438484, 0.45735165, 0.5883336, 0.72030044], "diameter": [0.105, 0.105, 0.105, 0.105, 0.105]},
+        "enemySlots": {"x": [0.9109375, 0.9109375, 0.9109375, 0.9109375, 0.9109375], "y": [0.18818618, 0.3248731, 0.45854485, 0.5922166, 0.7248833], "diameter": [0.105, 0.105, 0.105, 0.105, 0.105]}
+      }
+    },
+    {
+      "profileId": "honor-bvl-n49-2800x1280",
+      "device": {
+        "manufacturer": "HONOR",
+        "model": "BVL-N49",
+        "androidApi": 37,
+        "androidVersion": "17",
+        "width": 2800,
+        "height": 1280
+      },
+      "calibration": {
+        "avatarDiameterRatio": 0.11,
+        "allyAvatarCenterX": 0.12200002,
+        "enemyAvatarCenterX": 0.90703124,
+        "top": {
+          "avatarYRatio": 0.045,
+          "avatarDiameterRatio": 0.072,
+          "ally5XRatio": 0.168,
+          "enemy5XRatio": 0.974
+        },
+        "bans": {
+          "ally": {"x": [0.076874204, 0.113723, 0.1505718, 0.18678527, 0.22371663], "y": [0.047222223, 0.05277778, 0.05277778, 0.05277778, 0.05138889], "diameter": [0.058333334, 0.058333334, 0.058333334, 0.058333334, 0.058333334], "manual": true},
+          "enemy": {"x": [0.826, 0.863, 0.9, 0.937, 0.974], "y": [0.052, 0.052, 0.052, 0.052, 0.052], "diameter": [0.06, 0.06, 0.06, 0.06, 0.06], "manual": false}
+        },
+        "allySlots": {"x": [0.12200002, 0.12200002, 0.12200002, 0.12200002, 0.12200002], "y": [0.188, 0.324, 0.458, 0.591, 0.725], "diameter": [0.11, 0.11, 0.11, 0.11, 0.105]},
+        "enemySlots": {"x": [0.90703124, 0.90703124, 0.90703124, 0.90703124, 0.90703124], "y": [0.18571843, 0.32257378, 0.45641026, 0.59024674, 0.72307694], "diameter": [0.11, 0.11, 0.11, 0.11, 0.11]}
+      }
+    },
+    {
+      "profileId": "samsung-sm-s938b-2340x1080",
+      "device": {
+        "manufacturer": "samsung",
+        "model": "SM-S938B",
+        "androidApi": 37,
+        "androidVersion": "17",
+        "width": 2340,
+        "height": 1080
+      },
+      "calibration": {
+        "avatarDiameterRatio": 0.11,
+        "allyAvatarCenterX": 0.072,
+        "enemyAvatarCenterX": 0.959,
+        "top": {
+          "avatarYRatio": 0.045,
+          "avatarDiameterRatio": 0.072,
+          "ally5XRatio": 0.168,
+          "enemy5XRatio": 0.974
+        },
+        "bans": {
+          "ally": {"x": [0.028, 0.064, 0.1, 0.136, 0.172], "y": [0.052, 0.052, 0.052, 0.052, 0.052], "diameter": [0.06, 0.06, 0.06, 0.06, 0.06], "manual": false},
+          "enemy": {"x": [0.826, 0.863, 0.9, 0.937, 0.974], "y": [0.052, 0.052, 0.052, 0.052, 0.052], "diameter": [0.06, 0.06, 0.06, 0.06, 0.06], "manual": false}
+        },
+        "allySlots": {"x": [0.072, 0.072, 0.072, 0.072, 0.072], "y": [0.188, 0.324, 0.458, 0.591, 0.725], "diameter": [0.11, 0.11, 0.11, 0.11, 0.105]},
+        "enemySlots": {"x": [0.959, 0.959, 0.959, 0.959, 0.959], "y": [0.188, 0.324, 0.457, 0.59, 0.722], "diameter": [0.11, 0.11, 0.11, 0.11, 0.11]}
+      }
+    }
+  ]
+}
