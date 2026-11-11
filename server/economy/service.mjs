@@ -301,14 +301,22 @@ export async function executeEconomy(db, auth, raw, clock = Date.now, {requested
       const price = sponsorPrice(input.notice, active);
       ensure(integer(input.expectedCost) === price.cost, 'failed-precondition', 'El costo ha cambiado. Revisa el total antes de confirmar.');
       const pendingRef = db.doc(`pending_sponsor_ads/${input.id}`);
-      ensure(!(await tx.get(pendingRef)).exists, 'already-exists', 'El identificador ya pertenece a otro anuncio');
-      const remaining = balance(account, 'BLUE') - price.cost; ensure(remaining >= 0, 'failed-precondition', 'Esencias insuficientes');
-      updates.blueEssence = remaining;
-      const n = input.notice;
-      const notice = {id: input.id, title: n.title, content: n.content, videoUrl: n.videoUrl, expandedImageUrl: n.expandedImageUrl, externalUrl: n.externalUrl, titleColor: /^#[a-fA-F0-9]{6}$/.test(n.titleColor ?? '') ? n.titleColor : '#FFD700', tag: 'PUBLICIDAD', budget: price.budget, budgetUnit: n.durationUnit, durationValue: n.durationValue, durationUnit: n.durationUnit, isApproved: false, isEnabled: false, sponsorEmail: auth.token.email ?? '', userId: uid, chargedEssence: price.cost, createdAt: now};
-      writes.push([pendingRef, notice]);
-      record = receipt(input.id, now, 'SPONSOR_SUBMISSION', 'Anuncio enviado a revisión', `-${price.cost} EA`, 'Pendiente');
-      metadata = {kind: 'SPONSOR', cost: price.cost, currency: 'BLUE'};
+      const existingPending = await tx.get(pendingRef);
+      if (existingPending.exists && existingPending.get('manualAdminDecision') === true) {
+        const approved = existingPending.get('isApproved') === true;
+        record = receipt(input.id, now, approved ? 'SPONSOR_APPROVAL' : 'SPONSOR_REJECTION',
+          approved ? 'Anuncio patrocinado aprobado' : 'Anuncio rechazado por administrador', '0 EA', 'Completado');
+        metadata = {kind: 'SPONSOR', cost: 0, currency: 'BLUE', manualAdminDecision: true, approved};
+      } else {
+        ensure(!existingPending.exists, 'already-exists', 'El identificador ya pertenece a otro anuncio');
+        const remaining = balance(account, 'BLUE') - price.cost; ensure(remaining >= 0, 'failed-precondition', 'Esencias insuficientes');
+        updates.blueEssence = remaining;
+        const n = input.notice;
+        const notice = {id: input.id, title: n.title, content: n.content, videoUrl: n.videoUrl, expandedImageUrl: n.expandedImageUrl, externalUrl: n.externalUrl, titleColor: /^#[a-fA-F0-9]{6}$/.test(n.titleColor ?? '') ? n.titleColor : '#FFD700', tag: 'PUBLICIDAD', budget: price.budget, budgetUnit: n.durationUnit, durationValue: n.durationValue, durationUnit: n.durationUnit, isApproved: false, isEnabled: false, sponsorEmail: auth.token.email ?? '', userId: uid, chargedEssence: price.cost, createdAt: now};
+        writes.push([pendingRef, notice]);
+        record = receipt(input.id, now, 'SPONSOR_SUBMISSION', 'Anuncio enviado a revisión', `-${price.cost} EA`, 'Pendiente');
+        metadata = {kind: 'SPONSOR', cost: price.cost, currency: 'BLUE'};
+      }
     }
     updates.lastEconomyOperation = input.id;
     tx.update(profile, updates);
