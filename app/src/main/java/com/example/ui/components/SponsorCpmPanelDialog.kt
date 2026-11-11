@@ -284,7 +284,7 @@ fun SponsorCpmPanelDialog(
         }
 
         // Más anuncios activos optimizan el costo en lugar de encarecerlo (eficiencia compartida de tráfico)
-        val efficiencyDiscount = 1.0 / (1.0 + (activeAdsCount - 1) * 0.1)
+        val efficiencyDiscount = 1.0 / (1.0 + (activeAdsCount - 1).coerceIn(0, 10) * 0.1)
         total *= efficiencyDiscount
 
         String.format(Locale.US, "%.2f", total.coerceAtLeast(0.50))
@@ -510,7 +510,7 @@ fun SponsorCpmPanelDialog(
                     OutlinedTextField(
                         value = titleInput,
                         onValueChange = { titleInput = it },
-                        label = { Text(tr("Título del Anuncio * (Obligatorio)")) },
+                        label = { Text(androidx.compose.ui.res.stringResource(com.example.R.string.optional_media_title)) },
                         modifier = Modifier.fillMaxWidth(),
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = HextechGold,
@@ -871,7 +871,7 @@ fun SponsorCpmPanelDialog(
                     onClick = {
                         val parsedBudget = autoBudget.replace(',', '.').toDoubleOrNull() ?: 10.0
                         val requiredEssences = (parsedBudget * 10).toLong()
-                        if (titleInput.trim().isBlank()) {
+                        if (titleInput.trim().isBlank() && horizontalMediaInput.isBlank()) {
                             Toast.makeText(context, com.example.util.appTr("El título del anuncio es obligatorio"), Toast.LENGTH_SHORT).show()
                             return@Button
                         }

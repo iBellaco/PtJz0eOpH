@@ -156,6 +156,7 @@ fun getFeedbackCategory(report: FeedbackReport): String {
         rawType in listOf("PAGO", "PAYMENT", "PAGAMENTO") -> "PAGO"
         rawType in listOf("SUSCRIPCION", "SUSCRIPCIÓN", "SUBSCRIPTION", "ASSINATURA") -> "SUBSCRIPTION"
         com.example.data.SupportConversationPolicy.isSponsor(rawType) -> "PATROCINADOR"
+        rawType == "DIAGNOSTICO" -> "DIAGNOSTIC"
         rawType in listOf("COORDENADAS", "CALIBRACION", "CALIBRAÇÃO") -> "CALIBRATION"
         rawType in listOf("BUG", "ERROR", "BUG_REPORT", "BUG / ERROR") -> "BUG"
         rawType in listOf("BUILD_SUGGESTION", "BUILD", "SUGERIR BUILD", "SUGERENCIA DE BUILD") || parseBuildSuggestionFromText(desc, title) != null -> "BUILD"
@@ -274,7 +275,7 @@ fun AdminFeedbackBottomSheet(
 
     // Reportes visibles según el rol del usuario (Los reportes de Patrocinador son exclusivos del Administrador)
     val visibleReports = remember(reports, isAdmin) {
-        if (isAdmin) reports else reports.filter { getFeedbackCategory(it) !in setOf("PATROCINADOR", "PAGO", "SUBSCRIPTION", "CALIBRATION") }
+        if (isAdmin) reports else reports.filter { getFeedbackCategory(it) !in setOf("PATROCINADOR", "PAGO", "SUBSCRIPTION", "CALIBRATION", "DIAGNOSTIC") }
     }
 
     val availableTabs = remember(isAdmin) {
@@ -288,7 +289,7 @@ fun AdminFeedbackBottomSheet(
     val bugList = remember(visibleReports) { visibleReports.filter { getFeedbackCategory(it) == "BUG" } }
     val suggestionList = remember(visibleReports) { visibleReports.filter { getFeedbackCategory(it) == "SUGGESTION" } }
     val buildList = remember(visibleReports) { visibleReports.filter { getFeedbackCategory(it) == "BUILD" } }
-    val supportList = remember(visibleReports) { visibleReports.filter { getFeedbackCategory(it) == "SUPPORT" } }
+    val supportList = remember(visibleReports) { visibleReports.filter { getFeedbackCategory(it) in setOf("SUPPORT", "DIAGNOSTIC") } }
     val calibrationList = remember(visibleReports) { visibleReports.filter { getFeedbackCategory(it) == "CALIBRATION" } }
     val verifyList = remember(visibleReports) { visibleReports.filter { getFeedbackCategory(it) == "VERIFY" } }
     val subscriptionList = remember(visibleReports) { visibleReports.filter { getFeedbackCategory(it) == "SUBSCRIPTION" } }
@@ -357,7 +358,7 @@ fun AdminFeedbackBottomSheet(
                 FeedbackCategoryTab.BUGS -> cat == "BUG"
                 FeedbackCategoryTab.SUGGESTIONS -> cat == "SUGGESTION"
                 FeedbackCategoryTab.BUILDS -> cat == "BUILD"
-                FeedbackCategoryTab.SUPPORT -> cat == "SUPPORT"
+                FeedbackCategoryTab.SUPPORT -> cat in setOf("SUPPORT", "DIAGNOSTIC")
                 FeedbackCategoryTab.CALIBRATION -> cat == "CALIBRATION"
                 FeedbackCategoryTab.VERIFY -> cat == "VERIFY"
                 FeedbackCategoryTab.SUBSCRIPTIONS -> cat == "SUBSCRIPTION"
@@ -841,7 +842,7 @@ fun AdminFeedbackBottomSheet(
                                         Toast.makeText(context, com.example.util.appTr(if (ok) "Estado actualizado" else "No se pudo sincronizar el estado. Inténtalo de nuevo."), Toast.LENGTH_SHORT).show()
                                     }
                                 },
-                                onReply = if (getFeedbackCategory(report) in setOf("SUBSCRIPTION", "CALIBRATION")) null else ({ reportToReply = report }),
+                                onReply = if (getFeedbackCategory(report) in setOf("SUBSCRIPTION", "CALIBRATION", "DIAGNOSTIC")) null else ({ reportToReply = report }),
                                 onReviewVerification = if (getFeedbackCategory(report) == "VERIFY") ({ approved -> verificationReview = report to approved }) else null,
                                 onDelete = if (isAdmin) ({ reportToDelete = report }) else null,
                                 onCopy = {

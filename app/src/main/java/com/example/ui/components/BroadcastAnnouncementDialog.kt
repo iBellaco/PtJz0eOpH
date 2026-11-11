@@ -50,7 +50,26 @@ fun AdminBroadcastAnnouncementDialog(
         }
     }
 
-    val activeAnnouncement by com.example.data.GlobalAnnouncementManager.currentAnnouncement.collectAsState()
+    var announcements by remember { mutableStateOf<Map<String, Any>>(emptyMap()) }
+    DisposableEffect(Unit) {
+        val listener = com.google.firebase.firestore.FirebaseFirestore.getInstance()
+            .document("system_config/announcement").addSnapshotListener { snapshot, error ->
+                if (error == null) announcements = snapshot?.data.orEmpty()
+            }
+        onDispose { listener.remove() }
+    }
+    val activeAnnouncement = remember(announcements, targetLanguage) {
+        com.example.data.GlobalAnnouncementPolicy.payloadForLanguage(announcements, targetLanguage)
+            ?.takeIf { it["active"] == true }?.let {
+                com.example.data.GlobalAnnouncement(
+                    title = it["title"] as? String ?: "",
+                    message = it["message"] as? String ?: "",
+                    active = true, isUrgent = it["isUrgent"] == true,
+                    timestamp = (it["timestamp"] as? Number)?.toLong() ?: 0L,
+                    language = targetLanguage
+                )
+            }
+    }
     val scrollState = rememberScrollState()
 
     AlertDialog(

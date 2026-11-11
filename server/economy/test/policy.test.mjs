@@ -55,7 +55,10 @@ test('premium purchase accepts only supported notification languages', () => {
 test('sponsor pricing uses server publication count and verified fields', () => {
   const notice = {title: 'Anuncio', content: 'Contenido', videoUrl: '', expandedImageUrl: '', externalUrl: '', durationValue: 1, durationUnit: 'day'};
   assert.deepEqual(sponsorPrice(notice, 1), {budget: 2.5, cost: 25});
-  assert.deepEqual(sponsorPrice(notice, 0), {budget: 2.78, cost: 27});
+  assert.deepEqual(sponsorPrice(notice, 0), {budget: 2.5, cost: 25});
+  assert.deepEqual(sponsorPrice(notice, 1000), sponsorPrice(notice, 11));
+  assert.doesNotThrow(() => sponsorPrice({...notice, title: '', content: '', videoUrl: 'https://example.test/banner.jpg'}, 1));
+  assert.throws(() => sponsorPrice({...notice, title: '', content: ''}, 1));
   assert.throws(() => sponsorPrice({...notice, durationValue: 100}, 1));
   assert.throws(() => sponsorPrice({...notice, externalUrl: 'javascript:alert(1)'}, 1));
 });

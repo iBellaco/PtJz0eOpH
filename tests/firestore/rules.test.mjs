@@ -225,6 +225,17 @@ try {
     await assertFails(getDoc(doc(other,`users/user/messages/${id}`)));
     await assertFails(setDoc(doc(unverified,'support_reports/unverified-coordinates'),value));
   });
+  await test('device diagnostic report is visible only to the administrator', async()=>{
+    const id='device-diagnostic';
+    await assertSucceeds(setDoc(doc(user,'support_reports',id), {
+      ...ticket(id,'DIAGNOSTICO'), staffVisible:false, adminOnly:true,
+      title:'Diagnóstico', description:'Modelo de prueba; escáner: 2 FPS'
+    }));
+    await assertSucceeds(getDoc(doc(admin,'support_reports',id)));
+    for (const client of [moderator,other,user]) await assertFails(getDoc(doc(client,'support_reports',id)));
+    await assertFails(deleteDoc(doc(moderator,'support_reports',id)));
+    await assertSucceeds(deleteDoc(doc(admin,'support_reports',id)));
+  });
   await test('device calibration reports are admin-only and do not require an inbox mirror', async()=>{
     const id='admin-only-calibration';
     const value={...ticket(id,'COORDENADAS'), tag:'COORDENADAS', type:'COORDENADAS', staffVisible:false,

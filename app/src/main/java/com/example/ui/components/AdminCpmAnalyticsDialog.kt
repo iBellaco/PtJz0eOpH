@@ -270,11 +270,11 @@ CPM configurado (por cada 1,000 vistas): ${'$'}${String.format(Locale.US, "%.2f"
 RPM efectivo (ingreso por cada 1,000 impresiones): ${'$'}${String.format(Locale.US, "%.2f", overallRpm)} USD
 
 Proyección de Paquetes (Precios Fijos):
-- 1 Día: ${'$'}${String.format(Locale.US, "%.0f", dynamicRec.price1Day)} USD
-- 3 Días: ${'$'}${String.format(Locale.US, "%.0f", dynamicRec.price3Days)} USD
-- 1 Semana: ${'$'}${String.format(Locale.US, "%.0f", dynamicRec.price1Week)} USD
-- 1 Mes: ${'$'}${String.format(Locale.US, "%.0f", dynamicRec.price1Month)} USD
-- 1 Año: ${'$'}${String.format(Locale.US, "%.0f", dynamicRec.price1Year)} USD
+- 1 Día: ${'$'}${String.format(Locale.US, "%.2f", dynamicRec.price1Day)} USD
+- 3 Días: ${'$'}${String.format(Locale.US, "%.2f", dynamicRec.price3Days)} USD
+- 1 Semana: ${'$'}${String.format(Locale.US, "%.2f", dynamicRec.price1Week)} USD
+- 1 Mes: ${'$'}${String.format(Locale.US, "%.2f", dynamicRec.price1Month)} USD
+- 1 Año: ${'$'}${String.format(Locale.US, "%.2f", dynamicRec.price1Year)} USD
 
 Estos precios están calculados en base a nuestras analíticas activas y engagement de la audiencia.
                                 """.trimIndent()
@@ -297,23 +297,23 @@ Estos precios están calculados en base a nuestras analíticas activas y engagem
                         Column(modifier = Modifier.padding(8.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                                 Text(tr("1 Día"), color = TextSecondary, fontSize = 11.sp)
-                                Text(com.example.util.tr("$${String.format(Locale.US, "%.0f", dynamicRec.price1Day)} USD"), color = Color(0xFF00FF66), fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                Text(com.example.util.tr("$${String.format(Locale.US, "%.2f", dynamicRec.price1Day)} USD"), color = Color(0xFF00FF66), fontSize = 11.sp, fontWeight = FontWeight.Bold)
                             }
                             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                                 Text(tr("3 Días"), color = TextSecondary, fontSize = 11.sp)
-                                Text(com.example.util.tr("$${String.format(Locale.US, "%.0f", dynamicRec.price3Days)} USD"), color = Color(0xFF00FF66), fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                Text(com.example.util.tr("$${String.format(Locale.US, "%.2f", dynamicRec.price3Days)} USD"), color = Color(0xFF00FF66), fontSize = 11.sp, fontWeight = FontWeight.Bold)
                             }
                             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                                 Text(tr("1 Semana"), color = TextSecondary, fontSize = 11.sp)
-                                Text(com.example.util.tr("$${String.format(Locale.US, "%.0f", dynamicRec.price1Week)} USD"), color = Color(0xFF00FF66), fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                Text(com.example.util.tr("$${String.format(Locale.US, "%.2f", dynamicRec.price1Week)} USD"), color = Color(0xFF00FF66), fontSize = 11.sp, fontWeight = FontWeight.Bold)
                             }
                             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                                 Text(tr("1 Mes"), color = TextSecondary, fontSize = 11.sp)
-                                Text(com.example.util.tr("$${String.format(Locale.US, "%.0f", dynamicRec.price1Month)} USD"), color = Color(0xFF00FF66), fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                Text(com.example.util.tr("$${String.format(Locale.US, "%.2f", dynamicRec.price1Month)} USD"), color = Color(0xFF00FF66), fontSize = 11.sp, fontWeight = FontWeight.Bold)
                             }
                             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                                 Text(tr("1 Año"), color = TextSecondary, fontSize = 11.sp)
-                                Text(com.example.util.tr("$${String.format(Locale.US, "%.0f", dynamicRec.price1Year)} USD"), color = Color(0xFF00FF66), fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                Text(com.example.util.tr("$${String.format(Locale.US, "%.2f", dynamicRec.price1Year)} USD"), color = Color(0xFF00FF66), fontSize = 11.sp, fontWeight = FontWeight.Bold)
                             }
                         }
                     }
@@ -639,23 +639,23 @@ Estos precios están calculados en base a nuestras analíticas activas y engagem
 
                                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                                             Text(tr("1 Día:"), color = TextSecondary, fontSize = 10.sp)
-                                            Text(com.example.util.tr("$${String.format(Locale.US, "%.0f", dynamicRec.price1Day)} USD"), color = Color(0xFF00FF66), fontSize = 10.5.sp, fontWeight = FontWeight.Bold)
+                                            Text(com.example.util.tr("$${String.format(Locale.US, "%.2f", dynamicRec.price1Day)} USD"), color = Color(0xFF00FF66), fontSize = 10.5.sp, fontWeight = FontWeight.Bold)
                                         }
                                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                                             Text(tr("3 Días:"), color = TextSecondary, fontSize = 10.sp)
-                                            Text(com.example.util.tr("$${String.format(Locale.US, "%.0f", dynamicRec.price3Days)} USD"), color = Color(0xFF00FF66), fontSize = 10.5.sp, fontWeight = FontWeight.Bold)
+                                            Text(com.example.util.tr("$${String.format(Locale.US, "%.2f", dynamicRec.price3Days)} USD"), color = Color(0xFF00FF66), fontSize = 10.5.sp, fontWeight = FontWeight.Bold)
                                         }
                                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                                             Text(tr("1 Semana:"), color = TextSecondary, fontSize = 10.sp)
-                                            Text(com.example.util.tr("$${String.format(Locale.US, "%.0f", dynamicRec.price1Week)} USD"), color = Color(0xFF00FF66), fontSize = 10.5.sp, fontWeight = FontWeight.Bold)
+                                            Text(com.example.util.tr("$${String.format(Locale.US, "%.2f", dynamicRec.price1Week)} USD"), color = Color(0xFF00FF66), fontSize = 10.5.sp, fontWeight = FontWeight.Bold)
                                         }
                                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                                             Text(tr("1 Mes:"), color = TextSecondary, fontSize = 10.sp)
-                                            Text(com.example.util.tr("$${String.format(Locale.US, "%.0f", dynamicRec.price1Month)} USD"), color = Color(0xFF00FF66), fontSize = 10.5.sp, fontWeight = FontWeight.Bold)
+                                            Text(com.example.util.tr("$${String.format(Locale.US, "%.2f", dynamicRec.price1Month)} USD"), color = Color(0xFF00FF66), fontSize = 10.5.sp, fontWeight = FontWeight.Bold)
                                         }
                                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                                             Text(tr("1 Año:"), color = TextSecondary, fontSize = 10.sp)
-                                            Text(com.example.util.tr("$${String.format(Locale.US, "%.0f", dynamicRec.price1Year)} USD"), color = Color(0xFF00FF66), fontSize = 10.5.sp, fontWeight = FontWeight.Bold)
+                                            Text(com.example.util.tr("$${String.format(Locale.US, "%.2f", dynamicRec.price1Year)} USD"), color = Color(0xFF00FF66), fontSize = 10.5.sp, fontWeight = FontWeight.Bold)
                                         }
                                     }
                                 }
@@ -757,11 +757,11 @@ Precios por Formato:
 - Pantalla Completa / Fullscreen (1.5x): ${'$'}${String.format(Locale.US, "%.2f", fullscreenCpm)} USD / 1k (${'$'}${String.format(Locale.US, "%.4f", fullscreenCpm / 1000.0)} USD por vista)
 
 Paquetes por Tiempo (Precios Fijos):
-- 1 Día: ${'$'}${String.format(Locale.US, "%.0f", dynamicRec.price1Day)} USD
-- 3 Días: ${'$'}${String.format(Locale.US, "%.0f", dynamicRec.price3Days)} USD
-- 1 Semana: ${'$'}${String.format(Locale.US, "%.0f", dynamicRec.price1Week)} USD
-- 1 Mes: ${'$'}${String.format(Locale.US, "%.0f", dynamicRec.price1Month)} USD
-- 1 Año: ${'$'}${String.format(Locale.US, "%.0f", dynamicRec.price1Year)} USD
+- 1 Día: ${'$'}${String.format(Locale.US, "%.2f", dynamicRec.price1Day)} USD
+- 3 Días: ${'$'}${String.format(Locale.US, "%.2f", dynamicRec.price3Days)} USD
+- 1 Semana: ${'$'}${String.format(Locale.US, "%.2f", dynamicRec.price1Week)} USD
+- 1 Mes: ${'$'}${String.format(Locale.US, "%.2f", dynamicRec.price1Month)} USD
+- 1 Año: ${'$'}${String.format(Locale.US, "%.2f", dynamicRec.price1Year)} USD
 
 Métricas de Tráfico y Rendimiento:
 - Impresiones Únicas Registradas: ${String.format(Locale.US, "%,d", totalImpressions)}

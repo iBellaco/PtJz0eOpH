@@ -936,6 +936,7 @@ private fun UnifiedReportAdminCard(
                     val isSponsor = report.type.equals("PATROCINADOR", ignoreCase = true)
                     val typeLabel = when {
                         isSponsor -> "⭐ PATROCINADOR"
+                        report.type.equals("DIAGNOSTICO", ignoreCase = true) -> "Diagnóstico"
                         report.type.equals("SOPORTE", ignoreCase = true) -> "🎧 SOPORTE"
                         report.type.trim().uppercase(Locale.ROOT) in setOf("COORDENADAS", "CALIBRACION", "CALIBRAÇÃO") -> "COORDENADAS"
                         report.type.equals("BUG", ignoreCase = true) -> "🐛 BUG"

@@ -1,5 +1,7 @@
 package com.example.ui.components
 
+import androidx.compose.material.icons.filled.Speed
+
 import com.example.ui.components.CoachOutlinedButton as OutlinedButton
 import com.example.ui.components.CoachIconButton as IconButton
 import android.content.ClipData
@@ -159,6 +161,7 @@ internal fun ComprehensiveFeedbackCard(
         "PATROCINADOR" -> Triple(HextechGold, Icons.Default.Star, "PATROCINADOR")
         "BUG" -> Triple(DangerRed, Icons.Default.BugReport, "BUG / ERROR")
         "SUPPORT" -> Triple(HextechCyan, Icons.Default.SupportAgent, "SOPORTE")
+        "DIAGNOSTIC" -> Triple(HextechCyan, Icons.Default.Speed, "Diagnóstico")
         "CALIBRATION" -> Triple(HextechCyan, Icons.Default.Tune, "COORDENADAS")
         "VERIFY" -> Triple(HextechCyan, Icons.Default.VerifiedUser, "VERIFICAR")
         "BUILD" -> Triple(HextechGold, Icons.Default.SportsEsports, "BUILD SUGERIDA")
