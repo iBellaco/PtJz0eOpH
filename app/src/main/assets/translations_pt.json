@@ -16280,5 +16280,12 @@
   "🤝 SINERGIA DE EQUIPO (+{0})": "⌀ SINERGIA DE EQUIPE (+{0})",
   "🥈 2° Lugar": "🥈 2º Lugar",
   "🥉 3° Lugar": "🥉 3º Lugar",
-  "🥊 **Mejor Desempeño 1v1 Calculado:** Tu rival más favorable es **{0}** con un **{1}% de Win Rate** ({2}V - {3}D en {4} partidas).": "⌀ ** Melhor Desempenho 1v1 Calculado:** Seu rival mais favorável é **{0}** com um **{1}% de Win Rate** ({2}V - {3}D em {4} partidas)."
+  "🥊 **Mejor Desempeño 1v1 Calculado:** Tu rival más favorable es **{0}** con un **{1}% de Win Rate** ({2}V - {3}D en {4} partidas).": "⌀ ** Melhor Desempenho 1v1 Calculado:** Seu rival mais favorável é **{0}** com um **{1}% de Win Rate** ({2}V - {3}D em {4} partidas).",
+  "Idioma de segmentación (opcional)": "Idioma de segmentação (opcional)",
+  "General o un solo idioma se muestra a todos; Español + Português aplica segmentación y tarifa doble.": "Geral ou um único idioma é exibido para todos; Espanhol + Português aplica segmentação e tarifa dupla.",
+  "Español + Português": "Espanhol + Português",
+  "Configuración activa": "Configuração ativa",
+  "Solo registros de configuración que la aplicación usa actualmente; se excluyen servicios retirados y datos financieros.": "Somente registros de configuração usados atualmente pelo aplicativo; serviços desativados e dados financeiros são excluídos.",
+  "Vista operativa: omite perfiles, esencias, dispositivos y servicios retirados. Las configuraciones activas son solo de lectura.": "Visão operacional: omite perfis, essências, dispositivos e serviços desativados. As configurações ativas são somente leitura.",
+  "La muestra se actualiza al pulsar Actualizar. Estima el contenido de documentos y excluye índices, archivos externos y tráfico de lecturas y escrituras.": "A amostra é atualizada ao tocar em Atualizar. Estima o conteúdo dos documentos e exclui índices, arquivos externos e tráfego de leituras e gravações."
 }

@@ -45,6 +45,15 @@ class SponsorReviewPolicyTest {
         assertTrue(SponsorReviewPolicy.visibleOnHome((published - "title") + ("videoUrl" to "https://example.test/banner.jpg"), 1000L))
     }
 
+    @Test fun sponsoredLanguageScopeKeepsSingleLanguageGeneralAndTargetsBoth() {
+        assertTrue(SponsorReviewPolicy.matchesLanguage("ALL", "es"))
+        assertTrue(SponsorReviewPolicy.matchesLanguage("ES", "pt"))
+        assertTrue(SponsorReviewPolicy.matchesLanguage("PT", "es"))
+        assertTrue(SponsorReviewPolicy.matchesLanguage("BOTH", "pt"))
+        assertTrue(SponsorReviewPolicy.matchesLanguage("BOTH", "es"))
+        assertFalse(SponsorReviewPolicy.matchesLanguage("BOTH", "fr"))
+    }
+
     @Test fun sharedQueueCountsAnAdOnceAndClearsItWhenResolved() {
         val events = setOf("sponsor:ad-123")
         val summary = PanelNotificationPolicy.combine(emptySet(), emptyMap(),

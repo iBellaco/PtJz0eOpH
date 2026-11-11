@@ -10,7 +10,7 @@ function visible(account, uid) {
 }
 function publicSponsorNotice(id, data) {
   const allowed = ['title', 'content', 'videoUrl', 'expandedImageUrl', 'externalUrl', 'titleColor', 'contentColor',
-    'budget', 'budgetUnit', 'durationValue', 'durationUnit', 'isApproved', 'isEnabled', 'approvedAtMillis', 'expiresAtMillis'];
+    'budget', 'budgetUnit', 'durationValue', 'durationUnit', 'isApproved', 'isEnabled', 'approvedAtMillis', 'expiresAtMillis', 'languageScope'];
   return Object.fromEntries(allowed.filter(key => data[key] !== undefined).map(key => [key, data[key]]).concat([['id', id], ['tag', 'PUBLICIDAD']]));
 }
 export async function executeEconomy(db, auth, raw, clock = Date.now, {requestedAtMillis, identities, sourceRequestId} = {}) {
@@ -312,7 +312,8 @@ export async function executeEconomy(db, auth, raw, clock = Date.now, {requested
         const remaining = balance(account, 'BLUE') - price.cost; ensure(remaining >= 0, 'failed-precondition', 'Esencias insuficientes');
         updates.blueEssence = remaining;
         const n = input.notice;
-        const notice = {id: input.id, title: n.title, content: n.content, videoUrl: n.videoUrl, expandedImageUrl: n.expandedImageUrl, externalUrl: n.externalUrl, titleColor: /^#[a-fA-F0-9]{6}$/.test(n.titleColor ?? '') ? n.titleColor : '#FFD700', tag: 'PUBLICIDAD', budget: price.budget, budgetUnit: n.durationUnit, durationValue: n.durationValue, durationUnit: n.durationUnit, isApproved: false, isEnabled: false, sponsorEmail: auth.token.email ?? '', userId: uid, chargedEssence: price.cost, createdAt: now};
+        const languageScope = String(n.languageScope ?? 'ALL').trim().toUpperCase();
+        const notice = {id: input.id, title: n.title, content: n.content, videoUrl: n.videoUrl, expandedImageUrl: n.expandedImageUrl, externalUrl: n.externalUrl, titleColor: /^#[a-fA-F0-9]{6}$/.test(n.titleColor ?? '') ? n.titleColor : '#FFD700', languageScope, tag: 'PUBLICIDAD', budget: price.budget, budgetUnit: n.durationUnit, durationValue: n.durationValue, durationUnit: n.durationUnit, isApproved: false, isEnabled: false, sponsorEmail: auth.token.email ?? '', userId: uid, chargedEssence: price.cost, createdAt: now};
         writes.push([pendingRef, notice]);
         record = receipt(input.id, now, 'SPONSOR_SUBMISSION', 'Anuncio enviado a revisión', `-${price.cost} EA`, 'Pendiente');
         metadata = {kind: 'SPONSOR', cost: price.cost, currency: 'BLUE'};

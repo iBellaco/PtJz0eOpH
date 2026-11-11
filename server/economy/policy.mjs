@@ -74,6 +74,8 @@ export function fingerprint(input) {
 export function sponsorPrice(notice, activeCount) {
   ensure(notice && typeof notice === 'object' && !Array.isArray(notice), 'invalid-argument', 'Anuncio no válido');
   const maximum = {hour: 12, day: 3, week: 2, month: 6};
+  const languageScope = String(notice.languageScope ?? 'ALL').trim().toUpperCase();
+  ensure(['ALL', 'ES', 'PT', 'BOTH'].includes(languageScope), 'invalid-argument', 'Idioma de anuncio no válido');
   const count = integer(notice.durationValue, 1, maximum[notice.durationUnit] ?? 0);
   for (const [key, limit] of [['title', 200], ['content', 10000], ['videoUrl', 2000], ['expandedImageUrl', 2000], ['externalUrl', 2000]]) {
     ensure(typeof notice[key] === 'string' && notice[key].length <= limit, 'invalid-argument', 'Anuncio no válido');
@@ -81,7 +83,8 @@ export function sponsorPrice(notice, activeCount) {
   }
   ensure(notice.videoUrl.trim() || (notice.title.trim() && notice.content.trim()), 'invalid-argument', 'Anuncio no válido');
   const media = [notice.videoUrl, notice.expandedImageUrl].filter(Boolean);
-  const cents = ({hour: 50, day: 250, week: 1000, month: 3000}[notice.durationUnit] + (media.some(url => /\.mp4(?:[?#]|$)/i.test(url)) ? 100 : media.length ? 50 : 0) + (notice.externalUrl ? 50 : 0)) * count;
+  const languageMultiplier = languageScope === 'BOTH' ? 2 : 1;
+  const cents = ({hour: 50, day: 250, week: 1000, month: 3000}[notice.durationUnit] + (media.some(url => /\.mp4(?:[?#]|$)/i.test(url)) ? 100 : media.length ? 50 : 0) + (notice.externalUrl ? 50 : 0)) * count * languageMultiplier;
   const discounted = Math.max(50, Math.round(cents * 10 / (10 + Math.min(10, Math.max(0, integer(activeCount) - 1)))));
   return {budget: discounted / 100, cost: Math.floor(discounted / 10)};
 }

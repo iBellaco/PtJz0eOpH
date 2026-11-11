@@ -168,15 +168,16 @@ internal fun FloatingOverlayContent(
     val favoriteChampionIds by FavoriteChampionsManager.favoritesFlow.collectAsStateWithLifecycle()
 
     val sharedPrefs = remember { context.getSharedPreferences("app_prefs", android.content.Context.MODE_PRIVATE) }
-    // Los botones del visor deben aparecer de inmediato para una sesión de
-    // administrador; la política remota puede restringirlos después sin
-    // dejar el Hub vacío mientras se obtiene la configuración.
-    var hubViewerButtonsVisible by remember(isAdmin) { mutableStateOf(isAdmin) }
+    // El interruptor del panel de administración es la fuente de verdad para
+    // todos los usuarios, incluido el propio administrador. Antes se forzaba
+    // `true` para administradores y por eso desactivar la opción no surtía
+    // efecto en el Hub.
+    var hubViewerButtonsVisible by remember { mutableStateOf(false) }
     val accountId = remember {
         runCatching { com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid }.getOrNull()
     }
-    LaunchedEffect(accountId, isAdmin) {
-        hubViewerButtonsVisible = if (isAdmin) true else runCatching {
+    LaunchedEffect(accountId) {
+        hubViewerButtonsVisible = runCatching {
             loadViewerAccess(accountId)
         }.getOrDefault(false)
     }
@@ -486,6 +487,7 @@ internal fun FloatingOverlayContent(
                             DraftVisionScanner.recordFrameSkipped()
                         } else {
                             try {
+                                DraftVisionScanner.recordFrameReceived(bitmap.width, bitmap.height)
                                 if (confirmedPicksCount < 8) banWorker.offer(android.os.SystemClock.elapsedRealtime()) {
                                     DraftVisionScanner.captureBanFrame(bitmap,confirmedHudPicks().map { it.id }.toSet())
                                 }
@@ -1026,7 +1028,6 @@ internal fun FloatingOverlayContent(
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.spacedBy(4.dp)
                             ) {
-                                com.example.ui.components.DeviceDiagnosticButton()
                                 val isLiveVisionActive by DraftVisionScanner.showCalibrationBoxes.collectAsStateWithLifecycle()
 
                                 if (hubViewerButtonsVisible) Surface(
@@ -1048,6 +1049,12 @@ internal fun FloatingOverlayContent(
                                             modifier = Modifier.size(15.dp)
                                         )
                                     }
+                                }
+
+                                if (hubViewerButtonsVisible) {
+                                    com.example.ui.components.DeviceDiagnosticButton(
+                                        screenCaptureManager = screenCaptureManager
+                                    )
                                 }
 
                                 if (hubViewerButtonsVisible) Surface(
