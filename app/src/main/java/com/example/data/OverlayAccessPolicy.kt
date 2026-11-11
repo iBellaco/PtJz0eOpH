@@ -12,8 +12,11 @@ data class OverlayAccessSnapshot(
     val activationButtonEnabled: Boolean = true
 ) {
     private val effectiveAccounts get() = allowedAccountIds.ifEmpty { allowedUserUids }
-    fun hubButtonsVisibleFor(accountId: String?): Boolean = hubButtonsVisible &&
-        (effectiveAccounts.isEmpty() || accountId.orEmpty() in effectiveAccounts)
+    fun hubButtonsVisibleFor(accountId: String?): Boolean = hubButtonsVisible ||
+        (!accountId.isNullOrBlank() && accountId in effectiveAccounts)
+
+    fun activationEnabledFor(accountId: String?): Boolean = activationButtonEnabled ||
+        (!accountId.isNullOrBlank() && accountId in effectiveAccounts)
 }
 
 object OverlayAccessPolicy {
@@ -38,11 +41,29 @@ object OverlayAccessPolicy {
     }
 
     /** Se actualiza en tiempo real; al faltar conexión, el botón permanece bloqueado hasta la primera lectura. */
-    fun observeActivation(onChange: (Boolean) -> Unit): ListenerRegistration =
-        FirebaseFirestore.getInstance().collection(COLLECTION).document(ACTIVATION_DOCUMENT)
+    fun observeActivation(onChange: (Boolean) -> Unit): ListenerRegistration {
+        var enabled = false
+        var globalLoaded = false
+        var accountsLoaded = false
+        var accounts = OverlayAccessSnapshot(hubButtonsVisible = false)
+        fun emit() {
+            if (globalLoaded && accountsLoaded) onChange(accounts.copy(activationButtonEnabled = enabled)
+                .activationEnabledFor(com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid))
+        }
+        val config = FirebaseFirestore.getInstance().collection(COLLECTION)
+        val exceptions = config.document(DOCUMENT).addSnapshotListener { document, error ->
+            if (error == null) { accounts = viewerSnapshot(document?.data.orEmpty()); accountsLoaded = true; emit() }
+            else { accounts = OverlayAccessSnapshot(hubButtonsVisible = false); accountsLoaded = true; emit() }
+        }
+        val global = config.document(ACTIVATION_DOCUMENT)
             .addSnapshotListener { document, error ->
-                if (error == null) onChange(document?.getBoolean("enabled") ?: true)
+                if (error == null) { enabled = document?.getBoolean("enabled") ?: true; globalLoaded = true; emit() }
             }
+        val auth = com.google.firebase.auth.FirebaseAuth.getInstance()
+        val authListener = com.google.firebase.auth.FirebaseAuth.AuthStateListener { emit() }
+        auth.addAuthStateListener(authListener)
+        return ListenerRegistration { exceptions.remove(); global.remove(); auth.removeAuthStateListener(authListener) }
+    }
 
     suspend fun save(snapshot: OverlayAccessSnapshot) {
         val db = FirebaseFirestore.getInstance()

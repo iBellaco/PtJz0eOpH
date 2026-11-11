@@ -63,7 +63,7 @@ fun AdminDatabaseConsumptionDialog(onDismiss: () -> Unit) {
                     Text(tr(if (showStorageDetails) "Ocultar detalles de almacenamiento" else "Ver detalles de almacenamiento"))
                 }
                 if (showStorageDetails) StorageConsumptionSummary(consumption)
-                SavedDataStatisticsContent(rows)
+                SavedDataStatisticsContent(rows) { refresh(forceRefresh = true) }
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     Button(onClick = { refresh(forceRefresh = true) }, enabled = !busy, modifier = Modifier.weight(1f).heightIn(min = 48.dp).testTag("refresh_data_summary")) { Text(tr("Actualizar")) }
                     TextButton(onClick = onDismiss, modifier = Modifier.heightIn(min = 48.dp).testTag("close_data_summary")) { Text(tr("Cerrar")) }
@@ -74,7 +74,9 @@ fun AdminDatabaseConsumptionDialog(onDismiss: () -> Unit) {
 }
 
 @Composable
-fun SavedDataStatisticsContent(rows: List<SavedDataStatistic>) {
+fun SavedDataStatisticsContent(rows: List<SavedDataStatistic>, onChanged: () -> Unit = {}) {
+    var selectedCategory by remember { mutableStateOf<String?>(null) }
+    selectedCategory?.let { SavedDataRecordsDialog(it) { selectedCategory = null; onChanged() } }
     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
         rows.forEachIndexed { index, row ->
             var expanded by remember(row.label) { mutableStateOf(false) }
@@ -87,6 +89,10 @@ fun SavedDataStatisticsContent(rows: List<SavedDataStatistic>) {
                     }
                     if (expanded) {
                         Text(tr(row.description), color = TextSecondary)
+                        if (row.label in SavedDataDeletion.categories) TextButton(
+                            onClick = { selectedCategory = row.label },
+                            modifier = Modifier.heightIn(min = 48.dp).testTag("view_saved_records_$index")
+                        ) { Text(androidx.compose.ui.res.stringResource(com.example.R.string.data_records)) }
                         row.estimatedBytes?.let { Text(StorageConsumptionPolicy.formatBytes(it), color = HextechCyan) }
                         if (row.failed || row.failureReason != null) Text(tr(row.failureReason ?: "No se pudo consultar esta categoría."), color = if (row.failed) DangerRed else HextechGold)
                     }

@@ -42,6 +42,7 @@ class SponsorReviewPolicyTest {
         assertFalse(SponsorReviewPolicy.visibleOnHome(published - "title", 1000L))
         assertFalse(SponsorReviewPolicy.visibleOnHome(published + ("isEnabled" to false), 1000L))
         assertFalse(SponsorReviewPolicy.visibleOnHome(published + ("tag" to "OFERTAS"), 1000L))
+        assertTrue(SponsorReviewPolicy.visibleOnHome((published - "title") + ("videoUrl" to "https://example.test/banner.jpg"), 1000L))
     }
 
     @Test fun sharedQueueCountsAnAdOnceAndClearsItWhenResolved() {

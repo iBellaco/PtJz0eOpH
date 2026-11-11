@@ -720,7 +720,7 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                 OutlinedTextField(
                     value = title,
                     onValueChange = { title = it },
-                    label = { Text(tr("Título del Aviso")) },
+                    label = { Text(androidx.compose.ui.res.stringResource(com.example.R.string.optional_media_title)) },
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(8.dp)
                 )
@@ -1288,7 +1288,7 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
 
                         Button(
                             onClick = {
-                                if (title.isBlank() && content.isBlank()) {
+                                if (title.isBlank() && content.isBlank() && videoUrl.isBlank()) {
                                     Toast.makeText(context, com.example.util.appTr("Ingresa un título o contenido para el anuncio"), Toast.LENGTH_SHORT).show()
                                     return@Button
                                 }
@@ -1299,7 +1299,7 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                                 val targetId = editingNoticeId ?: noticesList[editingIndex!!].id
                                 val newNotice = com.example.data.AppNotice(
                                     id = targetId,
-                                    title = title.ifBlank { "Aviso Oficial" },
+                                    title = title.trim(),
                                     content = content,
                                     videoUrl = videoUrl,
                                     expandedImageUrl = expandedImageUrl,
@@ -1333,7 +1333,7 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                 } else {
                     Button(
                         onClick = {
-                            if (title.isBlank() && content.isBlank()) {
+                            if (title.isBlank() && content.isBlank() && videoUrl.isBlank()) {
                                 Toast.makeText(context, com.example.util.appTr("Ingresa un título o contenido para el anuncio"), Toast.LENGTH_SHORT).show()
                                 return@Button
                             }
@@ -1344,7 +1344,7 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                             val targetId = UUID.randomUUID().toString()
                             val newNotice = com.example.data.AppNotice(
                                 id = targetId,
-                                title = title.ifBlank { "Aviso Oficial" },
+                                title = title.trim(),
                                 content = content,
                                 videoUrl = videoUrl,
                                 expandedImageUrl = expandedImageUrl,

@@ -1,4 +1,10 @@
 <resources>
+    <string name="device_diagnostic">Diagnóstico</string>
+    <string name="diagnostic_sent">Diagnóstico enviado</string>
+    <string name="viewer_exceptions">Excepciones: los usuarios seleccionados tienen acceso aunque los botones estén desactivados.</string>
+    <string name="delete_data_confirm">¿Eliminar este registro permanentemente?</string>
+    <string name="data_records">Ver registros</string>
+    <string name="optional_media_title">Título (opcional con imagen horizontal)</string>
     <string name="update_recommended">Actualización recomendada</string>
     <string name="update_can_wait">Hay una nueva versión de Coach. Puedes actualizar cuando termines de jugar.</string>
     <string name="update_later">Más tarde</string>

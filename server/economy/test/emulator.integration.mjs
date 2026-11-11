@@ -152,16 +152,16 @@ try {
     await db.doc(`users/${owner.uid}`).update({secondaryRole: 'patrocinador'});
     const notice = {title: 'Anuncio', content: 'Contenido', videoUrl: '', expandedImageUrl: '', externalUrl: '', durationValue: 1, durationUnit: 'day'};
     await assert.rejects(call('SPONSOR', 'sponsor_zero_price', {notice, expectedCost: 0}), /costo/);
-    await call('SPONSOR', 'sponsor_valid_price', {notice, expectedCost: 27});
-    assert.equal((await db.doc('pending_sponsor_ads/sponsor_valid_price').get()).get('chargedEssence'), 27);
+    await call('SPONSOR', 'sponsor_valid_price', {notice, expectedCost: 25});
+    assert.equal((await db.doc('pending_sponsor_ads/sponsor_valid_price').get()).get('chargedEssence'), 25);
   });
   await test('signed administrator can create and publish a sponsor without a secondary role', async () => {
     const id = 'admin_sponsor_submission';
     const notice = {title: 'Anuncio administrativo', content: 'Contenido administrativo', videoUrl: '', expandedImageUrl: '', externalUrl: '', durationValue: 1, durationUnit: 'day'};
     const before = (await db.doc(`users/${admin.uid}`).get()).get('blueEssence');
-    await call('SPONSOR', id, {notice, expectedCost: 27}, admin);
+    await call('SPONSOR', id, {notice, expectedCost: 25}, admin);
     assert.equal((await db.doc(`pending_sponsor_ads/${id}`).get()).get('userId'), admin.uid);
-    assert.equal((await db.doc(`users/${admin.uid}`).get()).get('blueEssence'), before - 27);
+    assert.equal((await db.doc(`users/${admin.uid}`).get()).get('blueEssence'), before - 25);
     await call('SPONSOR_RESOLVE', 'admin_sponsor_approval', {sponsorId: id, approved: true}, admin);
     const approved = await db.doc(`pending_sponsor_ads/${id}`).get();
     assert.equal(approved.get('isApproved'), true);
@@ -180,10 +180,10 @@ try {
     await db.doc('pending_sponsor_ads/sponsor_valid_price').update({createdAt: now - 7 * 86400000 - 1000});
     await db.doc('pending_sponsor_ads/legacy_untrusted_budget').set({userId: owner.uid, isApproved: false, createdAt: now - 8 * 86400000, chargedEssence: 100000});
     await Promise.all([maintainEconomy(db, now), maintainEconomy(db, now)]);
-    assert.equal((await profile.get()).get('blueEssence'), before + 27);
+    assert.equal((await profile.get()).get('blueEssence'), before + 25);
     assert.equal((await db.doc('pending_sponsor_ads/sponsor_valid_price').get()).get('status'), 'REFUNDED');
-    assert.equal((await db.doc(`users/${owner.uid}/subscription_history/sponsor_refund_sponsor_valid_price`).get()).get('amount'), '+27 EA');
-    await maintainEconomy(db, now + 1); assert.equal((await profile.get()).get('blueEssence'), before + 27);
+    assert.equal((await db.doc(`users/${owner.uid}/subscription_history/sponsor_refund_sponsor_valid_price`).get()).get('amount'), '+25 EA');
+    await maintainEconomy(db, now + 1); assert.equal((await profile.get()).get('blueEssence'), before + 25);
   });
   await test('explicit rejection refunds the charged blue essence exactly once', async () => {
     const now = Date.now(), profile = db.doc(`users/${owner.uid}`), before = (await profile.get()).get('blueEssence');
@@ -228,17 +228,17 @@ try {
     const notice = {title:'Anuncio de prueba', content:'Contenido de prueba', videoUrl:'', expandedImageUrl:'', externalUrl:'', durationValue:1, durationUnit:'day'};
     for (const id of ['sponsor_queue_01', 'sponsor_queue_02']) {
       await db.doc(`economy_requests/${id}`).set({userId:sponsorUid, operationId:id, authTime:Math.floor(Date.now()/1000), status:'PENDING', schema:2,
-        createdAt:Timestamp.now(), payload:{action:'SPONSOR', id, notice, expectedCost:27}});
+        createdAt:Timestamp.now(), payload:{action:'SPONSOR', id, notice, expectedCost:25}});
     }
     await processQueue(db, identities);
     assert.equal((await db.doc('pending_sponsor_ads/sponsor_queue_01').get()).get('isApproved'), false);
     assert.equal((await db.doc('pending_sponsor_ads/sponsor_queue_02').get()).get('isApproved'), false);
-    assert.equal((await db.doc(`users/${sponsorUid}`).get()).get('blueEssence'), 46);
+    assert.equal((await db.doc(`users/${sponsorUid}`).get()).get('blueEssence'), 50);
   });
   await test('concurrent rejection of an uncharged queued sponsor never debits or invents a refund', async () => {
     const id='sponsor_queued_review', ref=db.doc(`economy_requests/${sponsorUid}~${id}`);
     const notice={title:'Review queue',content:'Queued content',videoUrl:'',expandedImageUrl:'',externalUrl:'',durationValue:1,durationUnit:'day'};
-    await ref.set({userId:sponsorUid,operationId:id,authTime:Math.floor(Date.now()/1000),status:'REVIEW',schema:2,createdAt:Timestamp.now(),payload:{action:'SPONSOR',id,notice,expectedCost:27}});
+    await ref.set({userId:sponsorUid,operationId:id,authTime:Math.floor(Date.now()/1000),status:'REVIEW',schema:2,createdAt:Timestamp.now(),payload:{action:'SPONSOR',id,notice,expectedCost:25}});
     const profile=db.doc(`users/${sponsorUid}`), before=(await profile.get()).get('blueEssence');
     const request={action:'SPONSOR_RESOLVE',id:'queued_review_reject',sponsorId:id,approved:false,queuedRequestId:ref.id};
     await assert.rejects(executeEconomy(db,other,request,Date.now,{identities}), /permisos/);
@@ -261,13 +261,13 @@ try {
   await test('approval publishes a queued advertisement with exactly one charge on retry', async () => {
     const id='sponsor_queue_approval', ref=db.doc(`economy_requests/${sponsorUid}~${id}`);
     const notice={title:'Queued approval',content:'Queued content',videoUrl:'',expandedImageUrl:'',externalUrl:'',durationValue:1,durationUnit:'day'};
-    await ref.set({userId:sponsorUid,operationId:id,authTime:Math.floor(Date.now()/1000),status:'PENDING',schema:2,createdAt:Timestamp.now(),payload:{action:'SPONSOR',id,notice,expectedCost:27}});
+    await ref.set({userId:sponsorUid,operationId:id,authTime:Math.floor(Date.now()/1000),status:'PENDING',schema:2,createdAt:Timestamp.now(),payload:{action:'SPONSOR',id,notice,expectedCost:25}});
     const profile=db.doc(`users/${sponsorUid}`), before=(await profile.get()).get('blueEssence');
     const request={action:'SPONSOR_RESOLVE',id:'queued_review_approve',sponsorId:id,approved:true,queuedRequestId:ref.id};
     await assert.rejects(executeEconomy(db,auth(sponsorUid),request,Date.now,{identities}), /permisos/);
     await executeEconomy(db,admin,request,Date.now,{identities});
     await executeEconomy(db,admin,request,Date.now,{identities});
-    assert.equal((await profile.get()).get('blueEssence'),before-27);
+    assert.equal((await profile.get()).get('blueEssence'),before-25);
     assert.equal((await db.doc(`pending_sponsor_ads/${id}`).get()).get('isApproved'),true);
     assert.ok((await db.doc('system_config/app_notices').get()).get('notices').some(n=>n.id===id));
     assert.equal((await db.doc(`app_notices/${id}`).get()).exists,true);

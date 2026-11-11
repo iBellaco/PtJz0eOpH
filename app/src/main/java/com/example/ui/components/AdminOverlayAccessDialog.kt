@@ -52,7 +52,7 @@ fun AdminOverlayAccessDialog(onDismiss: () -> Unit) {
                     Modifier.testTag("overlay_activation_admin_switch")) { activationEnabled = it }
                 Text(androidx.compose.ui.res.stringResource(com.example.R.string.overlay_activation_admin_description), color = TextSecondary,
                     style = MaterialTheme.typography.bodySmall)
-                Text(tr("Cuentas autorizadas (vacío = todas las cuentas)"), color = TextSecondary, style = MaterialTheme.typography.labelLarge)
+                Text(androidx.compose.ui.res.stringResource(com.example.R.string.viewer_exceptions), color = TextSecondary, style = MaterialTheme.typography.labelLarge)
                 LazyColumn(Modifier.fillMaxWidth().heightIn(max = 240.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     items(accounts, key = { it["uid"].toString() }) { account ->
                         val id = account["uid"].toString()

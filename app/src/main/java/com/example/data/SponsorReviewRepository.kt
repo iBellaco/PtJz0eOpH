@@ -36,7 +36,8 @@ object SponsorReviewPolicy {
             data["tag"]?.toString()?.uppercase() == "PUBLICIDAD" &&
             ((data["expiresAtMillis"] as? Number)?.toLong() ?: 0L).let { it == 0L || it > now } &&
             (data["title"]?.toString()?.isNotBlank() == true ||
-                data["content"]?.toString()?.isNotBlank() == true)
+                data["content"]?.toString()?.isNotBlank() == true ||
+                data["videoUrl"]?.toString()?.isNotBlank() == true)
 
     fun notice(id: String, d: Map<String, Any>) = AppNotice(
         id=id, title=d["title"] as? String ?: "", content=d["content"] as? String ?: "",

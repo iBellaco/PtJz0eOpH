@@ -13,7 +13,7 @@ object SupportConversationPolicy {
         .any { it.trim().uppercase(Locale.ROOT) in setOf("COORDENADAS", "CALIBRACION", "CALIBRAÇÃO") }
     fun isAdministratorOnly(tag: String): Boolean = isSponsor(tag) || tag.trim().uppercase(Locale.ROOT) in setOf(
         "PAGO", "PAYMENT", "PAGAMENTO", "SUSCRIPCION", "SUSCRIPCIÓN", "SUBSCRIPTION", "ASSINATURA",
-        "COORDENADAS", "CALIBRACION", "CALIBRAÇÃO"
+        "COORDENADAS", "CALIBRACION", "CALIBRAÇÃO", "DIAGNOSTICO"
     )
     fun ticketTag(data: Map<String, Any>, fallback: String = "SOPORTE"): String {
         val tags = listOf("tag", "type", "category").mapNotNull { (data[it] as? String)?.takeIf(String::isNotBlank) }

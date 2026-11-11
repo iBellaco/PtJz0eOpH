@@ -1026,6 +1026,7 @@ internal fun FloatingOverlayContent(
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.spacedBy(4.dp)
                             ) {
+                                com.example.ui.components.DeviceDiagnosticButton()
                                 val isLiveVisionActive by DraftVisionScanner.showCalibrationBoxes.collectAsStateWithLifecycle()
 
                                 if (hubViewerButtonsVisible) Surface(

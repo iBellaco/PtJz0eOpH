@@ -364,7 +364,7 @@ service cloud.firestore {
           && (request.resource.data.get('tag', '') != 'VERIFICAR' || validVerificationPhotos())
           && (request.resource.data.staffVisible == !sponsor(request.resource.data)
             || (request.resource.data.get('adminOnly', false) == true
-              && request.resource.data.get('tag', '').upper() in ['COORDENADAS', 'CALIBRACION', 'CALIBRAÇÃO']
+              && request.resource.data.get('tag', '').upper() in ['COORDENADAS', 'CALIBRACION', 'CALIBRAÇÃO', 'DIAGNOSTICO']
               && request.resource.data.staffVisible == false))
           && request.resource.data.status == 'PENDING' && request.resource.data.get('adminReply', '') == ''
           && request.resource.data.get('userCanReply', false) == false
@@ -448,8 +448,8 @@ service cloud.firestore {
           && request.resource.data.endedAtMillis >= request.time.toMillis() - 60000
           && request.resource.data.endedAtMillis <= request.time.toMillis() + 60000
           && validStreamerHistoryDeadline(request.resource.data));
-      allow delete: if (isAdmin() || (signedIn() && request.auth.uid == userId)) && streamerExpired(resource.data)
-        && (streamerHistoryExpired(resource.data) || timeoutCopy(getAfter(/databases/$(database)/documents/streamer_requests/$(userId)/history/$(publicationId(resource.data))).data, resource.data));
+      allow delete: if isAdmin() || ((signedIn() && request.auth.uid == userId) && streamerExpired(resource.data)
+        && (streamerHistoryExpired(resource.data) || timeoutCopy(getAfter(/databases/$(database)/documents/streamer_requests/$(userId)/history/$(publicationId(resource.data))).data, resource.data)));
       match /history/{historyId} {
         function latest() { return getAfter(/databases/$(database)/documents/streamer_requests/$(userId)).data; }
         function previous() { return get(/databases/$(database)/documents/streamer_requests/$(userId)).data; }
@@ -463,7 +463,7 @@ service cloud.firestore {
         allow create: if !streamerHistoryExpired(request.resource.data) && (isAdmin() || ownerHistoryWrite());
         allow update: if !streamerHistoryExpired(request.resource.data) && (isAdmin() || (ownerHistoryWrite() && request.resource.data.diff(resource.data).affectedKeys()
           .hasOnly(['status','endedAtMillis','reviewedAtMillis','rejectionReason','streamerHistoryDeleteAt']) && validStreamerHistoryDeadline(request.resource.data)));
-        allow delete: if (isAdmin() || (signedIn() && request.auth.uid == userId)) && streamerHistoryExpired(resource.data);
+        allow delete: if isAdmin() || ((signedIn() && request.auth.uid == userId) && streamerHistoryExpired(resource.data));
       }
     }
     match /app_config/binance_fees {
@@ -529,7 +529,7 @@ service cloud.firestore {
           request.resource.data.endedAtMillis == getAfter(/databases/$(database)/documents/streamer_requests/$(resource.data.userId)).data.endedAtMillis &&
           request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status','endedAtMillis','streamerHistoryDeleteAt']) &&
           validStreamerHistoryDeadline(request.resource.data));
-      allow delete: if (isAdmin() || (signedIn() && request.auth.uid == resource.data.userId)) && streamerHistoryExpired(resource.data);
+      allow delete: if isAdmin() || ((signedIn() && request.auth.uid == resource.data.userId) && streamerHistoryExpired(resource.data));
       match /click_events/{eventId} {
         // Random event identifiers allow a worker to check its retry without exposing totals or visitors.
         allow get: if true;

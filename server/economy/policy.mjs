@@ -79,10 +79,10 @@ export function sponsorPrice(notice, activeCount) {
     ensure(typeof notice[key] === 'string' && notice[key].length <= limit, 'invalid-argument', 'Anuncio no válido');
     if (key.endsWith('Url') && notice[key]) ensure(/^https:\/\//i.test(notice[key]), 'invalid-argument', 'Enlace no válido');
   }
-  ensure(notice.title.trim() && notice.content.trim(), 'invalid-argument', 'Anuncio no válido');
+  ensure(notice.videoUrl.trim() || (notice.title.trim() && notice.content.trim()), 'invalid-argument', 'Anuncio no válido');
   const media = [notice.videoUrl, notice.expandedImageUrl].filter(Boolean);
   const cents = ({hour: 50, day: 250, week: 1000, month: 3000}[notice.durationUnit] + (media.some(url => /\.mp4(?:[?#]|$)/i.test(url)) ? 100 : media.length ? 50 : 0) + (notice.externalUrl ? 50 : 0)) * count;
-  const discounted = Math.max(50, Math.round(cents * 10 / (9 + integer(activeCount))));
+  const discounted = Math.max(50, Math.round(cents * 10 / (10 + Math.min(10, Math.max(0, integer(activeCount) - 1)))));
   return {budget: discounted / 100, cost: Math.floor(discounted / 10)};
 }
 export function validateInput(input) {
