@@ -24,7 +24,10 @@ import kotlinx.coroutines.launch
 
 /** Explicit, one-shot report. Does not sample continuously or capture game content. */
 @Composable
-fun DeviceDiagnosticButton(screenCaptureManager: ScreenCaptureManager? = null) {
+fun DeviceDiagnosticButton(
+    screenCaptureManager: ScreenCaptureManager? = null,
+    draftDetails: String = ""
+) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     var sending by remember { mutableStateOf(false) }
@@ -85,6 +88,14 @@ fun DeviceDiagnosticButton(screenCaptureManager: ScreenCaptureManager? = null) {
                     appendLine("Temperatura batería: ${battery?.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, -1)?.takeIf { it >= 0 }?.div(10.0) ?: "N/D"} °C")
                     appendLine("Salud batería: ${batterySession.batteryHealth ?: "N/D"}")
                     appendLine("Sesión diagnóstico: ${batterySession.sessionDurationMs / 1000}s")
+                    appendLine("Tiempo de uso de la aplicación: ${batterySession.applicationUsageDurationMs / 1000}s")
+                    appendLine("Auto-Scan mantenido antes de mostrar el botón: 60s")
+                    if (draftDetails.isBlank()) {
+                        appendLine("Draft guardado: no")
+                    } else {
+                        appendLine("Detalle del draft:")
+                        appendLine(draftDetails)
+                    }
                     appendLine("Batería inicio/actual: ${batterySession.batteryStartPercent?.let { "$it%" } ?: "N/D"}/${batterySession.batteryPercent?.let { "$it%" } ?: "N/D"}; consumo observado: ${batterySession.batteryDrainPercent?.let { "%.2f%%".format(java.util.Locale.US, it) } ?: "N/D"}")
                     appendLine("Carga acumulada inicio/actual: ${batterySession.chargeStartMah?.let { "%.1f mAh".format(java.util.Locale.US, it) } ?: "N/D"}/${batterySession.chargeMah?.let { "%.1f mAh".format(java.util.Locale.US, it) } ?: "N/D"}; consumo real medido: ${batterySession.chargeDrainMah?.let { "%.1f mAh".format(java.util.Locale.US, it) } ?: "N/D"}")
                     appendLine("Energía inicio/actual: ${batterySession.energyStartWh?.let { "%.3f Wh".format(java.util.Locale.US, it) } ?: "N/D"}/${batterySession.energyWh?.let { "%.3f Wh".format(java.util.Locale.US, it) } ?: "N/D"}; consumo: ${batterySession.energyDrainWh?.let { "%.3f Wh".format(java.util.Locale.US, it) } ?: "N/D"}")

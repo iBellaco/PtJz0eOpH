@@ -19,6 +19,7 @@ class SponsorSubmissionStore(context: Context, private val uid: String) {
             val n = saved.getJSONObject("notice")
             SponsorSubmission(AppNotice(id = n.getString("id"), title = n.getString("title"), content = n.getString("content"),
                 videoUrl = n.getString("videoUrl"), expandedImageUrl = n.getString("expandedImageUrl"),
+                videoUrlEs = n.optString("videoUrlEs", ""), videoUrlPt = n.optString("videoUrlPt", ""),
                 externalUrl = n.getString("externalUrl"), titleColor = n.getString("titleColor"),
                 durationValue = n.getInt("durationValue"), durationUnit = n.getString("durationUnit"),
                 budget = n.getDouble("budget"), budgetUnit = n.getString("durationUnit"),
@@ -31,6 +32,7 @@ class SponsorSubmissionStore(context: Context, private val uid: String) {
         val n = submission.notice
         val notice = JSONObject().put("id", n.id).put("title", n.title).put("content", n.content)
             .put("videoUrl", n.videoUrl).put("expandedImageUrl", n.expandedImageUrl).put("externalUrl", n.externalUrl)
+            .put("videoUrlEs", n.videoUrlEs).put("videoUrlPt", n.videoUrlPt)
             .put("titleColor", n.titleColor).put("durationValue", n.durationValue).put("durationUnit", n.durationUnit)
             .put("budget", n.budget).put("sponsorEmail", n.sponsorEmail)
             .put("languageScope", SponsorReviewPolicy.normalizeLanguageScope(n.languageScope))

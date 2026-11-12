@@ -52,7 +52,7 @@ object SponsorReviewPolicy {
         data["status"] !in setOf("REFUNDED", "REJECTED")
 
     fun publicNotice(id: String, data: Map<String, Any>): Map<String, Any> =
-        data.filterKeys { it in setOf("title", "content", "videoUrl", "expandedImageUrl", "externalUrl",
+        data.filterKeys { it in setOf("title", "content", "videoUrl", "videoUrlEs", "videoUrlPt", "expandedImageUrl", "externalUrl",
             "titleColor", "contentColor", "budget", "budgetUnit", "durationValue", "durationUnit",
             "isApproved", "isEnabled", "approvedAtMillis", "expiresAtMillis", "languageScope") } +
             mapOf("id" to id, "tag" to "PUBLICIDAD")
@@ -64,11 +64,12 @@ object SponsorReviewPolicy {
             ((data["expiresAtMillis"] as? Number)?.toLong() ?: 0L).let { it == 0L || it > now } &&
             (data["title"]?.toString()?.isNotBlank() == true ||
                 data["content"]?.toString()?.isNotBlank() == true ||
-                data["videoUrl"]?.toString()?.isNotBlank() == true)
+                data["videoUrl"]?.toString()?.isNotBlank() == true ||
+                data["videoUrlEs"]?.toString()?.isNotBlank() == true || data["videoUrlPt"]?.toString()?.isNotBlank() == true)
 
     fun notice(id: String, d: Map<String, Any>) = AppNotice(
         id=id, title=d["title"] as? String ?: "", content=d["content"] as? String ?: "",
-        videoUrl=d["videoUrl"] as? String ?: "", expandedImageUrl=d["expandedImageUrl"] as? String ?: "",
+        videoUrl=d["videoUrl"] as? String ?: "", videoUrlEs=d["videoUrlEs"] as? String ?: "", videoUrlPt=d["videoUrlPt"] as? String ?: "", expandedImageUrl=d["expandedImageUrl"] as? String ?: "",
         externalUrl=d["externalUrl"] as? String ?: "", titleColor=d["titleColor"] as? String ?: "#FFD700",
         tag="PUBLICIDAD", budget=(d["budget"] as? Number)?.toDouble() ?: 0.0,
         budgetUnit=d["budgetUnit"] as? String ?: "day", durationValue=(d["durationValue"] as? Number)?.toInt() ?: 1,
@@ -76,7 +77,8 @@ object SponsorReviewPolicy {
         isEnabled=d["isEnabled"] == true, approvedAtMillis=(d["approvedAtMillis"] as? Number)?.toLong() ?: 0,
         expiresAtMillis=(d["expiresAtMillis"] as? Number)?.toLong() ?: 0,
         sponsorEmail=d["sponsorEmail"] as? String ?: "",
-        languageScope=normalizeLanguageScope(d["languageScope"]?.toString()))
+        languageScope=normalizeLanguageScope(d["languageScope"]?.toString()),
+        chargedEssence=(d["chargedEssence"] as? Number)?.toLong() ?: 0L)
 
     /**
      * Preserve the exact queue document identifier next to the canonical ad.
@@ -186,10 +188,13 @@ object SponsorReviewRepository {
                     "id" to id, "title" to (sourceNotice["title"]?.toString() ?: ""),
                     "content" to (sourceNotice["content"]?.toString() ?: ""),
                     "videoUrl" to (sourceNotice["videoUrl"]?.toString() ?: ""),
+                    "videoUrlEs" to (sourceNotice["videoUrlEs"]?.toString() ?: ""),
+                    "videoUrlPt" to (sourceNotice["videoUrlPt"]?.toString() ?: ""),
                     "expandedImageUrl" to (sourceNotice["expandedImageUrl"]?.toString() ?: ""),
                     "externalUrl" to (sourceNotice["externalUrl"]?.toString() ?: ""),
                     "titleColor" to (sourceNotice["titleColor"]?.toString() ?: "#FFD700"),
                     "languageScope" to SponsorReviewPolicy.normalizeLanguageScope(sourceNotice["languageScope"]?.toString()),
+                    "chargedEssence" to ((sourceNotice["chargedEssence"] as? Number)?.toLong() ?: 0L),
                     "tag" to "PUBLICIDAD", "durationValue" to duration, "durationUnit" to unit.ifBlank { "day" },
                     "isApproved" to approve, "isEnabled" to approve, "status" to if (approve) "APROBADA" else "REJECTED",
                     "approvedAtMillis" to if (approve) now else 0L,

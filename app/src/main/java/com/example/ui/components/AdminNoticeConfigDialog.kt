@@ -69,9 +69,12 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
     var title by remember { mutableStateOf("") }
     var content by remember { mutableStateOf("") }
     var videoUrl by remember { mutableStateOf("") }
+    var videoUrlEs by remember { mutableStateOf("") }
+    var videoUrlPt by remember { mutableStateOf("") }
     var expandedImageUrl by remember { mutableStateOf("") }
     var externalUrl by remember { mutableStateOf("") }
     var selectedTag by remember { mutableStateOf("Anuncios importantes") }
+    var languageScope by remember { mutableStateOf(com.example.data.SponsorReviewPolicy.LANGUAGE_ALL) }
     var titleColor by remember { mutableStateOf("#FFD700") }
     var contentColor by remember { mutableStateOf("#CCCCCC") }
     var isEnabled by remember { mutableStateOf(true) }
@@ -89,7 +92,15 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
 
     val tagsList = listOf("Anuncios importantes", "Ofertas", "Mantenimiento", "Noticia", "Streamer", "PUBLICIDAD")
     val isUrlValid = remember(videoUrl) { NoticeMediaUtils.isValidNoticeMedia(videoUrl) }
+    val isUrlEsValid = remember(videoUrlEs) { NoticeMediaUtils.isValidNoticeMedia(videoUrlEs) }
+    val isUrlPtValid = remember(videoUrlPt) { NoticeMediaUtils.isValidNoticeMedia(videoUrlPt) }
     val isExpandedUrlValid = remember(expandedImageUrl) { NoticeMediaUtils.isValidNoticeMedia(expandedImageUrl) }
+    val previewMediaUrl = when (languageScope) {
+        com.example.data.SponsorReviewPolicy.LANGUAGE_ES -> videoUrlEs.ifBlank { videoUrl }
+        com.example.data.SponsorReviewPolicy.LANGUAGE_PT -> videoUrlPt.ifBlank { videoUrl }
+        com.example.data.SponsorReviewPolicy.LANGUAGE_BOTH -> videoUrlEs.ifBlank { videoUrlPt }.ifBlank { videoUrl }
+        else -> videoUrl
+    }
     val coroutineScope = rememberCoroutineScope()
     var isProcessingMedia by remember { mutableStateOf(false) }
     var deletingNoticeId by remember { mutableStateOf<String?>(null) }
@@ -126,6 +137,8 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
     val hasFilledFields = title.isNotBlank() ||
         content.isNotBlank() ||
         videoUrl.isNotBlank() ||
+        videoUrlEs.isNotBlank() ||
+        videoUrlPt.isNotBlank() ||
         expandedImageUrl.isNotBlank() ||
         externalUrl.isNotBlank() ||
         budgetText.isNotBlank() ||
@@ -160,8 +173,11 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                 title = ""
                 content = ""
                 videoUrl = ""
+                videoUrlEs = ""
+                videoUrlPt = ""
                 expandedImageUrl = ""
                 externalUrl = ""
+                languageScope = com.example.data.SponsorReviewPolicy.LANGUAGE_ALL
                 showManualVideoUrlInput = false
                 showManualExpandedUrlInput = false
                 Toast.makeText(context, com.example.util.appTr("Edición cancelada."), Toast.LENGTH_SHORT).show()
@@ -255,8 +271,11 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                                     title = ""
                                     content = ""
                                     videoUrl = ""
+                                    videoUrlEs = ""
+                                    videoUrlPt = ""
                                     expandedImageUrl = ""
                                     externalUrl = ""
+                                    languageScope = com.example.data.SponsorReviewPolicy.LANGUAGE_ALL
                                     showManualVideoUrlInput = false
                                     showManualExpandedUrlInput = false
                                     Toast.makeText(context, com.example.util.appTr("Campos limpiados. Salida desbloqueada."), Toast.LENGTH_SHORT).show()
@@ -573,9 +592,12 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                                             title = notice.title
                                             content = notice.content
                                             videoUrl = notice.videoUrl
+                                            videoUrlEs = notice.videoUrlEs
+                                            videoUrlPt = notice.videoUrlPt
                                             expandedImageUrl = notice.expandedImageUrl
                                             externalUrl = notice.externalUrl
                                             selectedTag = notice.tag
+                                            languageScope = com.example.data.SponsorReviewPolicy.normalizeLanguageScope(notice.languageScope)
                                             titleColor = notice.titleColor
                                             contentColor = notice.contentColor
                                             isEnabled = notice.isEnabled
@@ -593,8 +615,11 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                                                 title = ""
                                                 content = ""
                                                 videoUrl = ""
+                                                videoUrlEs = ""
+                                                videoUrlPt = ""
                                                 expandedImageUrl = ""
                                                 externalUrl = ""
+                                                languageScope = com.example.data.SponsorReviewPolicy.LANGUAGE_ALL
                                                 budgetText = ""
                                             }
                                             removeNoticeFromAdminList(notice)
@@ -679,8 +704,11 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                                 title = ""
                                 content = ""
                                 videoUrl = ""
+                                videoUrlEs = ""
+                                videoUrlPt = ""
                                 expandedImageUrl = ""
                                 externalUrl = ""
+                                languageScope = com.example.data.SponsorReviewPolicy.LANGUAGE_ALL
                             },
                             contentPadding = PaddingValues(horizontal = 6.dp, vertical = 2.dp)
                         ) {
@@ -715,6 +743,46 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                         }
                     }
                 }
+
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(tr("Idioma de publicación (opcional):"), color = TextSecondary, fontSize = 11.sp)
+                Spacer(modifier = Modifier.height(4.dp))
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .horizontalScroll(rememberScrollState()),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    listOf(
+                        com.example.data.SponsorReviewPolicy.LANGUAGE_ALL to "General",
+                        com.example.data.SponsorReviewPolicy.LANGUAGE_ES to "Español",
+                        com.example.data.SponsorReviewPolicy.LANGUAGE_PT to "Português",
+                        com.example.data.SponsorReviewPolicy.LANGUAGE_BOTH to "Español + Português"
+                    ).forEach { (scope, label) ->
+                        val selected = languageScope == scope
+                        Button(
+                            onClick = { languageScope = scope },
+                            shape = RoundedCornerShape(6.dp),
+                            contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = if (selected) HextechGold else HextechSurfaceVariant
+                            )
+                        ) {
+                            Text(
+                                tr(label),
+                                color = if (selected) HextechDarkBg else TextPrimary,
+                                fontSize = 9.5.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+                }
+                Text(
+                    tr("General se muestra a todos. Español/Português permiten cargar un medio específico; los campos son opcionales."),
+                    color = TextMuted,
+                    fontSize = 9.5.sp,
+                    lineHeight = 13.sp
+                )
 
                 Spacer(modifier = Modifier.height(8.dp))
                 OutlinedTextField(
@@ -803,9 +871,7 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                 Text(tr("1. Multimedia Horizontal (Panel de Inicio):"), color = HextechCyan, fontSize = 11.5.sp, fontWeight = FontWeight.Bold)
                 Spacer(modifier = Modifier.height(4.dp))
 
-                val horizontalMediaPickerLauncher = rememberLauncherForActivityResult(
-                    contract = androidx.activity.result.contract.ActivityResultContracts.GetContent()
-                ) { uri: android.net.Uri? ->
+                fun processHorizontalMedia(uri: android.net.Uri?, assign: (String) -> Unit, successLabel: String) {
                     uri?.let { pickedUri ->
                         coroutineScope.launch {
                             isProcessingMedia = true
@@ -813,27 +879,40 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                                 val validation = NoticeMediaUtils.validateMediaForSlot(context, pickedUri, isVerticalSlot = false)
                                 if (!validation.isValid) {
                                     Toast.makeText(context, com.example.util.appTr(validation.errorMessage ?: "El archivo no cumple con el tamaño o proporción recomendada para banner horizontal"), Toast.LENGTH_LONG).show()
-                                    isProcessingMedia = false
                                     return@launch
                                 }
-
-                                if (validation.isVideo) {
-                                    Toast.makeText(context, com.example.util.appTr("Procesando video horizontal..."), Toast.LENGTH_SHORT).show()
-                                    val finalVideoUrl = com.example.util.NoticeMediaStorageManager.uploadOrSaveVideo(context, pickedUri)
-                                    videoUrl = finalVideoUrl
-                                    Toast.makeText(context, com.example.util.appTr("Video horizontal configurado exitosamente"), Toast.LENGTH_SHORT).show()
+                                val finalMedia = if (validation.isVideo) {
+                                    com.example.util.NoticeMediaStorageManager.uploadOrSaveVideo(context, pickedUri)
                                 } else {
-                                    val cloudDataUrl = com.example.util.NoticeMediaStorageManager.convertImageToCloudDataUrl(context, pickedUri)
-                                    videoUrl = cloudDataUrl
-                                    Toast.makeText(context, com.example.util.appTr("Imagen horizontal configurada correctamente"), Toast.LENGTH_SHORT).show()
+                                    com.example.util.NoticeMediaStorageManager.convertImageToCloudDataUrl(context, pickedUri)
                                 }
-                            } catch (e: Exception) {
+                                assign(finalMedia)
+                                Toast.makeText(context, com.example.util.appTr(successLabel), Toast.LENGTH_SHORT).show()
+                            } catch (_: Exception) {
                                 Toast.makeText(context, com.example.util.appTr("No se pudo procesar el archivo seleccionado"), Toast.LENGTH_SHORT).show()
                             } finally {
                                 isProcessingMedia = false
                             }
                         }
                     }
+                }
+
+                val horizontalMediaPickerLauncher = rememberLauncherForActivityResult(
+                    contract = androidx.activity.result.contract.ActivityResultContracts.GetContent()
+                ) { uri: android.net.Uri? ->
+                    processHorizontalMedia(uri, { videoUrl = it }, "Multimedia horizontal configurada correctamente")
+                }
+
+                val spanishMediaPickerLauncher = rememberLauncherForActivityResult(
+                    contract = androidx.activity.result.contract.ActivityResultContracts.GetContent()
+                ) { uri: android.net.Uri? ->
+                    processHorizontalMedia(uri, { videoUrlEs = it }, "Multimedia en español configurada correctamente")
+                }
+
+                val portugueseMediaPickerLauncher = rememberLauncherForActivityResult(
+                    contract = androidx.activity.result.contract.ActivityResultContracts.GetContent()
+                ) { uri: android.net.Uri? ->
+                    processHorizontalMedia(uri, { videoUrlPt = it }, "Multimedia en portugués configurada correctamente")
                 }
 
                 if (videoUrl.isNotBlank()) {
@@ -978,6 +1057,53 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                         Icon(Icons.Default.AttachFile, contentDescription = null, tint = HextechCyan, modifier = Modifier.size(16.dp))
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(tr("Subir Multimedia Horizontal desde Galería"), color = HextechCyan, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                    }
+                }
+
+                if (languageScope != com.example.data.SponsorReviewPolicy.LANGUAGE_ALL) {
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(containerColor = HextechSurfaceVariant),
+                        shape = RoundedCornerShape(8.dp),
+                        border = BorderStroke(1.dp, HextechGold.copy(alpha = 0.5f))
+                    ) {
+                        Column(modifier = Modifier.padding(10.dp)) {
+                            Text(
+                                tr("Multimedia horizontal por idioma (opcional)"),
+                                color = HextechGold,
+                                fontSize = 11.5.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Text(
+                                tr("Si no subes un medio específico, se conservará el medio general cuando exista."),
+                                color = TextMuted,
+                                fontSize = 9.5.sp
+                            )
+
+                            if (languageScope == com.example.data.SponsorReviewPolicy.LANGUAGE_ES ||
+                                languageScope == com.example.data.SponsorReviewPolicy.LANGUAGE_BOTH) {
+                                AdminLanguageMediaField(
+                                    "Banner para Español",
+                                    videoUrlEs,
+                                    isUrlEsValid,
+                                    spanishMediaPickerLauncher,
+                                    { videoUrlEs = it },
+                                    HextechCyan
+                                )
+                            }
+                            if (languageScope == com.example.data.SponsorReviewPolicy.LANGUAGE_PT ||
+                                languageScope == com.example.data.SponsorReviewPolicy.LANGUAGE_BOTH) {
+                                AdminLanguageMediaField(
+                                    "Banner para Português",
+                                    videoUrlPt,
+                                    isUrlPtValid,
+                                    portugueseMediaPickerLauncher,
+                                    { videoUrlPt = it },
+                                    HextechGold
+                                )
+                            }
+                        }
                     }
                 }
 
@@ -1269,8 +1395,11 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                                 title = ""
                                 content = ""
                                 videoUrl = ""
+                                videoUrlEs = ""
+                                videoUrlPt = ""
                                 expandedImageUrl = ""
                                 externalUrl = ""
+                                languageScope = com.example.data.SponsorReviewPolicy.LANGUAGE_ALL
                                 budgetText = ""
                                 showManualVideoUrlInput = false
                                 showManualExpandedUrlInput = false
@@ -1288,11 +1417,17 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
 
                         Button(
                             onClick = {
-                                if (title.isBlank() && content.isBlank() && videoUrl.isBlank()) {
+                                if (title.isBlank() && content.isBlank() && videoUrl.isBlank() && videoUrlEs.isBlank() && videoUrlPt.isBlank()) {
                                     Toast.makeText(context, com.example.util.appTr("Ingresa un título o contenido para el anuncio"), Toast.LENGTH_SHORT).show()
                                     return@Button
                                 }
-                                if (!isUrlValid || !isExpandedUrlValid) {
+                                val languageMediaValid = when (languageScope) {
+                                    com.example.data.SponsorReviewPolicy.LANGUAGE_ES -> isUrlEsValid
+                                    com.example.data.SponsorReviewPolicy.LANGUAGE_PT -> isUrlPtValid
+                                    com.example.data.SponsorReviewPolicy.LANGUAGE_BOTH -> isUrlEsValid && isUrlPtValid
+                                    else -> isUrlValid
+                                }
+                                if (!languageMediaValid || !isExpandedUrlValid) {
                                     Toast.makeText(context, com.example.util.appTr("URL multimedia inválida"), Toast.LENGTH_SHORT).show()
                                     return@Button
                                 }
@@ -1302,9 +1437,12 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                                     title = title.trim(),
                                     content = content,
                                     videoUrl = videoUrl,
+                                    videoUrlEs = videoUrlEs,
+                                    videoUrlPt = videoUrlPt,
                                     expandedImageUrl = expandedImageUrl,
                                     externalUrl = externalUrl,
                                     tag = selectedTag,
+                                    languageScope = com.example.data.SponsorReviewPolicy.normalizeLanguageScope(languageScope),
                                     titleColor = titleColor,
                                     contentColor = contentColor,
                                     isEnabled = isEnabled,
@@ -1316,8 +1454,11 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                                 title = ""
                                 content = ""
                                 videoUrl = ""
+                                videoUrlEs = ""
+                                videoUrlPt = ""
                                 expandedImageUrl = ""
                                 externalUrl = ""
+                                languageScope = com.example.data.SponsorReviewPolicy.LANGUAGE_ALL
                                 budgetText = ""
                                 showManualVideoUrlInput = false
                                 showManualExpandedUrlInput = false
@@ -1333,11 +1474,17 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                 } else {
                     Button(
                         onClick = {
-                            if (title.isBlank() && content.isBlank() && videoUrl.isBlank()) {
+                            if (title.isBlank() && content.isBlank() && videoUrl.isBlank() && videoUrlEs.isBlank() && videoUrlPt.isBlank()) {
                                 Toast.makeText(context, com.example.util.appTr("Ingresa un título o contenido para el anuncio"), Toast.LENGTH_SHORT).show()
                                 return@Button
                             }
-                            if (!isUrlValid || !isExpandedUrlValid) {
+                            val languageMediaValid = when (languageScope) {
+                                com.example.data.SponsorReviewPolicy.LANGUAGE_ES -> isUrlEsValid
+                                com.example.data.SponsorReviewPolicy.LANGUAGE_PT -> isUrlPtValid
+                                com.example.data.SponsorReviewPolicy.LANGUAGE_BOTH -> isUrlEsValid && isUrlPtValid
+                                else -> isUrlValid
+                            }
+                            if (!languageMediaValid || !isExpandedUrlValid) {
                                 Toast.makeText(context, com.example.util.appTr("URL multimedia inválida"), Toast.LENGTH_SHORT).show()
                                 return@Button
                             }
@@ -1347,9 +1494,12 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                                 title = title.trim(),
                                 content = content,
                                 videoUrl = videoUrl,
+                                videoUrlEs = videoUrlEs,
+                                videoUrlPt = videoUrlPt,
                                 expandedImageUrl = expandedImageUrl,
                                 externalUrl = externalUrl,
                                 tag = selectedTag,
+                                languageScope = com.example.data.SponsorReviewPolicy.normalizeLanguageScope(languageScope),
                                 titleColor = titleColor,
                                 contentColor = contentColor,
                                 isEnabled = isEnabled,
@@ -1359,8 +1509,11 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                             title = ""
                             content = ""
                             videoUrl = ""
+                            videoUrlEs = ""
+                            videoUrlPt = ""
                             expandedImageUrl = ""
                             externalUrl = ""
+                            languageScope = com.example.data.SponsorReviewPolicy.LANGUAGE_ALL
                             budgetText = ""
                             editingNoticeId = null
                             showManualVideoUrlInput = false
@@ -1423,10 +1576,10 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                             fontSize = 11.sp,
                             lineHeight = 14.sp
                         )
-                        if (videoUrl.isNotBlank() && isUrlValid) {
+                        if (previewMediaUrl.isNotBlank() && NoticeMediaUtils.isValidNoticeMedia(previewMediaUrl)) {
                             Spacer(modifier = Modifier.height(8.dp))
                             NoticeMediaViewer(
-                                mediaUrl = videoUrl,
+                                mediaUrl = previewMediaUrl,
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .aspectRatio(16f / 9f)
@@ -1521,4 +1674,37 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
             }
         }
     }
+}
+
+@Composable
+private fun AdminLanguageMediaField(
+    label: String,
+    value: String,
+    valid: Boolean,
+    launcher: androidx.activity.result.ActivityResultLauncher<String>,
+    onValueChange: (String) -> Unit,
+    tint: Color
+) {
+    Spacer(modifier = Modifier.height(8.dp))
+    OutlinedTextField(
+        value = value,
+        onValueChange = onValueChange,
+        label = { Text(tr(label)) },
+        singleLine = true,
+        isError = !valid,
+        supportingText = {
+            Text(
+                tr(if (valid) "URL o archivo opcional" else "Enlace multimedia inválido"),
+                color = if (valid) TextMuted else DangerRed,
+                fontSize = 9.sp
+            )
+        },
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(7.dp),
+        trailingIcon = {
+            IconButton(onClick = { launcher.launch("*/*") }) {
+                Icon(Icons.Default.AttachFile, contentDescription = tr("Subir"), tint = tint)
+            }
+        }
+    )
 }

@@ -4,6 +4,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
@@ -26,6 +28,7 @@ fun AdminOverlayAccessDialog(onDismiss: () -> Unit) {
     var saving by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf(false) }
     var loaded by remember { mutableStateOf(false) }
+    var accountQuery by remember { mutableStateOf("") }
     LaunchedEffect(Unit) {
         val result = runCatching { OverlayAccessPolicy.load() }
         result.onSuccess { snapshot ->
@@ -53,8 +56,21 @@ fun AdminOverlayAccessDialog(onDismiss: () -> Unit) {
                 Text(androidx.compose.ui.res.stringResource(com.example.R.string.overlay_activation_admin_description), color = TextSecondary,
                     style = MaterialTheme.typography.bodySmall)
                 Text(androidx.compose.ui.res.stringResource(com.example.R.string.viewer_exceptions), color = TextSecondary, style = MaterialTheme.typography.labelLarge)
+                OutlinedTextField(
+                    value = accountQuery,
+                    onValueChange = { accountQuery = it },
+                    modifier = Modifier.fillMaxWidth().testTag("overlay_account_search"),
+                    singleLine = true,
+                    leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
+                    label = { Text(tr("Buscar por nombre, email o UID...")) }
+                )
+                val normalizedQuery = accountQuery.trim().lowercase()
+                val filteredAccounts = accounts.filter { account ->
+                    if (normalizedQuery.isBlank()) true else listOf("name", "displayName", "username", "userName", "email")
+                        .any { key -> account[key]?.toString()?.lowercase()?.contains(normalizedQuery) == true }
+                }
                 LazyColumn(Modifier.fillMaxWidth().heightIn(max = 240.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    items(accounts, key = { it["uid"].toString() }) { account ->
+                    items(filteredAccounts, key = { it["uid"].toString() }) { account ->
                         val id = account["uid"].toString()
                         val label = (account["name"] ?: account["displayName"] ?: account["email"] ?: id).toString()
                         val email = (account["email"] as? String).orEmpty()

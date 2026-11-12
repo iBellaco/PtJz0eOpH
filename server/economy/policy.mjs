@@ -77,12 +77,20 @@ export function sponsorPrice(notice, activeCount) {
   const languageScope = String(notice.languageScope ?? 'ALL').trim().toUpperCase();
   ensure(['ALL', 'ES', 'PT', 'BOTH'].includes(languageScope), 'invalid-argument', 'Idioma de anuncio no válido');
   const count = integer(notice.durationValue, 1, maximum[notice.durationUnit] ?? 0);
-  for (const [key, limit] of [['title', 200], ['content', 10000], ['videoUrl', 2000], ['expandedImageUrl', 2000], ['externalUrl', 2000]]) {
-    ensure(typeof notice[key] === 'string' && notice[key].length <= limit, 'invalid-argument', 'Anuncio no válido');
-    if (key.endsWith('Url') && notice[key]) ensure(/^https:\/\//i.test(notice[key]), 'invalid-argument', 'Enlace no válido');
+  for (const [key, limit] of [['title', 200], ['content', 10000], ['videoUrl', 350000], ['videoUrlEs', 350000], ['videoUrlPt', 350000], ['expandedImageUrl', 350000], ['externalUrl', 2000]]) {
+    const value = notice[key] ?? '';
+    ensure(typeof value === 'string' && value.length <= limit, 'invalid-argument', 'Anuncio no válido');
+    if (key === 'externalUrl' && value) ensure(/^https:\/\//i.test(value), 'invalid-argument', 'Enlace no válido');
+    if (key !== 'externalUrl' && key.endsWith('Url') && value) {
+      ensure(/^https:\/\//i.test(value) || /^data:(?:image|video)\/[a-z0-9.+-]+;base64,/i.test(value), 'invalid-argument', 'Multimedia no válida');
+    }
   }
-  ensure(notice.videoUrl.trim() || (notice.title.trim() && notice.content.trim()), 'invalid-argument', 'Anuncio no válido');
-  const media = [notice.videoUrl, notice.expandedImageUrl].filter(Boolean);
+  const videoUrl = String(notice.videoUrl ?? ''), videoUrlEs = String(notice.videoUrlEs ?? ''), videoUrlPt = String(notice.videoUrlPt ?? '');
+  ensure(videoUrl.trim() || videoUrlEs.trim() || videoUrlPt.trim() || (notice.title.trim() && notice.content.trim()), 'invalid-argument', 'Anuncio no válido');
+  if (languageScope === 'BOTH') {
+    ensure(videoUrlEs.trim() && videoUrlPt.trim(), 'invalid-argument', 'Selecciona un banner horizontal para cada idioma');
+  }
+  const media = [...new Set([videoUrl, videoUrlEs, videoUrlPt, notice.expandedImageUrl].filter(Boolean))];
   const languageMultiplier = languageScope === 'BOTH' ? 2 : 1;
   const cents = ({hour: 50, day: 250, week: 1000, month: 3000}[notice.durationUnit] + (media.some(url => /\.mp4(?:[?#]|$)/i.test(url)) ? 100 : media.length ? 50 : 0) + (notice.externalUrl ? 50 : 0)) * count * languageMultiplier;
   const discounted = Math.max(50, Math.round(cents * 10 / (10 + Math.min(10, Math.max(0, integer(activeCount) - 1)))));

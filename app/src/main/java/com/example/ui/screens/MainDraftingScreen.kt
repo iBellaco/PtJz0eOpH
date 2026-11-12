@@ -473,7 +473,8 @@ fun MainDraftingScreen(
                     notice.isEnabled && notice.isApproved && isNotExpired &&
                         (!com.example.data.SponsorReviewPolicy.isSponsorNotice(notice) ||
                             com.example.data.SponsorReviewPolicy.matchesLanguage(notice.languageScope, currentLanguage)) &&
-                        (notice.content.isNotBlank() || notice.title.isNotBlank() || notice.videoUrl.isNotBlank())
+                        (notice.content.isNotBlank() || notice.title.isNotBlank() || notice.horizontalMediaFor(currentLanguage).isNotBlank() ||
+                            notice.videoUrlEs.isNotBlank() || notice.videoUrlPt.isNotBlank())
                 }
 
                 // Los avisos ya tienen listeners activos desde el arranque; no
@@ -511,7 +512,8 @@ fun MainDraftingScreen(
                         categoryTag = catTag,
                         noticeList = noticeList,
                         intervalMillis = intervalMillis,
-                        context = context
+                        context = context,
+                        currentLanguage = currentLanguage
                     )
                 }
 
@@ -1008,7 +1010,8 @@ fun NoticeCategoryCard(
     categoryTag: String,
     noticeList: List<com.example.data.AppNotice>,
     intervalMillis: Long,
-    context: android.content.Context
+    context: android.content.Context,
+    currentLanguage: String
 ) {
     val isPublicidadCategory = categoryTag.equals("PUBLICIDAD", true) || categoryTag.equals("Publicidad", true)
 
@@ -1194,10 +1197,11 @@ fun NoticeCategoryCard(
                                 )
                             }
 
-                            if (noticeItem.videoUrl.isNotBlank()) {
+                            val localizedMedia = noticeItem.horizontalMediaFor(currentLanguage)
+                            if (localizedMedia.isNotBlank()) {
                                 Spacer(modifier = Modifier.height(8.dp))
                                 com.example.ui.components.NoticeMediaViewer(
-                                    mediaUrl = noticeItem.videoUrl,
+                                    mediaUrl = localizedMedia,
                                     externalUrl = noticeItem.externalUrl,
                                     modifier = Modifier.fillMaxWidth(),
                                     onExpand = {
@@ -1235,7 +1239,7 @@ fun NoticeCategoryCard(
                     }
 
                     if (isFullscreenMedia) {
-                        val mediaToExpand = if (currentNotice.expandedImageUrl.isNotBlank()) currentNotice.expandedImageUrl else currentNotice.videoUrl
+                        val mediaToExpand = if (currentNotice.expandedImageUrl.isNotBlank()) currentNotice.expandedImageUrl else currentNotice.horizontalMediaFor(currentLanguage)
                         val isVertical = currentNotice.expandedImageUrl.isNotBlank() && mediaToExpand == currentNotice.expandedImageUrl
                         com.example.ui.components.NoticeMediaFullscreenDialog(
                             mediaUrl = mediaToExpand,
