@@ -12,6 +12,32 @@ import java.util.Locale
 import java.util.UUID
 
 object SponsorReviewPolicy {
+    const val LANGUAGE_ALL = "ALL"
+    const val LANGUAGE_ES = "ES"
+    const val LANGUAGE_PT = "PT"
+    const val LANGUAGE_BOTH = "BOTH"
+
+    fun normalizeLanguageScope(value: String?): String = when (value?.trim()?.uppercase(Locale.ROOT)) {
+        LANGUAGE_ES -> LANGUAGE_ES
+        LANGUAGE_PT -> LANGUAGE_PT
+        LANGUAGE_BOTH, "ES,PT", "PT,ES", "ES+PT", "PT+ES" -> LANGUAGE_BOTH
+        else -> LANGUAGE_ALL
+    }
+
+    /**
+     * A single-language purchase is a general publication for compatibility
+     * with the existing product. Only the explicit BOTH option is targeted by
+     * the visitor language; ALL and single-language choices are visible to all.
+     */
+    fun matchesLanguage(scope: String?, language: String?): Boolean {
+        if (normalizeLanguageScope(scope) != LANGUAGE_BOTH) return true
+        val selected = language?.trim()?.lowercase(Locale.ROOT)
+        // A null language is used by the moderation/server confirmation path:
+        // it verifies that the publication is valid without hiding a valid
+        // two-language campaign before the Home screen applies its locale.
+        if (selected.isNullOrBlank()) return true
+        return selected in setOf("es", "pt")
+    }
     private val sponsorTags = setOf(
         "PATROCINADOR", "PATROCINIO", "SPONSOR", "PUBLICIDAD", "PUBLICIDADES",
         "PAGO", "PAYMENT", "PAGAMENTO"
@@ -28,12 +54,13 @@ object SponsorReviewPolicy {
     fun publicNotice(id: String, data: Map<String, Any>): Map<String, Any> =
         data.filterKeys { it in setOf("title", "content", "videoUrl", "expandedImageUrl", "externalUrl",
             "titleColor", "contentColor", "budget", "budgetUnit", "durationValue", "durationUnit",
-            "isApproved", "isEnabled", "approvedAtMillis", "expiresAtMillis") } +
+            "isApproved", "isEnabled", "approvedAtMillis", "expiresAtMillis", "languageScope") } +
             mapOf("id" to id, "tag" to "PUBLICIDAD")
 
-    fun visibleOnHome(data: Map<String, Any>, now: Long): Boolean =
+    fun visibleOnHome(data: Map<String, Any>, now: Long, language: String? = null): Boolean =
         data["isApproved"] == true && data["isEnabled"] == true &&
             data["tag"]?.toString()?.uppercase() == "PUBLICIDAD" &&
+            matchesLanguage(data["languageScope"]?.toString(), language) &&
             ((data["expiresAtMillis"] as? Number)?.toLong() ?: 0L).let { it == 0L || it > now } &&
             (data["title"]?.toString()?.isNotBlank() == true ||
                 data["content"]?.toString()?.isNotBlank() == true ||
@@ -48,7 +75,8 @@ object SponsorReviewPolicy {
         durationUnit=d["durationUnit"] as? String ?: "day", isApproved=d["isApproved"] == true,
         isEnabled=d["isEnabled"] == true, approvedAtMillis=(d["approvedAtMillis"] as? Number)?.toLong() ?: 0,
         expiresAtMillis=(d["expiresAtMillis"] as? Number)?.toLong() ?: 0,
-        sponsorEmail=d["sponsorEmail"] as? String ?: "")
+        sponsorEmail=d["sponsorEmail"] as? String ?: "",
+        languageScope=normalizeLanguageScope(d["languageScope"]?.toString()))
 
     /**
      * Preserve the exact queue document identifier next to the canonical ad.
@@ -161,6 +189,7 @@ object SponsorReviewRepository {
                     "expandedImageUrl" to (sourceNotice["expandedImageUrl"]?.toString() ?: ""),
                     "externalUrl" to (sourceNotice["externalUrl"]?.toString() ?: ""),
                     "titleColor" to (sourceNotice["titleColor"]?.toString() ?: "#FFD700"),
+                    "languageScope" to SponsorReviewPolicy.normalizeLanguageScope(sourceNotice["languageScope"]?.toString()),
                     "tag" to "PUBLICIDAD", "durationValue" to duration, "durationUnit" to unit.ifBlank { "day" },
                     "isApproved" to approve, "isEnabled" to approve, "status" to if (approve) "APROBADA" else "REJECTED",
                     "approvedAtMillis" to if (approve) now else 0L,

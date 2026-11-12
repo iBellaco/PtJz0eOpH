@@ -1,6 +1,9 @@
 <resources>
     <string name="device_diagnostic">Diagnóstico</string>
+    <string name="diagnostic_button_description">Enviar diagnóstico (%1$d de %2$d usos restantes hoje)</string>
     <string name="diagnostic_sent">Diagnóstico enviado</string>
+    <string name="diagnostic_sent_with_remaining">Diagnóstico enviado. Restam %1$d envios hoje.</string>
+    <string name="diagnostic_limit_reached">Você atingiu o limite de 5 diagnósticos por dia. Tente novamente amanhã.</string>
     <string name="viewer_exceptions">Exceções: usuários selecionados têm acesso mesmo com os botões desativados.</string>
     <string name="delete_data_confirm">Excluir este registro permanentemente?</string>
     <string name="data_records">Ver registros</string>

@@ -147,6 +147,21 @@ object DraftVisionScanner {
     val liveScanFps = kotlinx.coroutines.flow.MutableStateFlow(0f)
     val framesSkippedCount = kotlinx.coroutines.flow.MutableStateFlow(0L)
     val lastProcessingDurationMs = kotlinx.coroutines.flow.MutableStateFlow(0L)
+    val framesReceivedCount = kotlinx.coroutines.flow.MutableStateFlow(0L)
+    val framesProcessedCount = kotlinx.coroutines.flow.MutableStateFlow(0L)
+    val lastFrameAtMillis = kotlinx.coroutines.flow.MutableStateFlow(0L)
+    val lastFrameWidth = kotlinx.coroutines.flow.MutableStateFlow(0)
+    val lastFrameHeight = kotlinx.coroutines.flow.MutableStateFlow(0)
+    val processingAverageDurationMs = kotlinx.coroutines.flow.MutableStateFlow(0L)
+    val processingMinDurationMs = kotlinx.coroutines.flow.MutableStateFlow(0L)
+    val processingMaxDurationMs = kotlinx.coroutines.flow.MutableStateFlow(0L)
+    val fpsAverage = kotlinx.coroutines.flow.MutableStateFlow(0f)
+    val fpsMinimum = kotlinx.coroutines.flow.MutableStateFlow(0f)
+    val fpsMaximum = kotlinx.coroutines.flow.MutableStateFlow(0f)
+    val calibrationSourceFlow = kotlinx.coroutines.flow.MutableStateFlow("sin captura")
+    private val performanceLock = Any()
+    private var totalProcessingDurationMs = 0L
+    private var fpsSampleCount = 0L
     val isFirstPickState = kotlinx.coroutines.flow.MutableStateFlow<Boolean?>(null)
 
     val allySlotRolesCache = mutableMapOf<Int, LaneRole>()
@@ -189,15 +204,37 @@ object DraftVisionScanner {
     }
 
     fun recordFrameSkipped() {
-        framesSkippedCount.value = framesSkippedCount.value + 1L
+        synchronized(performanceLock) { framesSkippedCount.value = framesSkippedCount.value + 1L }
+    }
+
+    fun recordFrameReceived(width: Int, height: Int) = synchronized(performanceLock) {
+        framesReceivedCount.value = framesReceivedCount.value + 1L
+        lastFrameAtMillis.value = android.os.SystemClock.elapsedRealtime()
+        lastFrameWidth.value = width
+        lastFrameHeight.value = height
     }
 
     fun recordFrameProcessed(durationMs: Long) {
-        lastProcessingDurationMs.value = durationMs
+        synchronized(performanceLock) {
+            framesProcessedCount.value = framesProcessedCount.value + 1L
+            lastProcessingDurationMs.value = durationMs
+            totalProcessingDurationMs += durationMs.coerceAtLeast(0L)
+            processingAverageDurationMs.value = totalProcessingDurationMs / framesProcessedCount.value.coerceAtLeast(1L)
+            processingMinDurationMs.value = if (processingMinDurationMs.value == 0L) durationMs else minOf(processingMinDurationMs.value, durationMs)
+            processingMaxDurationMs.value = maxOf(processingMaxDurationMs.value, durationMs)
+        }
     }
 
     fun updateFps(fps: Float) {
-        liveScanFps.value = fps
+        synchronized(performanceLock) {
+            liveScanFps.value = fps
+            if (fps > 0f) {
+                fpsSampleCount++
+                fpsAverage.value = ((fpsAverage.value * (fpsSampleCount - 1)) + fps) / fpsSampleCount
+                fpsMinimum.value = if (fpsMinimum.value == 0f) fps else minOf(fpsMinimum.value, fps)
+                fpsMaximum.value = maxOf(fpsMaximum.value, fps)
+            }
+        }
     }
 
     internal fun preferFullScreenAllyChampion(fullScreenChampion: Champion?, targetedChampion: Champion?): Champion? =
@@ -397,6 +434,12 @@ object DraftVisionScanner {
             val selected = profileConfig ?: if (keepCustomizedGlobal) globalCalibrationConfig
                 else measured ?: if (activeCaptureProfile == null && !hasProfiles) globalCalibrationConfig else generic
             activeFrameRelativeProfile = profileConfig != null || (!keepCustomizedGlobal && measured != null)
+            calibrationSourceFlow.value = when {
+                profileConfig != null -> "perfil guardado (${profile})"
+                measured != null -> "perfil medido por resolución (${profile})"
+                keepCustomizedGlobal -> "calibración global guardada"
+                else -> "adaptativa predeterminada"
+            }
             calibrationConfig = selected
             calibrationConfigFlow.value = selected
             alignedConfigFlow.value = selected
@@ -614,6 +657,22 @@ object DraftVisionScanner {
         updateFps(0f)
         framesSkippedCount.value = 0L
         lastProcessingDurationMs.value = 0L
+        synchronized(performanceLock) {
+            framesReceivedCount.value = 0L
+            framesProcessedCount.value = 0L
+            lastFrameAtMillis.value = 0L
+            lastFrameWidth.value = 0
+            lastFrameHeight.value = 0
+            processingAverageDurationMs.value = 0L
+            processingMinDurationMs.value = 0L
+            processingMaxDurationMs.value = 0L
+            fpsAverage.value = 0f
+            fpsMinimum.value = 0f
+            fpsMaximum.value = 0f
+            totalProcessingDurationMs = 0L
+            fpsSampleCount = 0L
+            calibrationSourceFlow.value = "sin captura"
+        }
     }
 
     private fun getRecognizer(): com.google.mlkit.vision.text.TextRecognizer? {
