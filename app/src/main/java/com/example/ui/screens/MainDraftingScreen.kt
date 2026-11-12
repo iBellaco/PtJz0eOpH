@@ -512,7 +512,8 @@ fun MainDraftingScreen(
                         categoryTag = catTag,
                         noticeList = noticeList,
                         intervalMillis = intervalMillis,
-                        context = context
+                        context = context,
+                        currentLanguage = currentLanguage
                     )
                 }
 
@@ -1009,7 +1010,8 @@ fun NoticeCategoryCard(
     categoryTag: String,
     noticeList: List<com.example.data.AppNotice>,
     intervalMillis: Long,
-    context: android.content.Context
+    context: android.content.Context,
+    currentLanguage: String
 ) {
     val isPublicidadCategory = categoryTag.equals("PUBLICIDAD", true) || categoryTag.equals("Publicidad", true)
 
