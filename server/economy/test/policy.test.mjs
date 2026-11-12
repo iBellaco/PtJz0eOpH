@@ -56,9 +56,12 @@ test('sponsor pricing uses server publication count and verified fields', () => 
   const notice = {title: 'Anuncio', content: 'Contenido', videoUrl: '', expandedImageUrl: '', externalUrl: '', durationValue: 1, durationUnit: 'day'};
   assert.deepEqual(sponsorPrice(notice, 1), {budget: 2.5, cost: 25});
   assert.deepEqual(sponsorPrice(notice, 0), {budget: 2.5, cost: 25});
-  assert.deepEqual(sponsorPrice({...notice, languageScope: 'BOTH'}, 1), {budget: 5, cost: 50});
+  const bilingual = {...notice, languageScope: 'BOTH', videoUrlEs: 'https://example.test/es.jpg', videoUrlPt: 'https://example.test/pt.jpg'};
+  assert.deepEqual(sponsorPrice(bilingual, 1), {budget: 6, cost: 60});
+  assert.throws(() => sponsorPrice({...notice, languageScope: 'BOTH'}, 1), /banner/);
   assert.deepEqual(sponsorPrice(notice, 1000), sponsorPrice(notice, 11));
   assert.doesNotThrow(() => sponsorPrice({...notice, title: '', content: '', videoUrl: 'https://example.test/banner.jpg'}, 1));
+  assert.doesNotThrow(() => sponsorPrice({...notice, title: '', content: '', videoUrl: 'data:image/jpeg;base64,AAAA'}, 1));
   assert.throws(() => sponsorPrice({...notice, title: '', content: ''}, 1));
   assert.throws(() => sponsorPrice({...notice, durationValue: 100}, 1));
   assert.throws(() => sponsorPrice({...notice, externalUrl: 'javascript:alert(1)'}, 1));

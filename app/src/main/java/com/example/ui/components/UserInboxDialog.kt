@@ -142,6 +142,8 @@ fun UserInboxDialog(
         val byEmail = mutableMapOf<String, Map<String, Any>>()
         fun updateTickets() { supportReportMessages = (byEmail + byId).values.toList() }
         fun ticket(doc: com.google.firebase.firestore.DocumentSnapshot): Map<String, Any>? {
+            val raw = doc.data.orEmpty()
+            if (raw["adminOnly"] == true || raw["type"]?.toString()?.equals("DIAGNOSTICO", ignoreCase = true) == true) return null
             val report = com.example.data.SupportReportDecoder.decode(doc.id, doc.data.orEmpty()) ?: return null
             return doc.data.orEmpty() + mapOf(
                 "id" to doc.id, "reportId" to doc.id, "title" to report.title, "content" to report.description,
@@ -189,6 +191,7 @@ fun UserInboxDialog(
         fun processMessage(m: Map<String, Any>) {
             val id = m["id"] as? String ?: return
             val reportId = m["reportId"] as? String ?: id
+            if (m["adminOnly"] == true || m["type"]?.toString()?.equals("DIAGNOSTICO", ignoreCase = true) == true) return
             if (!FeedbackRepository.isSupportMessage(m) && deletedIds.contains(id)) return
 
             val isDeleted = (m["isDeleted"] as? Boolean) == true ||

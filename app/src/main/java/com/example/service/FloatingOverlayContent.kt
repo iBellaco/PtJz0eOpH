@@ -135,6 +135,24 @@ private fun activeAutoScanPulse(): AutoScanPulse {
 }
 
 @Composable
+private fun disabledAutoScanPulse(): AutoScanPulse {
+    val transition = rememberInfiniteTransition(label = "auto_scan_disabled_pulse")
+    val alpha by transition.animateFloat(
+        initialValue = 0.42f,
+        targetValue = 0.96f,
+        animationSpec = infiniteRepeatable(tween(900), RepeatMode.Reverse),
+        label = "auto_scan_disabled_alpha"
+    )
+    val scale by transition.animateFloat(
+        initialValue = 0.98f,
+        targetValue = 1.02f,
+        animationSpec = infiniteRepeatable(tween(900), RepeatMode.Reverse),
+        label = "auto_scan_disabled_scale"
+    )
+    return AutoScanPulse(alpha, scale)
+}
+
+@Composable
 internal fun FloatingOverlayContent(
     state: OverlayState,
     isLandscapeMode: Boolean,
@@ -237,7 +255,7 @@ internal fun FloatingOverlayContent(
     var isScanning by state::isScanning
     var autoScanEnabled by state::autoScanEnabled
     var scanNoticeMessage by state::scanNoticeMessage
-    val autoScanPulse = if (autoScanEnabled) activeAutoScanPulse() else AutoScanPulse(0.86f, 1f)
+    val autoScanPulse = if (autoScanEnabled) activeAutoScanPulse() else disabledAutoScanPulse()
 
     val geometryPreviewVisible by DraftVisionScanner.showCalibrationBoxes.collectAsStateWithLifecycle()
     val previewReadiness = remember(screenCaptureManager) {
@@ -1030,6 +1048,12 @@ internal fun FloatingOverlayContent(
                             ) {
                                 val isLiveVisionActive by DraftVisionScanner.showCalibrationBoxes.collectAsStateWithLifecycle()
 
+                                if (hubViewerButtonsVisible) {
+                                    com.example.ui.components.DeviceDiagnosticButton(
+                                        screenCaptureManager = screenCaptureManager
+                                    )
+                                }
+
                                 if (hubViewerButtonsVisible) Surface(
                                     modifier = Modifier
                                         .size(48.dp)
@@ -1049,12 +1073,6 @@ internal fun FloatingOverlayContent(
                                             modifier = Modifier.size(15.dp)
                                         )
                                     }
-                                }
-
-                                if (hubViewerButtonsVisible) {
-                                    com.example.ui.components.DeviceDiagnosticButton(
-                                        screenCaptureManager = screenCaptureManager
-                                    )
                                 }
 
                                 if (hubViewerButtonsVisible) Surface(
@@ -1370,7 +1388,7 @@ internal fun FloatingOverlayContent(
                             )
 
                             val autoScanColor by animateColorAsState(
-                                targetValue = if (autoScanEnabled) Color(0xFF00FF7F) else TextMuted,
+                                targetValue = if (autoScanEnabled) Color(0xFF00FF7F) else DangerRed,
                                 animationSpec = tween(300),
                                 label = "auto_scan_text_color"
                             )
@@ -1378,29 +1396,27 @@ internal fun FloatingOverlayContent(
                                 verticalAlignment = Alignment.CenterVertically,
                                 modifier = Modifier
                                     .clip(RoundedCornerShape(6.dp))
-                                    .background(if (autoScanEnabled) autoScanColor.copy(alpha = 0.06f + autoScanPulse.alpha * 0.10f) else Color.Transparent)
-                                    .border(1.dp, if (autoScanEnabled) autoScanColor.copy(alpha = 0.35f + autoScanPulse.alpha * 0.35f) else Color.Transparent, RoundedCornerShape(6.dp))
+                                    .background(autoScanColor.copy(alpha = 0.06f + autoScanPulse.alpha * 0.10f))
+                                    .border(1.dp, autoScanColor.copy(alpha = 0.35f + autoScanPulse.alpha * 0.35f), RoundedCornerShape(6.dp))
                                     .padding(start = 4.dp, end = 1.dp, top = 1.dp, bottom = 1.dp)
                                     .testTag("overlay_auto_scan_status")
                             ) {
-                                if (autoScanEnabled) {
-                                    Box(
-                                        modifier = Modifier
-                                            .size(6.dp)
-                                            .clip(CircleShape)
-                                            .background(autoScanColor)
-                                    )
-                                    Spacer(Modifier.width(3.dp))
-                                }
+                                Box(
+                                    modifier = Modifier
+                                        .size(6.dp)
+                                        .clip(CircleShape)
+                                        .background(autoScanColor)
+                                )
+                                Spacer(Modifier.width(3.dp))
                                 Text(
-                                    text = tr(if (autoScanEnabled) "Auto-Scan • ACTIVO" else "Auto-Scan"),
+                                    text = tr(if (autoScanEnabled) "Auto-Scan • ACTIVO" else "Auto-Scan • DESHABILITADO"),
                                     color = autoScanColor,
-                                    fontSize = 9.5.sp,
-                                    fontWeight = if (autoScanEnabled) FontWeight.Bold else FontWeight.Normal,
+                                    fontSize = 8.sp,
+                                    fontWeight = FontWeight.Bold,
                                     modifier = Modifier
                                         .padding(end = 4.dp)
-                                        .alpha(if (autoScanEnabled) autoScanPulse.alpha else 0.86f)
-                                        .scale(if (autoScanEnabled) autoScanPulse.scale else 1f)
+                                        .alpha(autoScanPulse.alpha)
+                                        .scale(autoScanPulse.scale)
                                         .testTag("overlay_auto_scan_label")
                                 )
                                 if (!isPremium) {

@@ -29,10 +29,14 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.data.*
+import com.example.data.WildRiftRepository
+import com.example.data.local.FavoriteChampionsManager
+import com.example.model.LaneRole
 import com.example.model.PremiumAccessPolicy
 import com.example.ui.theme.*
 import com.example.util.*
 import kotlinx.coroutines.launch
+import androidx.compose.ui.platform.LocalContext
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -158,12 +162,16 @@ internal fun economyFailure(error: Throwable?): String = when {
 
 @Composable
 internal fun PremiumPlansOverview(blue: Long, orange: Long) {
+    val context = LocalContext.current
+    LaunchedEffect(Unit) { FavoriteChampionsManager.init(context) }
+    val favorites by FavoriteChampionsManager.favoritesFlow.collectAsState()
     Column(Modifier.fillMaxWidth().background(Brush.verticalGradient(listOf(HextechGold.copy(alpha = 0.15f), HextechSurface)), RoundedCornerShape(24.dp))
         .padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Icon(Icons.Default.WorkspacePremium, contentDescription = null, tint = HextechGold, modifier = Modifier.size(36.dp))
         Text(tr("Tu próximo nivel en Coach"), color = HextechGold, style = MaterialTheme.typography.labelLarge)
         Text(tr("Suscripción Premium"), color = TextPrimary, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
         Text(tr("Herramientas para analizar tus partidas y personalizar tu experiencia."), color = TextSecondary, style = MaterialTheme.typography.bodyMedium)
+        DraftFavoriteRecommendations(favorites)
         HorizontalDivider(color = HextechGold.copy(alpha = 0.25f))
         Text(tr("Saldo: $blue EA • $orange EN"), color = HextechCyan, style = MaterialTheme.typography.labelLarge)
         listOf(
@@ -179,6 +187,29 @@ internal fun PremiumPlansOverview(blue: Long, orange: Long) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Icon(Icons.Default.CheckCircle, contentDescription = null, tint = HextechGold, modifier = Modifier.size(18.dp))
                 Text(tr(benefit), color = TextPrimary, style = MaterialTheme.typography.bodyMedium)
+            }
+        }
+    }
+}
+
+@Composable
+private fun DraftFavoriteRecommendations(favorites: Set<String>) {
+    Surface(
+        color = HextechDarkBg.copy(alpha = 0.72f),
+        shape = RoundedCornerShape(14.dp),
+        border = BorderStroke(1.dp, HextechCyan.copy(alpha = 0.45f)),
+        modifier = Modifier.fillMaxWidth().testTag("premium_favorite_draft_recommendations")
+    ) {
+        Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Text(tr("Recomendaciones de draft según tus favoritos"), color = HextechCyan, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+            Text(tr("Con cinco favoritos por línea puedes recibir recomendaciones centradas en tu catálogo; los campeones sin estadísticas competitivas se excluyen."), color = TextSecondary, fontSize = 11.sp)
+            LaneRole.entries.forEach { role ->
+                val count = WildRiftRepository.favoriteChampionCountForRole(role, favorites)
+                val ready = count >= 5
+                Row(Modifier.fillMaxWidth().heightIn(min = 36.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
+                    Text(tr(role.shortName), color = TextPrimary, fontSize = 11.sp)
+                    Text(tr(if (ready) "Listo para recomendar" else "$count/5 favoritos"), color = if (ready) Color(0xFF10B981) else TextMuted, fontSize = 10.sp, fontWeight = FontWeight.SemiBold)
+                }
             }
         }
     }

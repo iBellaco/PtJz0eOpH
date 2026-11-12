@@ -69,19 +69,19 @@
     <string name="legal_esta_aplicacion_utiliza_componentes_de_software_libre_licenciados" formatted="false">Coach utiliza componentes de Android, Kotlin y otros proveedores, incluidas herramientas de Google para reconocimiento de texto y seguridad. Cada componente conserva su licencia o sus términos correspondientes. No todos los componentes están sujetos a la misma licencia. La disponibilidad pública del código del proyecto no concede derechos sobre los recursos de Riot ni sobre componentes de terceros.</string>
     <string name="onboarding_coach_de_elite_draft" formatted="false">Coach para la selección</string>
     <string name="onboarding_analisis_tactico_en_tiempo_real" formatted="false">Análisis Táctico en Tiempo Real</string>
-    <string name="onboarding_selecciona_composiciones_optimas_con_evaluacion_para_los_5_roles" formatted="false">Recibe recomendaciones por línea y por composición, con enfrentamientos directos, sinergias, builds, runas y hechizos tomados del catálogo de la aplicación.</string>
+    <string name="onboarding_selecciona_composiciones_optimas_con_evaluacion_para_los_5_roles" formatted="false">Recibe recomendaciones por línea y por composición, con enfrentamientos directos, sinergias, builds, runas y hechizos tomados del catálogo. Con cinco favoritos por línea puedes pedir un draft centrado en tus campeones.</string>
     <string name="onboarding_recomendador_de_3_mejores_picks" formatted="false">Recomendaciones adaptadas al draft y a tu línea</string>
     <string name="onboarding_wombo_combos_y_balance_de_dano" formatted="false">24 ventajas, debilidades y sinergias con Premium</string>
     <string name="onboarding_condicion_de_victoria_del_equipo" formatted="false">Builds, runas y hechizos por función</string>
     <string name="onboarding_asistente_flotante_en_juego" formatted="false">Asistente Flotante en Juego</string>
     <string name="onboarding_burbuja_flotante_vision_ocr" formatted="false">Burbuja Flotante &amp; Visión OCR</string>
-    <string name="onboarding_activa_la_burbuja_flotante_para_recibir_coaching_en_directo_sobre" formatted="false">Mueve y calibra el asistente sobre Wild Rift. Con captura autorizada reconoce nombres de las selecciones 1 a 9, valida visualmente el décimo pick y detecta los baneos. El escáner automático requiere Premium.</string>
+    <string name="onboarding_activa_la_burbuja_flotante_para_recibir_coaching_en_directo_sobre" formatted="false">Mueve y calibra el asistente sobre Wild Rift. Con captura autorizada reconoce nombres de las selecciones 1 a 9, valida visualmente el décimo pick y detecta los baneos. El escáner automático requiere Premium y el diagnóstico se envía bajo demanda.</string>
     <string name="onboarding_burbuja_flotante_movible" formatted="false">Asistente movible y calibración por dispositivo</string>
     <string name="onboarding_escaner_visual_de_seleccion" formatted="false">Lectura de picks, décimo pick y baneos</string>
     <string name="onboarding_consejos_tacticos_sin_cambiar_de_app" formatted="false">Guarda el draft al completar la selección</string>
     <string name="onboarding_tier_list_oficial" formatted="false">Clasificación comunitaria</string>
     <string name="onboarding_meta_global_y_counters" formatted="false">Análisis global y enfrentamientos</string>
-    <string name="onboarding_consulta_la_tier_list_oficial_actualizada_al_ultimo_parche_y_desc" formatted="false">Consulta la clasificación S+, S, A, B y C combinada desde las fuentes públicas indicadas, con tasas de victoria, selección y bloqueo publicadas para cada línea disponible.</string>
+    <string name="onboarding_consulta_la_tier_list_oficial_actualizada_al_ultimo_parche_y_desc" formatted="false">Consulta la clasificación S+, S, A, B y C combinada desde las fuentes públicas indicadas, con tasas de victoria, selección y bloqueo publicadas para cada línea disponible. Los campeones sin estadísticas competitivas actuales no se muestran como tier.</string>
     <string name="onboarding_tier_list_global_y_de_servidores_asiaticos" formatted="false">Tres fuentes públicas de clasificación</string>
     <string name="onboarding_identificacion_de_mejores_picks_del_meta" formatted="false">Estadísticas separadas por línea publicada</string>
     <string name="onboarding_analisis_de_enfrentamientos_directos" formatted="false">Historial y tier list personal</string>

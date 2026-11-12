@@ -359,7 +359,9 @@ fun AdminSponsorNoticeItem(
             Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Column(modifier = Modifier.fillMaxWidth()) {
                     Text(com.example.util.tr("Patrocinador: ${if (notice.sponsorEmail.isNotBlank()) notice.sponsorEmail else "N/D"}"), color = HextechCyan, fontSize = 11.sp, lineHeight = 16.sp, maxLines = 3, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis, modifier = Modifier.fillMaxWidth())
-                    Text(com.example.util.tr("Presupuesto: $${String.format(Locale.US, "%.2f", notice.budget)} USD"), color = TextSecondary, fontSize = 11.sp)
+                    val effectiveBudget = notice.budget.takeIf { it > 0.0 } ?: notice.chargedEssence.takeIf { it > 0L }?.div(10.0) ?: 0.0
+                    Text("${com.example.util.tr("Presupuesto reservado")}: $${String.format(Locale.US, "%.2f", effectiveBudget)} USD", color = TextSecondary, fontSize = 11.sp)
+                    if (notice.chargedEssence > 0L) Text("${com.example.util.tr("Cargo aplicado")}: ${notice.chargedEssence} EA", color = HextechGold, fontSize = 10.sp)
                     Text(com.example.util.tr("Duración: ${notice.durationValue} $unitLabel"), color = HextechGold, fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
                     if (expirationStr != null) {
                         Text(com.example.util.tr(expirationStr), color = if (expirationStr.startsWith("Expirado")) DangerRed else Color(0xFF10B981), fontSize = 10.sp, fontWeight = FontWeight.Bold)

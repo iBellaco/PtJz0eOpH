@@ -26,6 +26,9 @@ data class AppNotice(
     val title: String = "Anuncio Importante",
     val content: String = "Bienvenido a Coach. ¡Consulta las últimas guías del parche y optimiza tu drafting!",
     val videoUrl: String = "", // Multimedia horizontal para panel de inicio
+    /** Multimedia horizontal específico para campañas segmentadas. Legacy notices use videoUrl. */
+    val videoUrlEs: String = "",
+    val videoUrlPt: String = "",
     val expandedImageUrl: String = "", // Imagen vertical para vista ampliada
     val externalUrl: String = "", // Enlace web externo opcional al tocar la imagen ampliada
     val tag: String = "Anuncios importantes", // "Anuncios importantes", "Ofertas", "Mantenimiento", "Noticia", "Streamer", "PUBLICIDAD"
@@ -40,13 +43,22 @@ data class AppNotice(
     val expiresAtMillis: Long = 0L, // Timestamp de expiración calculada
     val isApproved: Boolean = true, // false until admin accepts it if published by sponsor
     val sponsorEmail: String = "", // email of the sponsor who published it
+    /** Esencias cobradas al enviar el patrocinio (1 USD = 10 EA). */
+    val chargedEssence: Long = 0L,
     /**
      * Audience language scope for sponsored notices. `ALL` is the default and
      * keeps legacy notices visible. A single language is intentionally also a
      * general publication; `BOTH` is the opt-in, language-targeted campaign.
      */
     val languageScope: String = "ALL"
-)
+) {
+    fun horizontalMediaFor(language: String?): String = when {
+        languageScope.equals("BOTH", ignoreCase = true) && language.equals("pt", ignoreCase = true) ->
+            videoUrlPt.ifBlank { videoUrl }
+        languageScope.equals("BOTH", ignoreCase = true) -> videoUrlEs.ifBlank { videoUrl }
+        else -> videoUrl
+    }
+}
 
 private fun sponsorStateRank(notice: AppNotice): Int = when {
     notice.isApproved && notice.isEnabled -> 3
@@ -93,12 +105,15 @@ internal fun mergeSponsorNotices(
             // a locally known value for the sponsor's own status panel.
             merged[index] = candidate.copy(
                 videoUrl = candidate.videoUrl.ifBlank { existing.videoUrl },
+                videoUrlEs = candidate.videoUrlEs.ifBlank { existing.videoUrlEs },
+                videoUrlPt = candidate.videoUrlPt.ifBlank { existing.videoUrlPt },
                 expandedImageUrl = candidate.expandedImageUrl.ifBlank { existing.expandedImageUrl },
                 externalUrl = candidate.externalUrl.ifBlank { existing.externalUrl },
                 titleColor = candidate.titleColor.ifBlank { existing.titleColor },
                 contentColor = candidate.contentColor.ifBlank { existing.contentColor },
                 sponsorEmail = candidate.sponsorEmail.ifBlank { existing.sponsorEmail },
-                languageScope = candidate.languageScope
+                languageScope = candidate.languageScope,
+                chargedEssence = candidate.chargedEssence.takeIf { it > 0 } ?: existing.chargedEssence
             )
             changed = true
         }
@@ -441,6 +456,8 @@ object AppNoticeManager {
                             title = map["title"]?.toString() ?: "Aviso",
                             content = map["content"]?.toString() ?: "",
                             videoUrl = map["videoUrl"]?.toString() ?: "",
+                            videoUrlEs = map["videoUrlEs"]?.toString() ?: "",
+                            videoUrlPt = map["videoUrlPt"]?.toString() ?: "",
                             expandedImageUrl = map["expandedImageUrl"]?.toString() ?: "",
                             externalUrl = map["externalUrl"]?.toString() ?: "",
                             tag = map["tag"]?.toString() ?: "Anuncios importantes",
@@ -455,6 +472,7 @@ object AppNoticeManager {
                             expiresAtMillis = (map["expiresAtMillis"] as? Number)?.toLong() ?: 0L,
                             isApproved = (map["isApproved"] as? Boolean) ?: true,
                             sponsorEmail = map["sponsorEmail"]?.toString() ?: "",
+                            chargedEssence = (map["chargedEssence"] as? Number)?.toLong() ?: 0L,
                             languageScope = SponsorReviewPolicy.normalizeLanguageScope(map["languageScope"]?.toString())
                         )
                     )
@@ -564,6 +582,8 @@ object AppNoticeManager {
                     put("title", n.title)
                     put("content", n.content)
                     put("videoUrl", n.videoUrl)
+                    put("videoUrlEs", n.videoUrlEs)
+                    put("videoUrlPt", n.videoUrlPt)
                     put("expandedImageUrl", n.expandedImageUrl)
                     put("externalUrl", n.externalUrl)
                     put("tag", n.tag)
@@ -578,6 +598,7 @@ object AppNoticeManager {
                     put("expiresAtMillis", n.expiresAtMillis)
                     put("isApproved", n.isApproved)
                     put("sponsorEmail", n.sponsorEmail)
+                    put("chargedEssence", n.chargedEssence)
                     put("languageScope", n.languageScope)
                 }
                 arr.put(obj)
@@ -607,6 +628,8 @@ object AppNoticeManager {
                             title = obj.optString("title", ""),
                             content = obj.optString("content", ""),
                             videoUrl = obj.optString("videoUrl", ""),
+                            videoUrlEs = obj.optString("videoUrlEs", ""),
+                            videoUrlPt = obj.optString("videoUrlPt", ""),
                             expandedImageUrl = obj.optString("expandedImageUrl", ""),
                             externalUrl = obj.optString("externalUrl", ""),
                             tag = obj.optString("tag", "Anuncios importantes"),
@@ -621,6 +644,7 @@ object AppNoticeManager {
                             expiresAtMillis = obj.optLong("expiresAtMillis", 0L),
                             isApproved = obj.optBoolean("isApproved", true),
                             sponsorEmail = obj.optString("sponsorEmail", ""),
+                            chargedEssence = obj.optLong("chargedEssence", 0L),
                             languageScope = SponsorReviewPolicy.normalizeLanguageScope(obj.optString("languageScope", "ALL"))
                         )
                     )
@@ -687,6 +711,8 @@ object AppNoticeManager {
                     "title" to n.title,
                     "content" to n.content,
                     "videoUrl" to cleanVideo,
+                    "videoUrlEs" to n.videoUrlEs,
+                    "videoUrlPt" to n.videoUrlPt,
                     "expandedImageUrl" to cleanExpanded,
                     "externalUrl" to n.externalUrl,
                     "tag" to n.tag,
@@ -701,6 +727,7 @@ object AppNoticeManager {
                     "expiresAtMillis" to n.expiresAtMillis,
                     "isApproved" to n.isApproved,
                     "sponsorEmail" to n.sponsorEmail,
+                    "chargedEssence" to n.chargedEssence,
                     "languageScope" to SponsorReviewPolicy.normalizeLanguageScope(n.languageScope)
                 )
             }
@@ -725,6 +752,8 @@ object AppNoticeManager {
                             "title" to n.title,
                             "content" to n.content,
                             "videoUrl" to if (n.videoUrl.startsWith("http://") || n.videoUrl.startsWith("https://")) n.videoUrl else "",
+                            "videoUrlEs" to if (n.videoUrlEs.startsWith("http://") || n.videoUrlEs.startsWith("https://")) n.videoUrlEs else "",
+                            "videoUrlPt" to if (n.videoUrlPt.startsWith("http://") || n.videoUrlPt.startsWith("https://")) n.videoUrlPt else "",
                             "expandedImageUrl" to if (n.expandedImageUrl.startsWith("http://") || n.expandedImageUrl.startsWith("https://")) n.expandedImageUrl else "",
                             "externalUrl" to n.externalUrl,
                             "tag" to n.tag,
@@ -738,7 +767,8 @@ object AppNoticeManager {
                             "approvedAtMillis" to n.approvedAtMillis,
                             "expiresAtMillis" to n.expiresAtMillis,
                             "isApproved" to n.isApproved,
-                            "sponsorEmail" to n.sponsorEmail
+                            "sponsorEmail" to n.sponsorEmail,
+                            "chargedEssence" to n.chargedEssence
                         )
                     }
                     val fallbackData = hashMapOf(
@@ -867,6 +897,7 @@ object AppNoticeManager {
     suspend fun submitPendingSponsorNotice(context: Context, notice: AppNotice, expectedCost: Long) {
         EconomyServiceClient.call("SPONSOR", mapOf("expectedCost" to expectedCost, "notice" to mapOf(
             "title" to notice.title, "content" to notice.content, "videoUrl" to notice.videoUrl,
+            "videoUrlEs" to notice.videoUrlEs, "videoUrlPt" to notice.videoUrlPt,
             "expandedImageUrl" to notice.expandedImageUrl, "externalUrl" to notice.externalUrl,
             "titleColor" to notice.titleColor, "durationValue" to notice.durationValue,
             "durationUnit" to notice.durationUnit,
@@ -897,6 +928,8 @@ object AppNoticeManager {
                 put("title", pendingNotice.title)
                 put("content", pendingNotice.content)
                 put("videoUrl", pendingNotice.videoUrl)
+                put("videoUrlEs", pendingNotice.videoUrlEs)
+                put("videoUrlPt", pendingNotice.videoUrlPt)
                 put("expandedImageUrl", pendingNotice.expandedImageUrl)
                 put("externalUrl", pendingNotice.externalUrl)
                 put("tag", pendingNotice.tag)
@@ -908,6 +941,7 @@ object AppNoticeManager {
                 put("isEnabled", false)
                 put("sponsorEmail", pendingNotice.sponsorEmail)
                 put("languageScope", SponsorReviewPolicy.normalizeLanguageScope(pendingNotice.languageScope))
+                put("chargedEssence", pendingNotice.chargedEssence)
             }
             array.put(obj)
             prefs.edit().putString("pending_ads", array.toString()).apply()
@@ -938,6 +972,8 @@ object AppNoticeManager {
                             title = obj.optString("title", "Publicidad"),
                             content = obj.optString("content", ""),
                             videoUrl = obj.optString("videoUrl", ""),
+                            videoUrlEs = obj.optString("videoUrlEs", ""),
+                            videoUrlPt = obj.optString("videoUrlPt", ""),
                             expandedImageUrl = obj.optString("expandedImageUrl", ""),
                             externalUrl = obj.optString("externalUrl", ""),
                             tag = obj.optString("tag", "Publicidad"),
@@ -950,7 +986,8 @@ object AppNoticeManager {
                             isApproved = obj.optBoolean("isApproved", false),
                             isEnabled = obj.optBoolean("isEnabled", false),
                             sponsorEmail = obj.optString("sponsorEmail", ""),
-                            languageScope = SponsorReviewPolicy.normalizeLanguageScope(obj.optString("languageScope", "ALL"))
+                            languageScope = SponsorReviewPolicy.normalizeLanguageScope(obj.optString("languageScope", "ALL")),
+                            chargedEssence = obj.optLong("chargedEssence", 0L)
                         )
                     )
                 }
@@ -973,6 +1010,8 @@ object AppNoticeManager {
                 val title = doc.getString("title") ?: "Publicidad"
                 val content = doc.getString("content") ?: ""
                 val videoUrl = doc.getString("videoUrl") ?: ""
+                val videoUrlEs = doc.getString("videoUrlEs") ?: ""
+                val videoUrlPt = doc.getString("videoUrlPt") ?: ""
                 val expandedImageUrl = doc.getString("expandedImageUrl") ?: ""
                 val externalUrl = doc.getString("externalUrl") ?: ""
                 val tag = doc.getString("tag") ?: "Publicidad"
@@ -986,6 +1025,7 @@ object AppNoticeManager {
                 val isEnabled = doc.getBoolean("isEnabled") ?: false
                 val sponsorEmail = doc.getString("sponsorEmail") ?: ""
                 val languageScope = SponsorReviewPolicy.normalizeLanguageScope(doc.getString("languageScope"))
+                val chargedEssence = doc.getLong("chargedEssence") ?: 0L
 
                 listToAdd.add(
                     AppNotice(
@@ -993,6 +1033,8 @@ object AppNoticeManager {
                         title = title,
                         content = content,
                         videoUrl = videoUrl,
+                        videoUrlEs = videoUrlEs,
+                        videoUrlPt = videoUrlPt,
                         expandedImageUrl = expandedImageUrl,
                         externalUrl = externalUrl,
                         tag = tag,
@@ -1005,7 +1047,8 @@ object AppNoticeManager {
                         isApproved = isApproved,
                         isEnabled = isEnabled,
                         sponsorEmail = sponsorEmail,
-                        languageScope = languageScope
+                        languageScope = languageScope,
+                        chargedEssence = chargedEssence
                     )
                 )
             }
