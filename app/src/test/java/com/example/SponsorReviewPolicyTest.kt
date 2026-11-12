@@ -59,10 +59,14 @@ class SponsorReviewPolicyTest {
         val notice = AppNotice(
             languageScope = SponsorReviewPolicy.LANGUAGE_BOTH,
             videoUrlEs = "https://example.test/es.jpg",
-            videoUrlPt = "https://example.test/pt.jpg"
+            videoUrlPt = "https://example.test/pt.jpg",
+            expandedImageUrlEs = "https://example.test/es-vertical.jpg",
+            expandedImageUrlPt = "https://example.test/pt-vertical.jpg"
         )
         assertEquals("https://example.test/es.jpg", notice.horizontalMediaFor("es"))
         assertEquals("https://example.test/pt.jpg", notice.horizontalMediaFor("pt"))
+        assertEquals("https://example.test/es-vertical.jpg", notice.verticalMediaFor("es"))
+        assertEquals("https://example.test/pt-vertical.jpg", notice.verticalMediaFor("pt"))
     }
 
     @Test fun sharedQueueCountsAnAdOnceAndClearsItWhenResolved() {

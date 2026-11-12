@@ -474,7 +474,7 @@ fun MainDraftingScreen(
                         (!com.example.data.SponsorReviewPolicy.isSponsorNotice(notice) ||
                             com.example.data.SponsorReviewPolicy.matchesLanguage(notice.languageScope, currentLanguage)) &&
                         (notice.content.isNotBlank() || notice.title.isNotBlank() || notice.horizontalMediaFor(currentLanguage).isNotBlank() ||
-                            notice.videoUrlEs.isNotBlank() || notice.videoUrlPt.isNotBlank())
+                            notice.videoUrlEs.isNotBlank() || notice.videoUrlPt.isNotBlank() || notice.verticalMediaFor(currentLanguage).isNotBlank())
                 }
 
                 // Los avisos ya tienen listeners activos desde el arranque; no
@@ -1239,8 +1239,9 @@ fun NoticeCategoryCard(
                     }
 
                     if (isFullscreenMedia) {
-                        val mediaToExpand = if (currentNotice.expandedImageUrl.isNotBlank()) currentNotice.expandedImageUrl else currentNotice.horizontalMediaFor(currentLanguage)
-                        val isVertical = currentNotice.expandedImageUrl.isNotBlank() && mediaToExpand == currentNotice.expandedImageUrl
+                        val verticalMedia = currentNotice.verticalMediaFor(currentLanguage)
+                        val mediaToExpand = if (verticalMedia.isNotBlank()) verticalMedia else currentNotice.horizontalMediaFor(currentLanguage)
+                        val isVertical = verticalMedia.isNotBlank() && mediaToExpand == verticalMedia
                         com.example.ui.components.NoticeMediaFullscreenDialog(
                             mediaUrl = mediaToExpand,
                             externalUrl = currentNotice.externalUrl,

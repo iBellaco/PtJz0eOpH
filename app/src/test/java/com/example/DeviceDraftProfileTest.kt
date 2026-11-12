@@ -136,6 +136,20 @@ class DeviceDraftProfileTest {
         assertNull(VisionCalibrationConfig.measuredDefaultForCapture("OPPO", "CPH2791", 2340, 1080))
         assertNull(VisionCalibrationConfig.measuredDefaultForCapture("OPPO", "another", 2354, 1080))
     }
+    @Test fun xiaomi25062Rn2dlUsesItsExactMeasuredCaptureProfile() {
+        val xiaomi = VisionCalibrationConfig.measuredDefaultForCapture("Xiaomi", "25062RN2DL", 2340, 1080)
+        assertNotNull(xiaomi)
+        assertEquals(.15031247f, xiaomi!!.allyAvatarCenterX)
+        assertEquals(.959f, xiaomi.enemyAvatarCenterX)
+        assertEquals(.15031247f, xiaomi.allySlotXRatios.first())
+        assertEquals(.11906247f, xiaomi.allySlotXRatios[1])
+        assertEquals(.19120136f, xiaomi.allySlotYRatios.first())
+        assertEquals(.72556216f, xiaomi.allySlotYRatios.last())
+        assertEquals(.105f, xiaomi.allySlotDiameterRatios.last())
+        assertEquals(.9734761f, xiaomi.topEnemy5XRatio)
+        assertNull(VisionCalibrationConfig.measuredDefaultForCapture("Xiaomi", "25062RN2DL", 2400, 1080))
+        assertNull(VisionCalibrationConfig.measuredDefaultForCapture("Xiaomi", "another", 2340, 1080))
+    }
     @Test fun motorolaMotoG56UsesItsExactMeasuredCaptureProfile() {
         val moto = VisionCalibrationConfig.measuredDefaultForCapture("motorola", "moto g56 5G", 2400, 1080)
         assertNotNull(moto)

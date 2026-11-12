@@ -169,6 +169,8 @@ fun SponsorCpmPanelDialog(
                             videoUrlEs = obj.optString("videoUrlEs", ""),
                             videoUrlPt = obj.optString("videoUrlPt", ""),
                             expandedImageUrl = obj.optString("expandedImageUrl", ""),
+                            expandedImageUrlEs = obj.optString("expandedImageUrlEs", ""),
+                            expandedImageUrlPt = obj.optString("expandedImageUrlPt", ""),
                             externalUrl = obj.optString("externalUrl", ""),
                             tag = obj.optString("tag", "Publicidad"),
                             budget = obj.optDouble("budget", 0.0),
@@ -219,6 +221,8 @@ fun SponsorCpmPanelDialog(
     var horizontalMediaEsInput by remember { mutableStateOf("") }
     var horizontalMediaPtInput by remember { mutableStateOf("") }
     var verticalMediaInput by remember { mutableStateOf("") } // Media vertical para pantalla completa
+    var verticalMediaEsInput by remember { mutableStateOf("") }
+    var verticalMediaPtInput by remember { mutableStateOf("") }
     var externalUrlInput by remember { mutableStateOf("") }
     var titleColor by remember { mutableStateOf("#FFD700") }
     var durationValueInput by remember { mutableStateOf("") }
@@ -230,6 +234,8 @@ fun SponsorCpmPanelDialog(
     var isHorizontalEsVideo by remember { mutableStateOf(false) }
     var isHorizontalPtVideo by remember { mutableStateOf(false) }
     var isVerticalVideo by remember { mutableStateOf(false) }
+    var isVerticalEsVideo by remember { mutableStateOf(false) }
+    var isVerticalPtVideo by remember { mutableStateOf(false) }
     var noticeToDelete by remember { mutableStateOf<AppNotice?>(null) }
 
     var currentMinute by remember { mutableStateOf(System.currentTimeMillis() / 60000L) }
@@ -274,10 +280,14 @@ fun SponsorCpmPanelDialog(
         isHorizontalEsVideo,
         isHorizontalPtVideo,
         isVerticalVideo,
+        isVerticalEsVideo,
+        isVerticalPtVideo,
         horizontalMediaInput,
         horizontalMediaEsInput,
         horizontalMediaPtInput,
         verticalMediaInput,
+        verticalMediaEsInput,
+        verticalMediaPtInput,
         externalUrlInput,
         activeAdsCount,
         selectedLanguageScope
@@ -291,9 +301,9 @@ fun SponsorCpmPanelDialog(
         }
         var total = unitPrice * durationValueInt
 
-        if (isHorizontalVideo || isHorizontalEsVideo || isHorizontalPtVideo || isVerticalVideo) {
+        if (isHorizontalVideo || isHorizontalEsVideo || isHorizontalPtVideo || isVerticalVideo || isVerticalEsVideo || isVerticalPtVideo) {
             total += 1.00 * durationValueInt
-        } else if (horizontalMediaInput.isNotBlank() || horizontalMediaEsInput.isNotBlank() || horizontalMediaPtInput.isNotBlank() || verticalMediaInput.isNotBlank()) {
+        } else if (horizontalMediaInput.isNotBlank() || horizontalMediaEsInput.isNotBlank() || horizontalMediaPtInput.isNotBlank() || verticalMediaInput.isNotBlank() || verticalMediaEsInput.isNotBlank() || verticalMediaPtInput.isNotBlank()) {
             total += 0.50 * durationValueInt
         }
 
@@ -398,6 +408,44 @@ fun SponsorCpmPanelDialog(
             isVerticalVideo = isVideo
             isUploadingMedia = false
             Toast.makeText(context, com.example.util.appTr("Multimedia vertical válida cargada (${validation.width}x${validation.height})"), Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    val verticalEsPicker = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocument()
+    ) { uri: Uri? ->
+        if (uri == null) return@rememberLauncherForActivityResult
+        val validation = NoticeMediaUtils.validateMediaForSlot(context, uri, isVerticalSlot = true)
+        if (!validation.isValid) {
+            Toast.makeText(context, com.example.util.appTr(validation.errorMessage ?: "El archivo no cumple con el tamaño o proporción recomendada"), Toast.LENGTH_LONG).show()
+            return@rememberLauncherForActivityResult
+        }
+        isUploadingMedia = true
+        coroutineScope.launch {
+            verticalMediaEsInput = if (validation.isVideo) NoticeMediaStorageManager.uploadOrSaveVideo(context, uri)
+            else NoticeMediaStorageManager.convertImageToCloudDataUrl(context, uri)
+            isVerticalEsVideo = validation.isVideo
+            isUploadingMedia = false
+            Toast.makeText(context, com.example.util.appTr("Multimedia vertical en Español cargada ({0}x{1})").replace("{0}", validation.width.toString()).replace("{1}", validation.height.toString()), Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    val verticalPtPicker = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocument()
+    ) { uri: Uri? ->
+        if (uri == null) return@rememberLauncherForActivityResult
+        val validation = NoticeMediaUtils.validateMediaForSlot(context, uri, isVerticalSlot = true)
+        if (!validation.isValid) {
+            Toast.makeText(context, com.example.util.appTr(validation.errorMessage ?: "El archivo no cumple con el tamaño o proporción recomendada"), Toast.LENGTH_LONG).show()
+            return@rememberLauncherForActivityResult
+        }
+        isUploadingMedia = true
+        coroutineScope.launch {
+            verticalMediaPtInput = if (validation.isVideo) NoticeMediaStorageManager.uploadOrSaveVideo(context, uri)
+            else NoticeMediaStorageManager.convertImageToCloudDataUrl(context, uri)
+            isVerticalPtVideo = validation.isVideo
+            isUploadingMedia = false
+            Toast.makeText(context, com.example.util.appTr("Multimedia vertical de Português cargada ({0}x{1})").replace("{0}", validation.width.toString()).replace("{1}", validation.height.toString()), Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -639,6 +687,28 @@ fun SponsorCpmPanelDialog(
                             Text(tr(if (horizontalMediaPtInput.isBlank()) "Seleccionar banner en Português" else "Cambiar banner en Português"), color = Color.White, fontSize = 12.sp)
                         }
                         Text(if (horizontalMediaPtInput.isBlank()) tr("Falta banner en Português") else tr("Banner en Português listo"), color = if (horizontalMediaPtInput.isBlank()) DangerRed else Color(0xFF10B981), fontSize = 10.sp)
+                    } else if (selectedLanguageScope == com.example.data.SponsorReviewPolicy.LANGUAGE_ES) {
+                        Button(
+                            onClick = { horizontalEsPicker.launch(arrayOf("image/jpeg", "image/jpg", "image/png", "video/mp4")) },
+                            modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = HextechSurfaceVariant), shape = RoundedCornerShape(8.dp), border = BorderStroke(1.dp, HextechGold)
+                        ) {
+                            Icon(Icons.Default.PhotoLibrary, contentDescription = null, tint = HextechGold)
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(tr(if (horizontalMediaEsInput.isBlank()) "Seleccionar banner en Español" else "Cambiar banner en Español"), color = Color.White, fontSize = 12.sp)
+                        }
+                        Text(if (horizontalMediaEsInput.isBlank()) tr("Banner en Español opcional") else tr("Banner en Español listo"), color = if (horizontalMediaEsInput.isBlank()) TextSecondary else Color(0xFF10B981), fontSize = 10.sp)
+                    } else if (selectedLanguageScope == com.example.data.SponsorReviewPolicy.LANGUAGE_PT) {
+                        Button(
+                            onClick = { horizontalPtPicker.launch(arrayOf("image/jpeg", "image/jpg", "image/png", "video/mp4")) },
+                            modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = HextechSurfaceVariant), shape = RoundedCornerShape(8.dp), border = BorderStroke(1.dp, HextechCyan)
+                        ) {
+                            Icon(Icons.Default.PhotoLibrary, contentDescription = null, tint = HextechCyan)
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(tr(if (horizontalMediaPtInput.isBlank()) "Seleccionar banner en Português" else "Cambiar banner en Português"), color = Color.White, fontSize = 12.sp)
+                        }
+                        Text(if (horizontalMediaPtInput.isBlank()) tr("Banner en Português opcional") else tr("Banner en Português listo"), color = if (horizontalMediaPtInput.isBlank()) TextSecondary else Color(0xFF10B981), fontSize = 10.sp)
                     } else {
                         Button(
                             onClick = { horizontalPicker.launch(arrayOf("image/jpeg", "image/jpg", "image/png", "video/mp4")) },
@@ -651,11 +721,14 @@ fun SponsorCpmPanelDialog(
                         }
                     }
 
-                    // Preview Horizontal
-                    if (horizontalMediaInput.isNotBlank() && selectedLanguageScope != com.example.data.SponsorReviewPolicy.LANGUAGE_BOTH) {
-                        val horizontalModel = remember(horizontalMediaInput) {
-                            if (horizontalMediaInput.startsWith("/")) File(horizontalMediaInput) else horizontalMediaInput
-                        }
+                    // Preview Horizontal: muestra el medio correspondiente al idioma elegido.
+                    val horizontalPreviewUrl = when (selectedLanguageScope) {
+                        com.example.data.SponsorReviewPolicy.LANGUAGE_ES -> horizontalMediaEsInput
+                        com.example.data.SponsorReviewPolicy.LANGUAGE_PT -> horizontalMediaPtInput
+                        com.example.data.SponsorReviewPolicy.LANGUAGE_BOTH -> horizontalMediaEsInput.ifBlank { horizontalMediaPtInput }
+                        else -> horizontalMediaInput
+                    }
+                    if (horizontalPreviewUrl.isNotBlank()) {
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -669,15 +742,34 @@ fun SponsorCpmPanelDialog(
                             ) {
                                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                                     NoticeMediaViewer(
-                                        mediaUrl = horizontalMediaInput,
+                                        mediaUrl = horizontalPreviewUrl,
                                         modifier = Modifier.fillMaxSize()
                                     )
                                 }
                             }
                             IconButton(
                                 onClick = {
-                                    horizontalMediaInput = ""
-                                    isHorizontalVideo = false
+                                    when (selectedLanguageScope) {
+                                        com.example.data.SponsorReviewPolicy.LANGUAGE_BOTH -> if (horizontalMediaEsInput.isNotBlank()) {
+                                            horizontalMediaEsInput = ""
+                                            isHorizontalEsVideo = false
+                                        } else {
+                                            horizontalMediaPtInput = ""
+                                            isHorizontalPtVideo = false
+                                        }
+                                        com.example.data.SponsorReviewPolicy.LANGUAGE_ES -> {
+                                            horizontalMediaEsInput = ""
+                                            isHorizontalEsVideo = false
+                                        }
+                                        com.example.data.SponsorReviewPolicy.LANGUAGE_PT -> {
+                                            horizontalMediaPtInput = ""
+                                            isHorizontalPtVideo = false
+                                        }
+                                        else -> {
+                                            horizontalMediaInput = ""
+                                            isHorizontalVideo = false
+                                        }
+                                    }
                                     Toast.makeText(context, com.example.util.appTr("Multimedia horizontal eliminada"), Toast.LENGTH_SHORT).show()
                                 },
                                 modifier = Modifier
@@ -698,22 +790,76 @@ fun SponsorCpmPanelDialog(
                     Text(tr("2. Multimedia Vertical (Vista Ampliada):"), color = HextechCyan, fontSize = 11.5.sp, fontWeight = FontWeight.Bold)
                     Text(tr("• Medidas recomendadas: 1080 x 1920 px (Relación 9:16)\n• Formatos: PNG, JPG/JPEG (máx 5 MB) o Video MP4 (máx 15s y 10 MB)"), color = TextSecondary, fontSize = 10.sp)
 
-                    Button(
-                        onClick = { verticalPicker.launch(arrayOf("image/jpeg", "image/jpg", "image/png", "video/mp4")) },
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = ButtonDefaults.buttonColors(containerColor = HextechSurfaceVariant),
-                        shape = RoundedCornerShape(8.dp),
-                        border = BorderStroke(1.dp, HextechCyan)
-                    ) {
-                        Icon(Icons.Default.VideoLibrary, contentDescription = null, tint = HextechCyan)
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(com.example.util.tr(if (verticalMediaInput.isBlank()) "Seleccionar desde Galería (Vertical)" else "Cambiar Multimedia Vertical"), color = Color.White, fontSize = 12.sp)
+                    val verticalSlotIsBoth = selectedLanguageScope == com.example.data.SponsorReviewPolicy.LANGUAGE_BOTH
+                    if (verticalSlotIsBoth) {
+                        Text(tr("Esta campaña requiere un medio vertical para cada idioma."), color = HextechGold, fontSize = 10.sp, fontWeight = FontWeight.Bold)
                     }
-                    // Preview Vertical
-                    if (verticalMediaInput.isNotBlank()) {
-                        val verticalModel = remember(verticalMediaInput) {
-                            if (verticalMediaInput.startsWith("/")) File(verticalMediaInput) else verticalMediaInput
+                    if (verticalSlotIsBoth || selectedLanguageScope == com.example.data.SponsorReviewPolicy.LANGUAGE_ES || selectedLanguageScope == com.example.data.SponsorReviewPolicy.LANGUAGE_PT) {
+                        val verticalEs = selectedLanguageScope == com.example.data.SponsorReviewPolicy.LANGUAGE_BOTH || selectedLanguageScope == com.example.data.SponsorReviewPolicy.LANGUAGE_ES
+                        val picker = if (verticalEs) verticalEsPicker else verticalPtPicker
+                        val value = if (verticalEs) verticalMediaEsInput else verticalMediaPtInput
+                        val pickerLabel = when {
+                            value.isBlank() && verticalEs -> tr("Seleccionar vertical en Español")
+                            value.isBlank() -> tr("Seleccionar vertical en Português")
+                            verticalEs -> tr("Cambiar vertical en Español")
+                            else -> tr("Cambiar vertical en Português")
                         }
+                        val statusLabel = when {
+                            value.isBlank() && verticalEs -> tr("Medio vertical en Español opcional")
+                            value.isBlank() -> tr("Medio vertical en Português opcional")
+                            verticalEs -> tr("Medio vertical en Español listo")
+                            else -> tr("Medio vertical en Português listo")
+                        }
+                        Button(
+                            onClick = { picker.launch(arrayOf("image/jpeg", "image/jpg", "image/png", "video/mp4")) },
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = ButtonDefaults.buttonColors(containerColor = HextechSurfaceVariant),
+                            shape = RoundedCornerShape(8.dp),
+                            border = BorderStroke(1.dp, if (verticalEs) HextechGold else HextechCyan)
+                        ) {
+                            Icon(Icons.Default.VideoLibrary, contentDescription = null, tint = if (verticalEs) HextechGold else HextechCyan)
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(pickerLabel, color = Color.White, fontSize = 12.sp)
+                        }
+                        Text(
+                            statusLabel,
+                            color = if (value.isBlank()) TextSecondary else Color(0xFF10B981), fontSize = 10.sp
+                        )
+                        if (verticalSlotIsBoth) {
+                            Button(
+                                onClick = { verticalPtPicker.launch(arrayOf("image/jpeg", "image/jpg", "image/png", "video/mp4")) },
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = ButtonDefaults.buttonColors(containerColor = HextechSurfaceVariant),
+                                shape = RoundedCornerShape(8.dp),
+                                border = BorderStroke(1.dp, HextechCyan)
+                            ) {
+                                Icon(Icons.Default.VideoLibrary, contentDescription = null, tint = HextechCyan)
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(tr(if (verticalMediaPtInput.isBlank()) "Seleccionar vertical en Português" else "Cambiar vertical en Português"), color = Color.White, fontSize = 12.sp)
+                            }
+                            Text(if (verticalMediaPtInput.isBlank()) tr("Medio vertical en Português opcional") else tr("Medio vertical en Português listo"), color = if (verticalMediaPtInput.isBlank()) TextSecondary else Color(0xFF10B981), fontSize = 10.sp)
+                        }
+                    } else {
+                        Button(
+                            onClick = { verticalPicker.launch(arrayOf("image/jpeg", "image/jpg", "image/png", "video/mp4")) },
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = ButtonDefaults.buttonColors(containerColor = HextechSurfaceVariant),
+                            shape = RoundedCornerShape(8.dp),
+                            border = BorderStroke(1.dp, HextechCyan)
+                        ) {
+                            Icon(Icons.Default.VideoLibrary, contentDescription = null, tint = HextechCyan)
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(com.example.util.tr(if (verticalMediaInput.isBlank()) "Seleccionar desde Galería (Vertical)" else "Cambiar Multimedia Vertical"), color = Color.White, fontSize = 12.sp)
+                        }
+                    }
+                    // Preview Vertical del idioma seleccionado; conserva el legado general.
+                    val verticalPreviewUrl = when (selectedLanguageScope) {
+                        com.example.data.SponsorReviewPolicy.LANGUAGE_ES -> verticalMediaEsInput
+                        com.example.data.SponsorReviewPolicy.LANGUAGE_PT -> verticalMediaPtInput
+                        com.example.data.SponsorReviewPolicy.LANGUAGE_BOTH -> verticalMediaEsInput.ifBlank { verticalMediaPtInput }
+                        else -> verticalMediaInput
+                    }
+                    if (verticalPreviewUrl.isNotBlank()) {
                         Box(
                             modifier = Modifier.fillMaxWidth(),
                             contentAlignment = Alignment.Center
@@ -731,15 +877,34 @@ fun SponsorCpmPanelDialog(
                                 ) {
                                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                                         NoticeMediaViewer(
-                                            mediaUrl = verticalMediaInput,
+                                            mediaUrl = verticalPreviewUrl,
                                             modifier = Modifier.fillMaxSize()
                                         )
                                     }
                                 }
                                 IconButton(
                                     onClick = {
-                                        verticalMediaInput = ""
-                                        isVerticalVideo = false
+                                        when (selectedLanguageScope) {
+                                            com.example.data.SponsorReviewPolicy.LANGUAGE_BOTH -> if (verticalMediaEsInput.isNotBlank()) {
+                                                verticalMediaEsInput = ""
+                                                isVerticalEsVideo = false
+                                            } else {
+                                                verticalMediaPtInput = ""
+                                                isVerticalPtVideo = false
+                                            }
+                                            com.example.data.SponsorReviewPolicy.LANGUAGE_ES -> {
+                                                verticalMediaEsInput = ""
+                                                isVerticalEsVideo = false
+                                            }
+                                            com.example.data.SponsorReviewPolicy.LANGUAGE_PT -> {
+                                                verticalMediaPtInput = ""
+                                                isVerticalPtVideo = false
+                                            }
+                                            else -> {
+                                                verticalMediaInput = ""
+                                                isVerticalVideo = false
+                                            }
+                                        }
                                         Toast.makeText(context, com.example.util.appTr("Multimedia vertical eliminada"), Toast.LENGTH_SHORT).show()
                                     },
                                     modifier = Modifier
@@ -837,9 +1002,9 @@ fun SponsorCpmPanelDialog(
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(tr("• Tarifa base justa (%s): USD %s").format(selectedDurationUnit, String.format(Locale.US, "%.2f", when (selectedDurationUnit) { "hour" -> 0.50; "day" -> 2.50; "week" -> 10.00; "month" -> 30.00; else -> 2.50 } * durationValueInt)), color = TextSecondary, fontSize = 10.sp)
 
-                        if (isHorizontalVideo || isVerticalVideo) {
+                        if (isHorizontalVideo || isHorizontalEsVideo || isHorizontalPtVideo || isVerticalVideo || isVerticalEsVideo || isVerticalPtVideo) {
                             Text(tr("• Costo de procesamiento multimedia: +$%s USD").format(String.format(Locale.US, "%.2f", 1.00 * durationValueInt)), color = TextSecondary, fontSize = 10.sp)
-                        } else if (horizontalMediaInput.isNotBlank() || verticalMediaInput.isNotBlank()) {
+                        } else if (horizontalMediaInput.isNotBlank() || horizontalMediaEsInput.isNotBlank() || horizontalMediaPtInput.isNotBlank() || verticalMediaInput.isNotBlank() || verticalMediaEsInput.isNotBlank() || verticalMediaPtInput.isNotBlank()) {
                             Text(tr("• Costo de procesamiento de imagen: +$%s USD").format(String.format(Locale.US, "%.2f", 0.50 * durationValueInt)), color = TextSecondary, fontSize = 10.sp)
                         }
 
@@ -982,14 +1147,28 @@ fun SponsorCpmPanelDialog(
                     onClick = {
                         val parsedBudget = autoBudget.replace(',', '.').toDoubleOrNull() ?: 10.0
                         val requiredEssences = (parsedBudget * 10).toLong()
-                        val hasHorizontalMedia = if (selectedLanguageScope == com.example.data.SponsorReviewPolicy.LANGUAGE_BOTH) {
-                            horizontalMediaEsInput.isNotBlank() && horizontalMediaPtInput.isNotBlank()
-                        } else horizontalMediaInput.isNotBlank()
+                        val hasHorizontalMedia = when (selectedLanguageScope) {
+                            com.example.data.SponsorReviewPolicy.LANGUAGE_BOTH -> horizontalMediaEsInput.isNotBlank() && horizontalMediaPtInput.isNotBlank()
+                            com.example.data.SponsorReviewPolicy.LANGUAGE_ES -> horizontalMediaEsInput.isNotBlank()
+                            com.example.data.SponsorReviewPolicy.LANGUAGE_PT -> horizontalMediaPtInput.isNotBlank()
+                            else -> horizontalMediaInput.isNotBlank()
+                        }
+                        val hasVerticalMedia = when (selectedLanguageScope) {
+                            com.example.data.SponsorReviewPolicy.LANGUAGE_BOTH -> verticalMediaEsInput.isNotBlank() && verticalMediaPtInput.isNotBlank()
+                            com.example.data.SponsorReviewPolicy.LANGUAGE_ES -> verticalMediaEsInput.isNotBlank()
+                            com.example.data.SponsorReviewPolicy.LANGUAGE_PT -> verticalMediaPtInput.isNotBlank()
+                            else -> verticalMediaInput.isNotBlank()
+                        }
+                        if (selectedLanguageScope == com.example.data.SponsorReviewPolicy.LANGUAGE_BOTH &&
+                            (verticalMediaEsInput.isNotBlank() xor verticalMediaPtInput.isNotBlank())) {
+                            Toast.makeText(context, com.example.util.appTr("Selecciona un medio vertical para Español y otro para Português, o deja ambos vacíos"), Toast.LENGTH_LONG).show()
+                            return@Button
+                        }
                         if (selectedLanguageScope == com.example.data.SponsorReviewPolicy.LANGUAGE_BOTH && !hasHorizontalMedia) {
                             Toast.makeText(context, com.example.util.appTr("Selecciona un banner horizontal para Español y otro para Português"), Toast.LENGTH_LONG).show()
                             return@Button
                         }
-                        if (titleInput.trim().isBlank() && !hasHorizontalMedia) {
+                        if (titleInput.trim().isBlank() && !hasHorizontalMedia && !hasVerticalMedia) {
                             Toast.makeText(context, com.example.util.appTr("Agrega un banner o título y mensaje"), Toast.LENGTH_SHORT).show()
                             return@Button
                         }
@@ -1073,10 +1252,17 @@ fun SponsorCpmPanelDialog(
                             id = UUID.randomUUID().toString(),
                             title = titleInput.trim(),
                             content = contentInput.trim(),
-                            videoUrl = if (selectedLanguageScope == com.example.data.SponsorReviewPolicy.LANGUAGE_BOTH) horizontalMediaEsInput.trim() else horizontalMediaInput.trim(),
+                            videoUrl = when (selectedLanguageScope) {
+                                com.example.data.SponsorReviewPolicy.LANGUAGE_BOTH -> horizontalMediaEsInput.trim()
+                                com.example.data.SponsorReviewPolicy.LANGUAGE_ES -> horizontalMediaEsInput.trim()
+                                com.example.data.SponsorReviewPolicy.LANGUAGE_PT -> horizontalMediaPtInput.trim()
+                                else -> horizontalMediaInput.trim()
+                            },
                             videoUrlEs = horizontalMediaEsInput.trim(),
                             videoUrlPt = horizontalMediaPtInput.trim(),
-                            expandedImageUrl = verticalMediaInput.trim().ifBlank { horizontalMediaInput.trim() },
+                            expandedImageUrl = verticalMediaInput.trim(),
+                            expandedImageUrlEs = verticalMediaEsInput.trim(),
+                            expandedImageUrlPt = verticalMediaPtInput.trim(),
                             externalUrl = externalUrlInput.trim(),
                             tag = "PUBLICIDAD",
                             titleColor = titleColor,
@@ -1140,6 +1326,7 @@ fun SponsorCpmPanelDialog(
                                         .put("content", n.content).put("videoUrl", n.videoUrl)
                                         .put("videoUrlEs", n.videoUrlEs).put("videoUrlPt", n.videoUrlPt)
                                         .put("expandedImageUrl", n.expandedImageUrl).put("externalUrl", n.externalUrl)
+                                        .put("expandedImageUrlEs", n.expandedImageUrlEs).put("expandedImageUrlPt", n.expandedImageUrlPt)
                                         .put("tag", n.tag).put("titleColor", n.titleColor).put("budget", n.budget)
                                         .put("budgetUnit", n.budgetUnit).put("durationValue", n.durationValue)
                                         .put("durationUnit", n.durationUnit).put("approvedAtMillis", n.approvedAtMillis)
