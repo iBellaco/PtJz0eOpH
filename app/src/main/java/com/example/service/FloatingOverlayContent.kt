@@ -567,7 +567,9 @@ internal fun FloatingOverlayContent(
                                     quickReadCount++
                                     val result=DraftVisionScanner.scanDraftFromBitmap(bitmap,context,
                                         if(state.isFirstPickManuallySelected) isFirstPick else null,activeRole,
-                                        confirmedHudPicks(),namesOnly=true,quickTitlePass=quickReadCount % 8 != 0)
+                                        confirmedHudPicks(),namesOnly=true,
+                                        quickTitlePass = com.example.service.screen.DraftSyncCadence.quickTitlePass(
+                                            quickReadCount, confirmedPicksCount))
                                     if(result.isSuccessful) withContext(Dispatchers.Main) {
                                         if(!state.acceptsScanResult(scanGeneration)) return@withContext
                                         state.observeFirstPick(result.detectedFirstPick)

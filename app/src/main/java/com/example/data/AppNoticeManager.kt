@@ -687,7 +687,7 @@ object AppNoticeManager {
         list.asSequence().filter { it.isEnabled && it.isApproved }
             // Precargar solo el banner del idioma activo evita descargar las
             // dos variantes de una campaña bilingüe y reduce batería/datos.
-            .map { it.horizontalMediaFor(com.example.util.currentAppLanguage()).trim() }
+            .map { it.horizontalMediaFor(com.example.util.AppLanguage.current.value).trim() }
             .filter { it.startsWith("https://", ignoreCase = true) }
             .filterNot { com.example.ui.components.NoticeMediaUtils.isVideo(appContext, it) }
             .distinct().take(2).forEach { url ->
