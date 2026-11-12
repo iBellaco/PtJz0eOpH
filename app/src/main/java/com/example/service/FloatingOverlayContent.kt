@@ -259,14 +259,15 @@ internal fun FloatingOverlayContent(
     val autoScanPulse = if (autoScanEnabled) activeAutoScanPulse() else disabledAutoScanPulse()
 
     // El diagnóstico necesita una ventana mínima de datos reales del escáner.
-    // Se muestra tras 60 s continuos de Auto-Scan y se oculta al detenerlo.
+    // Una vez habilitado se conserva visible aunque el draft termine y Auto-Scan
+    // se apague; solo desaparece al cerrar el overlay (cuando se destruye esta
+    // composición). Si el usuario lo apaga antes de cumplir el minuto, la
+    // ventana vuelve a comenzar cuando lo active de nuevo.
     var diagnosticAutoScanReady by remember { mutableStateOf(false) }
     LaunchedEffect(autoScanEnabled) {
-        diagnosticAutoScanReady = false
-        if (autoScanEnabled) {
-            delay(60_000L)
-            diagnosticAutoScanReady = autoScanEnabled
-        }
+        if (diagnosticAutoScanReady || !autoScanEnabled) return@LaunchedEffect
+        delay(60_000L)
+        if (autoScanEnabled) diagnosticAutoScanReady = true
     }
 
     val geometryPreviewVisible by DraftVisionScanner.showCalibrationBoxes.collectAsStateWithLifecycle()
@@ -566,7 +567,9 @@ internal fun FloatingOverlayContent(
                                     quickReadCount++
                                     val result=DraftVisionScanner.scanDraftFromBitmap(bitmap,context,
                                         if(state.isFirstPickManuallySelected) isFirstPick else null,activeRole,
-                                        confirmedHudPicks(),namesOnly=true,quickTitlePass=quickReadCount % 8 != 0)
+                                        confirmedHudPicks(),namesOnly=true,
+                                        quickTitlePass = com.example.service.screen.DraftSyncCadence.quickTitlePass(
+                                            quickReadCount, confirmedPicksCount))
                                     if(result.isSuccessful) withContext(Dispatchers.Main) {
                                         if(!state.acceptsScanResult(scanGeneration)) return@withContext
                                         state.observeFirstPick(result.detectedFirstPick)

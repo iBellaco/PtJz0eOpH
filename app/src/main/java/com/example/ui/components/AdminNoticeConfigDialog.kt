@@ -72,6 +72,8 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
     var videoUrlEs by remember { mutableStateOf("") }
     var videoUrlPt by remember { mutableStateOf("") }
     var expandedImageUrl by remember { mutableStateOf("") }
+    var expandedImageUrlEs by remember { mutableStateOf("") }
+    var expandedImageUrlPt by remember { mutableStateOf("") }
     var externalUrl by remember { mutableStateOf("") }
     var selectedTag by remember { mutableStateOf("Anuncios importantes") }
     var languageScope by remember { mutableStateOf(com.example.data.SponsorReviewPolicy.LANGUAGE_ALL) }
@@ -95,6 +97,8 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
     val isUrlEsValid = remember(videoUrlEs) { NoticeMediaUtils.isValidNoticeMedia(videoUrlEs) }
     val isUrlPtValid = remember(videoUrlPt) { NoticeMediaUtils.isValidNoticeMedia(videoUrlPt) }
     val isExpandedUrlValid = remember(expandedImageUrl) { NoticeMediaUtils.isValidNoticeMedia(expandedImageUrl) }
+    val isExpandedUrlEsValid = remember(expandedImageUrlEs) { NoticeMediaUtils.isValidNoticeMedia(expandedImageUrlEs) }
+    val isExpandedUrlPtValid = remember(expandedImageUrlPt) { NoticeMediaUtils.isValidNoticeMedia(expandedImageUrlPt) }
     val previewMediaUrl = when (languageScope) {
         com.example.data.SponsorReviewPolicy.LANGUAGE_ES -> videoUrlEs.ifBlank { videoUrl }
         com.example.data.SponsorReviewPolicy.LANGUAGE_PT -> videoUrlPt.ifBlank { videoUrl }
@@ -140,6 +144,8 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
         videoUrlEs.isNotBlank() ||
         videoUrlPt.isNotBlank() ||
         expandedImageUrl.isNotBlank() ||
+        expandedImageUrlEs.isNotBlank() ||
+        expandedImageUrlPt.isNotBlank() ||
         externalUrl.isNotBlank() ||
         budgetText.isNotBlank() ||
         editingIndex != null
@@ -176,6 +182,8 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                 videoUrlEs = ""
                 videoUrlPt = ""
                 expandedImageUrl = ""
+                expandedImageUrlEs = ""
+                expandedImageUrlPt = ""
                 externalUrl = ""
                 languageScope = com.example.data.SponsorReviewPolicy.LANGUAGE_ALL
                 showManualVideoUrlInput = false
@@ -274,6 +282,8 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                                     videoUrlEs = ""
                                     videoUrlPt = ""
                                     expandedImageUrl = ""
+                                    expandedImageUrlEs = ""
+                                    expandedImageUrlPt = ""
                                     externalUrl = ""
                                     languageScope = com.example.data.SponsorReviewPolicy.LANGUAGE_ALL
                                     showManualVideoUrlInput = false
@@ -534,7 +544,7 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                                                 }
                                             }
                                         }
-                                        if (notice.expandedImageUrl.isNotBlank()) {
+                                        if (notice.expandedImageUrl.isNotBlank() || notice.expandedImageUrlEs.isNotBlank() || notice.expandedImageUrlPt.isNotBlank()) {
                                             Surface(
                                                 color = HextechGold.copy(alpha = 0.15f),
                                                 shape = RoundedCornerShape(4.dp),
@@ -595,6 +605,8 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                                             videoUrlEs = notice.videoUrlEs
                                             videoUrlPt = notice.videoUrlPt
                                             expandedImageUrl = notice.expandedImageUrl
+                                            expandedImageUrlEs = notice.expandedImageUrlEs
+                                            expandedImageUrlPt = notice.expandedImageUrlPt
                                             externalUrl = notice.externalUrl
                                             selectedTag = notice.tag
                                             languageScope = com.example.data.SponsorReviewPolicy.normalizeLanguageScope(notice.languageScope)
@@ -618,6 +630,8 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                                                 videoUrlEs = ""
                                                 videoUrlPt = ""
                                                 expandedImageUrl = ""
+                                                expandedImageUrlEs = ""
+                                                expandedImageUrlPt = ""
                                                 externalUrl = ""
                                                 languageScope = com.example.data.SponsorReviewPolicy.LANGUAGE_ALL
                                                 budgetText = ""
@@ -707,6 +721,8 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                                 videoUrlEs = ""
                                 videoUrlPt = ""
                                 expandedImageUrl = ""
+                                expandedImageUrlEs = ""
+                                expandedImageUrlPt = ""
                                 externalUrl = ""
                                 languageScope = com.example.data.SponsorReviewPolicy.LANGUAGE_ALL
                             },
@@ -1144,6 +1160,78 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                     }
                 }
 
+                fun processLanguageVerticalMedia(uri: android.net.Uri?, assign: (String) -> Unit, successLabel: String) {
+                    uri?.let { pickedUri ->
+                        coroutineScope.launch {
+                            isProcessingMedia = true
+                            try {
+                                val validation = NoticeMediaUtils.validateMediaForSlot(context, pickedUri, isVerticalSlot = true)
+                                if (!validation.isValid) {
+                                    Toast.makeText(context, com.example.util.appTr(validation.errorMessage ?: "El archivo no cumple con el tamaño o proporción recomendada para vista vertical"), Toast.LENGTH_LONG).show()
+                                    return@launch
+                                }
+                                val finalMedia = if (validation.isVideo) {
+                                    com.example.util.NoticeMediaStorageManager.uploadOrSaveVideo(context, pickedUri)
+                                } else {
+                                    com.example.util.NoticeMediaStorageManager.convertImageToCloudDataUrl(context, pickedUri)
+                                }
+                                assign(finalMedia)
+                                Toast.makeText(context, com.example.util.appTr(successLabel), Toast.LENGTH_SHORT).show()
+                            } catch (_: Exception) {
+                                Toast.makeText(context, com.example.util.appTr("No se pudo procesar el archivo seleccionado"), Toast.LENGTH_SHORT).show()
+                            } finally {
+                                isProcessingMedia = false
+                            }
+                        }
+                    }
+                }
+
+                val spanishVerticalPickerLauncher = rememberLauncherForActivityResult(
+                    contract = androidx.activity.result.contract.ActivityResultContracts.GetContent()
+                ) { uri: android.net.Uri? ->
+                    processLanguageVerticalMedia(uri, { expandedImageUrlEs = it }, "Multimedia vertical en español configurada correctamente")
+                }
+
+                val portugueseVerticalPickerLauncher = rememberLauncherForActivityResult(
+                    contract = androidx.activity.result.contract.ActivityResultContracts.GetContent()
+                ) { uri: android.net.Uri? ->
+                    processLanguageVerticalMedia(uri, { expandedImageUrlPt = it }, "Multimedia vertical en portugués configurada correctamente")
+                }
+
+                if (languageScope != com.example.data.SponsorReviewPolicy.LANGUAGE_ALL) {
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(containerColor = HextechSurfaceVariant),
+                        shape = RoundedCornerShape(8.dp),
+                        border = BorderStroke(1.dp, HextechGold.copy(alpha = 0.5f))
+                    ) {
+                        Column(modifier = Modifier.padding(10.dp)) {
+                            Text(tr("Multimedia vertical por idioma (opcional)"), color = HextechGold, fontSize = 11.5.sp, fontWeight = FontWeight.Bold)
+                            Text(tr("Añade un medio vertical diferente para cada idioma; si queda vacío se usará el medio general."), color = TextMuted, fontSize = 9.5.sp)
+                            if (languageScope == com.example.data.SponsorReviewPolicy.LANGUAGE_ES || languageScope == com.example.data.SponsorReviewPolicy.LANGUAGE_BOTH) {
+                                AdminLanguageMediaField(
+                                    "Vertical para Español",
+                                    expandedImageUrlEs,
+                                    isExpandedUrlEsValid,
+                                    spanishVerticalPickerLauncher,
+                                    { expandedImageUrlEs = it },
+                                    HextechCyan
+                                )
+                            }
+                            if (languageScope == com.example.data.SponsorReviewPolicy.LANGUAGE_PT || languageScope == com.example.data.SponsorReviewPolicy.LANGUAGE_BOTH) {
+                                AdminLanguageMediaField(
+                                    "Vertical para Português",
+                                    expandedImageUrlPt,
+                                    isExpandedUrlPtValid,
+                                    portugueseVerticalPickerLauncher,
+                                    { expandedImageUrlPt = it },
+                                    HextechGold
+                                )
+                            }
+                        }
+                    }
+                }
+
                 if (expandedImageUrl.isNotBlank()) {
                     Surface(
                         color = HextechSurfaceVariant,
@@ -1398,6 +1486,8 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                                 videoUrlEs = ""
                                 videoUrlPt = ""
                                 expandedImageUrl = ""
+                                expandedImageUrlEs = ""
+                                expandedImageUrlPt = ""
                                 externalUrl = ""
                                 languageScope = com.example.data.SponsorReviewPolicy.LANGUAGE_ALL
                                 budgetText = ""
@@ -1417,7 +1507,7 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
 
                         Button(
                             onClick = {
-                                if (title.isBlank() && content.isBlank() && videoUrl.isBlank() && videoUrlEs.isBlank() && videoUrlPt.isBlank()) {
+                                if (title.isBlank() && content.isBlank() && videoUrl.isBlank() && videoUrlEs.isBlank() && videoUrlPt.isBlank() && expandedImageUrl.isBlank() && expandedImageUrlEs.isBlank() && expandedImageUrlPt.isBlank()) {
                                     Toast.makeText(context, com.example.util.appTr("Ingresa un título o contenido para el anuncio"), Toast.LENGTH_SHORT).show()
                                     return@Button
                                 }
@@ -1427,7 +1517,13 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                                     com.example.data.SponsorReviewPolicy.LANGUAGE_BOTH -> isUrlEsValid && isUrlPtValid
                                     else -> isUrlValid
                                 }
-                                if (!languageMediaValid || !isExpandedUrlValid) {
+                                val languageVerticalValid = when (languageScope) {
+                                    com.example.data.SponsorReviewPolicy.LANGUAGE_ES -> isExpandedUrlEsValid
+                                    com.example.data.SponsorReviewPolicy.LANGUAGE_PT -> isExpandedUrlPtValid
+                                    com.example.data.SponsorReviewPolicy.LANGUAGE_BOTH -> isExpandedUrlEsValid && isExpandedUrlPtValid
+                                    else -> isExpandedUrlValid
+                                }
+                                if (!languageMediaValid || !languageVerticalValid || !isExpandedUrlValid) {
                                     Toast.makeText(context, com.example.util.appTr("URL multimedia inválida"), Toast.LENGTH_SHORT).show()
                                     return@Button
                                 }
@@ -1440,6 +1536,8 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                                     videoUrlEs = videoUrlEs,
                                     videoUrlPt = videoUrlPt,
                                     expandedImageUrl = expandedImageUrl,
+                                    expandedImageUrlEs = expandedImageUrlEs,
+                                    expandedImageUrlPt = expandedImageUrlPt,
                                     externalUrl = externalUrl,
                                     tag = selectedTag,
                                     languageScope = com.example.data.SponsorReviewPolicy.normalizeLanguageScope(languageScope),
@@ -1457,6 +1555,8 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                                 videoUrlEs = ""
                                 videoUrlPt = ""
                                 expandedImageUrl = ""
+                                expandedImageUrlEs = ""
+                                expandedImageUrlPt = ""
                                 externalUrl = ""
                                 languageScope = com.example.data.SponsorReviewPolicy.LANGUAGE_ALL
                                 budgetText = ""
@@ -1474,7 +1574,7 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                 } else {
                     Button(
                         onClick = {
-                            if (title.isBlank() && content.isBlank() && videoUrl.isBlank() && videoUrlEs.isBlank() && videoUrlPt.isBlank()) {
+                            if (title.isBlank() && content.isBlank() && videoUrl.isBlank() && videoUrlEs.isBlank() && videoUrlPt.isBlank() && expandedImageUrl.isBlank() && expandedImageUrlEs.isBlank() && expandedImageUrlPt.isBlank()) {
                                 Toast.makeText(context, com.example.util.appTr("Ingresa un título o contenido para el anuncio"), Toast.LENGTH_SHORT).show()
                                 return@Button
                             }
@@ -1484,7 +1584,13 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                                 com.example.data.SponsorReviewPolicy.LANGUAGE_BOTH -> isUrlEsValid && isUrlPtValid
                                 else -> isUrlValid
                             }
-                            if (!languageMediaValid || !isExpandedUrlValid) {
+                            val languageVerticalValid = when (languageScope) {
+                                com.example.data.SponsorReviewPolicy.LANGUAGE_ES -> isExpandedUrlEsValid
+                                com.example.data.SponsorReviewPolicy.LANGUAGE_PT -> isExpandedUrlPtValid
+                                com.example.data.SponsorReviewPolicy.LANGUAGE_BOTH -> isExpandedUrlEsValid && isExpandedUrlPtValid
+                                else -> isExpandedUrlValid
+                            }
+                            if (!languageMediaValid || !languageVerticalValid || !isExpandedUrlValid) {
                                 Toast.makeText(context, com.example.util.appTr("URL multimedia inválida"), Toast.LENGTH_SHORT).show()
                                 return@Button
                             }
@@ -1497,6 +1603,8 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                                 videoUrlEs = videoUrlEs,
                                 videoUrlPt = videoUrlPt,
                                 expandedImageUrl = expandedImageUrl,
+                                expandedImageUrlEs = expandedImageUrlEs,
+                                expandedImageUrlPt = expandedImageUrlPt,
                                 externalUrl = externalUrl,
                                 tag = selectedTag,
                                 languageScope = com.example.data.SponsorReviewPolicy.normalizeLanguageScope(languageScope),
@@ -1512,6 +1620,8 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                             videoUrlEs = ""
                             videoUrlPt = ""
                             expandedImageUrl = ""
+                            expandedImageUrlEs = ""
+                            expandedImageUrlPt = ""
                             externalUrl = ""
                             languageScope = com.example.data.SponsorReviewPolicy.LANGUAGE_ALL
                             budgetText = ""

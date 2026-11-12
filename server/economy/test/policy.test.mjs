@@ -58,6 +58,9 @@ test('sponsor pricing uses server publication count and verified fields', () => 
   assert.deepEqual(sponsorPrice(notice, 0), {budget: 2.5, cost: 25});
   const bilingual = {...notice, languageScope: 'BOTH', videoUrlEs: 'https://example.test/es.jpg', videoUrlPt: 'https://example.test/pt.jpg'};
   assert.deepEqual(sponsorPrice(bilingual, 1), {budget: 6, cost: 60});
+  const bilingualVertical = {...bilingual, expandedImageUrlEs: 'https://example.test/es-vertical.jpg', expandedImageUrlPt: 'https://example.test/pt-vertical.jpg'};
+  assert.doesNotThrow(() => sponsorPrice(bilingualVertical, 1));
+  assert.throws(() => sponsorPrice({...bilingual, expandedImageUrlEs: 'https://example.test/es-vertical.jpg'}, 1), /medio vertical/);
   assert.throws(() => sponsorPrice({...notice, languageScope: 'BOTH'}, 1), /banner/);
   assert.deepEqual(sponsorPrice(notice, 1000), sponsorPrice(notice, 11));
   assert.doesNotThrow(() => sponsorPrice({...notice, title: '', content: '', videoUrl: 'https://example.test/banner.jpg'}, 1));

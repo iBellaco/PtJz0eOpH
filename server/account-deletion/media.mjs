@@ -1,6 +1,6 @@
 export const buckets = new Set(['wild-rift-drafting.firebasestorage.app','wild-rift-drafting.appspot.com']);
 export function legacyExternalMedia(data) {
-  return ['videoUrl','expandedImageUrl','imageUrl'].map(field => data[field]).filter(url => {
+  return ['videoUrl','videoUrlEs','videoUrlPt','expandedImageUrl','expandedImageUrlEs','expandedImageUrlPt','imageUrl'].map(field => data[field]).filter(url => {
     try { return ['files.catbox.moe','catbox.moe','tmpfiles.org'].includes(new URL(url).hostname); }
     catch { return false; }
   });
@@ -19,5 +19,5 @@ export function mediaObject(url) {
   } catch { return null; }
 }
 export function mediaObjects(data) {
-  return ['videoUrl','expandedImageUrl','imageUrl'].map(field => mediaObject(data[field])).filter(Boolean);
+  return ['videoUrl','videoUrlEs','videoUrlPt','expandedImageUrl','expandedImageUrlEs','expandedImageUrlPt','imageUrl'].map(field => mediaObject(data[field])).filter(Boolean);
 }
