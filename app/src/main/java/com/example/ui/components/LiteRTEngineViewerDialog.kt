@@ -76,6 +76,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.example.service.screen.DraftVisionScanner
 import com.example.service.screen.LiteRTVisionClassifier
+import com.example.service.screen.ScreenCaptureManager
 import com.example.service.screen.TenthPickDiagnosticManager
 import com.example.service.screen.VisionCalibrationConfig
 
@@ -116,7 +117,8 @@ enum class CircleTarget(
 @Composable
 fun LiteRTEngineViewerDialog(
     onDismissRequest: () -> Unit,
-    initializeDiagnostics: Boolean = true
+    initializeDiagnostics: Boolean = true,
+    screenCaptureManager: ScreenCaptureManager? = null
 ) {
     val context = LocalContext.current
     val savedCoordinatesMessage = tr("Coordenadas guardadas en este dispositivo")
@@ -166,6 +168,13 @@ fun LiteRTEngineViewerDialog(
             TenthPickDiagnosticManager.init(context)
             TenthPickDiagnosticManager.refreshSavedFrames(context)
         }
+    }
+
+    // El visor se abre listo para validar la calibración. El usuario todavía
+    // puede apagarlo con el interruptor, pero guardar/enviar evidencia lo
+    // vuelve a activar para que la captura incluya la geometría visible.
+    LaunchedEffect(Unit) {
+        DraftVisionScanner.showCalibrationBoxes.value = true
     }
 
     Box(
@@ -654,7 +663,7 @@ fun LiteRTEngineViewerDialog(
                             // Guardar y enviar es una sola acción para que la
                             // calibración no dependa de dos botones separados.
                             report = {
-                                CalibrationSendButton {
+                                CalibrationSendButton(screenCaptureManager = screenCaptureManager) {
                                     DraftVisionScanner.saveCalibrationForDevice(context)
                                     Toast.makeText(context, savedCoordinatesMessage, Toast.LENGTH_SHORT).show()
                                 }

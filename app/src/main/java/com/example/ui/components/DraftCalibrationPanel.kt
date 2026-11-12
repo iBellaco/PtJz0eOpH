@@ -35,6 +35,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.service.screen.DraftVisionScanner
+import com.example.service.screen.ScreenCaptureManager
 import com.example.service.screen.VisionCalibrationConfig
 import com.example.ui.theme.*
 import com.example.util.tr
@@ -82,7 +83,8 @@ enum class CalibrationTarget(
 fun DraftCalibrationPanel(
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier,
-    onDragDelta: ((dx: Int, dy: Int, isDragging: Boolean, isEnded: Boolean) -> Unit)? = null
+    onDragDelta: ((dx: Int, dy: Int, isDragging: Boolean, isEnded: Boolean) -> Unit)? = null,
+    screenCaptureManager: ScreenCaptureManager? = null
 ) {
     val context = LocalContext.current
     val savedCoordinatesMessage = tr("Coordenadas guardadas en este dispositivo")
@@ -469,7 +471,7 @@ fun DraftCalibrationPanel(
                 // Guardar y enviar es una sola acción: conserva la calibración
                 // local aunque el reporte remoto tarde o no tenga conexión.
                 report = {
-                    CalibrationSendButton {
+                    CalibrationSendButton(screenCaptureManager = screenCaptureManager) {
                         DraftVisionScanner.saveCalibrationForDevice(context)
                         Toast.makeText(context, savedCoordinatesMessage, Toast.LENGTH_SHORT).show()
                     }

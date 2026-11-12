@@ -12,9 +12,11 @@ import kotlin.math.max
 import kotlin.math.min
 
 /**
- * Creates a bounded, administrator-only evidence image from the last frame
- * already processed by the scanner. It deliberately uses the scanner frame
- * rather than requesting a second screen capture permission or capture cycle.
+ * Creates a bounded administrator-only evidence image from an actual captured
+ * screen frame. The frame can be the literal MediaProjection capture taken at
+ * send time or the scanner's last processed frame when screen capture is not
+ * available. In both cases the calibration geometry is drawn on top so the
+ * reviewer can compare the saved coordinates with what the visor used.
  */
 internal object CalibrationEvidenceImage {
     private const val MAX_WIDTH = 1280
@@ -28,7 +30,13 @@ internal object CalibrationEvidenceImage {
         val sha256: String
     )
 
-    fun encode(frame: CalibrationEvidenceFrame, config: VisionCalibrationConfig, language: String = "es"): Encoded? {
+    fun encode(
+        frame: CalibrationEvidenceFrame,
+        config: VisionCalibrationConfig,
+        language: String = "es",
+        visorActive: Boolean = true,
+        literalCapture: Boolean = true
+    ): Encoded? {
         val source = frame.bitmap
         if (source.isRecycled || source.width <= 0 || source.height <= 0) return null
 
@@ -43,7 +51,7 @@ internal object CalibrationEvidenceImage {
             scaled?.let { if (it !== source) it.recycle() }
             scaled = null
 
-            drawCalibrationOverlay(working!!, config, language)
+            drawCalibrationOverlay(working!!, config, language, visorActive, literalCapture)
             val bytes = compressBounded(working!!)
             if (bytes.isEmpty() || bytes.size > MAX_BYTES) return null
             val age = (android.os.SystemClock.elapsedRealtime() - frame.capturedAtElapsedMs).coerceAtLeast(0L)
@@ -62,7 +70,13 @@ internal object CalibrationEvidenceImage {
         }
     }
 
-    private fun drawCalibrationOverlay(bitmap: Bitmap, config: VisionCalibrationConfig, language: String) {
+    private fun drawCalibrationOverlay(
+        bitmap: Bitmap,
+        config: VisionCalibrationConfig,
+        language: String,
+        visorActive: Boolean,
+        literalCapture: Boolean
+    ) {
         val canvas = Canvas(bitmap)
         val width = bitmap.width.toFloat()
         val height = bitmap.height.toFloat()
@@ -102,18 +116,18 @@ internal object CalibrationEvidenceImage {
         config.topAllyXRatios.forEach { x -> canvas.drawCircle(width * x, height * config.topAvatarYRatio, topRadius, topPaint) }
         config.topEnemyXRatios.forEach { x -> canvas.drawCircle(width * x, height * config.topAvatarYRatio, topRadius, topPaint) }
 
-        val bannerHeight = max(28f, height * 0.042f)
+        val bannerHeight = max(28f, height * 0.052f)
         val bannerPaint = paint(Color.BLACK.copyAlpha(0.72f), Paint.Style.FILL)
-        canvas.drawRect(0f, 0f, min(width, 420f), bannerHeight, bannerPaint)
+        canvas.drawRect(0f, 0f, min(width, 760f), bannerHeight, bannerPaint)
         val label = Paint(Paint.ANTI_ALIAS_FLAG).apply {
             color = Color.WHITE
             textSize = max(12f, height * 0.019f)
             typeface = android.graphics.Typeface.DEFAULT_BOLD
         }
         val bannerText = if (language.equals("pt", ignoreCase = true)) {
-            "COACH · EVIDÊNCIA DE CALIBRAÇÃO"
+            "COACH · ${if (literalCapture) "CAPTURA LITERAL" else "EVIDÊNCIA DE CALIBRAÇÃO"} · ${if (visorActive) "VISOR ATIVO" else "VISOR INATIVO"}"
         } else {
-            "COACH · EVIDENCIA DE CALIBRACIÓN"
+            "COACH · ${if (literalCapture) "CAPTURA LITERAL" else "EVIDENCIA DE CALIBRACIÓN"} · ${if (visorActive) "VISOR ACTIVO" else "VISOR INACTIVO"}"
         }
         canvas.drawText(bannerText, 10f, bannerHeight * 0.68f, label)
     }
