@@ -28,9 +28,10 @@ class CoachRoutineRegressionTest {
     }
     @Test fun `title recovery stays fast before a pick and is less frequent after evidence`() {
         assertTrue(DraftSyncCadence.quickTitlePass(8, 0))
-        assertTrue(DraftSyncCadence.quickTitlePass(16, 1))
-        assertFalse(DraftSyncCadence.quickTitlePass(16, 2))
-        assertTrue(DraftSyncCadence.quickTitlePass(17, 2))
+        assertFalse(DraftSyncCadence.quickTitlePass(16, 1))
+        assertTrue(DraftSyncCadence.quickTitlePass(17, 1))
+        assertFalse(DraftSyncCadence.quickTitlePass(32, 2))
+        assertTrue(DraftSyncCadence.quickTitlePass(33, 2))
     }
     @Test fun `CPM respects thousands fractional rates and invalid inputs`() {
         assertEquals(3.75, CpmPolicy.revenue(1500, 2.50), 0.0001)
