@@ -21,11 +21,16 @@ import com.example.data.CalibrationUserName
 import com.example.data.FeedbackRepository
 import com.example.service.screen.DraftVisionScanner
 import com.example.service.screen.CalibrationEvidenceImage
+import com.example.service.screen.CalibrationEvidenceFrame
+import com.example.service.screen.ScreenCaptureManager
 import com.example.service.screen.VisionCalibrationConfig
 import com.example.util.AppLanguage
 import com.example.util.localizedString
 import com.example.util.tr
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 /** Separate rows prevent size and step labels from competing with the directional pad. */
 @OptIn(ExperimentalLayoutApi::class)
@@ -81,7 +86,10 @@ fun CalibrationControls(
 }
 
 @Composable
-fun CalibrationSendButton(onBeforeSend: (() -> Unit)? = null) {
+fun CalibrationSendButton(
+    screenCaptureManager: ScreenCaptureManager? = null,
+    onBeforeSend: (() -> Unit)? = null
+) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     var sending by remember { mutableStateOf(false) }
@@ -98,6 +106,9 @@ fun CalibrationSendButton(onBeforeSend: (() -> Unit)? = null) {
     val login = localizedString(R.string.calibration_verified_required)
     val dailyLimit = tr("Límite diario alcanzado")
     CoachButton(enabled = !sending, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp).testTag("calibration_send_support"), onClick = {
+        // Activarlo desde el primer toque, incluso si la sesión no está
+        // verificada todavía, deja claro qué visor se usará para la evidencia.
+        DraftVisionScanner.showCalibrationBoxes.value = true
         // Persist the device-specific calibration before attempting the cloud
         // report. The same action is intentionally used for both operations so
         // closing the overlay or losing connectivity never discards the local
@@ -119,29 +130,74 @@ fun CalibrationSendButton(onBeforeSend: (() -> Unit)? = null) {
             sent = false
             scope.launch {
                 try {
+                    // El visor debe quedar activo cuando el usuario solicita
+                    // evidencia: la imagen enviada debe mostrar qué geometría
+                    // se estaba validando, no solo el texto de coordenadas.
+                    DraftVisionScanner.showCalibrationBoxes.value = true
                     val metrics = context.resources.displayMetrics
                     val snapshot = DraftVisionScanner.calibrationReportSnapshot()
                     val displayName = CalibrationUserName.resolve(account)
                     val coordinates = snapshot.config.toFormattedCoordinatesString()
                     val language = AppLanguage.current.value
-                    val frame = DraftVisionScanner.calibrationEvidenceFrame()
-                    val visualEvidence = frame?.let { evidenceFrame ->
-                        try {
-                            CalibrationEvidenceImage.encode(evidenceFrame, snapshot.config, language)
+                    var evidenceSource = if (language.equals("pt", ignoreCase = true)) {
+                        "Captura literal da tela no momento do envio"
+                    } else {
+                        "Captura literal de pantalla en el momento del envío"
+                    }
+                    var visualEvidence: CalibrationEvidenceImage.Encoded? = null
+
+                    // MediaProjection entrega la pantalla real; se reintenta
+                    // pocas veces porque al reanudar la superficie el primer
+                    // intento puede no tener aún un frame disponible.
+                    captureLiteralEvidenceFrame(screenCaptureManager)?.let { literalFrame ->
+                        visualEvidence = try {
+                            CalibrationEvidenceImage.encode(
+                                literalFrame,
+                                snapshot.config,
+                                language,
+                                visorActive = DraftVisionScanner.showCalibrationBoxes.value,
+                                literalCapture = true
+                            )
                         } finally {
-                            runCatching { evidenceFrame.bitmap.recycle() }
+                            runCatching { literalFrame.bitmap.recycle() }
                         }
                     }
-                    val visualEvidenceText = if (visualEvidence != null) {
-                        if (language.equals("pt", ignoreCase = true)) {
-                            "Evidência visual anexada: ${visualEvidence.width}x${visualEvidence.height}; idade=${visualEvidence.ageMs} ms; SHA-256=${visualEvidence.sha256}"
+
+                    // Si no existe permiso/proyección o la captura no pudo
+                    // codificarse, conservar la evidencia del último frame que
+                    // sí procesó el escáner y dejarlo explícito en el informe.
+                    if (visualEvidence == null) {
+                        evidenceSource = if (language.equals("pt", ignoreCase = true)) {
+                            "Último fotograma processado pelo scanner (captura literal indisponível)"
                         } else {
-                            "Evidencia visual adjunta: ${visualEvidence.width}x${visualEvidence.height}; antigüedad=${visualEvidence.ageMs} ms; SHA-256=${visualEvidence.sha256}"
+                            "Último fotograma procesado por el escáner (captura literal no disponible)"
+                        }
+                        val fallbackFrame = DraftVisionScanner.calibrationEvidenceFrame()
+                        visualEvidence = fallbackFrame?.let { evidenceFrame ->
+                            try {
+                                CalibrationEvidenceImage.encode(
+                                    evidenceFrame,
+                                    snapshot.config,
+                                    language,
+                                    visorActive = DraftVisionScanner.showCalibrationBoxes.value,
+                                    literalCapture = false
+                                )
+                            } finally {
+                                runCatching { evidenceFrame.bitmap.recycle() }
+                            }
+                        }
+                    }
+                    val encodedEvidence = visualEvidence
+                    val visualEvidenceText = if (encodedEvidence != null) {
+                        if (language.equals("pt", ignoreCase = true)) {
+                            "Evidência visual anexada: $evidenceSource; visor=${if (DraftVisionScanner.showCalibrationBoxes.value) "ativo" else "inativo"}; ${encodedEvidence.width}x${encodedEvidence.height}; idade=${encodedEvidence.ageMs} ms; SHA-256=${encodedEvidence.sha256}"
+                        } else {
+                            "Evidencia visual adjunta: $evidenceSource; visor=${if (DraftVisionScanner.showCalibrationBoxes.value) "activo" else "inactivo"}; ${encodedEvidence.width}x${encodedEvidence.height}; antigüedad=${encodedEvidence.ageMs} ms; SHA-256=${encodedEvidence.sha256}"
                         }
                     } else if (language.equals("pt", ignoreCase = true)) {
-                        "Evidência visual anexada: nenhum fotograma de captura disponível."
+                        "Evidência visual anexada: nenhum fotograma de captura disponível; visor=${if (DraftVisionScanner.showCalibrationBoxes.value) "ativo" else "inativo"}."
                     } else {
-                        "Evidencia visual adjunta: no había un fotograma de captura disponible."
+                        "Evidencia visual adjunta: no había un fotograma de captura disponible; visor=${if (DraftVisionScanner.showCalibrationBoxes.value) "activo" else "inactivo"}."
                     }
                     val detectionEvidence = listOf(
                         DraftVisionScanner.detectionEvidenceReport(language),
@@ -186,4 +242,18 @@ fun CalibrationSendButton(onBeforeSend: (() -> Unit)? = null) {
     }) { Text(if (limitReached) dailyLimit else if (sending) pending else send, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center, fontSize = 14.sp) }
     if (sent) Text(success, modifier = Modifier.testTag("calibration_send_confirmed"), fontSize = 13.sp)
     if (limitReached) Text(tr("Puedes enviar hasta cinco informes de coordenadas al día."), fontSize = 12.sp)
+}
+
+/** Obtiene una captura literal reciente sin iniciar un bucle de monitoreo. */
+private suspend fun captureLiteralEvidenceFrame(manager: ScreenCaptureManager?): CalibrationEvidenceFrame? {
+    if (manager == null || !manager.isReady()) return null
+    repeat(4) {
+        val capturedAt = android.os.SystemClock.elapsedRealtime()
+        val bitmap = withContext(Dispatchers.Default) { manager.captureCurrentFrame() }
+        if (bitmap != null && !bitmap.isRecycled && bitmap.width > 0 && bitmap.height > 0) {
+            return CalibrationEvidenceFrame(bitmap, capturedAt)
+        }
+        delay(90L)
+    }
+    return null
 }

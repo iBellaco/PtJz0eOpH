@@ -1613,7 +1613,8 @@ internal fun FloatingOverlayContent(
     // Modal del Visor Reconocimiento visual local para el 10º Pick
     if (showLiteRTViewer) {
         com.example.ui.components.LiteRTEngineViewerDialog(
-            onDismissRequest = { showLiteRTViewer = false }
+            onDismissRequest = { showLiteRTViewer = false },
+            screenCaptureManager = screenCaptureManager
         )
     }
 

@@ -47,6 +47,7 @@ import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.HourglassBottom
@@ -123,8 +124,11 @@ internal fun ComprehensiveFeedbackCard(
     onItemClick: (WildRiftItem) -> Unit
 ) {
     val context = LocalContext.current
-    var expanded by remember { mutableStateOf(false) }
     val itemCategory = remember(report) { getFeedbackCategory(report) }
+    val isCalibrationReport = itemCategory == "CALIBRATION"
+    // Las evidencias de coordenadas deben poder auditarse al abrir el panel:
+    // imagen, visor y texto completo quedan visibles sin tocar el título.
+    var expanded by remember(report.id, itemCategory) { mutableStateOf(isCalibrationReport) }
     val isBugOrSupport = itemCategory in setOf("BUG", "SUPPORT", "CALIBRATION", "PATROCINADOR", "PAGO")
     val canContinueConversation = onReply != null && !com.example.data.SupportConversationPolicy.isClosed(currentStatus)
 
@@ -141,8 +145,9 @@ internal fun ComprehensiveFeedbackCard(
     }
 
     // Parsear sugerencia de build si contiene el formato estructurado
-    val parsedBuild = remember(report.cleanDescription, report.description, report.title) {
-        parseBuildSuggestionFromText(report.cleanDescription.ifEmpty { report.description }, report.title)
+    val parsedBuild = remember(report.cleanDescription, report.description, report.title, itemCategory) {
+        if (isCalibrationReport) null
+        else parseBuildSuggestionFromText(report.cleanDescription.ifEmpty { report.description }, report.title)
     }
 
     // Parsear imágenes base64 si existen
@@ -403,6 +408,29 @@ internal fun ComprehensiveFeedbackCard(
                 }
             }
 
+            if (isCalibrationReport) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 3.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = tr("Texto completo del informe:"),
+                        color = HextechCyan,
+                        fontSize = 10.5.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        text = tr("Evidencia visual adjunta"),
+                        color = HextechGold,
+                        fontSize = 9.5.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
+            }
+
             if (parsedBuild != null) {
                 Spacer(modifier = Modifier.height(2.dp))
                 GraphicalBuildSuggestionView(
@@ -425,7 +453,7 @@ internal fun ComprehensiveFeedbackCard(
                         color = TextSecondary,
                         fontSize = 12.5.sp,
                         lineHeight = 17.sp,
-                        maxLines = if (expanded) Int.MAX_VALUE else 3,
+                        maxLines = if (isCalibrationReport || expanded) Int.MAX_VALUE else 3,
                         overflow = TextOverflow.Ellipsis,
                         modifier = Modifier
                             .weight(1f)
@@ -457,14 +485,35 @@ internal fun ComprehensiveFeedbackCard(
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Icon(Icons.Default.Image, contentDescription = null, tint = HextechGold, modifier = Modifier.size(14.dp))
-                    Text(
-                        text = tr("Capturas adjuntas (Toca para ampliar y descargar):"),
-                        color = TextMuted,
-                        fontSize = 10.5.sp
-                    )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Icon(Icons.Default.Image, contentDescription = null, tint = HextechGold, modifier = Modifier.size(14.dp))
+                        Text(
+                            text = tr("Capturas adjuntas (Toca para ampliar y descargar):"),
+                            color = TextMuted,
+                            fontSize = 10.5.sp
+                        )
+                    }
+                    IconButton(
+                        onClick = {
+                            attachedBitmaps.firstOrNull()?.let { bitmap ->
+                                saveFeedbackBitmapToGallery(context, bitmap)
+                            }
+                        },
+                        modifier = Modifier.size(48.dp).testTag("feedback_download_attachment")
+                    ) {
+                        Icon(
+                            Icons.Default.Download,
+                            contentDescription = tr("Descargar evidencia"),
+                            tint = HextechGreen,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
                 }
                 Spacer(modifier = Modifier.height(4.dp))
                 LazyRow(
