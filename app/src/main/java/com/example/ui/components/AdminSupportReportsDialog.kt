@@ -9,9 +9,13 @@ import com.example.util.tr
 
 import android.content.ClipData
 import android.content.ClipboardManager
+import android.content.ContentValues
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.os.Build
+import android.os.Environment
+import android.provider.MediaStore
 import android.util.Base64
 import android.util.Log
 import android.widget.Toast
@@ -51,6 +55,7 @@ import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.HeadsetMic
@@ -127,6 +132,43 @@ import java.util.Locale
 import java.util.TimeZone
 
 private const val TAG = "AdminSupportReports"
+
+/** Saves an administrator-viewed evidence image to a user-visible Downloads folder. */
+private fun saveEvidenceToDownloads(context: Context, bitmap: Bitmap): Boolean {
+    if (bitmap.isRecycled) return false
+    val resolver = context.contentResolver
+    val fileName = "coach-calibracion-${System.currentTimeMillis()}.jpg"
+    val values = ContentValues().apply {
+        put(MediaStore.MediaColumns.DISPLAY_NAME, fileName)
+        put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg")
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS + "/Coach")
+            put(MediaStore.MediaColumns.IS_PENDING, 1)
+        }
+    }
+    val collection = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+        MediaStore.Downloads.EXTERNAL_CONTENT_URI
+    } else {
+        MediaStore.Images.Media.EXTERNAL_CONTENT_URI
+    }
+    val uri = runCatching { resolver.insert(collection, values) }.getOrNull() ?: return false
+    return try {
+        val written = resolver.openOutputStream(uri)?.use { output ->
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 92, output)
+        } == true
+        check(written)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            resolver.update(uri, ContentValues().apply {
+                put(MediaStore.MediaColumns.IS_PENDING, 0)
+            }, null, null)
+        }
+        true
+    } catch (error: Throwable) {
+        Log.w(TAG, "No se pudo guardar la evidencia en Descargas", error)
+        runCatching { resolver.delete(uri, null, null) }
+        false
+    }
+}
 
 data class UnifiedSupportReport(
     val id: String,
@@ -863,6 +905,27 @@ fun AdminSupportReportsDialog(
                             }
                         }
                     }
+                    if (isAdmin) {
+                        Spacer(modifier = Modifier.height(8.dp))
+                        IconButton(
+                            onClick = {
+                                val saved = saveEvidenceToDownloads(context, previewZoomBitmap!!)
+                                Toast.makeText(
+                                    context,
+                                    com.example.util.appTr(if (saved) "Evidencia descargada" else "No se pudo descargar la evidencia"),
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            },
+                            modifier = Modifier.size(48.dp).testTag("download_calibration_evidence")
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Download,
+                                contentDescription = tr("Descargar evidencia"),
+                                tint = HextechCyan,
+                                modifier = Modifier.size(22.dp)
+                            )
+                        }
+                    }
                     Spacer(modifier = Modifier.height(10.dp))
                     Text(
                         text = tr("Toca la pantalla para cerrar"),
@@ -893,8 +956,9 @@ private fun UnifiedReportAdminCard(
     val isAccepted = report.status == FeedbackRepository.STATUS_ACCEPTED || report.status.equals("ACEPTADO", ignoreCase = true) || report.status.equals("ACEPTADA", ignoreCase = true)
     val isRejected = report.status == FeedbackRepository.STATUS_REJECTED || report.status.equals("RECHAZADO", ignoreCase = true) || report.status.equals("RECHAZADA", ignoreCase = true)
     val isSuggestionOrSponsor = report.type.equals("SUGGESTION", ignoreCase = true) || report.type.equals("SUGERENCIA", ignoreCase = true) || report.type.equals("PATROCINADOR", ignoreCase = true)
+    val isPermanentEvidence = FeedbackRepository.isPermanentEvidenceReportType(report.type)
 
-    val countdown = remember(report.createdAtMillis, isRead, isSolved, isAccepted, isRejected) {
+    val countdown = if (isPermanentEvidence) null else remember(report.createdAtMillis, isRead, isSolved, isAccepted, isRejected) {
         SupportReplyManager.calculateCountdown(report.createdAtMillis, isRead || isSolved || isAccepted || isRejected)
     }
 
@@ -986,41 +1050,58 @@ private fun UnifiedReportAdminCard(
                         )
                     }
 
-                    // Badge de Contador de Auto-eliminación (30 días leídos, 60 días sin leer)
-                    val countdownBg = when {
-                        countdown.isExpired -> DangerRed.copy(alpha = 0.2f)
-                        countdown.remainingDays <= 3 -> Color(0xFFFF9800).copy(alpha = 0.2f)
-                        isRead || isSolved -> HextechCyan.copy(alpha = 0.15f)
-                        else -> HextechGold.copy(alpha = 0.15f)
-                    }
-                    val countdownColor = when {
-                        countdown.isExpired -> DangerRed
-                        countdown.remainingDays <= 3 -> Color(0xFFFF9800)
-                        isRead || isSolved -> HextechCyan
-                        else -> HextechGold
-                    }
-
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(6.dp))
-                            .background(countdownBg)
-                            .border(0.8.dp, countdownColor, RoundedCornerShape(6.dp))
-                            .padding(horizontal = 5.dp, vertical = 2.dp)
-                    ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(
-                                imageVector = Icons.Default.HourglassBottom,
-                                contentDescription = null,
-                                tint = countdownColor,
-                                modifier = Modifier.size(10.dp)
-                            )
-                            Spacer(modifier = Modifier.width(3.dp))
+                    if (isPermanentEvidence) {
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(6.dp))
+                                .background(HextechCyan.copy(alpha = 0.15f))
+                                .border(0.8.dp, HextechCyan, RoundedCornerShape(6.dp))
+                                .padding(horizontal = 5.dp, vertical = 2.dp)
+                        ) {
                             Text(
-                                text = com.example.util.tr(countdown.displayText),
-                                color = countdownColor,
+                                text = tr("Sin caducidad"),
+                                color = HextechCyan,
                                 fontSize = 8.5.sp,
                                 fontWeight = FontWeight.Bold
                             )
+                        }
+                    } else {
+                        countdown?.let { currentCountdown ->
+                            val countdownBg = when {
+                                currentCountdown.isExpired -> DangerRed.copy(alpha = 0.2f)
+                                currentCountdown.remainingDays <= 3 -> Color(0xFFFF9800).copy(alpha = 0.2f)
+                                isRead || isSolved -> HextechCyan.copy(alpha = 0.15f)
+                                else -> HextechGold.copy(alpha = 0.15f)
+                            }
+                            val countdownColor = when {
+                                currentCountdown.isExpired -> DangerRed
+                                currentCountdown.remainingDays <= 3 -> Color(0xFFFF9800)
+                                isRead || isSolved -> HextechCyan
+                                else -> HextechGold
+                            }
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(6.dp))
+                                    .background(countdownBg)
+                                    .border(0.8.dp, countdownColor, RoundedCornerShape(6.dp))
+                                    .padding(horizontal = 5.dp, vertical = 2.dp)
+                            ) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Icon(
+                                        imageVector = Icons.Default.HourglassBottom,
+                                        contentDescription = null,
+                                        tint = countdownColor,
+                                        modifier = Modifier.size(10.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(3.dp))
+                                    Text(
+                                        text = com.example.util.tr(currentCountdown.displayText),
+                                        color = countdownColor,
+                                        fontSize = 8.5.sp,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
+                            }
                         }
                     }
                 }

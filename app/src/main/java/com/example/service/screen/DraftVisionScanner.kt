@@ -116,6 +116,15 @@ data class DraftScanResult(
     val ocrRequestCount: Int = 0
 )
 
+/**
+ * Último fotograma útil del escáner reservado para la evidencia de calibración.
+ * El llamador recibe una copia y es responsable de reciclarla cuando termine.
+ */
+internal data class CalibrationEvidenceFrame(
+    val bitmap: Bitmap,
+    val capturedAtElapsedMs: Long
+)
+
 object DraftVisionScanner {
     private const val TAG = "DraftVisionScanner"
     @Volatile private var overlayMasks = CaptureMaskSnapshot(emptyList())
@@ -160,6 +169,11 @@ object DraftVisionScanner {
     val fpsMaximum = kotlinx.coroutines.flow.MutableStateFlow(0f)
     val calibrationSourceFlow = kotlinx.coroutines.flow.MutableStateFlow("sin captura")
     private val performanceLock = Any()
+    private val calibrationEvidenceLock = Any()
+    private const val CALIBRATION_EVIDENCE_INTERVAL_MS = 900L
+    private var latestCalibrationEvidenceBitmap: Bitmap? = null
+    private var latestCalibrationEvidenceAtElapsedMs: Long = 0L
+    private var lastCalibrationEvidenceCopyAtElapsedMs: Long = 0L
     private var totalProcessingDurationMs = 0L
     private var fpsSampleCount = 0L
     val isFirstPickState = kotlinx.coroutines.flow.MutableStateFlow<Boolean?>(null)
@@ -317,6 +331,7 @@ object DraftVisionScanner {
             if (decision != null) {
                 val (champ, conf) = decision
                 lastVisualPick = turn.isAlly to champ
+                recordVisualEvidence(turn.isAlly, turn.slotIndex, champ)
                 return ScannedSlotInfo(
                     slotIndex = turn.slotIndex,
                     isAlly = turn.isAlly,
@@ -410,6 +425,53 @@ object DraftVisionScanner {
     internal data class CalibrationReportSnapshot(val width: Int, val height: Int, val config: VisionCalibrationConfig)
     @Synchronized
     internal fun calibrationReportSnapshot() = CalibrationReportSnapshot(alignedSize.first, alignedSize.second, alignedConfigFlow.value)
+
+    /**
+     * Conserva una copia pequeña del último fotograma que realmente procesó el
+     * escáner. No captura la pantalla por separado ni añade otro ciclo de
+     * MediaProjection, por lo que no aumenta el consumo de batería de la sesión.
+     */
+    private fun rememberCalibrationEvidenceFrame(frame: Bitmap) {
+        if (frame.isRecycled || frame.width <= 0 || frame.height <= 0) return
+        val now = android.os.SystemClock.elapsedRealtime()
+        synchronized(calibrationEvidenceLock) {
+            if (now - lastCalibrationEvidenceCopyAtElapsedMs < CALIBRATION_EVIDENCE_INTERVAL_MS) return
+            val maxWidth = 1280
+            val targetWidth = minOf(frame.width, maxWidth)
+            val targetHeight = (frame.height.toFloat() * targetWidth / frame.width.toFloat())
+                .toInt().coerceAtLeast(1)
+            val copy = try {
+                if (targetWidth != frame.width || targetHeight != frame.height) {
+                    Bitmap.createScaledBitmap(frame, targetWidth, targetHeight, true)
+                } else {
+                    frame.copy(Bitmap.Config.ARGB_8888, false)
+                }
+            } catch (_: Throwable) {
+                null
+            } ?: return
+            val previous = latestCalibrationEvidenceBitmap
+            latestCalibrationEvidenceBitmap = copy
+            latestCalibrationEvidenceAtElapsedMs = now
+            lastCalibrationEvidenceCopyAtElapsedMs = now
+            runCatching { previous?.recycle() }
+        }
+    }
+
+    /** Returns a caller-owned copy of the most recent scanned frame, if one exists. */
+    internal fun calibrationEvidenceFrame(): CalibrationEvidenceFrame? = synchronized(calibrationEvidenceLock) {
+        val source = latestCalibrationEvidenceBitmap ?: return@synchronized null
+        if (source.isRecycled) return@synchronized null
+        val copy = runCatching { source.copy(Bitmap.Config.ARGB_8888, false) }.getOrNull()
+            ?: return@synchronized null
+        CalibrationEvidenceFrame(copy, latestCalibrationEvidenceAtElapsedMs)
+    }
+
+    private fun clearCalibrationEvidenceFrame() = synchronized(calibrationEvidenceLock) {
+        runCatching { latestCalibrationEvidenceBitmap?.recycle() }
+        latestCalibrationEvidenceBitmap = null
+        latestCalibrationEvidenceAtElapsedMs = 0L
+        lastCalibrationEvidenceCopyAtElapsedMs = 0L
+    }
     private var lastAlignmentAt = 0L
     private val geometryStability = DraftGeometryStability()
     private var calibrationContext: android.content.Context? = null
@@ -558,6 +620,10 @@ object DraftVisionScanner {
     // Memoria persistente de campeones confirmados por slot para evitar que desaparezcan al terminar o transicionar
     val allySlotConfirmedChampions = arrayOfNulls<Champion>(5)
     val enemySlotConfirmedChampions = arrayOfNulls<Champion>(5)
+    // Se conserva por separado la confirmación del retrato para poder auditar
+    // si un nombre vino de OCR o de la imagen del campeón.
+    private val allySlotImageEvidence = arrayOfNulls<Champion>(5)
+    private val enemySlotImageEvidence = arrayOfNulls<Champion>(5)
     // Origen de la confirmación: solo el nombre del campeón leído por OCR puede bloquear un slot.
     // Las predicciones visuales del décimo pick deben volver a evaluarse en cada fotograma.
     private val allySlotNameConfirmed = BooleanArray(5)
@@ -565,6 +631,56 @@ object DraftVisionScanner {
     private val titleConfirmation = SlotTitleConfirmation()
     private var lastVisualPick: Pair<Boolean, Champion>? = null
     private val slotLifecycle = DraftSlotLifecycle()
+
+    private fun recordVisualEvidence(isAlly: Boolean, slotIndex: Int, champion: Champion) {
+        if (slotIndex !in 0..4) return
+        if (isAlly) allySlotImageEvidence[slotIndex] = champion
+        else enemySlotImageEvidence[slotIndex] = champion
+    }
+
+    /** Evidencia compacta y sin datos personales para los informes de soporte. */
+    fun detectionEvidenceReport(language: String = "es"): String {
+        val pt = language.equals("pt", ignoreCase = true)
+        val lines = mutableListOf<String>()
+        fun source(text: Champion?, image: Champion?): String = buildList {
+            if (text != null) add("texto=${text.name}")
+            if (image != null) add(if (pt) "imagem=${image.name}" else "imagen=${image.name}")
+        }.joinToString("; ").ifBlank { if (pt) "fonte=N/D" else "fuente=N/D" }
+        for (i in 0..4) {
+            val allyText = allySlotConfirmedChampions[i].takeIf { allySlotNameConfirmed[i] }
+            val allyImage = allySlotImageEvidence[i]
+            val allyFinal = allySlotConfirmedChampions[i] ?: allyImage
+            if (allyText != null || allyImage != null || allyFinal != null) {
+                lines += "Aliado ${if (pt) "posição" else "slot"} ${i + 1}: ${source(allyText, allyImage)}; confirmado=${allyFinal?.name ?: "N/D"}"
+            }
+            val enemyText = enemySlotConfirmedChampions[i].takeIf { enemySlotNameConfirmed[i] }
+            val enemyImage = enemySlotImageEvidence[i]
+            val enemyFinal = enemySlotConfirmedChampions[i] ?: enemyImage
+            if (enemyText != null || enemyImage != null || enemyFinal != null) {
+                lines += "Rival ${if (pt) "posição" else "slot"} ${i + 1}: ${source(enemyText, enemyImage)}; confirmado=${enemyFinal?.name ?: "N/D"}"
+            }
+        }
+        val knownChampions = WildRiftRepository.championSnapshot()
+        banSlotsFlow.value.filter { it.championId != null }.forEach { ban ->
+            val name = knownChampions.firstOrNull { it.id.equals(ban.championId, ignoreCase = true) }?.name
+                ?: ban.championId.orEmpty()
+            val side = if (ban.side == BanSide.ALLY) "Aliado" else "Rival"
+            lines += if (pt) {
+                "Banimento $side posição ${ban.index + 1}: imagem=$name; estado=${ban.state.name}; similaridade=${"%.2f".format(Locale.US, ban.similarity)}"
+            } else {
+                "Baneo $side slot ${ban.index + 1}: imagen=$name; estado=${ban.state.name}; similitud=${"%.2f".format(Locale.US, ban.similarity)}"
+            }
+        }
+        if (lines.isEmpty()) {
+            return if (pt) "Evidência de detecção: nenhum campeão confirmado em posições ou banimentos."
+            else "Evidencia de detección: no hay campeones confirmados en slots o baneos."
+        }
+        val heading = if (pt) "Evidência de detecção (fonte)" else "Evidencia de detección (fuente)"
+        return buildString {
+            appendLine(heading)
+            lines.forEach(::appendLine)
+        }.trim()
+    }
 
     fun resetSlotLifecycle() = slotLifecycle.reset()
 
@@ -638,6 +754,8 @@ object DraftVisionScanner {
         allySummonerNamesCache.clear()
         allySlotConfirmedChampions.fill(null)
         enemySlotConfirmedChampions.fill(null)
+        allySlotImageEvidence.fill(null)
+        enemySlotImageEvidence.fill(null)
         allySlotNameConfirmed.fill(false)
         enemySlotNameConfirmed.fill(false)
         if (!preserveBans) clearDetectedBans()
@@ -650,6 +768,7 @@ object DraftVisionScanner {
 
     fun clearSessionState() {
         resetSlotMemory()
+        clearCalibrationEvidenceFrame()
         overlayRect = null
         debugTextRects = emptyList()
         showCalibrationBoxes.value = false
@@ -742,6 +861,7 @@ object DraftVisionScanner {
 
         // Calibración adaptativa multipantalla para cualquier relación de aspecto (16:9, 18:9, 19.5:9, 20:9, 21:9, tablets)
         val calib = configForFrame(bitmap)
+        rememberCalibrationEvidenceFrame(bitmap)
 
         // 5 slots para aliados y 5 slots para enemigos
         val allySlots = (0..4).map { ScannedSlotInfo(slotIndex = it, isAlly = true) }
@@ -1848,6 +1968,7 @@ object DraftVisionScanner {
                 isFirstPickState.value = detectedFirstPick!!
             }
             lastVisualPick = tenthIsAlly to champWinner
+            recordVisualEvidence(tenthIsAlly, tenthSlotIndex, champWinner)
             detectedTenthChampion = champWinner
             isTenthConfirmed = true
             if (tenthIsAlly) {

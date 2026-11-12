@@ -28,7 +28,8 @@ object CalibrationReport {
         coordinates: String,
         userName: String = "Usuario",
         language: String = "es",
-        androidVersion: String = ""
+        androidVersion: String = "",
+        detectionEvidence: String = ""
     ): String {
         fun field(value: String) = value.replace('\n', ' ').replace('\r', ' ').take(200)
         require(coordinates.isNotBlank() && coordinates.length < 12000)
@@ -48,6 +49,11 @@ object CalibrationReport {
         val cleanCoordinates = coordinates.lineSequence()
             .filterNot { it.trimStart().startsWith("usuario=", ignoreCase = true) }
             .joinToString("\n").trim()
+        val cleanEvidence = detectionEvidence
+            .replace(MARKER, "")
+            .replace(END, "")
+            .trim()
+            .take(3500)
         return buildString {
             appendLine(MARKER)
             appendLine("COORDENADAS")
@@ -57,6 +63,10 @@ object CalibrationReport {
             appendLine("Android: $cleanAndroid")
             appendLine("$coordinatesLabel:")
             appendLine(cleanCoordinates)
+            if (cleanEvidence.isNotBlank()) {
+                appendLine()
+                appendLine(cleanEvidence)
+            }
             append(END)
         }
     }
