@@ -135,7 +135,8 @@ internal fun ComprehensiveFeedbackCard(
     val createdMillis = remember(report.createdAt) {
         SupportReplyManager.parseDateToMillis(report.createdAt)
     }
-    val countdown = remember(createdMillis, isReadOrSolved) {
+    val isPermanentEvidence = FeedbackRepository.isPermanentEvidenceReportType(report.type)
+    val countdown = if (isPermanentEvidence) null else remember(createdMillis, isReadOrSolved) {
         SupportReplyManager.calculateCountdown(createdMillis, isReadOrSolved)
     }
 
@@ -254,30 +255,42 @@ internal fun ComprehensiveFeedbackCard(
                         }
                     }
 
-                    // Contador de Auto-eliminación (30 días leídos, 60 días sin leer)
-                    val countdownBg = when {
-                        countdown.isExpired -> DangerRed.copy(alpha = 0.2f)
-                        countdown.remainingDays <= 3 -> Color(0xFFFF9800).copy(alpha = 0.2f)
-                        isReadOrSolved -> HextechCyan.copy(alpha = 0.15f)
-                        else -> Color(0xFFFFB300).copy(alpha = 0.15f)
-                    }
-                    val countdownColor = when {
-                        countdown.isExpired -> DangerRed
-                        countdown.remainingDays <= 3 -> Color(0xFFFF9800)
-                        isReadOrSolved -> HextechCyan
-                        else -> Color(0xFFFFB300)
-                    }
-
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(6.dp))
-                            .background(countdownBg)
-                            .border(0.8.dp, countdownColor, RoundedCornerShape(6.dp))
-                            .padding(horizontal = 5.dp, vertical = 2.dp)
-                    ) {
-                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(3.dp)) {
-                            Icon(Icons.Default.HourglassBottom, contentDescription = null, tint = countdownColor, modifier = Modifier.size(10.dp))
-                            Text(text = com.example.util.tr(countdown.displayText), color = countdownColor, fontSize = 8.5.sp, fontWeight = FontWeight.Bold)
+                    if (isPermanentEvidence) {
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(6.dp))
+                                .background(HextechCyan.copy(alpha = 0.15f))
+                                .border(0.8.dp, HextechCyan, RoundedCornerShape(6.dp))
+                                .padding(horizontal = 5.dp, vertical = 2.dp)
+                        ) {
+                            Text(tr("Sin caducidad"), color = HextechCyan, fontSize = 8.5.sp, fontWeight = FontWeight.Bold)
+                        }
+                    } else {
+                        countdown?.let { currentCountdown ->
+                            val countdownBg = when {
+                                currentCountdown.isExpired -> DangerRed.copy(alpha = 0.2f)
+                                currentCountdown.remainingDays <= 3 -> Color(0xFFFF9800).copy(alpha = 0.2f)
+                                isReadOrSolved -> HextechCyan.copy(alpha = 0.15f)
+                                else -> Color(0xFFFFB300).copy(alpha = 0.15f)
+                            }
+                            val countdownColor = when {
+                                currentCountdown.isExpired -> DangerRed
+                                currentCountdown.remainingDays <= 3 -> Color(0xFFFF9800)
+                                isReadOrSolved -> HextechCyan
+                                else -> Color(0xFFFFB300)
+                            }
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(6.dp))
+                                    .background(countdownBg)
+                                    .border(0.8.dp, countdownColor, RoundedCornerShape(6.dp))
+                                    .padding(horizontal = 5.dp, vertical = 2.dp)
+                            ) {
+                                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(3.dp)) {
+                                    Icon(Icons.Default.HourglassBottom, contentDescription = null, tint = countdownColor, modifier = Modifier.size(10.dp))
+                                    Text(text = com.example.util.tr(currentCountdown.displayText), color = countdownColor, fontSize = 8.5.sp, fontWeight = FontWeight.Bold)
+                                }
+                            }
                         }
                     }
 

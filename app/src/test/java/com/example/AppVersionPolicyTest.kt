@@ -14,4 +14,11 @@ class AppVersionPolicyTest {
         assertNull(AppVersionPolicy.testVersion("1.1.10.463-prueba.1", "8"))
         assertNull(AppVersionPolicy.testVersion("1.1.10.463", "0"))
     }
+
+    @Test fun onlyTheExplicitMinimumMakesAReleaseObsolete() {
+        assertTrue(AppVersionPolicy.isObsolete(1239, 1240))
+        assertFalse(AppVersionPolicy.isObsolete(1240, 1240))
+        assertFalse(AppVersionPolicy.isObsolete(1240, 0))
+        assertFalse(AppVersionPolicy.isObsolete(1240, -1))
+    }
 }

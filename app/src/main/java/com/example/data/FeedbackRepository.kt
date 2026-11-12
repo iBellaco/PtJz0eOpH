@@ -34,6 +34,10 @@ object FeedbackRepository {
     const val STATUS_REJECTED = "REJECTED"     // Rechazada (para Sugerencias)
     const val STATUS_COMPLETED = "COMPLETED"   // Compatibilidad
 
+    /** Coordinate evidence remains available until an administrator deletes it manually. */
+    fun isPermanentEvidenceReportType(type: String?): Boolean =
+        type.orEmpty().trim().uppercase(Locale.ROOT) in setOf("COORDENADAS", "CALIBRACION", "CALIBRAÇÃO")
+
     /**
      * Envía un reporte o sugerencia y purga automáticamente
      * los reportes con más de [retentionDays] días de antigüedad.
@@ -54,7 +58,9 @@ object FeedbackRepository {
             // 2. Preparar el nuevo reporte
             val baseDeviceInfo = "${Build.MANUFACTURER} ${Build.MODEL} (Android ${Build.VERSION.RELEASE}, API ${Build.VERSION.SDK_INT})"
             var deviceInfo = baseDeviceInfo
-            if (imagesBase64.isNotEmpty() && type != "VERIFICAR") {
+            // Coordinate evidence is already kept in the canonical photos field;
+            // avoid duplicating a large Base64 image inside deviceInfo.
+            if (imagesBase64.isNotEmpty() && type != "VERIFICAR" && !isPermanentEvidenceReportType(type)) {
                 for (img in imagesBase64) {
                     deviceInfo += "\n\n[IMAGE_BASE64]\n$img"
                 }
@@ -412,7 +418,9 @@ object FeedbackRepository {
             val snapshot = db.collection("support_reports").get().await()
             for (doc in snapshot.documents) {
                 val ts = doc.getTimestamp("createdAt")?.toDate()?.time ?: continue
-                if (ts < cutoffMillis && SupportTicketPresentation.isUserTicket(doc.data.orEmpty())) {
+                val reportType = doc.getString("type") ?: doc.getString("tag")
+                if (ts < cutoffMillis && SupportTicketPresentation.isUserTicket(doc.data.orEmpty()) &&
+                    !isPermanentEvidenceReportType(reportType)) {
                     deleteFeedback(doc.id).getOrThrow()
                 }
             }
@@ -455,6 +463,7 @@ object FeedbackRepository {
             var purged = 0
 
             for (report in list) {
+                if (isPermanentEvidenceReportType(report.type)) continue
                 val status = getReportStatus(context, report)
                 val isRead = status == STATUS_READ || status == STATUS_SOLVED || status == STATUS_ACCEPTED || status == STATUS_COMPLETED
                 val maxDays = if (isRead) 30 else 60
