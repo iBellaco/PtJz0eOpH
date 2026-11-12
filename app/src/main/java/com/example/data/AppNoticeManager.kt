@@ -30,6 +30,9 @@ data class AppNotice(
     val videoUrlEs: String = "",
     val videoUrlPt: String = "",
     val expandedImageUrl: String = "", // Imagen vertical para vista ampliada
+    /** Multimedia vertical específico para campañas segmentadas. Legacy notices use expandedImageUrl. */
+    val expandedImageUrlEs: String = "",
+    val expandedImageUrlPt: String = "",
     val externalUrl: String = "", // Enlace web externo opcional al tocar la imagen ampliada
     val tag: String = "Anuncios importantes", // "Anuncios importantes", "Ofertas", "Mantenimiento", "Noticia", "Streamer", "PUBLICIDAD"
     val titleColor: String = "#FFD700",
@@ -59,6 +62,15 @@ data class AppNotice(
         languageScope.equals("PT", ignoreCase = true) -> videoUrlPt.ifBlank { videoUrl }
         languageScope.equals("ES", ignoreCase = true) -> videoUrlEs.ifBlank { videoUrl }
         else -> videoUrl
+    }
+
+    fun verticalMediaFor(language: String?): String = when {
+        languageScope.equals("BOTH", ignoreCase = true) && language.equals("pt", ignoreCase = true) ->
+            expandedImageUrlPt.ifBlank { expandedImageUrl }
+        languageScope.equals("BOTH", ignoreCase = true) -> expandedImageUrlEs.ifBlank { expandedImageUrl }
+        languageScope.equals("PT", ignoreCase = true) -> expandedImageUrlPt.ifBlank { expandedImageUrl }
+        languageScope.equals("ES", ignoreCase = true) -> expandedImageUrlEs.ifBlank { expandedImageUrl }
+        else -> expandedImageUrl
     }
 }
 
@@ -110,6 +122,8 @@ internal fun mergeSponsorNotices(
                 videoUrlEs = candidate.videoUrlEs.ifBlank { existing.videoUrlEs },
                 videoUrlPt = candidate.videoUrlPt.ifBlank { existing.videoUrlPt },
                 expandedImageUrl = candidate.expandedImageUrl.ifBlank { existing.expandedImageUrl },
+                expandedImageUrlEs = candidate.expandedImageUrlEs.ifBlank { existing.expandedImageUrlEs },
+                expandedImageUrlPt = candidate.expandedImageUrlPt.ifBlank { existing.expandedImageUrlPt },
                 externalUrl = candidate.externalUrl.ifBlank { existing.externalUrl },
                 titleColor = candidate.titleColor.ifBlank { existing.titleColor },
                 contentColor = candidate.contentColor.ifBlank { existing.contentColor },
@@ -461,6 +475,8 @@ object AppNoticeManager {
                             videoUrlEs = map["videoUrlEs"]?.toString() ?: "",
                             videoUrlPt = map["videoUrlPt"]?.toString() ?: "",
                             expandedImageUrl = map["expandedImageUrl"]?.toString() ?: "",
+                            expandedImageUrlEs = map["expandedImageUrlEs"]?.toString() ?: "",
+                            expandedImageUrlPt = map["expandedImageUrlPt"]?.toString() ?: "",
                             externalUrl = map["externalUrl"]?.toString() ?: "",
                             tag = map["tag"]?.toString() ?: "Anuncios importantes",
                             titleColor = map["titleColor"]?.toString() ?: "#FFD700",
@@ -587,6 +603,8 @@ object AppNoticeManager {
                     put("videoUrlEs", n.videoUrlEs)
                     put("videoUrlPt", n.videoUrlPt)
                     put("expandedImageUrl", n.expandedImageUrl)
+                    put("expandedImageUrlEs", n.expandedImageUrlEs)
+                    put("expandedImageUrlPt", n.expandedImageUrlPt)
                     put("externalUrl", n.externalUrl)
                     put("tag", n.tag)
                     put("titleColor", n.titleColor)
@@ -633,6 +651,8 @@ object AppNoticeManager {
                             videoUrlEs = obj.optString("videoUrlEs", ""),
                             videoUrlPt = obj.optString("videoUrlPt", ""),
                             expandedImageUrl = obj.optString("expandedImageUrl", ""),
+                            expandedImageUrlEs = obj.optString("expandedImageUrlEs", ""),
+                            expandedImageUrlPt = obj.optString("expandedImageUrlPt", ""),
                             externalUrl = obj.optString("externalUrl", ""),
                             tag = obj.optString("tag", "Anuncios importantes"),
                             titleColor = obj.optString("titleColor", "#C8AA6E"),
@@ -665,7 +685,9 @@ object AppNoticeManager {
     fun preloadMedia(context: Context, list: List<AppNotice>) {
         val appContext = context.applicationContext
         list.asSequence().filter { it.isEnabled && it.isApproved }
-            .map { it.videoUrl.trim() }
+            // Precargar solo el banner del idioma activo evita descargar las
+            // dos variantes de una campaña bilingüe y reduce batería/datos.
+            .map { it.horizontalMediaFor(com.example.util.currentAppLanguage()).trim() }
             .filter { it.startsWith("https://", ignoreCase = true) }
             .filterNot { com.example.ui.components.NoticeMediaUtils.isVideo(appContext, it) }
             .distinct().take(2).forEach { url ->
@@ -707,6 +729,8 @@ object AppNoticeManager {
             val listData = newNotices.map { n ->
                 val cleanVideo = if (n.videoUrl.startsWith("file://")) "" else n.videoUrl
                 val cleanExpanded = if (n.expandedImageUrl.startsWith("file://")) "" else n.expandedImageUrl
+                val cleanExpandedEs = if (n.expandedImageUrlEs.startsWith("file://")) "" else n.expandedImageUrlEs
+                val cleanExpandedPt = if (n.expandedImageUrlPt.startsWith("file://")) "" else n.expandedImageUrlPt
 
                 mapOf(
                     "id" to n.id,
@@ -716,6 +740,8 @@ object AppNoticeManager {
                     "videoUrlEs" to n.videoUrlEs,
                     "videoUrlPt" to n.videoUrlPt,
                     "expandedImageUrl" to cleanExpanded,
+                    "expandedImageUrlEs" to cleanExpandedEs,
+                    "expandedImageUrlPt" to cleanExpandedPt,
                     "externalUrl" to n.externalUrl,
                     "tag" to n.tag,
                     "titleColor" to n.titleColor,
@@ -757,6 +783,8 @@ object AppNoticeManager {
                             "videoUrlEs" to if (n.videoUrlEs.startsWith("http://") || n.videoUrlEs.startsWith("https://")) n.videoUrlEs else "",
                             "videoUrlPt" to if (n.videoUrlPt.startsWith("http://") || n.videoUrlPt.startsWith("https://")) n.videoUrlPt else "",
                             "expandedImageUrl" to if (n.expandedImageUrl.startsWith("http://") || n.expandedImageUrl.startsWith("https://")) n.expandedImageUrl else "",
+                            "expandedImageUrlEs" to if (n.expandedImageUrlEs.startsWith("http://") || n.expandedImageUrlEs.startsWith("https://")) n.expandedImageUrlEs else "",
+                            "expandedImageUrlPt" to if (n.expandedImageUrlPt.startsWith("http://") || n.expandedImageUrlPt.startsWith("https://")) n.expandedImageUrlPt else "",
                             "externalUrl" to n.externalUrl,
                             "tag" to n.tag,
                             "titleColor" to n.titleColor,
@@ -902,6 +930,7 @@ object AppNoticeManager {
             "title" to notice.title, "content" to notice.content, "videoUrl" to notice.videoUrl,
             "videoUrlEs" to notice.videoUrlEs, "videoUrlPt" to notice.videoUrlPt,
             "expandedImageUrl" to notice.expandedImageUrl, "externalUrl" to notice.externalUrl,
+            "expandedImageUrlEs" to notice.expandedImageUrlEs, "expandedImageUrlPt" to notice.expandedImageUrlPt,
             "titleColor" to notice.titleColor, "durationValue" to notice.durationValue,
             "durationUnit" to notice.durationUnit,
             "languageScope" to SponsorReviewPolicy.normalizeLanguageScope(notice.languageScope))), notice.id)
@@ -934,6 +963,8 @@ object AppNoticeManager {
                 put("videoUrlEs", pendingNotice.videoUrlEs)
                 put("videoUrlPt", pendingNotice.videoUrlPt)
                 put("expandedImageUrl", pendingNotice.expandedImageUrl)
+                put("expandedImageUrlEs", pendingNotice.expandedImageUrlEs)
+                put("expandedImageUrlPt", pendingNotice.expandedImageUrlPt)
                 put("externalUrl", pendingNotice.externalUrl)
                 put("tag", pendingNotice.tag)
                 put("budget", pendingNotice.budget)
@@ -978,6 +1009,8 @@ object AppNoticeManager {
                             videoUrlEs = obj.optString("videoUrlEs", ""),
                             videoUrlPt = obj.optString("videoUrlPt", ""),
                             expandedImageUrl = obj.optString("expandedImageUrl", ""),
+                            expandedImageUrlEs = obj.optString("expandedImageUrlEs", ""),
+                            expandedImageUrlPt = obj.optString("expandedImageUrlPt", ""),
                             externalUrl = obj.optString("externalUrl", ""),
                             tag = obj.optString("tag", "Publicidad"),
                             budget = obj.optDouble("budget", 10.0),
@@ -1016,6 +1049,8 @@ object AppNoticeManager {
                 val videoUrlEs = doc.getString("videoUrlEs") ?: ""
                 val videoUrlPt = doc.getString("videoUrlPt") ?: ""
                 val expandedImageUrl = doc.getString("expandedImageUrl") ?: ""
+                val expandedImageUrlEs = doc.getString("expandedImageUrlEs") ?: ""
+                val expandedImageUrlPt = doc.getString("expandedImageUrlPt") ?: ""
                 val externalUrl = doc.getString("externalUrl") ?: ""
                 val tag = doc.getString("tag") ?: "Publicidad"
                 val budget = doc.getDouble("budget") ?: 10.0
@@ -1039,6 +1074,8 @@ object AppNoticeManager {
                         videoUrlEs = videoUrlEs,
                         videoUrlPt = videoUrlPt,
                         expandedImageUrl = expandedImageUrl,
+                        expandedImageUrlEs = expandedImageUrlEs,
+                        expandedImageUrlPt = expandedImageUrlPt,
                         externalUrl = externalUrl,
                         tag = tag,
                         budget = budget,

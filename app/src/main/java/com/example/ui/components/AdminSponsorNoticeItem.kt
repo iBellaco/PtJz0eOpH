@@ -59,8 +59,11 @@ fun AdminSponsorNoticeItem(
     var showDmDialog by remember { mutableStateOf(false) }
     var showMediaViewerDialog by remember { mutableStateOf(false) }
 
-    val isVideo = NoticeMediaUtils.isVideo(context, notice.videoUrl)
-    val isVertical = notice.expandedImageUrl.isNotBlank() || NoticeMediaUtils.isMediaVertical(context, notice.videoUrl)
+    val currentLanguage = com.example.util.currentAppLanguage()
+    val horizontalMedia = notice.horizontalMediaFor(currentLanguage)
+    val isVideo = NoticeMediaUtils.isVideo(context, horizontalMedia)
+    val verticalMedia = notice.verticalMediaFor(currentLanguage)
+    val isVertical = verticalMedia.isNotBlank() || NoticeMediaUtils.isMediaVertical(context, horizontalMedia)
     val hasUrl = notice.externalUrl.isNotBlank()
 
     if (showMediaViewerDialog) {
@@ -96,7 +99,7 @@ fun AdminSponsorNoticeItem(
                             .background(Color.Black),
                         contentAlignment = Alignment.Center
                     ) {
-                        val mediaUrlToPlay = notice.videoUrl.ifBlank { notice.expandedImageUrl }
+                        val mediaUrlToPlay = horizontalMedia.ifBlank { verticalMedia }
                         NoticeMediaViewer(
                             mediaUrl = mediaUrlToPlay,
                             modifier = Modifier.fillMaxSize()
