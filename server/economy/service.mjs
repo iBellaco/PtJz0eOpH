@@ -9,8 +9,8 @@ function visible(account, uid) {
   return {uid, role: account.role ?? 'free', secondaryRole: account.secondaryRole ?? '', blueEssence: balance(account, 'BLUE'), orangeEssence: balance(account, 'ORANGE'), premiumUntil: deadline(account.premiumUntil), subscriptionPlan: account.subscriptionPlan ?? ''};
 }
 function publicSponsorNotice(id, data) {
-  const allowed = ['title', 'content', 'videoUrl', 'expandedImageUrl', 'externalUrl', 'titleColor', 'contentColor',
-    'budget', 'budgetUnit', 'durationValue', 'durationUnit', 'isApproved', 'isEnabled', 'approvedAtMillis', 'expiresAtMillis', 'languageScope'];
+  const allowed = ['title', 'content', 'videoUrl', 'videoUrlEs', 'videoUrlPt', 'expandedImageUrl', 'externalUrl', 'titleColor', 'contentColor',
+    'budget', 'budgetUnit', 'durationValue', 'durationUnit', 'isApproved', 'isEnabled', 'approvedAtMillis', 'expiresAtMillis', 'languageScope', 'chargedEssence'];
   return Object.fromEntries(allowed.filter(key => data[key] !== undefined).map(key => [key, data[key]]).concat([['id', id], ['tag', 'PUBLICIDAD']]));
 }
 export async function executeEconomy(db, auth, raw, clock = Date.now, {requestedAtMillis, identities, sourceRequestId} = {}) {
@@ -313,7 +313,7 @@ export async function executeEconomy(db, auth, raw, clock = Date.now, {requested
         updates.blueEssence = remaining;
         const n = input.notice;
         const languageScope = String(n.languageScope ?? 'ALL').trim().toUpperCase();
-        const notice = {id: input.id, title: n.title, content: n.content, videoUrl: n.videoUrl, expandedImageUrl: n.expandedImageUrl, externalUrl: n.externalUrl, titleColor: /^#[a-fA-F0-9]{6}$/.test(n.titleColor ?? '') ? n.titleColor : '#FFD700', languageScope, tag: 'PUBLICIDAD', budget: price.budget, budgetUnit: n.durationUnit, durationValue: n.durationValue, durationUnit: n.durationUnit, isApproved: false, isEnabled: false, sponsorEmail: auth.token.email ?? '', userId: uid, chargedEssence: price.cost, createdAt: now};
+        const notice = {id: input.id, title: n.title, content: n.content, videoUrl: n.videoUrl, videoUrlEs: n.videoUrlEs ?? '', videoUrlPt: n.videoUrlPt ?? '', expandedImageUrl: n.expandedImageUrl, externalUrl: n.externalUrl, titleColor: /^#[a-fA-F0-9]{6}$/.test(n.titleColor ?? '') ? n.titleColor : '#FFD700', languageScope, tag: 'PUBLICIDAD', budget: price.budget, budgetUnit: n.durationUnit, durationValue: n.durationValue, durationUnit: n.durationUnit, isApproved: false, isEnabled: false, sponsorEmail: auth.token.email ?? '', userId: uid, chargedEssence: price.cost, createdAt: now};
         writes.push([pendingRef, notice]);
         record = receipt(input.id, now, 'SPONSOR_SUBMISSION', 'Anuncio enviado a revisión', `-${price.cost} EA`, 'Pendiente');
         metadata = {kind: 'SPONSOR', cost: price.cost, currency: 'BLUE'};

@@ -60,6 +60,20 @@ private fun activeOrbAnimation(): OrbAnimation {
     return OrbAnimation(pulse, outer, inner, glow)
 }
 
+@Composable
+private fun idleOrbAnimation(): OrbAnimation {
+    val transition = rememberInfiniteTransition(label = "runeterra_orb_idle_anim")
+    val pulse by transition.animateFloat(1f, 1.025f,
+        infiniteRepeatable(tween(1800, easing = FastOutSlowInEasing), RepeatMode.Reverse), label = "idle_orb_pulse")
+    val outer by transition.animateFloat(0f, 360f,
+        infiniteRepeatable(tween(18000, easing = FastOutSlowInEasing), RepeatMode.Restart), label = "idle_outer_rotation")
+    val inner by transition.animateFloat(360f, 0f,
+        infiniteRepeatable(tween(14000, easing = FastOutSlowInEasing), RepeatMode.Restart), label = "idle_inner_rotation")
+    val glow by transition.animateFloat(0.28f, 0.45f,
+        infiniteRepeatable(tween(1800, easing = FastOutSlowInEasing), RepeatMode.Reverse), label = "idle_orb_glow")
+    return OrbAnimation(pulse, outer, inner, glow)
+}
+
 /**
  * Orbe Circular Hextech / Arcano de Activación (Inspirado en Runaterra de League of Legends):
  * - Por defecto (Piltover): Orbe cristalino con anillos de energía Hextech rotativos, engranajes dorados y pulso cian/zafiro.
@@ -83,10 +97,10 @@ fun HextechOrbButton(
     val surfaceColor = theme.surface
     val bgDark = theme.background
 
-    // Inicio queda estático cuando el asistente está detenido: cuatro animaciones
-    // infinitas repintaban ambos canvas aun con el escáner desactivado.
+    // El estado inactivo conserva una animación lenta y de bajo consumo para
+    // que el botón siga comunicando que puede iniciarse.
     val (pulseScale, outerRotation, innerRotation, glowAlpha) =
-        if (isActive) activeOrbAnimation() else OrbAnimation(1f, 0f, 0f, 0.35f)
+        if (isActive) activeOrbAnimation() else idleOrbAnimation()
 
     val energyTint by animateColorAsState(
         targetValue = if (isActive) primaryLight else secondaryLight,

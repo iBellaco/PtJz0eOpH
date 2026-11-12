@@ -109,9 +109,13 @@ internal fun tierDisplayedStats(champion: Champion, selectedLane: LaneRole?): Ti
     )
 }
 
-/** A tier entry is meaningful only when a competitive category exists. */
-internal fun isTierListChampionVisible(champion: Champion): Boolean =
-    champion.tier.trim().uppercase(java.util.Locale.ROOT) in setOf("S+", "S", "A+", "A", "B", "C")
+/** A tier entry is meaningful only when a current competitive snapshot exists. */
+internal fun isTierListChampionVisible(champion: Champion, selectedLane: LaneRole? = null): Boolean {
+    if (champion.tier.trim().uppercase(java.util.Locale.ROOT) !in setOf("S+", "S", "A+", "A", "B", "C")) return false
+    if (!champion.hasRegionalStats || champion.statsCheckedAt <= 0L) return false
+    val stats = tierDisplayedStats(champion, selectedLane)
+    return listOf(stats.win, stats.pick, stats.ban).any { it.isFinite() && it in 0.0..100.0 }
+}
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -145,7 +149,7 @@ fun TierListTab(
     val rawChampionsToDisplay = remember(selectedLane, showFavoritesOnly, favorites, syncState, currentRegion, metaRevision, liveTick, WildRiftRepository.champions.toList()) {
         val champs = if (selectedLane == null) WildRiftRepository.champions.toList()
         else WildRiftRepository.champions.filter { publishedChampionRoles(it).contains(selectedLane) }
-        val visibleTiers = champs.filter(::isTierListChampionVisible)
+        val visibleTiers = champs.filter { isTierListChampionVisible(it, selectedLane) }
         if (showFavoritesOnly) visibleTiers.filter { it.id in favorites } else visibleTiers
     }
 

@@ -135,6 +135,24 @@ private fun activeAutoScanPulse(): AutoScanPulse {
 }
 
 @Composable
+private fun disabledAutoScanPulse(): AutoScanPulse {
+    val transition = rememberInfiniteTransition(label = "auto_scan_disabled_pulse")
+    val alpha by transition.animateFloat(
+        initialValue = 0.42f,
+        targetValue = 0.96f,
+        animationSpec = infiniteRepeatable(tween(900), RepeatMode.Reverse),
+        label = "auto_scan_disabled_alpha"
+    )
+    val scale by transition.animateFloat(
+        initialValue = 0.98f,
+        targetValue = 1.02f,
+        animationSpec = infiniteRepeatable(tween(900), RepeatMode.Reverse),
+        label = "auto_scan_disabled_scale"
+    )
+    return AutoScanPulse(alpha, scale)
+}
+
+@Composable
 internal fun FloatingOverlayContent(
     state: OverlayState,
     isLandscapeMode: Boolean,
@@ -164,6 +182,7 @@ internal fun FloatingOverlayContent(
 
     LaunchedEffect(Unit) {
         FavoriteChampionsManager.init(context)
+        com.example.data.DeviceDiagnosticTelemetry.start(context)
     }
     val favoriteChampionIds by FavoriteChampionsManager.favoritesFlow.collectAsStateWithLifecycle()
 
@@ -237,7 +256,18 @@ internal fun FloatingOverlayContent(
     var isScanning by state::isScanning
     var autoScanEnabled by state::autoScanEnabled
     var scanNoticeMessage by state::scanNoticeMessage
-    val autoScanPulse = if (autoScanEnabled) activeAutoScanPulse() else AutoScanPulse(0.86f, 1f)
+    val autoScanPulse = if (autoScanEnabled) activeAutoScanPulse() else disabledAutoScanPulse()
+
+    // El diagnóstico necesita una ventana mínima de datos reales del escáner.
+    // Se muestra tras 60 s continuos de Auto-Scan y se oculta al detenerlo.
+    var diagnosticAutoScanReady by remember { mutableStateOf(false) }
+    LaunchedEffect(autoScanEnabled) {
+        diagnosticAutoScanReady = false
+        if (autoScanEnabled) {
+            delay(60_000L)
+            diagnosticAutoScanReady = autoScanEnabled
+        }
+    }
 
     val geometryPreviewVisible by DraftVisionScanner.showCalibrationBoxes.collectAsStateWithLifecycle()
     val previewReadiness = remember(screenCaptureManager) {
@@ -343,6 +373,27 @@ internal fun FloatingOverlayContent(
             favoriteChampionIds = favoriteChampionIds,
             favoriteOnlyRecommendations = favoriteOnlyRecommendations
         )
+    }
+
+    val diagnosticDraftDetails = remember(
+        allies.toList(), enemies.toList(), activeRole, isFirstPick, isLegendaryQueue,
+        autoScanEnabled, isSavedRecently, bannedIds, analysis
+    ) {
+        fun championNames(slots: List<Champion?>): String = slots.mapIndexedNotNull { index, champion ->
+            champion?.let { "${defaultRoles[index].shortName}: ${it.name}" }
+        }.ifEmpty { listOf("sin selección") }.joinToString(" | ")
+        val selectedCount = (allies + enemies).count { it != null }
+        buildString {
+            appendLine("Guardado en esta sesión: ${if (isSavedRecently) "sí" else "no"}")
+            appendLine("Rol: ${activeRole.displayName}; primer pick: ${if (isFirstPick) "sí" else "no"}; modo: ${if (isLegendaryQueue) "legendario" else "clasificatoria"}")
+            appendLine("Aliados (${allies.count { it != null }}/5): ${championNames(allies)}")
+            appendLine("Rivales (${enemies.count { it != null }}/5): ${championNames(enemies)}")
+            appendLine("Baneos detectados: ${bannedIds.size}; selección: $selectedCount/10; Auto-Scan activo: ${if (autoScanEnabled) "sí" else "no"}")
+            val recommendation = analysis.bestOverallPick ?: analysis.recommendations.firstOrNull()
+            appendLine("Recomendación principal: ${recommendation?.champion?.name ?: "N/D"}; WR estimado: ${recommendation?.estimatedWinrate?.let { "%.1f%%".format(java.util.Locale.US, it) } ?: "N/D"}")
+            appendLine("Daño aliado: físico ${analysis.allyPhysicalDamagePercent}%, mágico ${analysis.allyMagicDamagePercent}%, verdadero ${analysis.allyTrueDamagePercent}%")
+            appendLine("Advertencia de composición: ${analysis.allyCompositionWarning ?: analysis.directMatchupWarning ?: "ninguna"}")
+        }.trimEnd()
     }
 
     LaunchedEffect(state.autoSavePendingRequested) {
@@ -1030,6 +1081,13 @@ internal fun FloatingOverlayContent(
                             ) {
                                 val isLiveVisionActive by DraftVisionScanner.showCalibrationBoxes.collectAsStateWithLifecycle()
 
+                                if (hubViewerButtonsVisible && diagnosticAutoScanReady) {
+                                    com.example.ui.components.DeviceDiagnosticButton(
+                                        screenCaptureManager = screenCaptureManager,
+                                        draftDetails = diagnosticDraftDetails
+                                    )
+                                }
+
                                 if (hubViewerButtonsVisible) Surface(
                                     modifier = Modifier
                                         .size(48.dp)
@@ -1049,12 +1107,6 @@ internal fun FloatingOverlayContent(
                                             modifier = Modifier.size(15.dp)
                                         )
                                     }
-                                }
-
-                                if (hubViewerButtonsVisible) {
-                                    com.example.ui.components.DeviceDiagnosticButton(
-                                        screenCaptureManager = screenCaptureManager
-                                    )
                                 }
 
                                 if (hubViewerButtonsVisible) Surface(
@@ -1370,7 +1422,7 @@ internal fun FloatingOverlayContent(
                             )
 
                             val autoScanColor by animateColorAsState(
-                                targetValue = if (autoScanEnabled) Color(0xFF00FF7F) else TextMuted,
+                                targetValue = if (autoScanEnabled) Color(0xFF00FF7F) else DangerRed,
                                 animationSpec = tween(300),
                                 label = "auto_scan_text_color"
                             )
@@ -1378,29 +1430,27 @@ internal fun FloatingOverlayContent(
                                 verticalAlignment = Alignment.CenterVertically,
                                 modifier = Modifier
                                     .clip(RoundedCornerShape(6.dp))
-                                    .background(if (autoScanEnabled) autoScanColor.copy(alpha = 0.06f + autoScanPulse.alpha * 0.10f) else Color.Transparent)
-                                    .border(1.dp, if (autoScanEnabled) autoScanColor.copy(alpha = 0.35f + autoScanPulse.alpha * 0.35f) else Color.Transparent, RoundedCornerShape(6.dp))
+                                    .background(autoScanColor.copy(alpha = 0.06f + autoScanPulse.alpha * 0.10f))
+                                    .border(1.dp, autoScanColor.copy(alpha = 0.35f + autoScanPulse.alpha * 0.35f), RoundedCornerShape(6.dp))
                                     .padding(start = 4.dp, end = 1.dp, top = 1.dp, bottom = 1.dp)
                                     .testTag("overlay_auto_scan_status")
                             ) {
-                                if (autoScanEnabled) {
-                                    Box(
-                                        modifier = Modifier
-                                            .size(6.dp)
-                                            .clip(CircleShape)
-                                            .background(autoScanColor)
-                                    )
-                                    Spacer(Modifier.width(3.dp))
-                                }
+                                Box(
+                                    modifier = Modifier
+                                        .size(6.dp)
+                                        .clip(CircleShape)
+                                        .background(autoScanColor)
+                                )
+                                Spacer(Modifier.width(3.dp))
                                 Text(
-                                    text = tr(if (autoScanEnabled) "Auto-Scan • ACTIVO" else "Auto-Scan"),
+                                    text = tr(if (autoScanEnabled) "Auto-Scan • ACTIVO" else "Auto-Scan • DESHABILITADO"),
                                     color = autoScanColor,
-                                    fontSize = 9.5.sp,
-                                    fontWeight = if (autoScanEnabled) FontWeight.Bold else FontWeight.Normal,
+                                    fontSize = 8.sp,
+                                    fontWeight = FontWeight.Bold,
                                     modifier = Modifier
                                         .padding(end = 4.dp)
-                                        .alpha(if (autoScanEnabled) autoScanPulse.alpha else 0.86f)
-                                        .scale(if (autoScanEnabled) autoScanPulse.scale else 1f)
+                                        .alpha(autoScanPulse.alpha)
+                                        .scale(autoScanPulse.scale)
                                         .testTag("overlay_auto_scan_label")
                                 )
                                 if (!isPremium) {
