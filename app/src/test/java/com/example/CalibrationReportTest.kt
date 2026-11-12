@@ -71,4 +71,21 @@ class CalibrationReportTest {
         assertFalse(payload.contains("Coach:"))
         assertFalse(payload.contains("@"))
     }
+
+    @Test fun detectionEvidenceIsIncludedWithoutAddingSensitiveData() {
+        val payload = CalibrationReport.build(
+            device = "nubia NX809J",
+            app = "",
+            display = "2688x1216",
+            capture = "1920x869",
+            coordinates = "allySlotX=0.08704145f",
+            userName = "Sofia",
+            detectionEvidence = "Evidencia de detección (fuente)\nAliado slot 1: texto=Ahri; confirmado=Ahri\nBaneo Rival slot 2: imagen=Lux; similitud=0.94"
+        )
+        assertTrue(payload.contains("Evidencia de detección (fuente)"))
+        assertTrue(payload.contains("texto=Ahri"))
+        assertTrue(payload.contains("imagen=Lux"))
+        assertFalse(payload.contains("@"))
+        assertEquals(payload, CalibrationReport.extract(payload))
+    }
 }

@@ -312,6 +312,10 @@ private fun AppUpdateVerificationControl() {
     val scope = rememberCoroutineScope()
     val enabled by com.example.util.AppUpdateManager.verificationEnabled.collectAsState()
     val versionStatus by com.example.util.AppUpdateManager.checkStatus.collectAsState()
+    val minimumSupportedCode by com.example.util.AppUpdateManager.minimumSupportedVersionCode.collectAsState()
+    var minimumText by remember(minimumSupportedCode) {
+        mutableStateOf(minimumSupportedCode.takeIf { it > 0 }?.toString().orEmpty())
+    }
     var busy by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf<String?>(null) }
 
@@ -332,7 +336,7 @@ private fun AppUpdateVerificationControl() {
             Column(Modifier.weight(1f)) {
                 Text(tr("Verificación de actualización"), color = TextPrimary, fontWeight = FontWeight.Bold)
                 Text(
-                    tr(if (enabled) "La aplicación exige la versión publicada más reciente." else "La comprobación de versión está desactivada."),
+                    tr(if (enabled) "La aplicación exige la versión mínima elegida." else "La comprobación de versión está desactivada."),
                     color = TextSecondary, fontSize = 11.sp
                 )
                 if (enabled) Text(
@@ -357,6 +361,40 @@ private fun AppUpdateVerificationControl() {
                 modifier = Modifier.sizeIn(minWidth = 48.dp, minHeight = 48.dp)
                     .testTag("toggle_app_update_verification")
             )
+          }
+          Spacer(Modifier.height(8.dp))
+          Text(tr("Versión mínima obligatoria"), color = TextPrimary, fontSize = 12.sp,
+              fontWeight = FontWeight.SemiBold)
+          Text(
+              "${tr("Versión mínima obligatoria")}: ${minimumSupportedCode.takeIf { it > 0 } ?: "—"}",
+              color = TextSecondary, fontSize = 10.sp
+          )
+          Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+              OutlinedTextField(
+                  value = minimumText,
+                  onValueChange = { value -> minimumText = value.filter(Char::isDigit).take(9) },
+                  modifier = Modifier.weight(1f).testTag("minimum_supported_version_code"),
+                  singleLine = true,
+                  enabled = !busy,
+                  label = { Text("versionCode") },
+                  placeholder = { Text("0") }
+              )
+              Spacer(Modifier.width(8.dp))
+              TextButton(
+                  enabled = !busy,
+                  onClick = {
+                      val value = minimumText.toIntOrNull() ?: 0
+                      busy = true
+                      error = null
+                      scope.launch {
+                          runCatching {
+                              com.example.util.AppUpdateManager.setMinimumSupportedVersionCode(context, value)
+                          }.onFailure { error = "No se pudo guardar la versión obligatoria." }
+                          busy = false
+                      }
+                  },
+                  modifier = Modifier.heightIn(min = 48.dp).testTag("save_minimum_supported_version")
+              ) { Text(tr("Guardar")) }
           }
         }
     }

@@ -28,7 +28,7 @@ data class AppUpdateInfo(
 
 /** Only verifies the production release. There is no downloader or installer. */
 data class VersionCheckStatus(val lastAttemptAt: Long = 0, val lastSuccessAt: Long = 0,
-    val publishedName: String = "")
+    val publishedName: String = "", val minimumSupportedCode: Int = 0)
 
 object AppUpdateManager {
     private const val PREFS = "published_app_version"
@@ -43,6 +43,8 @@ object AppUpdateManager {
     val verificationFinished = _verificationFinished.asStateFlow()
     private val _verificationEnabled = MutableStateFlow(true)
     val verificationEnabled = _verificationEnabled.asStateFlow()
+    private val _minimumSupportedVersionCode = MutableStateFlow(0)
+    val minimumSupportedVersionCode = _minimumSupportedVersionCode.asStateFlow()
     private var settingLoaded = false
     private var minimumSupportedCode = 0
     private var dismissedVersionCode = -1
@@ -59,22 +61,22 @@ object AppUpdateManager {
         }
         val prefs = context.getSharedPreferences(PREFS, 0)
         minimumSupportedCode = prefs.getInt("minimum_supported_code", 0).coerceAtLeast(0)
+        _minimumSupportedVersionCode.value = minimumSupportedCode
         val version = PublishedAppVersion.parse(prefs.getString("tag", "").orEmpty()) ?: return
         val checkedAt = prefs.getLong("last_success", 0L)
-        _checkStatus.value = VersionCheckStatus(checkedAt, checkedAt, version.name)
+        _checkStatus.value = VersionCheckStatus(checkedAt, checkedAt, version.name, minimumSupportedCode)
         publish(version)
     }
 
     private fun publish(version: PublishedAppVersion) {
         if (!_verificationEnabled.value || isTestBuild) { _updateInfo.value = null; return }
-        if (version.code == dismissedVersionCode && BuildConfig.VERSION_CODE >= minimumSupportedCode) {
-            _updateInfo.value = null
-            return
-        }
-        _updateInfo.value = if (version.newerThan(BuildConfig.VERSION_NAME, BuildConfig.VERSION_CODE))
+        val obsolete = AppVersionPolicy.isObsolete(BuildConfig.VERSION_CODE, minimumSupportedCode) &&
+            version.code >= minimumSupportedCode
+        _updateInfo.value = if (obsolete && version.newerThan(BuildConfig.VERSION_NAME, BuildConfig.VERSION_CODE))
             AppUpdateInfo(true, version.code, version.name,
-                // Production releases always require the current published
-                // release. Test builds return before this official flow.
+                // Only the configured minimum makes an update mandatory.
+                // A newer release remains optional unless the administrator
+                // explicitly raises the threshold above this build.
                 isMandatory = AppVersionPolicy.isProductionVersion(BuildConfig.VERSION_NAME)) else null
     }
 
@@ -89,6 +91,7 @@ object AppUpdateManager {
             refreshVerificationSetting()
             context.getSharedPreferences(PREFS, 0).edit()
                 .putInt("minimum_supported_code", minimumSupportedCode).apply()
+            _minimumSupportedVersionCode.value = minimumSupportedCode
             if (!_verificationEnabled.value) {
                 _updateInfo.value = null
                 _verificationFinished.value = true
@@ -116,7 +119,7 @@ object AppUpdateManager {
                                 .putString("tag", release.getString("tag_name"))
                                 .putLong("last_success", now).apply()
                             publish(version)
-                            _checkStatus.value = VersionCheckStatus(now, now, version.name)
+                            _checkStatus.value = VersionCheckStatus(now, now, version.name, minimumSupportedCode)
                         }
                     }
                 }
@@ -137,6 +140,8 @@ object AppUpdateManager {
             minimumSupportedCode = (it.getLong("minimumSupportedVersionCode") ?: 0L)
                 .coerceIn(0L, Int.MAX_VALUE.toLong()).toInt()
         }
+        _minimumSupportedVersionCode.value = minimumSupportedCode
+        _checkStatus.value = _checkStatus.value.copy(minimumSupportedCode = minimumSupportedCode)
         val enabled = snapshot?.getBoolean("enabled")
             ?: if (settingLoaded) _verificationEnabled.value else true
         settingLoaded = true
@@ -161,6 +166,34 @@ object AppUpdateManager {
         _verificationEnabled.value = enabled
         _verificationFinished.value = !enabled
         if (!enabled) _updateInfo.value = null else checkForUpdates(context, forceManualCheck = true)
+    }
+
+    /**
+     * Stores the administrator's explicit obsolescence floor. This is kept
+     * separate from the publication version: routine releases are optional,
+     * while builds below this floor are blocked once a matching release exists.
+     */
+    suspend fun setMinimumSupportedVersionCode(context: Context, code: Int) {
+        if (isTestBuild) {
+            minimumSupportedCode = code.coerceAtLeast(0)
+            _minimumSupportedVersionCode.value = minimumSupportedCode
+            _checkStatus.value = _checkStatus.value.copy(minimumSupportedCode = minimumSupportedCode)
+            return
+        }
+        val normalized = code.coerceAtLeast(0)
+        FirebaseFirestore.getInstance().collection("system_config")
+            .document("app_update_verification")
+            .set(mapOf(
+                "minimumSupportedVersionCode" to normalized,
+                "updatedAt" to com.google.firebase.Timestamp.now()
+            ), com.google.firebase.firestore.SetOptions.merge())
+            .await()
+        minimumSupportedCode = normalized
+        _minimumSupportedVersionCode.value = normalized
+        _checkStatus.value = _checkStatus.value.copy(minimumSupportedCode = normalized)
+        context.getSharedPreferences(PREFS, 0).edit()
+            .putInt("minimum_supported_code", normalized).apply()
+        if (_verificationEnabled.value) checkForUpdates(context, forceManualCheck = true)
     }
 
     fun dismissAlert() {

@@ -130,7 +130,8 @@ fun CalibrationSendButton(onBeforeSend: (() -> Unit)? = null) {
                         coordinates,
                         userName = displayName,
                         language = AppLanguage.current.value,
-                        androidVersion = "${Build.VERSION.RELEASE} (API ${Build.VERSION.SDK_INT})"
+                        androidVersion = "${Build.VERSION.RELEASE} (API ${Build.VERSION.SDK_INT})",
+                        detectionEvidence = DraftVisionScanner.detectionEvidenceReport(AppLanguage.current.value)
                     )
                     val title = CalibrationReport.title(
                         isPremium = com.example.util.SubscriptionManager.isPremium.value,

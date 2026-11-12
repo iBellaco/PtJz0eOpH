@@ -317,6 +317,7 @@ object DraftVisionScanner {
             if (decision != null) {
                 val (champ, conf) = decision
                 lastVisualPick = turn.isAlly to champ
+                recordVisualEvidence(turn.isAlly, turn.slotIndex, champ)
                 return ScannedSlotInfo(
                     slotIndex = turn.slotIndex,
                     isAlly = turn.isAlly,
@@ -558,6 +559,10 @@ object DraftVisionScanner {
     // Memoria persistente de campeones confirmados por slot para evitar que desaparezcan al terminar o transicionar
     val allySlotConfirmedChampions = arrayOfNulls<Champion>(5)
     val enemySlotConfirmedChampions = arrayOfNulls<Champion>(5)
+    // Se conserva por separado la confirmación del retrato para poder auditar
+    // si un nombre vino de OCR o de la imagen del campeón.
+    private val allySlotImageEvidence = arrayOfNulls<Champion>(5)
+    private val enemySlotImageEvidence = arrayOfNulls<Champion>(5)
     // Origen de la confirmación: solo el nombre del campeón leído por OCR puede bloquear un slot.
     // Las predicciones visuales del décimo pick deben volver a evaluarse en cada fotograma.
     private val allySlotNameConfirmed = BooleanArray(5)
@@ -565,6 +570,56 @@ object DraftVisionScanner {
     private val titleConfirmation = SlotTitleConfirmation()
     private var lastVisualPick: Pair<Boolean, Champion>? = null
     private val slotLifecycle = DraftSlotLifecycle()
+
+    private fun recordVisualEvidence(isAlly: Boolean, slotIndex: Int, champion: Champion) {
+        if (slotIndex !in 0..4) return
+        if (isAlly) allySlotImageEvidence[slotIndex] = champion
+        else enemySlotImageEvidence[slotIndex] = champion
+    }
+
+    /** Evidencia compacta y sin datos personales para los informes de soporte. */
+    fun detectionEvidenceReport(language: String = "es"): String {
+        val pt = language.equals("pt", ignoreCase = true)
+        val lines = mutableListOf<String>()
+        fun source(text: Champion?, image: Champion?): String = buildList {
+            if (text != null) add("texto=${text.name}")
+            if (image != null) add(if (pt) "imagem=${image.name}" else "imagen=${image.name}")
+        }.joinToString("; ").ifBlank { if (pt) "fonte=N/D" else "fuente=N/D" }
+        for (i in 0..4) {
+            val allyText = allySlotConfirmedChampions[i].takeIf { allySlotNameConfirmed[i] }
+            val allyImage = allySlotImageEvidence[i]
+            val allyFinal = allySlotConfirmedChampions[i] ?: allyImage
+            if (allyText != null || allyImage != null || allyFinal != null) {
+                lines += "Aliado ${if (pt) "posição" else "slot"} ${i + 1}: ${source(allyText, allyImage)}; confirmado=${allyFinal?.name ?: "N/D"}"
+            }
+            val enemyText = enemySlotConfirmedChampions[i].takeIf { enemySlotNameConfirmed[i] }
+            val enemyImage = enemySlotImageEvidence[i]
+            val enemyFinal = enemySlotConfirmedChampions[i] ?: enemyImage
+            if (enemyText != null || enemyImage != null || enemyFinal != null) {
+                lines += "Rival ${if (pt) "posição" else "slot"} ${i + 1}: ${source(enemyText, enemyImage)}; confirmado=${enemyFinal?.name ?: "N/D"}"
+            }
+        }
+        val knownChampions = WildRiftRepository.championSnapshot()
+        banSlotsFlow.value.filter { it.championId != null }.forEach { ban ->
+            val name = knownChampions.firstOrNull { it.id.equals(ban.championId, ignoreCase = true) }?.name
+                ?: ban.championId.orEmpty()
+            val side = if (ban.side == BanSide.ALLY) "Aliado" else "Rival"
+            lines += if (pt) {
+                "Banimento $side posição ${ban.index + 1}: imagem=$name; estado=${ban.state.name}; similaridade=${"%.2f".format(Locale.US, ban.similarity)}"
+            } else {
+                "Baneo $side slot ${ban.index + 1}: imagen=$name; estado=${ban.state.name}; similitud=${"%.2f".format(Locale.US, ban.similarity)}"
+            }
+        }
+        if (lines.isEmpty()) {
+            return if (pt) "Evidência de detecção: nenhum campeão confirmado em posições ou banimentos."
+            else "Evidencia de detección: no hay campeones confirmados en slots o baneos."
+        }
+        val heading = if (pt) "Evidência de detecção (fonte)" else "Evidencia de detección (fuente)"
+        return buildString {
+            appendLine(heading)
+            lines.forEach(::appendLine)
+        }.trim()
+    }
 
     fun resetSlotLifecycle() = slotLifecycle.reset()
 
@@ -638,6 +693,8 @@ object DraftVisionScanner {
         allySummonerNamesCache.clear()
         allySlotConfirmedChampions.fill(null)
         enemySlotConfirmedChampions.fill(null)
+        allySlotImageEvidence.fill(null)
+        enemySlotImageEvidence.fill(null)
         allySlotNameConfirmed.fill(false)
         enemySlotNameConfirmed.fill(false)
         if (!preserveBans) clearDetectedBans()
@@ -1848,6 +1905,7 @@ object DraftVisionScanner {
                 isFirstPickState.value = detectedFirstPick!!
             }
             lastVisualPick = tenthIsAlly to champWinner
+            recordVisualEvidence(tenthIsAlly, tenthSlotIndex, champWinner)
             detectedTenthChampion = champWinner
             isTenthConfirmed = true
             if (tenthIsAlly) {

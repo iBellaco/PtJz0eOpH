@@ -96,8 +96,13 @@ fun DeviceDiagnosticButton(
                         appendLine("Detalle del draft:")
                         appendLine(draftDetails)
                     }
+                    appendLine(DraftVisionScanner.detectionEvidenceReport(com.example.util.AppLanguage.current.value))
                     appendLine("Batería inicio/actual: ${batterySession.batteryStartPercent?.let { "$it%" } ?: "N/D"}/${batterySession.batteryPercent?.let { "$it%" } ?: "N/D"}; consumo observado: ${batterySession.batteryDrainPercent?.let { "%.2f%%".format(java.util.Locale.US, it) } ?: "N/D"}")
                     appendLine("Carga acumulada inicio/actual: ${batterySession.chargeStartMah?.let { "%.1f mAh".format(java.util.Locale.US, it) } ?: "N/D"}/${batterySession.chargeMah?.let { "%.1f mAh".format(java.util.Locale.US, it) } ?: "N/D"}; consumo real medido: ${batterySession.chargeDrainMah?.let { "%.1f mAh".format(java.util.Locale.US, it) } ?: "N/D"}")
+                    val sessionHours = batterySession.sessionDurationMs / 3_600_000.0
+                    val averageDrain = batterySession.chargeDrainMah?.takeIf { sessionHours > 0.0 }
+                        ?.div(sessionHours)
+                    appendLine("Consumo medio estimado de la sesión: ${averageDrain?.let { "%.1f mAh/h".format(java.util.Locale.US, it) } ?: "N/D"}; medición del dispositivo completo")
                     appendLine("Energía inicio/actual: ${batterySession.energyStartWh?.let { "%.3f Wh".format(java.util.Locale.US, it) } ?: "N/D"}/${batterySession.energyWh?.let { "%.3f Wh".format(java.util.Locale.US, it) } ?: "N/D"}; consumo: ${batterySession.energyDrainWh?.let { "%.3f Wh".format(java.util.Locale.US, it) } ?: "N/D"}")
                     appendLine("Corriente/voltaje/potencia instantánea: ${batterySession.currentMa?.let { "%.0f mA".format(java.util.Locale.US, it) } ?: "N/D"}/${batterySession.voltageV?.let { "%.2f V".format(java.util.Locale.US, it) } ?: "N/D"}/${batterySession.powerW?.let { "%.2f W".format(java.util.Locale.US, it) } ?: "N/D"}")
                     appendLine("Ahorro batería: ${power.isPowerSaveMode}")

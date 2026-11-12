@@ -162,6 +162,38 @@ internal object MeasuredDeviceCalibrationDefaults {
             listOf(.82690156f, .8637098f, .9005181f, .93732643f, .9741347f),
             List(5) { .052f }, List(5) { .06f }, false,
             .045f, .072f, .16712953f, .9741347f
+        )),
+        Profile("nubia", "NX809J", 2688, 1216, measured(
+            .11f, .08704145f, .975f,
+            List(5) { .08704145f },
+            listOf(.23799995f, .37399995f, .50799996f, .641f, .775f),
+            listOf(.11999999f, .11999999f, .11999999f, .11999999f, .11499999f),
+            List(5) { .975f },
+            listOf(.15306476f, .28906476f, .42206478f, .55506474f, .68706477f),
+            List(5) { .11f },
+            listOf(.02801612f, .064036846f, .100057565f, .1360783f, .17209902f),
+            List(5) { .052f }, List(5) { .06f }, false,
+            listOf(.82589984f, .8629211f, .8999424f, .9369637f, .973985f),
+            List(5) { .052f }, List(5) { .06f }, false,
+            .045f, .072f, .1680967f, .973985f
+        )),
+        // Android reports a 1920x869 capture surface for this same device.
+        // The owner supplied normalized measurements for its 2688x1216 panel;
+        // reusing those ratios on the observed capture keeps the profile exact
+        // without sharing it with another model or resolution.
+        Profile("nubia", "NX809J", 1920, 869, measured(
+            .11f, .08704145f, .975f,
+            List(5) { .08704145f },
+            listOf(.23799995f, .37399995f, .50799996f, .641f, .775f),
+            listOf(.11999999f, .11999999f, .11999999f, .11999999f, .11499999f),
+            List(5) { .975f },
+            listOf(.15306476f, .28906476f, .42206478f, .55506474f, .68706477f),
+            List(5) { .11f },
+            listOf(.02801612f, .064036846f, .100057565f, .1360783f, .17209902f),
+            List(5) { .052f }, List(5) { .06f }, false,
+            listOf(.82589984f, .8629211f, .8999424f, .9369637f, .973985f),
+            List(5) { .052f }, List(5) { .06f }, false,
+            .045f, .072f, .1680967f, .973985f
         ))
     )
 

@@ -165,6 +165,26 @@ class DeviceDraftProfileTest {
         assertNull(VisionCalibrationConfig.measuredDefaultForCapture("motorola", "moto g56 5G", 2340, 1080))
         assertNull(VisionCalibrationConfig.measuredDefaultForCapture("motorola", "another", 2400, 1080))
     }
+
+    @Test fun nubiaNx809jUsesTheOwnerMeasurementsAndObservedCaptureAlias() {
+        val panel = VisionCalibrationConfig.measuredDefaultForCapture("nubia", "NX809J", 2688, 1216)
+        assertNotNull(panel)
+        assertEquals(.08704145f, panel!!.allyAvatarCenterX)
+        assertEquals(.975f, panel.enemyAvatarCenterX)
+        assertEquals(.23799995f, panel.allySlotYRatios.first())
+        assertEquals(.68706477f, panel.enemySlotYRatios.last())
+        assertEquals(.1680967f, panel.topAlly5XRatio)
+        assertEquals(.973985f, panel.topEnemy5XRatio)
+        assertEquals(.17209902f, panel.allyBanXRatios.last())
+
+        // This is the exact capture surface reported by the diagnostic for the
+        // same model; it uses the same normalized measurements, not a shared
+        // resolution fallback.
+        val capture = VisionCalibrationConfig.measuredDefaultForCapture("nubia", "NX809J", 1920, 869)
+        assertEquals(panel, capture)
+        assertNull(VisionCalibrationConfig.measuredDefaultForCapture("nubia", "NX809J", 1920, 868))
+        assertNull(VisionCalibrationConfig.measuredDefaultForCapture("nubia", "another", 2688, 1216))
+    }
     @Test fun nineConfirmedTitlesIdentifyTheSideRegardlessOfAnEarlierWrongPrefix() {
         val all = List(5) { true }
         val ninth = listOf(true, true, true, true, false)
