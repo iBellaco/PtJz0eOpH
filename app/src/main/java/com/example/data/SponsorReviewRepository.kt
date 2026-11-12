@@ -54,7 +54,7 @@ object SponsorReviewPolicy {
     fun publicNotice(id: String, data: Map<String, Any>): Map<String, Any> =
         data.filterKeys { it in setOf("title", "content", "videoUrl", "videoUrlEs", "videoUrlPt", "expandedImageUrl", "externalUrl",
             "titleColor", "contentColor", "budget", "budgetUnit", "durationValue", "durationUnit",
-            "isApproved", "isEnabled", "approvedAtMillis", "expiresAtMillis", "languageScope", "chargedEssence") } +
+            "isApproved", "isEnabled", "approvedAtMillis", "expiresAtMillis", "languageScope") } +
             mapOf("id" to id, "tag" to "PUBLICIDAD")
 
     fun visibleOnHome(data: Map<String, Any>, now: Long, language: String? = null): Boolean =

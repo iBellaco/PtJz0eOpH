@@ -1,6 +1,7 @@
 package com.example
 
 import com.example.data.SponsorReviewPolicy
+import com.example.data.AppNotice
 import com.example.data.NotificationPanel
 import com.example.data.PanelNotificationPolicy
 import org.junit.Assert.*
@@ -52,6 +53,16 @@ class SponsorReviewPolicyTest {
         assertTrue(SponsorReviewPolicy.matchesLanguage("BOTH", "pt"))
         assertTrue(SponsorReviewPolicy.matchesLanguage("BOTH", "es"))
         assertFalse(SponsorReviewPolicy.matchesLanguage("BOTH", "fr"))
+    }
+
+    @Test fun languageScopedNoticeSelectsTheMatchingBanner() {
+        val notice = AppNotice(
+            languageScope = SponsorReviewPolicy.LANGUAGE_BOTH,
+            videoUrlEs = "https://example.test/es.jpg",
+            videoUrlPt = "https://example.test/pt.jpg"
+        )
+        assertEquals("https://example.test/es.jpg", notice.horizontalMediaFor("es"))
+        assertEquals("https://example.test/pt.jpg", notice.horizontalMediaFor("pt"))
     }
 
     @Test fun sharedQueueCountsAnAdOnceAndClearsItWhenResolved() {

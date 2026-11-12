@@ -315,6 +315,32 @@ internal fun ComprehensiveFeedbackCard(
 
             Spacer(modifier = Modifier.height(6.dp))
 
+            val sender = report.parsedUserName?.takeIf { it.isNotBlank() }
+                ?: report.userName.takeIf { it.isNotBlank() }
+                ?: report.parsedEmail?.takeIf { it.isNotBlank() }
+            if (sender != null) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(6.dp))
+                        .background(HextechDarkBg.copy(alpha = 0.35f))
+                        .padding(horizontal = 8.dp, vertical = 5.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(Icons.Default.Person, contentDescription = null, tint = HextechCyan, modifier = Modifier.size(14.dp))
+                    Spacer(modifier = Modifier.width(5.dp))
+                    Text(
+                        text = com.example.util.tr("Enviado por: $sender"),
+                        color = HextechCyan,
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+                Spacer(modifier = Modifier.height(5.dp))
+            }
+
             // Título con botón para copiarlo directamente
             Row(
                 modifier = Modifier

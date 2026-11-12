@@ -770,7 +770,8 @@ object AppNoticeManager {
                             "expiresAtMillis" to n.expiresAtMillis,
                             "isApproved" to n.isApproved,
                             "sponsorEmail" to n.sponsorEmail,
-                            "chargedEssence" to n.chargedEssence
+                            "chargedEssence" to n.chargedEssence,
+                            "languageScope" to SponsorReviewPolicy.normalizeLanguageScope(n.languageScope)
                         )
                     }
                     val fallbackData = hashMapOf(
