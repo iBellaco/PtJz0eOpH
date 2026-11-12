@@ -33,7 +33,7 @@ object DatabaseStatisticsRepository {
             val content = rows.filter { it.estimatedBytes != null }
             val now = System.currentTimeMillis()
             val total = content.sumOf { it.estimatedBytes ?: 0L }
-            val complete = rows.none { it.failed } && content.size == 12
+            val complete = rows.none { it.failed } && content.size == rows.size
             // Store the baseline in the shared configuration so different devices use the same sample.
             val ref = FirebaseFirestore.getInstance().collection("system_config").document("saved_data_consumption")
             val previous = runCatching { ref.get(Source.SERVER).await() }.getOrNull()
@@ -59,32 +59,25 @@ object DatabaseStatisticsRepository {
         check(SupportTicketAccess.isAdmin())
         val db = FirebaseFirestore.getInstance()
         val categories = listOf(
-            Triple("users", "Cuentas registradas", "Perfiles, roles, saldos, suscripciones y dispositivos registrados."),
             Triple("support_reports", "Conversaciones de soporte", "Reportes, respuestas y estado de cada conversación."),
             Triple("feedbacks", "Reportes y sugerencias", "Errores e ideas enviados por los usuarios."),
             Triple("pending_sponsor_ads", "Solicitudes de patrocinio", "Publicaciones de patrocinadores pendientes de revisión."),
             Triple("streamer_requests", "Solicitudes de streamers", "Última solicitud y estado de cada canal."),
             Triple("streamer_click_metrics", "Contadores de streamers", "Clics acumulados de cada publicación."),
             Triple("moderator_requests", "Solicitudes de roles", "Solicitudes de acceso pendientes y revisadas."),
-            Triple("cash_redemptions", "Solicitudes de canje", "Importes solicitados, pagos manuales y devoluciones."),
-            Triple("system_config", "Configuración compartida", "Avisos, canales activos, builds publicadas y preferencias generales.")
+            Triple("system_config", "Configuración activa", "Solo registros de configuración que la aplicación usa actualmente; se excluyen servicios retirados y datos financieros.")
         )
         // Read each parent registry once. Direct child queries avoid requiring a global
-        // collection-group index/rule when the same authorized records can be read by parent.
-        val accounts = async { readParents(db.collection("users")) }
+        // collection-group index/rule. Account profiles, balances, essences and
+        // registered devices are deliberately not exposed in this summary.
         val streamers = async { readParents(db.collection("streamer_requests")) }
-        val accountTotals = async {
-            try {
-                val profiles = accounts.await().getOrThrow().documents.mapNotNull { it.data }
-                listOf(SavedDataStatistic("Suscripciones premium activas", "Acceso vigente por tiempo o por función del usuario.", profiles.count { com.example.model.PremiumAccessPolicy.isActiveAccount(it) }.toLong()),
-                    SavedDataStatistic("Esencias Azules guardadas", "Suma de los saldos actuales de todas las cuentas.", profiles.sumOf { (it["blueEssence"] as? Number)?.toLong() ?: 0L }),
-                    SavedDataStatistic("Esencias Naranjas guardadas", "Suma de los saldos actuales de todas las cuentas.", profiles.sumOf { (it["orangeEssence"] as? Number)?.toLong() ?: 0L }),
-                    SavedDataStatistic("Dispositivos registrados", "Dispositivos diferentes que ocupan espacios en las cuentas.", profiles.sumOf { (it["registeredDevices"] as? List<*>)?.filterIsInstance<String>()?.distinct()?.size?.toLong() ?: 0L }))
-            } catch (error: Exception) { failedRow("Saldos y dispositivos", "Resumen de los datos de las cuentas.", error).let(::listOf) }
-        }
         val topRows = categories.map { (path, label, description) -> async {
             try {
-                val known = when (path) { "users" -> accounts.await().getOrThrow(); "streamer_requests" -> streamers.await().getOrThrow(); else -> null }
+                val known = when {
+                    path == "streamer_requests" -> streamers.await().getOrThrow().documents
+                    path == "system_config" -> readActiveSystemConfig(db)
+                    else -> null
+                }
                 val result = if (known != null) {
                     val sizes = byteSizes(known)
                     SavedDataQueryResult(sizes.size.toLong(), sizes.sum())
@@ -92,11 +85,11 @@ object DatabaseStatisticsRepository {
                 statistic(label, description, result)
             } catch (error: Exception) { failedRow(label, description, error) }
         } }.awaitAll()
-        val nestedRows = listOf("messages" to "Mensajes de la bandeja de entrada", "subscription_history" to "Movimientos del historial", "history" to "Historial de publicaciones")
+        val nestedRows = listOf("history" to "Historial de publicaciones")
             .map { (path, label) -> async {
-                val description = "Registros independientes sincronizados entre dispositivos. Los datos integrados se incluyen en las cuentas."
+                val description = "Historial operativo de publicaciones conservado para trazabilidad; no incluye perfiles, saldos ni dispositivos."
                 try {
-                    val parents = (if (path == "history") streamers else accounts).await().getOrThrow().documents
+                    val parents = streamers.await().getOrThrow().documents
                     val limiter = Semaphore(4)
                     val children = parents.map { parent -> async { limiter.withPermit {
                         try { Result.success(readCount(parent.reference.collection(path))) }
@@ -105,7 +98,19 @@ object DatabaseStatisticsRepository {
                     statistic(label, description, SavedDataQueryPolicy.combine(children))
                 } catch (error: Exception) { failedRow(label, description, error) }
             } }.awaitAll()
-        topRows + nestedRows + accountTotals.await()
+        topRows + nestedRows
+    }
+
+    private suspend fun readActiveSystemConfig(db: FirebaseFirestore): List<com.google.firebase.firestore.DocumentSnapshot> {
+        val activeIds = setOf(
+            "app_notices", "announcement", "overlay_access", "overlay_activation",
+            "app_notice_analytics", "streamer_live", "creator_builds", "saved_data_consumption"
+        )
+        val snapshot = db.collection("system_config").get(Source.SERVER).await()
+        val active = snapshot.documents.filter { document ->
+            document.id in activeIds || document.id.startsWith("tier_movement_")
+        }
+        return active
     }
 
     private suspend fun readParents(query: Query): Result<QuerySnapshot> = try {
@@ -115,7 +120,9 @@ object DatabaseStatisticsRepository {
         Result.failure(error)
     }
 
-    private fun byteSizes(snapshot: QuerySnapshot): List<Long> = snapshot.documents.map {
+    private fun byteSizes(snapshot: QuerySnapshot): List<Long> = byteSizes(snapshot.documents)
+
+    private fun byteSizes(documents: List<com.google.firebase.firestore.DocumentSnapshot>): List<Long> = documents.map {
         org.json.JSONObject(it.data.orEmpty()).toString().toByteArray(Charsets.UTF_8).size.toLong()
     }
 

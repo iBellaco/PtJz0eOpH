@@ -22,7 +22,8 @@ class SponsorSubmissionStore(context: Context, private val uid: String) {
                 externalUrl = n.getString("externalUrl"), titleColor = n.getString("titleColor"),
                 durationValue = n.getInt("durationValue"), durationUnit = n.getString("durationUnit"),
                 budget = n.getDouble("budget"), budgetUnit = n.getString("durationUnit"),
-                sponsorEmail = n.getString("sponsorEmail"), tag = "PUBLICIDAD", isApproved = false, isEnabled = false),
+                sponsorEmail = n.getString("sponsorEmail"), tag = "PUBLICIDAD", isApproved = false, isEnabled = false,
+                languageScope = SponsorReviewPolicy.normalizeLanguageScope(n.optString("languageScope", "ALL"))),
                 saved.getLong("expectedCost"), saved.optLong("createdAtMillis", 0L))
         }.getOrNull() }
 
@@ -32,6 +33,7 @@ class SponsorSubmissionStore(context: Context, private val uid: String) {
             .put("videoUrl", n.videoUrl).put("expandedImageUrl", n.expandedImageUrl).put("externalUrl", n.externalUrl)
             .put("titleColor", n.titleColor).put("durationValue", n.durationValue).put("durationUnit", n.durationUnit)
             .put("budget", n.budget).put("sponsorEmail", n.sponsorEmail)
+            .put("languageScope", SponsorReviewPolicy.normalizeLanguageScope(n.languageScope))
         val saved = JSONObject().put("notice", notice).put("expectedCost", submission.expectedCost)
             .put("createdAtMillis", submission.createdAtMillis)
         return prefs.edit().putString("$uid~${n.id}", saved.toString()).commit()

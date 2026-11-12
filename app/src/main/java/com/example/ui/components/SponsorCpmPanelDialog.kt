@@ -147,11 +147,15 @@ fun SponsorCpmPanelDialog(
     }
 
     // Lista local de anuncios pendientes (guardados en SharedPreferences para evitar que desaparezcan)
-    val prefs = context.getSharedPreferences("sponsor_pending_ads", Context.MODE_PRIVATE)
+    // Use the same durable outbox used by AppNoticeManager so approval and
+    // deletion cannot leave a stale local request in a second preference file.
+    val prefs = context.getSharedPreferences("sponsor_ads_prefs", Context.MODE_PRIVATE)
+    val legacyPrefs = context.getSharedPreferences("sponsor_pending_ads", Context.MODE_PRIVATE)
     var localPendingAds by remember {
         mutableStateOf<List<AppNotice>>(
             try {
-                val json = prefs.getString("pending_ads", "[]") ?: "[]"
+                val json = prefs.getString("pending_ads", null)
+                    ?: legacyPrefs.getString("pending_ads", "[]") ?: "[]"
                 val jsonArray = org.json.JSONArray(json)
                 val list = mutableListOf<AppNotice>()
                 for (i in 0 until jsonArray.length()) {
@@ -173,7 +177,8 @@ fun SponsorCpmPanelDialog(
                             expiresAtMillis = obj.optLong("expiresAtMillis", 0L),
                             isApproved = obj.optBoolean("isApproved", false),
                             isEnabled = obj.optBoolean("isEnabled", false),
-                            sponsorEmail = obj.optString("sponsorEmail", "")
+                            sponsorEmail = obj.optString("sponsorEmail", ""),
+                            languageScope = com.example.data.SponsorReviewPolicy.normalizeLanguageScope(obj.optString("languageScope", "ALL"))
                         )
                     )
                 }
@@ -213,6 +218,7 @@ fun SponsorCpmPanelDialog(
     var titleColor by remember { mutableStateOf("#FFD700") }
     var durationValueInput by remember { mutableStateOf("") }
     var selectedDurationUnit by remember { mutableStateOf("day") } // "hour", "day", "week", "month" (sin opción de 1 año)
+    var selectedLanguageScope by remember { mutableStateOf(com.example.data.SponsorReviewPolicy.LANGUAGE_ALL) }
     var isUploadingMedia by remember { mutableStateOf(false) }
 
     var isHorizontalVideo by remember { mutableStateOf(false) }
@@ -262,7 +268,8 @@ fun SponsorCpmPanelDialog(
         horizontalMediaInput,
         verticalMediaInput,
         externalUrlInput,
-        activeAdsCount
+        activeAdsCount,
+        selectedLanguageScope
     ) {
         val unitPrice = when (selectedDurationUnit) {
             "hour" -> 0.50
@@ -286,6 +293,9 @@ fun SponsorCpmPanelDialog(
         // Más anuncios activos optimizan el costo en lugar de encarecerlo (eficiencia compartida de tráfico)
         val efficiencyDiscount = 1.0 / (1.0 + (activeAdsCount - 1).coerceIn(0, 10) * 0.1)
         total *= efficiencyDiscount
+        // Una campaña dirigida a los dos idiomas reserva inventario específico
+        // para ambos públicos; el servidor aplica el mismo multiplicador.
+        if (selectedLanguageScope == com.example.data.SponsorReviewPolicy.LANGUAGE_BOTH) total *= 2.0
 
         String.format(Locale.US, "%.2f", total.coerceAtLeast(0.50))
     }
@@ -415,6 +425,7 @@ fun SponsorCpmPanelDialog(
                             verticalMediaInput = ""
                             externalUrlInput = ""
                             selectedDurationUnit = "day"
+                            selectedLanguageScope = com.example.data.SponsorReviewPolicy.LANGUAGE_ALL
                             durationValueInput = "1"
                             showCreateDialog = true
                         },
@@ -686,6 +697,35 @@ fun SponsorCpmPanelDialog(
                             unfocusedTextColor = Color.White
                         )
                     )
+
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(tr("Idioma de segmentación (opcional)"), color = HextechCyan, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    Text(
+                        tr("General o un solo idioma se muestra a todos; Español + Português aplica segmentación y tarifa doble."),
+                        color = TextSecondary, fontSize = 10.sp
+                    )
+                    FlowRow(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        listOf(
+                            com.example.data.SponsorReviewPolicy.LANGUAGE_ALL to "General",
+                            com.example.data.SponsorReviewPolicy.LANGUAGE_ES to "Español",
+                            com.example.data.SponsorReviewPolicy.LANGUAGE_PT to "Português",
+                            com.example.data.SponsorReviewPolicy.LANGUAGE_BOTH to "Español + Português"
+                        ).forEach { (scopeId, scopeLabel) ->
+                            FilterChip(
+                                selected = selectedLanguageScope == scopeId,
+                                onClick = { selectedLanguageScope = scopeId },
+                                label = { Text(tr(scopeLabel), fontSize = 9.sp) },
+                                colors = FilterChipDefaults.filterChipColors(
+                                    selectedContainerColor = HextechGold,
+                                    selectedLabelColor = HextechDarkBg
+                                )
+                            )
+                        }
+                    }
 
                     // Presupuesto Total (Automático - No Modificable)
                     Card(
@@ -966,7 +1006,8 @@ fun SponsorCpmPanelDialog(
                             durationUnit = selectedDurationUnit,
                             isApproved = false,
                             isEnabled = false,
-                            sponsorEmail = userEmail
+                            sponsorEmail = userEmail,
+                            languageScope = com.example.data.SponsorReviewPolicy.normalizeLanguageScope(selectedLanguageScope)
                         )
 
                         if (submit(com.example.data.SponsorSubmission(newPendingNotice, requiredEssences))) showCreateDialog = false
@@ -1023,6 +1064,7 @@ fun SponsorCpmPanelDialog(
                                         .put("durationUnit", n.durationUnit).put("approvedAtMillis", n.approvedAtMillis)
                                         .put("expiresAtMillis", n.expiresAtMillis).put("isApproved", n.isApproved)
                                         .put("isEnabled", n.isEnabled).put("sponsorEmail", n.sponsorEmail)
+                                        .put("languageScope", com.example.data.SponsorReviewPolicy.normalizeLanguageScope(n.languageScope))
                                     jsonArray.put(obj)
                                 }
                                 prefs.edit().putString("pending_ads", jsonArray.toString()).apply()

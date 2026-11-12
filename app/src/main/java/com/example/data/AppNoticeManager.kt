@@ -39,7 +39,13 @@ data class AppNotice(
     val approvedAtMillis: Long = 0L, // Timestamp de aprobación
     val expiresAtMillis: Long = 0L, // Timestamp de expiración calculada
     val isApproved: Boolean = true, // false until admin accepts it if published by sponsor
-    val sponsorEmail: String = "" // email of the sponsor who published it
+    val sponsorEmail: String = "", // email of the sponsor who published it
+    /**
+     * Audience language scope for sponsored notices. `ALL` is the default and
+     * keeps legacy notices visible. A single language is intentionally also a
+     * general publication; `BOTH` is the opt-in, language-targeted campaign.
+     */
+    val languageScope: String = "ALL"
 )
 
 private fun sponsorStateRank(notice: AppNotice): Int = when {
@@ -91,7 +97,8 @@ internal fun mergeSponsorNotices(
                 externalUrl = candidate.externalUrl.ifBlank { existing.externalUrl },
                 titleColor = candidate.titleColor.ifBlank { existing.titleColor },
                 contentColor = candidate.contentColor.ifBlank { existing.contentColor },
-                sponsorEmail = candidate.sponsorEmail.ifBlank { existing.sponsorEmail }
+                sponsorEmail = candidate.sponsorEmail.ifBlank { existing.sponsorEmail },
+                languageScope = candidate.languageScope
             )
             changed = true
         }
@@ -447,7 +454,8 @@ object AppNoticeManager {
                             approvedAtMillis = (map["approvedAtMillis"] as? Number)?.toLong() ?: 0L,
                             expiresAtMillis = (map["expiresAtMillis"] as? Number)?.toLong() ?: 0L,
                             isApproved = (map["isApproved"] as? Boolean) ?: true,
-                            sponsorEmail = map["sponsorEmail"]?.toString() ?: ""
+                            sponsorEmail = map["sponsorEmail"]?.toString() ?: "",
+                            languageScope = SponsorReviewPolicy.normalizeLanguageScope(map["languageScope"]?.toString())
                         )
                     )
                 }
@@ -570,6 +578,7 @@ object AppNoticeManager {
                     put("expiresAtMillis", n.expiresAtMillis)
                     put("isApproved", n.isApproved)
                     put("sponsorEmail", n.sponsorEmail)
+                    put("languageScope", n.languageScope)
                 }
                 arr.put(obj)
             }
@@ -611,7 +620,8 @@ object AppNoticeManager {
                             approvedAtMillis = obj.optLong("approvedAtMillis", 0L),
                             expiresAtMillis = obj.optLong("expiresAtMillis", 0L),
                             isApproved = obj.optBoolean("isApproved", true),
-                            sponsorEmail = obj.optString("sponsorEmail", "")
+                            sponsorEmail = obj.optString("sponsorEmail", ""),
+                            languageScope = SponsorReviewPolicy.normalizeLanguageScope(obj.optString("languageScope", "ALL"))
                         )
                     )
                 }
@@ -690,7 +700,8 @@ object AppNoticeManager {
                     "approvedAtMillis" to n.approvedAtMillis,
                     "expiresAtMillis" to n.expiresAtMillis,
                     "isApproved" to n.isApproved,
-                    "sponsorEmail" to n.sponsorEmail
+                    "sponsorEmail" to n.sponsorEmail,
+                    "languageScope" to SponsorReviewPolicy.normalizeLanguageScope(n.languageScope)
                 )
             }
             val data = hashMapOf(
@@ -858,7 +869,8 @@ object AppNoticeManager {
             "title" to notice.title, "content" to notice.content, "videoUrl" to notice.videoUrl,
             "expandedImageUrl" to notice.expandedImageUrl, "externalUrl" to notice.externalUrl,
             "titleColor" to notice.titleColor, "durationValue" to notice.durationValue,
-            "durationUnit" to notice.durationUnit)), notice.id)
+            "durationUnit" to notice.durationUnit,
+            "languageScope" to SponsorReviewPolicy.normalizeLanguageScope(notice.languageScope))), notice.id)
         val appContext = context.applicationContext
         val current = _notices.value.toMutableList()
         val existingIndex = current.indexOfFirst { it.id == notice.id }
@@ -895,6 +907,7 @@ object AppNoticeManager {
                 put("isApproved", false)
                 put("isEnabled", false)
                 put("sponsorEmail", pendingNotice.sponsorEmail)
+                put("languageScope", SponsorReviewPolicy.normalizeLanguageScope(pendingNotice.languageScope))
             }
             array.put(obj)
             prefs.edit().putString("pending_ads", array.toString()).apply()
@@ -924,6 +937,7 @@ object AppNoticeManager {
                             id = obj.optString("id", UUID.randomUUID().toString()),
                             title = obj.optString("title", "Publicidad"),
                             content = obj.optString("content", ""),
+                            videoUrl = obj.optString("videoUrl", ""),
                             expandedImageUrl = obj.optString("expandedImageUrl", ""),
                             externalUrl = obj.optString("externalUrl", ""),
                             tag = obj.optString("tag", "Publicidad"),
@@ -935,7 +949,8 @@ object AppNoticeManager {
                             expiresAtMillis = obj.optLong("expiresAtMillis", 0L),
                             isApproved = obj.optBoolean("isApproved", false),
                             isEnabled = obj.optBoolean("isEnabled", false),
-                            sponsorEmail = obj.optString("sponsorEmail", "")
+                            sponsorEmail = obj.optString("sponsorEmail", ""),
+                            languageScope = SponsorReviewPolicy.normalizeLanguageScope(obj.optString("languageScope", "ALL"))
                         )
                     )
                 }
@@ -970,6 +985,7 @@ object AppNoticeManager {
                 val isApproved = doc.getBoolean("isApproved") ?: false
                 val isEnabled = doc.getBoolean("isEnabled") ?: false
                 val sponsorEmail = doc.getString("sponsorEmail") ?: ""
+                val languageScope = SponsorReviewPolicy.normalizeLanguageScope(doc.getString("languageScope"))
 
                 listToAdd.add(
                     AppNotice(
@@ -988,7 +1004,8 @@ object AppNoticeManager {
                         expiresAtMillis = expiresAtMillis,
                         isApproved = isApproved,
                         isEnabled = isEnabled,
-                        sponsorEmail = sponsorEmail
+                        sponsorEmail = sponsorEmail,
+                        languageScope = languageScope
                     )
                 )
             }

@@ -37,13 +37,18 @@ fun AdminDatabaseConsumptionDialog(onDismiss: () -> Unit) {
     }
     val consumption by DatabaseStatisticsRepository.consumption.collectAsState()
     LaunchedEffect(Unit) {
-        while (true) { refresh(); kotlinx.coroutines.delay(300_000) }
+        refresh()
     }
     Dialog(onDismissRequest = onDismiss) {
         Surface(color = HextechDarkBg, shape = MaterialTheme.shapes.large, border = BorderStroke(1.dp, HextechGold)) {
             Column(Modifier.fillMaxWidth().heightIn(max = 700.dp).verticalScroll(rememberScrollState()).padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Text(tr("Resumen de datos"), color = HextechGold, style = MaterialTheme.typography.titleLarge)
                 Text(tr("Consulta el volumen y abre cada categoría para ver los detalles."), color = TextSecondary)
+                Text(
+                    tr("Vista operativa: omite perfiles, esencias, dispositivos y servicios retirados. Las configuraciones activas son solo de lectura."),
+                    color = TextSecondary,
+                    style = MaterialTheme.typography.bodySmall
+                )
                 if (busy) CircularProgressIndicator(color = HextechCyan)
                 if (failed) Text(tr("No se pudieron consultar los datos. Vuelve a intentarlo."), color = DangerRed)
                 Surface(color = HextechSurface, shape = MaterialTheme.shapes.medium) {
@@ -110,7 +115,7 @@ fun StorageConsumptionSummary(consumption: StorageConsumption) {
             Text(tr("Contenido guardado estimado") + ": " + (consumption.estimatedBytes?.let(StorageConsumptionPolicy::formatBytes) ?: tr("No disponible")), color = HextechCyan)
             Text(tr("Crecimiento diario aproximado") + ": " + (consumption.dailyGrowthBytes?.let { StorageConsumptionPolicy.formatBytes(it) + " / " + tr("día") } ?: tr("Calculando con las próximas muestras")), color = TextPrimary)
             Text(tr("Límite del plan: consulta del proveedor no conectada"), color = TextSecondary)
-            Text(tr("Actualización automática cada 6 horas. Estimación del contenido de documentos; excluye índices, archivos externos y tráfico de lecturas y escrituras."), color = TextSecondary)
+            Text(tr("La muestra se actualiza al pulsar Actualizar. Estima el contenido de documentos y excluye índices, archivos externos y tráfico de lecturas y escrituras."), color = TextSecondary)
             if (!consumption.complete) Text(tr("Muestra parcial: algunas categorías no se pudieron consultar."), color = HextechGold)
         }
     }

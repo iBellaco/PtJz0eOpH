@@ -14,8 +14,6 @@ object SavedDataDeletion {
         "Solicitudes de streamers" to "streamer_requests",
         "Contadores de streamers" to "streamer_click_metrics",
         "Solicitudes de roles" to "moderator_requests",
-        "Configuración compartida" to "system_config",
-        "Mensajes de la bandeja de entrada" to "users/messages",
         "Historial de publicaciones" to "streamer_requests/history"
     )
     data class Record(val path: String, val label: String)
