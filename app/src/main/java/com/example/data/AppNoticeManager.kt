@@ -56,6 +56,8 @@ data class AppNotice(
         languageScope.equals("BOTH", ignoreCase = true) && language.equals("pt", ignoreCase = true) ->
             videoUrlPt.ifBlank { videoUrl }
         languageScope.equals("BOTH", ignoreCase = true) -> videoUrlEs.ifBlank { videoUrl }
+        languageScope.equals("PT", ignoreCase = true) -> videoUrlPt.ifBlank { videoUrl }
+        languageScope.equals("ES", ignoreCase = true) -> videoUrlEs.ifBlank { videoUrl }
         else -> videoUrl
     }
 }
