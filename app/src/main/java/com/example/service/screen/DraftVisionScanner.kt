@@ -116,6 +116,15 @@ data class DraftScanResult(
     val ocrRequestCount: Int = 0
 )
 
+/**
+ * Último fotograma útil del escáner reservado para la evidencia de calibración.
+ * El llamador recibe una copia y es responsable de reciclarla cuando termine.
+ */
+internal data class CalibrationEvidenceFrame(
+    val bitmap: Bitmap,
+    val capturedAtElapsedMs: Long
+)
+
 object DraftVisionScanner {
     private const val TAG = "DraftVisionScanner"
     @Volatile private var overlayMasks = CaptureMaskSnapshot(emptyList())
@@ -160,6 +169,11 @@ object DraftVisionScanner {
     val fpsMaximum = kotlinx.coroutines.flow.MutableStateFlow(0f)
     val calibrationSourceFlow = kotlinx.coroutines.flow.MutableStateFlow("sin captura")
     private val performanceLock = Any()
+    private val calibrationEvidenceLock = Any()
+    private const val CALIBRATION_EVIDENCE_INTERVAL_MS = 900L
+    private var latestCalibrationEvidenceBitmap: Bitmap? = null
+    private var latestCalibrationEvidenceAtElapsedMs: Long = 0L
+    private var lastCalibrationEvidenceCopyAtElapsedMs: Long = 0L
     private var totalProcessingDurationMs = 0L
     private var fpsSampleCount = 0L
     val isFirstPickState = kotlinx.coroutines.flow.MutableStateFlow<Boolean?>(null)
@@ -411,6 +425,53 @@ object DraftVisionScanner {
     internal data class CalibrationReportSnapshot(val width: Int, val height: Int, val config: VisionCalibrationConfig)
     @Synchronized
     internal fun calibrationReportSnapshot() = CalibrationReportSnapshot(alignedSize.first, alignedSize.second, alignedConfigFlow.value)
+
+    /**
+     * Conserva una copia pequeña del último fotograma que realmente procesó el
+     * escáner. No captura la pantalla por separado ni añade otro ciclo de
+     * MediaProjection, por lo que no aumenta el consumo de batería de la sesión.
+     */
+    private fun rememberCalibrationEvidenceFrame(frame: Bitmap) {
+        if (frame.isRecycled || frame.width <= 0 || frame.height <= 0) return
+        val now = android.os.SystemClock.elapsedRealtime()
+        synchronized(calibrationEvidenceLock) {
+            if (now - lastCalibrationEvidenceCopyAtElapsedMs < CALIBRATION_EVIDENCE_INTERVAL_MS) return
+            val maxWidth = 1280
+            val targetWidth = minOf(frame.width, maxWidth)
+            val targetHeight = (frame.height.toFloat() * targetWidth / frame.width.toFloat())
+                .toInt().coerceAtLeast(1)
+            val copy = try {
+                if (targetWidth != frame.width || targetHeight != frame.height) {
+                    Bitmap.createScaledBitmap(frame, targetWidth, targetHeight, true)
+                } else {
+                    frame.copy(Bitmap.Config.ARGB_8888, false)
+                }
+            } catch (_: Throwable) {
+                null
+            } ?: return
+            val previous = latestCalibrationEvidenceBitmap
+            latestCalibrationEvidenceBitmap = copy
+            latestCalibrationEvidenceAtElapsedMs = now
+            lastCalibrationEvidenceCopyAtElapsedMs = now
+            runCatching { previous?.recycle() }
+        }
+    }
+
+    /** Returns a caller-owned copy of the most recent scanned frame, if one exists. */
+    internal fun calibrationEvidenceFrame(): CalibrationEvidenceFrame? = synchronized(calibrationEvidenceLock) {
+        val source = latestCalibrationEvidenceBitmap ?: return@synchronized null
+        if (source.isRecycled) return@synchronized null
+        val copy = runCatching { source.copy(Bitmap.Config.ARGB_8888, false) }.getOrNull()
+            ?: return@synchronized null
+        CalibrationEvidenceFrame(copy, latestCalibrationEvidenceAtElapsedMs)
+    }
+
+    private fun clearCalibrationEvidenceFrame() = synchronized(calibrationEvidenceLock) {
+        runCatching { latestCalibrationEvidenceBitmap?.recycle() }
+        latestCalibrationEvidenceBitmap = null
+        latestCalibrationEvidenceAtElapsedMs = 0L
+        lastCalibrationEvidenceCopyAtElapsedMs = 0L
+    }
     private var lastAlignmentAt = 0L
     private val geometryStability = DraftGeometryStability()
     private var calibrationContext: android.content.Context? = null
@@ -707,6 +768,7 @@ object DraftVisionScanner {
 
     fun clearSessionState() {
         resetSlotMemory()
+        clearCalibrationEvidenceFrame()
         overlayRect = null
         debugTextRects = emptyList()
         showCalibrationBoxes.value = false
@@ -799,6 +861,7 @@ object DraftVisionScanner {
 
         // Calibración adaptativa multipantalla para cualquier relación de aspecto (16:9, 18:9, 19.5:9, 20:9, 21:9, tablets)
         val calib = configForFrame(bitmap)
+        rememberCalibrationEvidenceFrame(bitmap)
 
         // 5 slots para aliados y 5 slots para enemigos
         val allySlots = (0..4).map { ScannedSlotInfo(slotIndex = it, isAlly = true) }

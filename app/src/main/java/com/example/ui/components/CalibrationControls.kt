@@ -20,6 +20,7 @@ import com.example.data.CalibrationReport
 import com.example.data.CalibrationUserName
 import com.example.data.FeedbackRepository
 import com.example.service.screen.DraftVisionScanner
+import com.example.service.screen.CalibrationEvidenceImage
 import com.example.service.screen.VisionCalibrationConfig
 import com.example.util.AppLanguage
 import com.example.util.localizedString
@@ -122,6 +123,30 @@ fun CalibrationSendButton(onBeforeSend: (() -> Unit)? = null) {
                     val snapshot = DraftVisionScanner.calibrationReportSnapshot()
                     val displayName = CalibrationUserName.resolve(account)
                     val coordinates = snapshot.config.toFormattedCoordinatesString()
+                    val language = AppLanguage.current.value
+                    val frame = DraftVisionScanner.calibrationEvidenceFrame()
+                    val visualEvidence = frame?.let { evidenceFrame ->
+                        try {
+                            CalibrationEvidenceImage.encode(evidenceFrame, snapshot.config, language)
+                        } finally {
+                            runCatching { evidenceFrame.bitmap.recycle() }
+                        }
+                    }
+                    val visualEvidenceText = if (visualEvidence != null) {
+                        if (language.equals("pt", ignoreCase = true)) {
+                            "Evidência visual anexada: ${visualEvidence.width}x${visualEvidence.height}; idade=${visualEvidence.ageMs} ms; SHA-256=${visualEvidence.sha256}"
+                        } else {
+                            "Evidencia visual adjunta: ${visualEvidence.width}x${visualEvidence.height}; antigüedad=${visualEvidence.ageMs} ms; SHA-256=${visualEvidence.sha256}"
+                        }
+                    } else if (language.equals("pt", ignoreCase = true)) {
+                        "Evidência visual anexada: nenhum fotograma de captura disponível."
+                    } else {
+                        "Evidencia visual adjunta: no había un fotograma de captura disponible."
+                    }
+                    val detectionEvidence = listOf(
+                        DraftVisionScanner.detectionEvidenceReport(language),
+                        visualEvidenceText
+                    ).joinToString("\n")
                     val payload = CalibrationReport.build(
                         "${Build.MANUFACTURER} ${Build.MODEL}",
                         "",
@@ -129,16 +154,17 @@ fun CalibrationSendButton(onBeforeSend: (() -> Unit)? = null) {
                         "",
                         coordinates,
                         userName = displayName,
-                        language = AppLanguage.current.value,
+                        language = language,
                         androidVersion = "${Build.VERSION.RELEASE} (API ${Build.VERSION.SDK_INT})",
-                        detectionEvidence = DraftVisionScanner.detectionEvidenceReport(AppLanguage.current.value)
+                        detectionEvidence = detectionEvidence
                     )
                     val title = CalibrationReport.title(
                         isPremium = com.example.util.SubscriptionManager.isPremium.value,
-                        language = AppLanguage.current.value
+                        language = language
                     )
                     val result = FeedbackRepository.submitFeedback(
                         "COORDENADAS", title, payload,
+                        imagesBase64 = visualEvidence?.let { listOf(it.base64) }.orEmpty(),
                         userName = displayName,
                         adminOnly = true,
                         writeUserInboxCopy = false

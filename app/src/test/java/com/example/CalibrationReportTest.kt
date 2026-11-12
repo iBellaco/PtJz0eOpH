@@ -88,4 +88,11 @@ class CalibrationReportTest {
         assertFalse(payload.contains("@"))
         assertEquals(payload, CalibrationReport.extract(payload))
     }
+
+    @Test fun coordinateEvidenceReportsAreManualRetentionOnly() {
+        assertTrue(com.example.data.FeedbackRepository.isPermanentEvidenceReportType("COORDENADAS"))
+        assertTrue(com.example.data.FeedbackRepository.isPermanentEvidenceReportType("calibracion"))
+        assertTrue(com.example.data.FeedbackRepository.isPermanentEvidenceReportType("CALIBRAÇÃO"))
+        assertFalse(com.example.data.FeedbackRepository.isPermanentEvidenceReportType("SOPORTE"))
+    }
 }
