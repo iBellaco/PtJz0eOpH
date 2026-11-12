@@ -9,13 +9,14 @@ import android.os.SystemClock
 import kotlin.math.abs
 
 /**
- * Lightweight session meter used only when the user explicitly sends a
- * diagnostic report. It does not keep a background polling loop: values are
- * sampled at session start and at the moment the report is sent.
+ * Lightweight usage meter initialized with the overlay session. It does not
+ * keep a background polling loop: values are sampled at session start and at
+ * the moment the report is sent.
  */
 object DeviceDiagnosticTelemetry {
     data class Snapshot(
         val sessionDurationMs: Long = 0L,
+        val applicationUsageDurationMs: Long = 0L,
         val batteryStartPercent: Int? = null,
         val batteryPercent: Int? = null,
         val batteryDrainPercent: Double? = null,
@@ -39,18 +40,29 @@ object DeviceDiagnosticTelemetry {
     )
 
     @Volatile private var baseline: Baseline? = null
+    @Volatile private var applicationStartedAtElapsed: Long? = null
 
+    /** Starts the app/overlay usage window once for this process. */
     fun start(context: Context) {
-        val state = readState(context)
-        baseline = Baseline(SystemClock.elapsedRealtime(), state.percent, state.chargeMah, state.energyWh)
+        val now = SystemClock.elapsedRealtime()
+        if (applicationStartedAtElapsed == null) applicationStartedAtElapsed = now
+        if (baseline == null) {
+            val state = readState(context)
+            baseline = Baseline(now, state.percent, state.chargeMah, state.energyWh)
+        }
     }
 
     fun snapshot(context: Context): Snapshot {
+        val now = SystemClock.elapsedRealtime()
         val state = readState(context)
-        val start = baseline ?: Baseline(SystemClock.elapsedRealtime(), state.percent, state.chargeMah, state.energyWh)
-        val duration = (SystemClock.elapsedRealtime() - start.startedAtElapsed).coerceAtLeast(0L)
+        val start = baseline ?: Baseline(now, state.percent, state.chargeMah, state.energyWh).also {
+            baseline = it
+        }
+        val appStart = applicationStartedAtElapsed ?: now
+        val duration = (now - start.startedAtElapsed).coerceAtLeast(0L)
         return Snapshot(
             sessionDurationMs = duration,
+            applicationUsageDurationMs = (now - appStart).coerceAtLeast(0L),
             batteryStartPercent = start.batteryPercent,
             batteryPercent = state.percent,
             batteryDrainPercent = percentDelta(start.batteryPercent, state.percent),

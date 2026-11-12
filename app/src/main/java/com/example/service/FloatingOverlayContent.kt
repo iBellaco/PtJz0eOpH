@@ -182,6 +182,7 @@ internal fun FloatingOverlayContent(
 
     LaunchedEffect(Unit) {
         FavoriteChampionsManager.init(context)
+        com.example.data.DeviceDiagnosticTelemetry.start(context)
     }
     val favoriteChampionIds by FavoriteChampionsManager.favoritesFlow.collectAsStateWithLifecycle()
 
@@ -256,6 +257,17 @@ internal fun FloatingOverlayContent(
     var autoScanEnabled by state::autoScanEnabled
     var scanNoticeMessage by state::scanNoticeMessage
     val autoScanPulse = if (autoScanEnabled) activeAutoScanPulse() else disabledAutoScanPulse()
+
+    // El diagnóstico necesita una ventana mínima de datos reales del escáner.
+    // Se muestra tras 60 s continuos de Auto-Scan y se oculta al detenerlo.
+    var diagnosticAutoScanReady by remember { mutableStateOf(false) }
+    LaunchedEffect(autoScanEnabled) {
+        diagnosticAutoScanReady = false
+        if (autoScanEnabled) {
+            delay(60_000L)
+            diagnosticAutoScanReady = autoScanEnabled
+        }
+    }
 
     val geometryPreviewVisible by DraftVisionScanner.showCalibrationBoxes.collectAsStateWithLifecycle()
     val previewReadiness = remember(screenCaptureManager) {
@@ -361,6 +373,27 @@ internal fun FloatingOverlayContent(
             favoriteChampionIds = favoriteChampionIds,
             favoriteOnlyRecommendations = favoriteOnlyRecommendations
         )
+    }
+
+    val diagnosticDraftDetails = remember(
+        allies.toList(), enemies.toList(), activeRole, isFirstPick, isLegendaryQueue,
+        autoScanEnabled, isSavedRecently, bannedIds, analysis
+    ) {
+        fun championNames(slots: List<Champion?>): String = slots.mapIndexedNotNull { index, champion ->
+            champion?.let { "${defaultRoles[index].shortName}: ${it.name}" }
+        }.ifEmpty { listOf("sin selección") }.joinToString(" | ")
+        val selectedCount = (allies + enemies).count { it != null }
+        buildString {
+            appendLine("Guardado en esta sesión: ${if (isSavedRecently) "sí" else "no"}")
+            appendLine("Rol: ${activeRole.displayName}; primer pick: ${if (isFirstPick) "sí" else "no"}; modo: ${if (isLegendaryQueue) "legendario" else "clasificatoria"}")
+            appendLine("Aliados (${allies.count { it != null }}/5): ${championNames(allies)}")
+            appendLine("Rivales (${enemies.count { it != null }}/5): ${championNames(enemies)}")
+            appendLine("Baneos detectados: ${bannedIds.size}; selección: $selectedCount/10; Auto-Scan activo: ${if (autoScanEnabled) "sí" else "no"}")
+            val recommendation = analysis.bestOverallPick ?: analysis.recommendations.firstOrNull()
+            appendLine("Recomendación principal: ${recommendation?.champion?.name ?: "N/D"}; WR estimado: ${recommendation?.estimatedWinrate?.let { "%.1f%%".format(java.util.Locale.US, it) } ?: "N/D"}")
+            appendLine("Daño aliado: físico ${analysis.allyPhysicalDamagePercent}%, mágico ${analysis.allyMagicDamagePercent}%, verdadero ${analysis.allyTrueDamagePercent}%")
+            appendLine("Advertencia de composición: ${analysis.allyCompositionWarning ?: analysis.directMatchupWarning ?: "ninguna"}")
+        }.trimEnd()
     }
 
     LaunchedEffect(state.autoSavePendingRequested) {
@@ -1048,9 +1081,10 @@ internal fun FloatingOverlayContent(
                             ) {
                                 val isLiveVisionActive by DraftVisionScanner.showCalibrationBoxes.collectAsStateWithLifecycle()
 
-                                if (hubViewerButtonsVisible) {
+                                if (hubViewerButtonsVisible && diagnosticAutoScanReady) {
                                     com.example.ui.components.DeviceDiagnosticButton(
-                                        screenCaptureManager = screenCaptureManager
+                                        screenCaptureManager = screenCaptureManager,
+                                        draftDetails = diagnosticDraftDetails
                                     )
                                 }
 
