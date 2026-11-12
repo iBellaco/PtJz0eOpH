@@ -25,7 +25,13 @@ class TierCategoriesRenderedTest {
         val original = WildRiftRepository.champions.toList()
         val tiers = listOf("S+", "S", "A", "B", "C")
         WildRiftRepository.champions.clear()
-        WildRiftRepository.champions.addAll(original.take(5).mapIndexed { index, champion -> champion.copy(tier = tiers[index]) })
+        WildRiftRepository.champions.addAll(original.take(5).mapIndexed { index, champion ->
+            champion.copy(
+                tier = tiers[index],
+                hasRegionalStats = true,
+                statsCheckedAt = 1L
+            )
+        })
         try {
             compose.setContent { MyApplicationTheme {
                 CompositionLocalProvider(LocalLanguage provides "es") { TierListTab(onSelectChampion = {}) }
@@ -46,8 +52,8 @@ class TierCategoriesRenderedTest {
     @Test fun championsWithoutCompetitiveDataAreNotShownInTheTierList() {
         WildRiftRepository.initChampions(RuntimeEnvironment.getApplication(), forceReload = true)
         val original = WildRiftRepository.champions.toList()
-        val withData = original.first().copy(name = "Con datos", tier = "S")
-        val withoutData = original.first().copy(id = "sylas", name = "Sylas", tier = "SIN DATOS")
+        val withData = original.first().copy(name = "Con datos", tier = "S", hasRegionalStats = true, statsCheckedAt = 1L)
+        val withoutData = original.first().copy(id = "sylas", name = "Sylas", tier = "SIN DATOS", hasRegionalStats = false, statsCheckedAt = 0L)
         WildRiftRepository.champions.clear()
         WildRiftRepository.champions.addAll(listOf(withData, withoutData))
         try {
