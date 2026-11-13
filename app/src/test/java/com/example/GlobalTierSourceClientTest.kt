@@ -60,16 +60,23 @@ class GlobalTierSourceClientTest {
     }
     @Test fun `core fetches complete rankings independently from tier podium`() = runBlocking {
         MockWebServer().use { server ->
-            server.enqueue(MockResponse().setBody(html()))
+            val tierPage = html().replace(">champ1</a>", ">champ1" +
+                "<span class='tl-champ-wr'>50.10%</span><span class='tl-champ-pr'>4.0%</span>" +
+                "<span class='tl-champ-br'>2.0%</span></a>")
+            server.enqueue(MockResponse().setBody(tierPage))
             server.enqueue(MockResponse().setBody("""
-                <tr class="rk-row"><td><a class="rk-champ" href="/es/champions/champ1/">Champ 1</a></td>
-                <td><span class="rk-val--win">53.47%</span></td>
-                <td><span class="rk-stat--pick">6.2%</span><span class="rk-stat--ban">0%</span></td></tr>
+                <tr class="rkc-row" data-k="champ1:MID"><td><a class="rkc-champ" href="/es/champions/champ1/">Champ 1</a></td>
+                <td class="rkc-c-win"><span class="rkc-v">53.47%</span></td>
+                <td class="rkc-c-pick"><span class="rkc-v">6.2%</span></td>
+                <td class="rkc-c-ban"><span class="rkc-v">0%</span></td></tr>
             """.let { "<table>$it</table>" }))
             val source = GlobalScrapingSource("wildriftcore", "Test", server.url("/tierlist/").toString(), "test")
             val result = GlobalTierSourceClient().fetch(source, known)
             assertEquals(40, result.tiers.size)
-            assertEquals(53.47, result.stats["champ1"]!!.winRate!!, 0.001)
+            // The explicit ALL tile is the global value; rankings contributes
+            // the independent MID row without overwriting it.
+            assertEquals(50.10, result.stats["champ1"]!!.winRate!!, 0.001)
+            assertEquals(53.47, result.roleStats["champ1"]!![com.example.model.LaneRole.MID]!!.winRate!!, 0.001)
             assertEquals("/tierlist/", server.takeRequest().path)
             assertEquals("/rankings/", server.takeRequest().path)
         }

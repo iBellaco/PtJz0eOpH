@@ -30,13 +30,14 @@ fun MetaMonitoringCard() {
     var selected by remember { mutableStateOf<ScraperSourceStatus?>(null) }
     LaunchedEffect(Unit) { while (true) { delay(1_000); now = System.currentTimeMillis() } }
     val expected = health.expectedCount.takeIf { it > 0 } ?: 142
+    fun coverage(status: ScraperSourceStatus): Int = status.rosterCount.takeIf { it > 0 }
+        ?: maxOf(status.tierCount, status.statsCount)
     fun issue(status: ScraperSourceStatus): String? = when {
         status.lastChecked == 0L -> "Pendiente de comprobación"
         now - status.lastChecked > 3 * MetaFreshness.POLL_INTERVAL_MS -> "Consulta detenida"
         !status.isHealthy -> status.errorMessage ?: "Error de conexión"
         status.errorMessage != null -> status.errorMessage
         status.lastRatesChangedAt > 0 && now - status.lastRatesChangedAt >= 24 * 60 * 60_000L -> "Tasas sin cambios desde hace 24 horas"
-        status.tierCount < expected -> "Cobertura incompleta"
         status.lastChangedAt > 0 && now - status.lastChangedAt >= 24 * 60 * 60_000L -> "Sin cambios desde hace 24 horas"
         else -> null
     }
@@ -67,6 +68,8 @@ fun MetaMonitoringCard() {
                 color = if (health.stale(now)) HextechGold else TextSecondary, fontSize = 11.sp)
             sources.forEach { (id, status) ->
                 val problem = issue(status)
+                val published = coverage(status)
+                val state = problem ?: if (published < expected) "Fuente parcial" else "Funcionando"
                 val color = when { !status.isHealthy && status.lastChecked > 0 -> DangerRed
                     problem != null -> HextechGold; else -> HextechCyan }
                 CoachTextButton(onClick = { selected = status }, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)
@@ -75,7 +78,8 @@ fun MetaMonitoringCard() {
                         null, tint = color, modifier = Modifier.size(18.dp))
                     Column(Modifier.weight(1f).padding(horizontal = 8.dp)) {
                         Text(status.name.substringBefore(" ("), color = TextPrimary, fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
-                        Text(tr(problem ?: "Funcionando") + " · ${status.tierCount}/$expected", color = color, fontSize = 10.sp)
+                        Text(tr(state) + " · " + tr("Categorías") + " ${status.tierCount}/$expected · " +
+                            tr("Estadísticas") + " ${status.statsCount}/$expected", color = color, fontSize = 10.sp)
                     }
                     Text(if (status.lastChecked > 0) java.text.SimpleDateFormat("HH:mm:ss", java.util.Locale.getDefault())
                         .format(java.util.Date(status.lastChecked)) else "—", color = TextMuted, fontSize = 10.sp)
@@ -83,7 +87,7 @@ fun MetaMonitoringCard() {
             }
             HorizontalDivider(color = HextechCardBorder)
             val updated = health.updatedChampionCount.takeIf { it > 0 } ?: health.statsCount
-            Text(tr("Campeones actualizados") + ": $updated/$expected", color = HextechCyan, fontSize = 11.sp)
+            Text(tr("Estadísticas actuales") + ": $updated/$expected", color = HextechCyan, fontSize = 11.sp)
             val versionFailed = version.lastAttemptAt > version.lastSuccessAt && now - version.lastAttemptAt > 25_000L
             Text(tr(if (versionFailed) "No se pudo comprobar la versión publicada" else "Versión disponible") +
                 if (versionFailed) "" else ": " + version.publishedName.ifBlank { "—" },
@@ -98,6 +102,7 @@ fun MetaMonitoringCard() {
             text = { Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text(tr(issue(status) ?: "Funcionando"), color = if (issue(status) != null) HextechGold else HextechCyan)
                 Text(tr("Parche") + ": " + status.publishedPatch.ifBlank { "—" })
+                Text(tr("Cobertura publicada") + ": ${coverage(status)}/$expected")
                 Text(tr("Categorías") + ": ${status.tierCount}/$expected")
                 Text(tr("Estadísticas") + ": ${status.statsCount}/$expected")
                 Text(tr("Historial disponible") + ": ${status.historyCount}/$expected")
