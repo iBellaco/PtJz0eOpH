@@ -165,8 +165,14 @@ fun ScannerDebugOverlay(
                         else -> "Ban ${slot.index + 1}"
                     }
                     val halfText = labelPaint.measureText(status) / 2f
+                    // Las etiquetas de baneo se dibujaban debajo del círculo y
+                    // chocaban con el nombre del primer slot. La cabecera tiene
+                    // espacio libre encima de cada retrato; usarlo mantiene
+                    // separados los cinco baneos y las cinco filas del draft.
+                    val banLabelY = (center.y - radius - 4f)
+                        .coerceAtLeast(viewport.top + labelPaint.textSize)
                     drawDiagnosticText(caption(status, labelPaint, radius * 2f + 4f), center.x.coerceIn(halfText + 2f, w - halfText - 2f),
-                        center.y + radius - labelPaint.fontMetrics.top + 6f, labelPaint, margin = 1f)
+                        banLabelY, labelPaint, margin = 1f)
                 }
             }
         }
