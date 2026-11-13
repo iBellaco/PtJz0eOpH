@@ -58,6 +58,26 @@ class GlobalTierSourceClientTest {
             assertEquals(53.4, result.stats["champ1"]?.winRate ?: 0.0, 0.001)
         }
     }
+
+    @Test fun `source diagnostics distinguish complete and partial rate rows`() = runBlocking {
+        MockWebServer().use { server ->
+            server.enqueue(MockResponse().setBody("""
+                <title>Wild Rift Tier List — v7.3f | WildRifter</title>
+                <a href="/en/champion/champ1" aria-label="View Champ 1 details">
+                  <span aria-label="Tier A">A</span>
+                  <dl><div><dt>Win</dt><dd>51%</dd></div>
+                      <div><dt>Pick</dt><dd>4%</dd></div></dl>
+                </a>
+            """.trimIndent()))
+            val source = GlobalScrapingSource("wildrifter", "Test", server.url("/en").toString(), "test")
+            val result = GlobalTierSourceClient().fetch(source, setOf("champ1"))
+            assertTrue(result.status.isHealthy)
+            assertEquals(0, result.status.statsCount)
+            assertEquals(1, result.status.partialStatsCount)
+            assertEquals(0, result.status.missingStatsCount)
+            assertEquals(listOf("champ1"), result.status.partialStatIds)
+        }
+    }
     @Test fun `core fetches complete rankings independently from tier podium`() = runBlocking {
         MockWebServer().use { server ->
             val tierPage = html().replace(">champ1</a>", ">champ1" +

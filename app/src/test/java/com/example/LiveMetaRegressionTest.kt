@@ -21,6 +21,8 @@ class LiveMetaRegressionTest {
         assertEquals(0.0, data["ahri"]!!.banRate!!, 0.0)
         assertEquals(4.1, data["ahri"]!!.pickRate!!, 0.0)
         assertFalse(ChampionMetaStats(winRate = 101.0).isUsable())
+        assertFalse(ChampionMetaStats(winRate = 51.0, pickRate = 4.1).isComplete())
+        assertTrue(ChampionMetaStats(winRate = 51.0, pickRate = 4.1, banRate = 0.0).isComplete())
     }
 
     @Test fun `full tier tiles supply rates when the separate rankings request is unavailable`() {
