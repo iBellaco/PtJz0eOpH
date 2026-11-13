@@ -126,9 +126,10 @@ internal fun ComprehensiveFeedbackCard(
     val context = LocalContext.current
     val itemCategory = remember(report) { getFeedbackCategory(report) }
     val isCalibrationReport = itemCategory == "CALIBRATION"
-    // Las evidencias de coordenadas deben poder auditarse al abrir el panel:
-    // imagen, visor y texto completo quedan visibles sin tocar el título.
-    var expanded by remember(report.id, itemCategory) { mutableStateOf(isCalibrationReport) }
+    // Los informes extensos (especialmente las coordenadas) llegan cerrados para
+    // que la lista siga siendo legible. El título, el cuerpo y el control de
+    // expansión permiten abrir el texto completo cuando se necesite auditarlo.
+    var expanded by remember(report.id, itemCategory) { mutableStateOf(false) }
     val isBugOrSupport = itemCategory in setOf("BUG", "SUPPORT", "CALIBRATION", "PATROCINADOR", "PAGO")
     val canContinueConversation = onReply != null && !com.example.data.SupportConversationPolicy.isClosed(currentStatus)
 
@@ -453,7 +454,7 @@ internal fun ComprehensiveFeedbackCard(
                         color = TextSecondary,
                         fontSize = 12.5.sp,
                         lineHeight = 17.sp,
-                        maxLines = if (isCalibrationReport || expanded) Int.MAX_VALUE else 3,
+                        maxLines = if (expanded) Int.MAX_VALUE else 3,
                         overflow = TextOverflow.Ellipsis,
                         modifier = Modifier
                             .weight(1f)

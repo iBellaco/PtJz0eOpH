@@ -2079,13 +2079,19 @@ object DraftVisionScanner {
 
         val visualMatches = mutableMapOf<String, String>()
         for (i in 0..4) {
-            val isUnpickedSlot = allySlots[i].isLikelyUnpicked || currentScanFrameOcrLanes.containsKey(i)
-            val confirmedChamp = if (isUnpickedSlot) null else (alliesBySlotMap[i]?.name ?: allySlotConfirmedChampions[i]?.name)
-            val detectedLaneName = (allySlotOcrLaneCache[i] ?: allySlotRolesCache[i] ?: allySlots.getOrNull(i)?.explicitRole)?.displayName
-            val aDisplayName = confirmedChamp ?: detectedLaneName
-            if (aDisplayName != null) visualMatches["ally_$i"] = aDisplayName
-            val eChamp = enemiesBySlotMap[i]?.name ?: enemySlotConfirmedChampions[i]?.name
-            if (eChamp != null) visualMatches["enemy_$i"] = eChamp
+            // Solo publicamos identidades que el motor ya tiene asociadas al
+            // puesto. No convertimos la línea observada ni el ordinal en un
+            // supuesto campeón: si falta una confirmación, el visor conserva
+            // «Aliado/Rival N» como marcador honesto.
+            val allyChampionName = alliesBySlotMap[i]?.name
+                ?: allySlotConfirmedChampions[i]?.name
+                ?: allySlotImageEvidence[i]?.name
+            if (!allyChampionName.isNullOrBlank()) visualMatches["ally_$i"] = allyChampionName
+
+            val enemyChampionName = enemiesBySlotMap[i]?.name
+                ?: enemySlotConfirmedChampions[i]?.name
+                ?: enemySlotImageEvidence[i]?.name
+            if (!enemyChampionName.isNullOrBlank()) visualMatches["enemy_$i"] = enemyChampionName
         }
         allyRolesBySlotFlow.value = resolvedAlliedRoles
         debugVisualMatches.value = visualMatches
