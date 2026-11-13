@@ -46,6 +46,10 @@
     <string name="calibration_send_failed">Não foi possível confirmar o envio. Seus ajustes foram mantidos; tente novamente.</string>
     <string name="calibration_verified_required">Entre com seu e-mail verificado para enviar as coordenadas.</string>
     <string name="calibration_copy">Copiar coordenadas</string>
+    <string name="feedback_delete_processed_title">Excluir todas as mensagens processadas?</string>
+    <string name="feedback_delete_processed_body">Serão excluídas as mensagens lidas, resolvidas, aceitas ou rejeitadas. As pendentes serão mantidas.</string>
+    <string name="feedback_delete_processed_done">As mensagens processadas foram excluídas</string>
+    <string name="feedback_delete_processed_confirm">Sim, excluir processadas</string>
     <string name="directory_syncing">Sincronizando lista de usuários…</string>
     <string name="directory_offline">Sem conexão: não é possível confirmar a lista de usuários.</string>
     <string name="directory_error">Não foi possível sincronizar a lista de usuários. Tente novamente.</string>

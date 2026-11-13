@@ -418,11 +418,13 @@ class RuntimeBehaviorTest {
         val server = data + ("submittedAt" to com.google.firebase.Timestamp(java.util.Date(now + 1000)))
         assertEquals(end + 1000, StreamerPublicationPolicy.expiresAt(server))
     }
-    @Test fun `bulk deletion eligibility excludes unread and read tickets`() {
-        for (status in listOf("PENDING", "PENDIENTE", "READ", "LEIDO", "ACCEPTED", "REJECTED"))
-            assertNotEquals("SOLVED", SupportTicketPresentation.status(status))
-        for (status in listOf("SOLVED", "SOLUCIONADO", "CLOSED", "CERRADO", "COMPLETED"))
-            assertEquals("SOLVED", SupportTicketPresentation.status(status))
+    @Test fun `bulk deletion keeps pending tickets and removes every processed state`() {
+        for (status in listOf("PENDING", "PENDIENTE")) {
+            assertFalse(FeedbackRepository.isBulkDeletableStatus(status))
+        }
+        for (status in listOf("READ", "LEIDO", "SOLVED", "SOLUCIONADO", "CLOSED", "CERRADO", "COMPLETED", "ACCEPTED", "REJECTED")) {
+            assertTrue("$status debe poder eliminarse en lote", FeedbackRepository.isBulkDeletableStatus(status))
+        }
     }
 
     @Test fun `approved streamer duration has a deterministic live deadline`() {

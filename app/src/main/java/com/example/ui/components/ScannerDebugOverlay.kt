@@ -1,5 +1,7 @@
 package com.example.ui.components
 
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
@@ -13,12 +15,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.graphics.nativeCanvas
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.service.screen.AdaptiveScreenLayoutEngine
 import com.example.service.screen.DraftVisionScanner
 import com.example.service.screen.VisionCalibrationConfig
+import com.example.data.WildRiftRepository
+import com.example.model.Champion
 
 @Composable
 fun ScannerDebugOverlay(
@@ -34,6 +39,46 @@ fun ScannerDebugOverlay(
     val debugMatches by DraftVisionScanner.debugVisualMatches.collectAsStateWithLifecycle()
     val language = com.example.util.currentAppLanguage()
     val density = LocalDensity.current
+    val context = LocalContext.current
+
+    // Reutilizar los retratos locales hace que el visor y la evidencia enviada
+    // permitan comprobar visualmente cada identidad, incluso si el recorte del
+    // juego llega vacío o desplazado.
+    val avatarBitmaps = remember(debugMatches, banSlots) {
+        val catalog = WildRiftRepository.championSnapshot()
+        val byId = catalog.associateBy { it.id.lowercase(java.util.Locale.ROOT) }
+        fun byName(value: String?): Champion? {
+            val normalized = value?.trim()?.lowercase(java.util.Locale.ROOT).orEmpty()
+            if (normalized.isBlank()) return null
+            return catalog.firstOrNull {
+                it.name.lowercase(java.util.Locale.ROOT) == normalized ||
+                    it.nameEn.lowercase(java.util.Locale.ROOT) == normalized ||
+                    it.namePt.lowercase(java.util.Locale.ROOT) == normalized
+            }
+        }
+        fun load(champion: Champion?): Bitmap? = champion?.id?.takeIf { it.isNotBlank() }?.let { id ->
+            runCatching { context.assets.open("champions/$id.png").use { BitmapFactory.decodeStream(it) } }
+                .getOrNull()?.takeIf { !it.isRecycled }
+        }
+        linkedMapOf<String, Bitmap>().apply {
+            for (index in 0..4) {
+                load(DraftVisionScanner.evidenceChampionForSlot(true, index) ?: byName(debugMatches["ally_$index"]))
+                    ?.let { put("ally_$index", it) }
+                load(DraftVisionScanner.evidenceChampionForSlot(false, index) ?: byName(debugMatches["enemy_$index"]))
+                    ?.let { put("enemy_$index", it) }
+            }
+            banSlots.filter { it.championId != null }.forEach { slot ->
+                val champion = byId[slot.championId!!.lowercase(java.util.Locale.ROOT)]
+                val key = "${if (slot.side == com.example.service.screen.BanSide.ALLY) "ally" else "enemy"}_ban_${slot.index}"
+                load(champion)?.let { put(key, it) }
+            }
+        }
+    }
+    androidx.compose.runtime.DisposableEffect(avatarBitmaps) {
+        onDispose {
+            avatarBitmaps.values.forEach { bitmap -> runCatching { if (!bitmap.isRecycled) bitmap.recycle() } }
+        }
+    }
 
     // Telemetría del motor de visión y estrategia de salto de fotogramas
     val liveScanFps by DraftVisionScanner.liveScanFps.collectAsStateWithLifecycle()
@@ -142,6 +187,29 @@ fun ScannerDebugOverlay(
         val currentConfig = rawConfig
         val viewport = gameViewport.takeUnless { it.isEmpty } ?: android.graphics.Rect(0, 0, w.toInt(), h.toInt())
 
+        fun drawAvatar(key: String, rect: android.graphics.Rect, circle: Boolean = true) {
+            val avatar = avatarBitmaps[key]?.takeIf { !it.isRecycled } ?: return
+            val native = drawContext.canvas.nativeCanvas
+            val source = android.graphics.Rect(0, 0, avatar.width, avatar.height)
+            val destination = android.graphics.RectF(rect)
+            native.save()
+            if (circle) {
+                val path = android.graphics.Path().apply {
+                    addOval(destination, android.graphics.Path.Direction.CW)
+                }
+                native.clipPath(path)
+            } else {
+                native.clipRect(destination)
+            }
+            native.drawBitmap(
+                avatar,
+                source,
+                destination,
+                android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG or android.graphics.Paint.FILTER_BITMAP_FLAG)
+            )
+            native.restore()
+        }
+
         // The rectangles are the exact header bands searched by the classifier.
         // Thin circle strokes stay outside its portrait descriptor samples.
         if (detectingBans) {
@@ -153,9 +221,18 @@ fun ScannerDebugOverlay(
                 drawRect(color.copy(alpha = .35f), Offset(x, viewport.top.toFloat()),
                     Size(viewport.width() * sideWidth, viewport.height() * .12f), style = Stroke(1f))
                 for (slot in banSlots.filter { it.side == side }) {
-                    val region = slot.region ?: continue
+                    val configuredRegion = currentConfig.banRegions(side == com.example.service.screen.BanSide.ALLY)
+                        .getOrNull(slot.index)
+                    val region = configuredRegion ?: slot.region ?: continue
                     val center = Offset(region.x * w, region.y * h)
                     val radius = region.radius * h
+                    drawAvatar(
+                        "${if (side == com.example.service.screen.BanSide.ALLY) "ally" else "enemy"}_ban_${slot.index}",
+                        android.graphics.Rect(
+                            (center.x - radius).toInt(), (center.y - radius).toInt(),
+                            (center.x + radius).toInt(), (center.y + radius).toInt()
+                        )
+                    )
                     drawCircle(if (slot.state == com.example.service.screen.BanState.EMPTY) Color.Gray else color,
                         radius, center, style = Stroke(if (slot.state == com.example.service.screen.BanState.CONFIRMED) 2f else 1f))
                     val status = when (slot.state) {
@@ -186,6 +263,8 @@ fun ScannerDebugOverlay(
             val allyY = allyCrop.exactCenterY()
             val allyX = allyCrop.exactCenterX()
             val allyAvatarRad = allyCrop.width() / 2f
+
+            drawAvatar("ally_$sIdx", allyCrop)
 
             // Círculo del avatar del slot aliado
             drawCircle(
@@ -248,6 +327,8 @@ fun ScannerDebugOverlay(
             val enemyY = enemyCrop.exactCenterY()
             val enemyX = enemyCrop.exactCenterX()
             val enemyAvatarRad = enemyCrop.width() / 2f
+
+            drawAvatar("enemy_$sIdx", enemyCrop)
 
             // Círculo del avatar del slot rival
             drawCircle(

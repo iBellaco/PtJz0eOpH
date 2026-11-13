@@ -4,6 +4,7 @@ import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
+import android.graphics.Path
 import android.graphics.RectF
 import android.util.Base64
 import java.io.ByteArrayOutputStream
@@ -37,7 +38,8 @@ internal object CalibrationEvidenceImage {
         visorActive: Boolean = true,
         literalCapture: Boolean = true,
         slotLabels: Map<String, String> = emptyMap(),
-        banSlots: List<BanSlot> = emptyList()
+        banSlots: List<BanSlot> = emptyList(),
+        avatarBitmaps: Map<String, Bitmap> = emptyMap()
     ): Encoded? {
         val source = frame.bitmap
         if (source.isRecycled || source.width <= 0 || source.height <= 0) return null
@@ -53,7 +55,7 @@ internal object CalibrationEvidenceImage {
             scaled?.let { if (it !== source) it.recycle() }
             scaled = null
 
-            drawCalibrationOverlay(working!!, config, language, visorActive, literalCapture, slotLabels, banSlots)
+            drawCalibrationOverlay(working!!, config, language, visorActive, literalCapture, slotLabels, banSlots, avatarBitmaps)
             val bytes = compressBounded(working!!)
             if (bytes.isEmpty() || bytes.size > MAX_BYTES) return null
             val age = (android.os.SystemClock.elapsedRealtime() - frame.capturedAtElapsedMs).coerceAtLeast(0L)
@@ -79,7 +81,8 @@ internal object CalibrationEvidenceImage {
         visorActive: Boolean,
         literalCapture: Boolean,
         slotLabels: Map<String, String>,
-        banSlots: List<BanSlot>
+        banSlots: List<BanSlot>,
+        avatarBitmaps: Map<String, Bitmap>
     ) {
         val canvas = Canvas(bitmap)
         val width = bitmap.width.toFloat()
@@ -95,7 +98,37 @@ internal object CalibrationEvidenceImage {
         val allyPaint = paint(Color.rgb(0, 235, 220))
         val enemyPaint = paint(Color.rgb(255, 78, 112))
         val banPaint = paint(Color.rgb(255, 201, 83))
+
+        // Las cajas sirven para revisar la geometría, pero no sustituyen la
+        // evidencia visual. Repetimos el retrato confirmado dentro de cada
+        // región para que un administrador pueda reconocer al campeón aunque
+        // la captura original tenga poca resolución o el visor esté oculto.
+        fun drawAvatar(key: String, destination: RectF, circle: Boolean) {
+            val avatar = avatarBitmaps[key]?.takeIf { !it.isRecycled } ?: return
+            val source = android.graphics.Rect(0, 0, avatar.width, avatar.height)
+            val avatarPaint = Paint(Paint.ANTI_ALIAS_FLAG or Paint.FILTER_BITMAP_FLAG)
+            canvas.save()
+            if (circle) {
+                val path = Path().apply { addOval(destination, Path.Direction.CW) }
+                canvas.clipPath(path)
+            } else {
+                canvas.clipRect(destination)
+            }
+            canvas.drawBitmap(avatar, source, destination, avatarPaint)
+            canvas.restore()
+        }
+
         for (index in 0..4) {
+            drawAvatar(
+                "ally_$index",
+                AdaptiveScreenLayoutEngine.calculateSlotCropRect(bitmap.width, bitmap.height, true, index, config).toRectF(),
+                circle = true
+            )
+            drawAvatar(
+                "enemy_$index",
+                AdaptiveScreenLayoutEngine.calculateSlotCropRect(bitmap.width, bitmap.height, false, index, config).toRectF(),
+                circle = true
+            )
             canvas.drawRect(
                 AdaptiveScreenLayoutEngine.calculateSlotCropRect(bitmap.width, bitmap.height, true, index, config).toRectF(),
                 allyPaint
@@ -108,18 +141,21 @@ internal object CalibrationEvidenceImage {
 
         fun drawBans(isAlly: Boolean, color: Int) {
             val p = paint(color)
-            // Cuando el detector ya ubicó los cinco círculos, conservar esas
-            // regiones frame-relative en la evidencia. Si la observación es
-            // parcial, usar la calibración guardada para no desplazar los huecos.
-            val observed = banSlots
-                .filter { it.side == if (isAlly) BanSide.ALLY else BanSide.ENEMY }
-                .sortedBy { it.index }
-            val regions = if (observed.size == 5 && observed.all { it.region != null }) {
-                observed.map { it.region!! }
-            } else {
-                config.banRegions(isAlly)
-            }
-            regions.forEach { region ->
+            // La captura debe auditar las coordenadas guardadas, no las
+            // regiones adaptativas que un fotograma defectuoso pudo proponer.
+            // Así los cinco baneos permanecen alineados y los huecos no se
+            // desplazan por una observación aislada.
+            config.banRegions(isAlly).forEachIndexed { index, region ->
+                drawAvatar(
+                    "${if (isAlly) "ally" else "enemy"}_ban_$index",
+                    RectF(
+                        width * region.x - height * region.radius,
+                        height * region.y - height * region.radius,
+                        width * region.x + height * region.radius,
+                        height * region.y + height * region.radius
+                    ),
+                    circle = true
+                )
                 canvas.drawCircle(width * region.x, height * region.y, height * region.radius, p)
             }
         }

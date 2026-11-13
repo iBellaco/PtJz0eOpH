@@ -2,6 +2,13 @@
 
 Este documento es la referencia inicial para cualquier conversación nueva que modifique el escáner del HUD de Coach. Debe leerse junto con `AGENTS.md` y la auditoría más reciente.
 
+Actualización 13 de noviembre de 2026: el propietario solicitó retirar el
+catálogo productivo de coordenadas anterior y volver a cargarlo desde cero. Las
+secciones históricas de este documento describen regresiones y no habilitan
+presets; el único respaldo productivo vigente está en
+`docs/scanner-calibration-backup.json` y corresponde a la medición nueva de
+`motorola edge 30 neo` (2174×1080).
+
 ## Regla obligatoria
 
 El escáner debe funcionar con la geometría real del fotograma capturado en cualquier teléfono, resolución, relación de aspecto, recorte, barra del sistema o letterbox. Los perfiles medidos son puntos de partida y regresiones, no una lista cerrada de equipos compatibles.

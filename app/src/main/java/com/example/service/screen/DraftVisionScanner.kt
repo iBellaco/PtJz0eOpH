@@ -638,6 +638,16 @@ object DraftVisionScanner {
         else enemySlotImageEvidence[slotIndex] = champion
     }
 
+    /** Champion used by the evidence renderer, including image-only matches. */
+    internal fun evidenceChampionForSlot(isAlly: Boolean, slotIndex: Int): Champion? {
+        if (slotIndex !in 0..4) return null
+        return if (isAlly) {
+            allySlotConfirmedChampions[slotIndex] ?: allySlotImageEvidence[slotIndex]
+        } else {
+            enemySlotConfirmedChampions[slotIndex] ?: enemySlotImageEvidence[slotIndex]
+        }
+    }
+
     /** Evidencia compacta y sin datos personales para los informes de soporte. */
     fun detectionEvidenceReport(language: String = "es"): String {
         val pt = language.equals("pt", ignoreCase = true)

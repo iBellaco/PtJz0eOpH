@@ -1,5 +1,7 @@
 package com.example.ui.components
 
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.os.Build
 import android.widget.Toast
 import androidx.compose.foundation.layout.*
@@ -19,6 +21,8 @@ import com.example.R
 import com.example.data.CalibrationReport
 import com.example.data.CalibrationUserName
 import com.example.data.FeedbackRepository
+import com.example.data.WildRiftRepository
+import com.example.model.Champion
 import com.example.service.screen.DraftVisionScanner
 import com.example.service.screen.CalibrationEvidenceImage
 import com.example.service.screen.CalibrationEvidenceFrame
@@ -129,6 +133,7 @@ fun CalibrationSendButton(
             sending = true
             sent = false
             scope.launch {
+                var evidenceAvatars: Map<String, Bitmap> = emptyMap()
                 try {
                     // El visor debe quedar activo cuando el usuario solicita
                     // evidencia: la imagen enviada debe mostrar qué geometría
@@ -141,6 +146,7 @@ fun CalibrationSendButton(
                     val language = AppLanguage.current.value
                     val detectedSlotLabels = DraftVisionScanner.debugVisualMatches.value.toMap()
                     val detectedBanSlots = DraftVisionScanner.banSlotsFlow.value.toList()
+                    evidenceAvatars = loadEvidenceAvatars(context, detectedSlotLabels, detectedBanSlots)
                     var evidenceSource = if (language.equals("pt", ignoreCase = true)) {
                         "Captura literal da tela no momento do envio"
                     } else {
@@ -160,7 +166,8 @@ fun CalibrationSendButton(
                                 visorActive = DraftVisionScanner.showCalibrationBoxes.value,
                                 literalCapture = true,
                                 slotLabels = detectedSlotLabels,
-                                banSlots = detectedBanSlots
+                                banSlots = detectedBanSlots,
+                                avatarBitmaps = evidenceAvatars
                             )
                         } finally {
                             runCatching { literalFrame.bitmap.recycle() }
@@ -186,7 +193,8 @@ fun CalibrationSendButton(
                                     visorActive = DraftVisionScanner.showCalibrationBoxes.value,
                                     literalCapture = false,
                                     slotLabels = detectedSlotLabels,
-                                    banSlots = detectedBanSlots
+                                    banSlots = detectedBanSlots,
+                                    avatarBitmaps = evidenceAvatars
                                 )
                             } finally {
                                 runCatching { evidenceFrame.bitmap.recycle() }
@@ -242,7 +250,10 @@ fun CalibrationSendButton(
                     throw cancelled
                 } catch (_: Exception) {
                     Toast.makeText(context, failure, Toast.LENGTH_LONG).show()
-                } finally { sending = false }
+                } finally {
+                    evidenceAvatars.values.forEach { bitmap -> runCatching { if (!bitmap.isRecycled) bitmap.recycle() } }
+                    sending = false
+                }
             }
         }
     }) { Text(if (limitReached) dailyLimit else if (sending) pending else send, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center, fontSize = 14.sp) }
@@ -262,4 +273,49 @@ private suspend fun captureLiteralEvidenceFrame(manager: ScreenCaptureManager?):
         delay(90L)
     }
     return null
+}
+
+/**
+ * Loads the same local champion portraits used by the in-app avatar component.
+ * Evidence never downloads a remote image, so a missing asset cannot block the
+ * report; the confirmed text remains visible as a fallback.
+ */
+private fun loadEvidenceAvatars(
+    context: android.content.Context,
+    slotLabels: Map<String, String>,
+    banSlots: List<com.example.service.screen.BanSlot>
+): Map<String, Bitmap> {
+    val catalog = WildRiftRepository.championSnapshot()
+    val byId = catalog.associateBy { it.id.lowercase(java.util.Locale.ROOT) }
+    fun findChampion(value: String?): Champion? {
+        val normalized = value?.trim()?.lowercase(java.util.Locale.ROOT).orEmpty()
+        if (normalized.isBlank()) return null
+        return catalog.firstOrNull {
+            it.name.lowercase(java.util.Locale.ROOT) == normalized ||
+                it.nameEn.lowercase(java.util.Locale.ROOT) == normalized ||
+                it.namePt.lowercase(java.util.Locale.ROOT) == normalized
+        }
+    }
+    fun load(champion: Champion?): Bitmap? {
+        if (champion == null || champion.id.isBlank()) return null
+        return runCatching {
+            context.assets.open("champions/${champion.id}.png").use { BitmapFactory.decodeStream(it) }
+        }.getOrNull()?.takeIf { !it.isRecycled }
+    }
+
+    val result = linkedMapOf<String, Bitmap>()
+    for (index in 0..4) {
+        val ally = DraftVisionScanner.evidenceChampionForSlot(true, index)
+            ?: findChampion(slotLabels["ally_$index"])
+        val enemy = DraftVisionScanner.evidenceChampionForSlot(false, index)
+            ?: findChampion(slotLabels["enemy_$index"])
+        load(ally)?.let { result["ally_$index"] = it }
+        load(enemy)?.let { result["enemy_$index"] = it }
+    }
+    banSlots.filter { it.championId != null }.forEach { slot ->
+        val champion = byId[slot.championId!!.lowercase(java.util.Locale.ROOT)]
+        val key = "${if (slot.side == com.example.service.screen.BanSide.ALLY) "ally" else "enemy"}_ban_${slot.index}"
+        load(champion)?.let { result[key] = it }
+    }
+    return result
 }

@@ -33,10 +33,9 @@ No convertir las imágenes redimensionadas ni un emulador en registros físicos.
 
 ## Respaldo de coordenadas aportadas
 
-Las mediciones normalizadas recibidas para Samsung SM-A156U, Xiaomi 2412DPC0AG,
-Samsung SM-S942B, HONOR BVL-N49, Samsung SM-S938B, Samsung SM-S948B, OPPO
-CPH2791 y Motorola moto g56 5G se conservan en `docs/scanner-calibration-backup.json`. También son valores iniciales cuando
-coinciden fabricante, modelo y dimensiones exactas de captura. Una calibración
-guardada por el usuario siempre prevalece. No se reutiliza un perfil en otro
-modelo solo porque comparta resolución, y el registro no sustituye una validación
-física de la secuencia completa.
+El catálogo anterior de mediciones fue retirado para comenzar una nueva carga
+verificable. El respaldo activo contiene únicamente `motorola edge 30 neo` en
+2174×1080 y se usa solo cuando coinciden fabricante, modelo y dimensiones exactas
+de captura. Una calibración guardada por el usuario siempre prevalece. No se
+reutiliza un perfil en otro modelo solo porque comparta resolución, y el registro
+no sustituye una validación física de la secuencia completa.
