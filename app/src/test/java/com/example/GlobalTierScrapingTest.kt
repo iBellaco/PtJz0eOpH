@@ -53,6 +53,55 @@ class GlobalTierScrapingTest {
         assertEquals(54.6, lanes[com.example.model.LaneRole.SUPPORT]!!.winRate!!, 0.001)
         assertNotEquals(lanes[com.example.model.LaneRole.MID], lanes[com.example.model.LaneRole.SUPPORT])
     }
+    @Test fun `WildRiftCore reads the current rkc rankings schema and lane from data key`() {
+        val html = """
+            <table><tr class="rkc-row" data-k="hwei:MID">
+              <td><a class="rkc-champ" href="/en/champions/hwei/">Hwei</a></td>
+              <td class="rkc-c-win"><span class="rkc-v">53.47%</span></td>
+              <td class="rkc-c-pick"><span class="rkc-v">6.20%</span></td>
+              <td class="rkc-c-ban"><span class="rkc-v">14.05%</span></td>
+            </tr></table>
+        """.trimIndent()
+        val global = RegionalTierParser.parseStats(html, "wildriftcore")["hwei"]!!
+        assertEquals(53.47, global.winRate!!, 0.001)
+        assertEquals(6.20, global.pickRate!!, 0.001)
+        assertEquals(14.05, global.banRate!!, 0.001)
+        val mid = RegionalTierParser.parseRoleStats(html, "wildriftcore")["hwei"]!!
+            .getValue(com.example.model.LaneRole.MID)
+        assertEquals(global, mid)
+    }
+    @Test fun `WildRiftCore global fallback keeps the most representative repeated lane`() {
+        val html = """
+            <section data-role="TOP"><a class="tl-champ-tile" href="/en/champions/yone/">
+              <span class="tl-champ-wr">51.0%</span><span class="tl-champ-pr">2.0%</span><span class="tl-champ-br">3.0%</span>
+            </a></section>
+            <section data-role="MID"><a class="tl-champ-tile" href="/en/champions/yone/">
+              <span class="tl-champ-wr">53.0%</span><span class="tl-champ-pr">8.0%</span><span class="tl-champ-br">7.0%</span>
+            </a></section>
+            <section data-role="JUNGLE"><a class="tl-champ-tile" href="/en/champions/yone/">
+              <span class="tl-champ-wr">49.0%</span><span class="tl-champ-pr">1.0%</span><span class="tl-champ-br">2.0%</span>
+            </a></section>
+        """.trimIndent()
+        val stats = RegionalTierParser.parseStats(html, "wildriftcore")["yone"]!!
+        assertEquals(53.0, stats.winRate!!, 0.001)
+        assertEquals(8.0, stats.pickRate!!, 0.001)
+    }
+    @Test fun `WildRiftCore ALL panel remains global when later role panels repeat a champion`() {
+        val html = """
+            <section id="all-tier-list" data-role="ALL"><a class="tl-champ-tile" href="/en/champions/yone/">
+              <span class="tl-champ-wr">49.1%</span><span class="tl-champ-pr">4.3%</span><span class="tl-champ-br">7.7%</span>
+            </a></section>
+            <section id="top-tier-list" data-role="TOP"><a class="tl-champ-tile" href="/en/champions/yone/">
+              <span class="tl-champ-wr">50.1%</span><span class="tl-champ-pr">5.2%</span><span class="tl-champ-br">7.7%</span>
+            </a></section>
+            <section id="jungle-tier-list" data-role="JUNGLE"><a class="tl-champ-tile" href="/en/champions/yone/">
+              <span class="tl-champ-wr">48.5%</span><span class="tl-champ-pr">2.2%</span><span class="tl-champ-br">7.7%</span>
+            </a></section>
+        """.trimIndent()
+        val stats = RegionalTierParser.parseStats(html, "wildriftcore")["yone"]!!
+        assertEquals(49.1, stats.winRate!!, 0.001)
+        assertEquals(4.3, stats.pickRate!!, 0.001)
+    }
     @Test fun `empty error pages and insufficient unknown champions fail validation`() {
         assertTrue(RegionalTierParser.parse("<html>Service unavailable</html>").isEmpty())
         val known=(1..100).map { "champ$it" }.toSet()

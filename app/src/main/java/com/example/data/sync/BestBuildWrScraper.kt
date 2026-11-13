@@ -104,7 +104,7 @@ object BestBuildWrScraper {
                     lastChangedAt = prefs.getLong("last_changed", 0),
                     unchangedChecks = prefs.getInt("unchanged_checks", 0),
                     tierCount = tiers.size, statsCount = stats.size,
-                    updatedChampionCount = MetaFreshness.coveredChampionCount(tiers.keys, stats.keys),
+                    updatedChampionCount = stats.size,
                     expectedCount = WildRiftRepository.baseChampionsList.size)
                 regions[region] = RegionState(prefs.getLong("timestamp_$region", 0), false, "Datos guardados • Pendiente de actualización")
             } catch (_: Exception) { /* Leave other region caches intact. */ }
@@ -226,8 +226,11 @@ object BestBuildWrScraper {
                 // an empty map.
                 if (fusedTiers.isNotEmpty() || freshStats.isNotEmpty()) {
                     val merged = GlobalTierConsensus.mergeSnapshot(previousTiers, fusedTiers)
-                    val mergedStats = GlobalTierConsensus.mergeStats(previousStats, freshStats)
-                    val mergedRoleStats = GlobalTierConsensus.mergeRoleStats(previousRoleStats, freshRoleStats)
+                    // A successful poll publishes only what was actually
+                    // observed now. Cached rates remain available only when a
+                    // complete poll fails; they must not be re-dated as fresh.
+                    val mergedStats = freshStats.toMap()
+                    val mergedRoleStats = freshRoleStats
                     val history = decodeHistory(prefs.getString("rate_history_v2", null)).toMutableMap()
                     val publishedHistory = validSources.firstOrNull { it.source.id == "wildriftfire" }?.history.orEmpty()
                     publishedHistory.forEach { (id, rows) ->
@@ -240,9 +243,15 @@ object BestBuildWrScraper {
                         history[id] = MetaRateHistory.record(history[id].orEmpty().filter { it.source == origin },
                             ObservedRate(started, value, rates.pickRate, rates.banRate, source = origin))
                     } }
-                    val changedIds = (fusedTiers.filter { (id, tier) -> previousTiers[id] != tier }.keys +
-                        freshStats.filter { (id, rates) -> previousStats[id] != rates }.keys +
-                        freshRoleStats.filter { (id, rates) -> previousRoleStats[id] != rates }.keys).size
+                    // Categories still use their partial-snapshot merge, so a
+                    // temporarily absent category is not a repeated change.
+                    val changedTierIds = fusedTiers.keys
+                        .filter { previousTiers[it] != fusedTiers[it] }
+                    val changedStatIds = (previousStats.keys + freshStats.keys)
+                        .filter { previousStats[it] != freshStats[it] }
+                    val changedRoleIds = (previousRoleStats.keys + freshRoleStats.keys)
+                        .filter { previousRoleStats[it] != freshRoleStats[it] }
+                    val changedIds = (changedTierIds + changedStatIds + changedRoleIds).toSet().size
                     val oldHealth = _freshness.value
                     _freshness.value = oldHealth.copy(
                         tiersCheckedAt = if (fusedTiers.isNotEmpty()) started else oldHealth.tiersCheckedAt,
@@ -250,7 +259,7 @@ object BestBuildWrScraper {
                         lastChangedAt = if (changedIds > 0 || oldHealth.lastChangedAt == 0L) started else oldHealth.lastChangedAt,
                         unchangedChecks = if (changedIds > 0) 0 else oldHealth.unchangedChecks + 1,
                         tierCount = fusedTiers.size, statsCount = freshStats.size,
-                        updatedChampionCount = MetaFreshness.coveredChampionCount(merged.keys, mergedStats.keys),
+                        updatedChampionCount = freshStats.size,
                         changedChampions = changedIds)
                     prefs.edit().putString("rate_history_v2", encodeHistory(history).toString())
                         .putLong("tiers_checked", _freshness.value.tiersCheckedAt)

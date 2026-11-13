@@ -162,26 +162,47 @@ object RegionalTierParser {
                 output[id] = stats
             }
         }
-        // Complete tiles are also usable when the rankings request fails.
-        doc.select("a.tl-champ-tile[href]").forEach { tile ->
-            val id = canonical(tile.attr("href").trimEnd('/').substringAfterLast('/'))
+        // The ALL panel contains the publisher's global values. Role panels
+        // repeat champions and must never overwrite that global observation.
+        // A standalone fragment still falls back to every available tile.
+        val globalTileScope = doc.selectFirst("#all-tier-list") ?: doc
+        globalTileScope.select("a.tl-champ-tile[href]").forEach { tile ->
+            val id = canonical(tile.attr("href").substringBefore('?').substringBefore('#')
+                .trimEnd('/').substringAfterLast('/'))
             fun rate(selector: String): Double? = tile.selectFirst(selector)?.text()
                 ?.let { Regex("[0-9]+(?:[.,][0-9]+)?").find(it)?.value }
                 ?.replace(',', '.')?.toDoubleOrNull()?.takeIf { it in 0.0..100.0 }
             val stats = ChampionMetaStats(rate(".tl-champ-wr"), rate(".tl-champ-pr"), rate(".tl-champ-br"))
-            if (id.length in 2..30 && stats.isUsable()) output[id] = stats
+            if (id.length !in 2..30 || !stats.isUsable()) return@forEach
+            // A champion can appear in several lane panels. The last panel is
+            // not a global statistic, so retain the row with the highest
+            // published pick rate as the most representative fallback.
+            val previous = output[id]
+            if (previous == null || (stats.pickRate ?: 0.0) > (previous.pickRate ?: 0.0)) {
+                output[id] = stats
+            }
         }
         // The complete rankings table publishes rates for the entire roster;
         // tierlist's podium only contains a small subset of champions.
-        doc.select("tr.rk-row").forEach { row ->
-            val link = row.selectFirst("a.rk-champ[href]") ?: return@forEach
-            val id = canonical(link.attr("href").trimEnd('/').substringAfterLast('/'))
+        // WildRiftCore renamed rk-* to rkc-* in November 2026. Keep both
+        // schemas so a rollout or cached response cannot silently empty stats.
+        doc.select("tr.rk-row, tr.rkc-row").forEach { row ->
+            val link = row.selectFirst("a.rk-champ[href], a.rkc-champ[href]") ?: return@forEach
+            val id = canonical(link.attr("href").substringBefore('?').substringBefore('#')
+                .trimEnd('/').substringAfterLast('/'))
             fun rate(selector: String): Double? = row.selectFirst(selector)?.text()
                 ?.replace(',', '.')?.replace("%", "")?.trim()?.toDoubleOrNull()
                 ?.takeIf { it.isFinite() && it in 0.0..100.0 }
-            val stats = ChampionMetaStats(rate(".rk-val--win, .rk-stat--win"),
-                rate(".rk-stat--pick"), rate(".rk-stat--ban"))
-            if (id.length in 2..30 && stats.isUsable()) output[id] = stats
+            val stats = ChampionMetaStats(
+                rate(".rk-val--win, .rk-stat--win, .rkc-c-win .rkc-v"),
+                rate(".rk-stat--pick, .rkc-c-pick .rkc-v"),
+                rate(".rk-stat--ban, .rkc-c-ban .rkc-v")
+            )
+            if (id.length !in 2..30 || !stats.isUsable()) return@forEach
+            val previous = output[id]
+            if (previous == null || (stats.pickRate ?: 0.0) > (previous.pickRate ?: 0.0)) {
+                output[id] = stats
+            }
         }
         return output
     }
@@ -192,20 +213,24 @@ object RegionalTierParser {
         if (source == "wildriftfire") return PublishedStatsParser.fire(html).roleStats
         if (source != null && source != "wildriftcore") return emptyMap()
         val output = linkedMapOf<String, MutableMap<com.example.model.LaneRole, ChampionMetaStats>>()
-        Jsoup.parse(html).select("li.tl-cell, tr.rk-row").forEach { row ->
+        Jsoup.parse(html).select("li.tl-cell, tr.rk-row, tr.rkc-row").forEach { row ->
+            val dataKeyRole = row.attr("data-k").substringAfterLast(':', "").takeIf { it.isNotBlank() }
             val lane = role(row.selectFirst("[data-role]")?.attr("data-role")
-                ?: row.parents().firstOrNull { it.hasAttr("data-role") }?.attr("data-role")) ?: return@forEach
-            val link = row.selectFirst("a.tl-cell__name[href], a.rk-champ[href]") ?: return@forEach
+                ?: row.parents().firstOrNull { it.hasAttr("data-role") }?.attr("data-role")
+                ?: dataKeyRole) ?: return@forEach
+            val link = row.selectFirst("a.tl-cell__name[href], a.rk-champ[href], a.rkc-champ[href]") ?: return@forEach
             val id = canonical(link.attr("href").substringBefore('?').trimEnd('/').substringAfterLast('/'))
             fun rate(selector: String): Double? = row.selectFirst(selector)?.text()
                 ?.replace(',', '.')?.replace(Regex("[^0-9.+-]"), "")?.toDoubleOrNull()
                 ?.takeIf { it.isFinite() && it in 0.0..100.0 }
             val ratesText = row.selectFirst(".tl-cell__rates")?.text().orEmpty()
-            val pick = rate(".rk-stat--pick") ?: Regex("([0-9]+(?:[.,][0-9]+)?)%\\s*pick", RegexOption.IGNORE_CASE)
+            val pick = rate(".rk-stat--pick, .rkc-c-pick .rkc-v") ?: Regex("([0-9]+(?:[.,][0-9]+)?)%\\s*pick", RegexOption.IGNORE_CASE)
                 .find(ratesText)?.groupValues?.get(1)?.replace(',', '.')?.toDoubleOrNull()
-            val ban = rate(".rk-stat--ban") ?: Regex("([0-9]+(?:[.,][0-9]+)?)%\\s*ban", RegexOption.IGNORE_CASE)
+            val ban = rate(".rk-stat--ban, .rkc-c-ban .rkc-v") ?: Regex("([0-9]+(?:[.,][0-9]+)?)%\\s*ban", RegexOption.IGNORE_CASE)
                 .find(ratesText)?.groupValues?.get(1)?.replace(',', '.')?.toDoubleOrNull()
-            val stats = ChampionMetaStats(rate(".tl-cell__wr b, .rk-val--win, .rk-stat--win"), pick, ban)
+            val stats = ChampionMetaStats(
+                rate(".tl-cell__wr b, .rk-val--win, .rk-stat--win, .rkc-c-win .rkc-v"), pick, ban
+            )
             if (id.length in 2..30 && stats.isUsable()) output.getOrPut(id) { linkedMapOf() }[lane] = stats
         }
         return output
