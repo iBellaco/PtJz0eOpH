@@ -37,8 +37,9 @@ class GlobalTierSourceClient(
         .execute().use { response ->
             if (!response.isSuccessful) throw SourceHttpException(response.code)
             val body = response.body ?: error("Empty response")
-            // Bound both the transfer and decoded text (the historical archive is ~4.4 MB).
-            val bytes = body.byteStream().readBytesLimited(6_000_000)
+            // Bound both the transfer and decoded text. Fire's current archive
+            // is already ~4.8 MB, so leave measured headroom for normal growth.
+            val bytes = body.byteStream().readBytesLimited(8_000_000)
             bytes.toString(Charsets.UTF_8)
         }
 
@@ -94,8 +95,12 @@ class GlobalTierSourceClient(
                 } else {
                     val extraPatch = PublishedStatsParser.patch(html, source.id)
                     if (source.expectedPatch == null || extraPatch == source.expectedPatch) {
-                        stats = stats + RegionalTierParser.parseStats(html, source.id).filterKeys { it in known }
-                        roleStats = roleStats + RegionalTierParser.parseRoleStats(html, source.id).filterKeys { it in known }
+                        val fallbackStats = RegionalTierParser.parseStats(html, source.id).filterKeys { it in known }
+                        // Rankings are lane rows. They can fill a missing global
+                        // value but must not replace the explicit ALL tile.
+                        stats = fallbackStats.filterKeys { it !in stats } + stats
+                        roleStats = GlobalTierConsensus.mergeRoleStats(roleStats,
+                            RegionalTierParser.parseRoleStats(html, source.id).filterKeys { it in known })
                     } else error = "Las estadísticas pertenecen a otro parche"
                 }
                 if (stats.isEmpty()) error = "Estadísticas no disponibles"

@@ -161,17 +161,32 @@ class MetaRegionRegressionTest {
         assertEquals("50.00%", com.example.util.regionalPercent(WildRiftRepository.champions.first().copy(hasRegionalStats = false), 50.0))
     }
 
-    @Test fun `the complete roster always has displayable baseline statistics`() {
-        assertEquals(143, WildRiftRepository.champions.size)
-        WildRiftRepository.champions.forEach { champion ->
-            if (champion.tier == "SIN DATOS") {
-                assertEquals("—", com.example.util.championStatPercent(champion, champion.winrate, "wr"))
-                return@forEach
-            }
-            assertNotEquals(champion.id, "—", com.example.util.championStatPercent(champion, champion.winrate, "wr"))
-            assertNotEquals(champion.id, "—", com.example.util.championStatPercent(champion, champion.pickRate, "pick"))
-            assertNotEquals(champion.id, "—", com.example.util.championStatPercent(champion, champion.banRate, "ban"))
-        }
+    @Test fun `catalog baselines are not presented as current published statistics`() {
+        val baseline = WildRiftRepository.champions.first().copy(
+            tier = "A", hasRegionalStats = false, statsCheckedAt = 0L, winrate = 50.0
+        )
+        assertEquals("—", com.example.util.championStatPercent(baseline, baseline.winrate, "wr"))
+        val current = baseline.copy(hasRegionalStats = true, statsCheckedAt = 1L)
+        assertEquals("50.00%", com.example.util.championStatPercent(current, current.winrate, "wr"))
+    }
+
+    @Test fun `a rate removed from the current snapshot is no longer marked as fresh`() {
+        val champion = WildRiftRepository.baseChampionsList.first()
+        val id = RegionalTierParser.canonical(champion.id)
+        val old = ChampionMetaStats(winRate = 52.0, pickRate = 4.0, banRate = 3.0)
+        WildRiftRepository.applyRegionalTierList("GLOBAL", mapOf(id to "A"), mapOf(id to old), checkedAt = 1_000L)
+        assertTrue(WildRiftRepository.champions.first { it.id == champion.id }.hasRegionalStats)
+
+        val checkedAt = 200_000_000L
+        WildRiftRepository.applyRegionalTierList("GLOBAL", mapOf(id to "A"), emptyMap(),
+            previousStats = mapOf(id to old), checkedAt = checkedAt,
+            history = mapOf(id to listOf(com.example.data.sync.ObservedRate(
+                checkedAt - 24 * 60 * 60_000L, 52.0, 4.0, 3.0))))
+        val removed = WildRiftRepository.champions.first { it.id == champion.id }
+        assertFalse(removed.hasRegionalStats)
+        assertEquals(0L, removed.statsCheckedAt)
+        assertFalse(removed.has24hComparison)
+        assertEquals("—", com.example.util.championStatPercent(removed, removed.winrate, "wr"))
     }
 
     @Test fun `tier cards and details match for every published lane in the complete roster`() {

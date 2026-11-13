@@ -241,21 +241,22 @@ object WildRiftRepository {
             val samples = history[com.example.data.sync.RegionalTierParser.canonical(champion.id)].orEmpty()
             val day = com.example.data.sync.MetaRateHistory.sampleAtAge(samples, checkedAt, 24)
             val halfDay = com.example.data.sync.MetaRateHistory.sampleAtAge(samples, checkedAt, 12)
+            val hasCurrentStats = meta?.isUsable() == true
             fun change(current: Double?, old: Double?): Double =
                 if (current != null && old != null && current.isFinite() && old.isFinite()) current - old else 0.0
 
             champion.copy(
-                hasRegionalStats = meta?.isUsable() == true,
+                hasRegionalStats = hasCurrentStats,
                 // Este es el momento de la consulta válida, no el momento de
                 // la última muestra histórica. Así la ficha no queda congelada
                 // cuando la fuente publica el mismo valor durante un rato.
-                statsCheckedAt = if (meta?.isUsable() == true) checkedAt else 0L,
-                winrate24h = com.example.data.sync.MetaRateHistory.atAge(history[com.example.data.sync.RegionalTierParser.canonical(champion.id)].orEmpty(), checkedAt, 24),
-                winrate12h = com.example.data.sync.MetaRateHistory.atAge(history[com.example.data.sync.RegionalTierParser.canonical(champion.id)].orEmpty(), checkedAt, 12),
-                historyUsesDailyReports = day?.daily == true || halfDay?.daily == true,
-                has24hComparison = day != null,
-                history24hAt = day?.at ?: 0L,
-                history12hAt = halfDay?.at ?: 0L,
+                statsCheckedAt = if (hasCurrentStats) checkedAt else 0L,
+                winrate24h = if (hasCurrentStats) com.example.data.sync.MetaRateHistory.atAge(samples, checkedAt, 24) else null,
+                winrate12h = if (hasCurrentStats) com.example.data.sync.MetaRateHistory.atAge(samples, checkedAt, 12) else null,
+                historyUsesDailyReports = hasCurrentStats && (day?.daily == true || halfDay?.daily == true),
+                has24hComparison = hasCurrentStats && day != null,
+                history24hAt = if (hasCurrentStats) day?.at ?: 0L else 0L,
+                history12hAt = if (hasCurrentStats) halfDay?.at ?: 0L else 0L,
                 tier = category,
                 tierMovement = patchMovements?.get(com.example.data.sync.RegionalTierParser.canonical(champion.id)) ?: if (patchMovements != null) 0 else previousTier?.takeIf { it.isNotBlank() }?.let {
                     when {
