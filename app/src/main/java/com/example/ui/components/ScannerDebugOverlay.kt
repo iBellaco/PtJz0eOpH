@@ -67,14 +67,6 @@ fun ScannerDebugOverlay(
         }
     }
 
-    // Keep the first row's diagnostic caption out of the header ban labels.
-    val firstAllyLabelPaint = remember(density) {
-        android.graphics.Paint(allyLabelPaint).apply { textSize = with(density) { 8.sp.toPx() } }
-    }
-    val firstEnemyLabelPaint = remember(density) {
-        android.graphics.Paint(enemyLabelPaint).apply { textSize = with(density) { 8.sp.toPx() } }
-    }
-
     val labelPaint = remember(density) {
         android.graphics.Paint().apply {
             color = android.graphics.Color.WHITE
@@ -122,8 +114,6 @@ fun ScannerDebugOverlay(
         val textRects = mutableListOf<android.graphics.Rect>()
         allyLabelPaint.textSize = minOf(with(density) { 9.5.sp.toPx() }, h * .018f)
         enemyLabelPaint.textSize = allyLabelPaint.textSize
-        firstAllyLabelPaint.textSize = minOf(with(density) { 8.sp.toPx() }, h * .014f)
-        firstEnemyLabelPaint.textSize = firstAllyLabelPaint.textSize
         labelPaint.textSize = minOf(with(density) { 9.sp.toPx() }, h * .015f)
         fun caption(text: String, paint: android.graphics.Paint, maxWidth: Float): String {
             if (paint.measureText(text) <= maxWidth) return text
@@ -231,17 +221,17 @@ fun ScannerDebugOverlay(
                 size = Size(laneRect.width().toFloat(), laneRect.height().toFloat()),
                 style = Stroke(width = 1f))
 
-            // Etiqueta del slot / rol aliado dinámico: único 1 a 1 por equipo sin duplicados
+            // La etiqueta ocupa la misma posición en las cinco filas. Cuando el
+            // motor confirmó un campeón se muestra su nombre; el ordinal solo
+            // aparece si todavía no existe una detección fiable.
             val slotLabel = "Aliado ${sIdx + 1}"
             val allyLabelX = (allyX - allyAvatarRad).coerceAtLeast(8f)
             val allyMatch = debugMatches["ally_$sIdx"]
-            val belowHeader = detectingBans && sIdx == 0
-            val allyCaptionPaint = if (belowHeader) firstAllyLabelPaint else allyLabelPaint
             drawDiagnosticText(
-                caption(if (allyMatch != null) "$slotLabel: $allyMatch" else slotLabel, allyCaptionPaint, allyNameRect.width().toFloat()),
-                if (belowHeader) allyOcrLeft else allyLabelX,
-                if (belowHeader) allyOcrTop - allyCaptionPaint.fontMetrics.top + 1f else allyY - allyAvatarRad - 6f,
-                allyCaptionPaint, margin = if (belowHeader) 1f else 5f
+                caption(allyMatch ?: slotLabel, allyLabelPaint, allyNameRect.width().toFloat()),
+                allyLabelX,
+                allyY - allyAvatarRad - 6f,
+                allyLabelPaint
             )
 
 
@@ -291,12 +281,11 @@ fun ScannerDebugOverlay(
             val enemySlotLabel = "Rival ${sIdx + 1}"
 
             val enemyLabelX = (enemyX + enemyAvatarRad).coerceAtMost(w - 10f)
-            val enemyCaptionPaint = if (belowHeader) firstEnemyLabelPaint else enemyLabelPaint
             drawDiagnosticText(
-                caption(if (enemyMatch != null) "$enemySlotLabel: $enemyMatch" else enemySlotLabel, enemyCaptionPaint, enemyNameRect.width().toFloat()),
-                if (belowHeader) enemyOcrRight else enemyLabelX,
-                if (belowHeader) enemyOcrTop - enemyCaptionPaint.fontMetrics.top + 1f else enemyY - enemyAvatarRad - 6f,
-                enemyCaptionPaint, margin = if (belowHeader) 1f else 5f
+                caption(enemyMatch ?: enemySlotLabel, enemyLabelPaint, enemyNameRect.width().toFloat()),
+                enemyLabelX,
+                enemyY - enemyAvatarRad - 6f,
+                enemyLabelPaint
             )
 
         }

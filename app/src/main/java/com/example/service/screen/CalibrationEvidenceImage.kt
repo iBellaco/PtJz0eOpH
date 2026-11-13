@@ -35,7 +35,9 @@ internal object CalibrationEvidenceImage {
         config: VisionCalibrationConfig,
         language: String = "es",
         visorActive: Boolean = true,
-        literalCapture: Boolean = true
+        literalCapture: Boolean = true,
+        slotLabels: Map<String, String> = emptyMap(),
+        banSlots: List<BanSlot> = emptyList()
     ): Encoded? {
         val source = frame.bitmap
         if (source.isRecycled || source.width <= 0 || source.height <= 0) return null
@@ -51,7 +53,7 @@ internal object CalibrationEvidenceImage {
             scaled?.let { if (it !== source) it.recycle() }
             scaled = null
 
-            drawCalibrationOverlay(working!!, config, language, visorActive, literalCapture)
+            drawCalibrationOverlay(working!!, config, language, visorActive, literalCapture, slotLabels, banSlots)
             val bytes = compressBounded(working!!)
             if (bytes.isEmpty() || bytes.size > MAX_BYTES) return null
             val age = (android.os.SystemClock.elapsedRealtime() - frame.capturedAtElapsedMs).coerceAtLeast(0L)
@@ -75,7 +77,9 @@ internal object CalibrationEvidenceImage {
         config: VisionCalibrationConfig,
         language: String,
         visorActive: Boolean,
-        literalCapture: Boolean
+        literalCapture: Boolean,
+        slotLabels: Map<String, String>,
+        banSlots: List<BanSlot>
     ) {
         val canvas = Canvas(bitmap)
         val width = bitmap.width.toFloat()
@@ -104,32 +108,85 @@ internal object CalibrationEvidenceImage {
 
         fun drawBans(isAlly: Boolean, color: Int) {
             val p = paint(color)
-            config.banRegions(isAlly).forEach { region ->
+            // Cuando el detector ya ubicó los cinco círculos, conservar esas
+            // regiones frame-relative en la evidencia. Si la observación es
+            // parcial, usar la calibración guardada para no desplazar los huecos.
+            val observed = banSlots
+                .filter { it.side == if (isAlly) BanSide.ALLY else BanSide.ENEMY }
+                .sortedBy { it.index }
+            val regions = if (observed.size == 5 && observed.all { it.region != null }) {
+                observed.map { it.region!! }
+            } else {
+                config.banRegions(isAlly)
+            }
+            regions.forEach { region ->
                 canvas.drawCircle(width * region.x, height * region.y, height * region.radius, p)
             }
         }
         drawBans(true, banPaint.color)
         drawBans(false, banPaint.color)
 
+        // La captura de respaldo puede no contener el visor Compose. Repetir
+        // únicamente las identidades confirmadas en la banda de cada slot para
+        // que el administrador pueda comprobar qué campeón se leyó; si no hay
+        // identidad, no se dibuja ningún nombre inventado.
+        fun drawSlotLabels(isAlly: Boolean, color: Int) {
+            val textPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+                this.color = Color.WHITE
+                textSize = max(11f, min(26f, height * 0.019f))
+                typeface = android.graphics.Typeface.DEFAULT_BOLD
+                textAlign = if (isAlly) Paint.Align.LEFT else Paint.Align.RIGHT
+                setShadowLayer(3f, 0f, 0f, Color.BLACK)
+            }
+            val backgroundPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+                this.color = Color.argb(165, 5, 10, 20)
+                style = Paint.Style.FILL
+            }
+            for (index in 0..4) {
+                val value = slotLabels["${if (isAlly) "ally" else "enemy"}_$index"]
+                    ?.trim()
+                    ?.takeIf { it.isNotEmpty() }
+                    ?: continue
+                val rect = AdaptiveScreenLayoutEngine.calculateSlotNameRect(
+                    bitmap.width, bitmap.height, isAlly, index, config
+                )
+                val maxTextWidth = (rect.width() - 8f).coerceAtLeast(16f)
+                var fitted = value
+                while (fitted.length > 1 && textPaint.measureText("$fitted…") > maxTextWidth) {
+                    fitted = fitted.dropLast(1)
+                }
+                if (textPaint.measureText(fitted) > maxTextWidth) fitted = "…"
+                val left = rect.left.toFloat()
+                val right = rect.right.toFloat()
+                val top = rect.top.toFloat()
+                val bottom = rect.bottom.toFloat()
+                canvas.drawRoundRect(
+                    RectF(left, top, right, bottom),
+                    max(3f, height * .004f),
+                    max(3f, height * .004f),
+                    backgroundPaint
+                )
+                val metrics = textPaint.fontMetrics
+                val baseline = (top + bottom) / 2f - (metrics.ascent + metrics.descent) / 2f
+                val x = if (isAlly) left + 4f else right - 4f
+                canvas.drawText(fitted, x, baseline, textPaint)
+                // A thin side-colored edge makes the evidence readable without
+                // covering the avatar or the ban header.
+                val edgePaint = paint(color, Paint.Style.STROKE)
+                canvas.drawRoundRect(RectF(left, top, right, bottom), 3f, 3f, edgePaint)
+            }
+        }
+        drawSlotLabels(true, allyPaint.color)
+        drawSlotLabels(false, enemyPaint.color)
+
         val topPaint = paint(Color.WHITE.copyAlpha(0.9f))
         val topRadius = height * config.topAvatarDiameterRatio / 2f
         config.topAllyXRatios.forEach { x -> canvas.drawCircle(width * x, height * config.topAvatarYRatio, topRadius, topPaint) }
         config.topEnemyXRatios.forEach { x -> canvas.drawCircle(width * x, height * config.topAvatarYRatio, topRadius, topPaint) }
 
-        val bannerHeight = max(28f, height * 0.052f)
-        val bannerPaint = paint(Color.BLACK.copyAlpha(0.72f), Paint.Style.FILL)
-        canvas.drawRect(0f, 0f, min(width, 760f), bannerHeight, bannerPaint)
-        val label = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            color = Color.WHITE
-            textSize = max(12f, height * 0.019f)
-            typeface = android.graphics.Typeface.DEFAULT_BOLD
-        }
-        val bannerText = if (language.equals("pt", ignoreCase = true)) {
-            "COACH · ${if (literalCapture) "CAPTURA LITERAL" else "EVIDÊNCIA DE CALIBRAÇÃO"} · ${if (visorActive) "VISOR ATIVO" else "VISOR INATIVO"}"
-        } else {
-            "COACH · ${if (literalCapture) "CAPTURA LITERAL" else "EVIDENCIA DE CALIBRACIÓN"} · ${if (visorActive) "VISOR ACTIVO" else "VISOR INACTIVO"}"
-        }
-        canvas.drawText(bannerText, 10f, bannerHeight * 0.68f, label)
+        // No añadir una cabecera sobre la captura: en pantallas panorámicas esa
+        // franja tapa la fila superior de baneos. El origen de la evidencia y el
+        // estado del visor siguen viajando en el texto del informe.
     }
 
     private fun compressBounded(bitmap: Bitmap): ByteArray {
