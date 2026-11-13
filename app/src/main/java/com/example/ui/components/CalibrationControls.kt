@@ -139,6 +139,8 @@ fun CalibrationSendButton(
                     val displayName = CalibrationUserName.resolve(account)
                     val coordinates = snapshot.config.toFormattedCoordinatesString()
                     val language = AppLanguage.current.value
+                    val detectedSlotLabels = DraftVisionScanner.debugVisualMatches.value.toMap()
+                    val detectedBanSlots = DraftVisionScanner.banSlotsFlow.value.toList()
                     var evidenceSource = if (language.equals("pt", ignoreCase = true)) {
                         "Captura literal da tela no momento do envio"
                     } else {
@@ -156,7 +158,9 @@ fun CalibrationSendButton(
                                 snapshot.config,
                                 language,
                                 visorActive = DraftVisionScanner.showCalibrationBoxes.value,
-                                literalCapture = true
+                                literalCapture = true,
+                                slotLabels = detectedSlotLabels,
+                                banSlots = detectedBanSlots
                             )
                         } finally {
                             runCatching { literalFrame.bitmap.recycle() }
@@ -180,7 +184,9 @@ fun CalibrationSendButton(
                                     snapshot.config,
                                     language,
                                     visorActive = DraftVisionScanner.showCalibrationBoxes.value,
-                                    literalCapture = false
+                                    literalCapture = false,
+                                    slotLabels = detectedSlotLabels,
+                                    banSlots = detectedBanSlots
                                 )
                             } finally {
                                 runCatching { evidenceFrame.bitmap.recycle() }
