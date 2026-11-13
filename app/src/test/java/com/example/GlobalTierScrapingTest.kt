@@ -102,6 +102,31 @@ class GlobalTierScrapingTest {
         assertEquals(49.1, stats.winRate!!, 0.001)
         assertEquals(4.3, stats.pickRate!!, 0.001)
     }
+
+    @Test fun `WildRiftCore recovers rates hidden in embedded ranking data and tile reason`() {
+        val html = """
+            <section id="all-tier-list">
+              <a class="tl-champ-tile" href="/en/champions/zoe/">
+                <span class="tl-champ-badge">A</span>
+              </a>
+              <a class="tl-champ-tile" href="/en/champions/bard/"
+                 data-reason="Bard holds B on the current patch. Win rate 51.5% at 1.2% pick rate.">
+                <span class="tl-champ-badge">B</span>
+              </a>
+            </section>
+            <script id="tlRankData" type="application/json">
+              {"b":{"0":{"MID":[["zoe",3,47.5,1.1,0.5]]}}}
+            </script>
+        """.trimIndent()
+        val stats = RegionalTierParser.parseStats(html, "wildriftcore")
+        assertEquals(47.5, stats["zoe"]!!.winRate!!, 0.001)
+        assertEquals(1.1, stats["zoe"]!!.pickRate!!, 0.001)
+        assertEquals(51.5, stats["bard"]!!.winRate!!, 0.001)
+        assertEquals(1.2, stats["bard"]!!.pickRate!!, 0.001)
+        assertNull(stats["bard"]!!.banRate)
+        val roles = RegionalTierParser.parseRoleStats(html, "wildriftcore")
+        assertEquals(47.5, roles["zoe"]!![com.example.model.LaneRole.MID]!!.winRate!!, 0.001)
+    }
     @Test fun `empty error pages and insufficient unknown champions fail validation`() {
         assertTrue(RegionalTierParser.parse("<html>Service unavailable</html>").isEmpty())
         val known=(1..100).map { "champ$it" }.toSet()
