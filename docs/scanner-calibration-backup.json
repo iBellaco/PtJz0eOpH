@@ -1,300 +1,56 @@
 {
-  "schema": 2,
-  "purpose": "Respaldo de mediciones normalizadas aportadas por el propietario y fuente de revisión de los valores iniciales exactos.",
+  "schema": 3,
+  "purpose": "Respaldo de mediciones normalizadas aportadas por el propietario; el catálogo anterior fue retirado para comenzar una nueva carga verificable.",
   "coordinateSpace": "captured_frame",
   "values": "ratios normalizados entre 0 y 1",
   "usage": "backup_and_exact_device_capture_defaults",
-  "warning": "Un perfil solo puede usarse como valor inicial si coinciden fabricante, modelo y dimensiones exactas de captura y no existe una calibración guardada. Nunca se comparte únicamente por resolución.",
+  "warning": "Un perfil solo puede usarse como valor inicial si coinciden fabricante, modelo y dimensiones exactas de captura y no existe una calibración guardada.",
   "profiles": [
     {
-      "profileId": "samsung-sm-a156u-2340x1080",
-      "device": {
-        "manufacturer": "samsung",
-        "model": "SM-A156U",
-        "androidApi": 36,
-        "width": 2340,
-        "height": 1080,
-        "density": 2.4,
-        "fontScale": 0.9,
-        "orientation": 2
-      },
-      "calibration": {
-        "avatarDiameterRatio": 0.11,
-        "allyAvatarCenterX": 0.09200001,
-        "enemyAvatarCenterX": 0.934,
-        "top": {
-          "avatarYRatio": 0.045,
-          "avatarDiameterRatio": 0.072,
-          "ally5XRatio": 0.168,
-          "enemy5XRatio": 0.974
-        },
-        "bans": {
-          "ally": {"x": [0.028, 0.064, 0.1, 0.136, 0.172], "y": [0.052, 0.052, 0.052, 0.052, 0.052], "diameter": [0.06, 0.06, 0.06, 0.06, 0.06], "manual": false},
-          "enemy": {"x": [0.826, 0.863, 0.9, 0.937, 0.974], "y": [0.052, 0.052, 0.052, 0.052, 0.052], "diameter": [0.06, 0.06, 0.06, 0.06, 0.06], "manual": false}
-        },
-        "allySlots": {"x": [0.09200001, 0.09200001, 0.09200001, 0.09200001, 0.09200001], "y": [0.188, 0.324, 0.458, 0.591, 0.725], "diameter": [0.12, 0.12, 0.12, 0.12, 0.115]},
-        "enemySlots": {"x": [0.934, 0.934, 0.934, 0.934, 0.934], "y": [0.188, 0.324, 0.457, 0.59, 0.722], "diameter": [0.12, 0.12, 0.12, 0.12, 0.12]}
-      }
-    },
-    {
-      "profileId": "xiaomi-2412dpc0ag-2712x1220",
-      "device": {
-        "manufacturer": "Xiaomi",
-        "model": "2412DPC0AG",
-        "androidApi": 36,
-        "width": 2712,
-        "height": 1220,
-        "density": 3.3875,
-        "fontScale": 1.0,
-        "orientation": 2
-      },
-      "calibration": {
-        "avatarDiameterRatio": 0.11,
-        "allyAvatarCenterX": 0.11862696,
-        "enemyAvatarCenterX": 0.91106254,
-        "top": {
-          "avatarYRatio": 0.045,
-          "avatarDiameterRatio": 0.072,
-          "ally5XRatio": 0.16712953,
-          "enemy5XRatio": 0.9741347
-        },
-        "bans": {
-          "ally": {"x": [0.027854925, 0.0636684, 0.09948187, 0.13529535, 0.17110883], "y": [0.052, 0.052, 0.052, 0.052, 0.052], "diameter": [0.06, 0.06, 0.06, 0.06, 0.06], "manual": false},
-          "enemy": {"x": [0.82690156, 0.8637098, 0.9005181, 0.93732643, 0.9741347], "y": [0.052, 0.052, 0.052, 0.052, 0.052], "diameter": [0.06, 0.06, 0.06, 0.06, 0.06], "manual": false}
-        },
-        "allySlots": {"x": [0.11862696, 0.118875, 0.11862696, 0.11862696, 0.11862696], "y": [0.188, 0.32118055, 0.458, 0.591, 0.725], "diameter": [0.11, 0.11, 0.11, 0.11, 0.105]},
-        "enemySlots": {"x": [0.91106254, 0.91106254, 0.91106254, 0.91106254, 0.91106254], "y": [0.18750001, 0.3244269, 0.45833334, 0.5922398, 0.7251394], "diameter": [0.11, 0.11, 0.11, 0.11, 0.11]}
-      }
-    },
-    {
-      "profileId": "samsung-sm-s942b-2340x1080",
-      "device": {
-        "manufacturer": "samsung",
-        "model": "SM-S942B",
-        "androidApi": 37,
-        "androidVersion": "17",
-        "width": 2340,
-        "height": 1080
-      },
-      "calibration": {
-        "avatarDiameterRatio": 0.11,
-        "allyAvatarCenterX": 0.073450774,
-        "enemyAvatarCenterX": 0.9109375,
-        "top": {
-          "avatarYRatio": 0.045,
-          "avatarDiameterRatio": 0.072,
-          "ally5XRatio": 0.17138515,
-          "enemy5XRatio": 0.9734761
-        },
-        "bans": {
-          "ally": {"x": [0.07538463, 0.1119231, 0.14653845, 0.18499997, 0.22153842], "y": [0.05138889, 0.05138889, 0.05277778, 0.05138889, 0.05138889], "diameter": [0.06388889, 0.06388889, 0.06388889, 0.06388889, 0.06388889], "manual": true},
-          "enemy": {"x": [0.8224939, 0.86023945, 0.897985, 0.9357306, 0.9734761], "y": [0.052, 0.052, 0.052, 0.052, 0.052], "diameter": [0.06, 0.06, 0.06, 0.06, 0.06], "manual": false}
-        },
-        "allySlots": {"x": [0.090450786, 0.08984375, 0.08984375, 0.08984375, 0.08984375], "y": [0.189, 0.32438484, 0.45735165, 0.5883336, 0.72030044], "diameter": [0.105, 0.105, 0.105, 0.105, 0.105]},
-        "enemySlots": {"x": [0.9109375, 0.9109375, 0.9109375, 0.9109375, 0.9109375], "y": [0.18818618, 0.3248731, 0.45854485, 0.5922166, 0.7248833], "diameter": [0.105, 0.105, 0.105, 0.105, 0.105]}
-      }
-    },
-    {
-      "profileId": "honor-bvl-n49-2800x1280",
-      "device": {
-        "manufacturer": "HONOR",
-        "model": "BVL-N49",
-        "androidApi": 37,
-        "androidVersion": "17",
-        "width": 2800,
-        "height": 1280
-      },
-      "calibration": {
-        "avatarDiameterRatio": 0.11,
-        "allyAvatarCenterX": 0.12200002,
-        "enemyAvatarCenterX": 0.90703124,
-        "top": {
-          "avatarYRatio": 0.045,
-          "avatarDiameterRatio": 0.072,
-          "ally5XRatio": 0.168,
-          "enemy5XRatio": 0.974
-        },
-        "bans": {
-          "ally": {"x": [0.076874204, 0.113723, 0.1505718, 0.18678527, 0.22371663], "y": [0.047222223, 0.05277778, 0.05277778, 0.05277778, 0.05138889], "diameter": [0.058333334, 0.058333334, 0.058333334, 0.058333334, 0.058333334], "manual": true},
-          "enemy": {"x": [0.826, 0.863, 0.9, 0.937, 0.974], "y": [0.052, 0.052, 0.052, 0.052, 0.052], "diameter": [0.06, 0.06, 0.06, 0.06, 0.06], "manual": false}
-        },
-        "allySlots": {"x": [0.12200002, 0.12200002, 0.12200002, 0.12200002, 0.12200002], "y": [0.188, 0.324, 0.458, 0.591, 0.725], "diameter": [0.11, 0.11, 0.11, 0.11, 0.105]},
-        "enemySlots": {"x": [0.90703124, 0.90703124, 0.90703124, 0.90703124, 0.90703124], "y": [0.18571843, 0.32257378, 0.45641026, 0.59024674, 0.72307694], "diameter": [0.11, 0.11, 0.11, 0.11, 0.11]}
-      }
-    },
-    {
-      "profileId": "samsung-sm-s938b-2340x1080",
-      "device": {
-        "manufacturer": "samsung",
-        "model": "SM-S938B",
-        "androidApi": 37,
-        "androidVersion": "17",
-        "width": 2340,
-        "height": 1080
-      },
-      "calibration": {
-        "avatarDiameterRatio": 0.11,
-        "allyAvatarCenterX": 0.072,
-        "enemyAvatarCenterX": 0.959,
-        "top": {
-          "avatarYRatio": 0.045,
-          "avatarDiameterRatio": 0.072,
-          "ally5XRatio": 0.168,
-          "enemy5XRatio": 0.974
-        },
-        "bans": {
-          "ally": {"x": [0.028, 0.064, 0.1, 0.136, 0.172], "y": [0.052, 0.052, 0.052, 0.052, 0.052], "diameter": [0.06, 0.06, 0.06, 0.06, 0.06], "manual": false},
-          "enemy": {"x": [0.826, 0.863, 0.9, 0.937, 0.974], "y": [0.052, 0.052, 0.052, 0.052, 0.052], "diameter": [0.06, 0.06, 0.06, 0.06, 0.06], "manual": false}
-        },
-        "allySlots": {"x": [0.072, 0.072, 0.072, 0.072, 0.072], "y": [0.188, 0.324, 0.458, 0.591, 0.725], "diameter": [0.11, 0.11, 0.11, 0.11, 0.105]},
-        "enemySlots": {"x": [0.959, 0.959, 0.959, 0.959, 0.959], "y": [0.188, 0.324, 0.457, 0.59, 0.722], "diameter": [0.11, 0.11, 0.11, 0.11, 0.11]}
-      }
-    },
-    {
-      "profileId": "samsung-sm-s948b-3120x1440",
-      "device": {
-        "manufacturer": "samsung",
-        "model": "SM-S948B",
-        "androidApi": 37,
-        "androidVersion": "17",
-        "width": 3120,
-        "height": 1440
-      },
-      "calibration": {
-        "avatarDiameterRatio": 0.11,
-        "allyAvatarCenterX": 0.1171875,
-        "enemyAvatarCenterX": 0.91328126,
-        "top": {
-          "avatarYRatio": 0.045,
-          "avatarDiameterRatio": 0.072,
-          "ally5XRatio": 0.17138515,
-          "enemy5XRatio": 0.9734761
-        },
-        "bans": {
-          "ally": {"x": [0.028564192, 0.06528959, 0.102014974, 0.13874036, 0.17546576], "y": [0.052, 0.052, 0.052, 0.052, 0.052], "diameter": [0.06, 0.06, 0.06, 0.06, 0.06], "manual": false},
-          "enemy": {"x": [0.8224939, 0.86023945, 0.897985, 0.9357306, 0.9734761], "y": [0.052, 0.052, 0.052, 0.052, 0.052], "diameter": [0.06, 0.06, 0.06, 0.06, 0.06], "manual": false}
-        },
-        "allySlots": {"x": [0.1171875, 0.1171875, 0.1171875, 0.1171875, 0.1171875], "y": [0.19071549, 0.32604176, 0.45937794, 0.5917191, 0.7250552], "diameter": [0.11, 0.11, 0.11, 0.11, 0.105]},
-        "enemySlots": {"x": [0.91328126, 0.91328126, 0.91328126, 0.91328126, 0.91328126], "y": [0.18790826, 0.32473567, 0.45854485, 0.592354, 0.7251571], "diameter": [0.11, 0.11, 0.11, 0.11, 0.11]}
-      }
-    },
-    {
-      "profileId": "oppo-cph2791-2354x1080",
-      "device": {
-        "manufacturer": "OPPO",
-        "model": "CPH2791",
-        "androidApi": 36,
-        "androidVersion": "16",
-        "width": 2354,
-        "height": 1080
-      },
-      "calibration": {
-        "avatarDiameterRatio": 0.11,
-        "allyAvatarCenterX": 0.12803629,
-        "enemyAvatarCenterX": 0.90703124,
-        "top": {
-          "avatarYRatio": 0.045,
-          "avatarDiameterRatio": 0.072,
-          "ally5XRatio": 0.17041795,
-          "enemy5XRatio": 0.9736258
-        },
-        "bans": {
-          "ally": {"x": [0.028402993, 0.06492113, 0.10143926, 0.13795741, 0.17447554], "y": [0.052, 0.052, 0.052, 0.052, 0.052], "diameter": [0.06, 0.06, 0.06, 0.06, 0.06], "manual": false},
-          "enemy": {"x": [0.8234956, 0.8610282, 0.8985607, 0.9360932, 0.9736258], "y": [0.052, 0.052, 0.052, 0.052, 0.052], "diameter": [0.06, 0.06, 0.06, 0.06, 0.06], "manual": false}
-        },
-        "allySlots": {"x": [0.12803629, 0.12803629, 0.12803629, 0.12803629, 0.12803629], "y": [0.188, 0.324, 0.458, 0.591, 0.725], "diameter": [0.11, 0.11, 0.11, 0.11, 0.105]},
-        "enemySlots": {"x": [0.90703124, 0.90703124, 0.90703124, 0.90703124, 0.90703124], "y": [0.18950696, 0.3253833, 0.45826235, 0.5911414, 0.72302145], "diameter": [0.11, 0.11, 0.11, 0.11, 0.11]}
-      }
-    },
-    {
-      "profileId": "motorola-moto-g56-5g-2400x1080",
+      "profileId": "motorola-motorola-edge-30-neo-2174x1080",
       "device": {
         "manufacturer": "motorola",
-        "model": "moto g56 5G",
-        "androidApi": 36,
-        "androidVersion": "16",
-        "width": 2400,
+        "model": "motorola edge 30 neo",
+        "androidApi": 34,
+        "width": 2174,
         "height": 1080,
-        "density": 2.4375,
-        "fontScale": 1.0,
-        "orientation": 2
+        "captureWidth": 1920,
+        "captureHeight": 954
       },
       "calibration": {
         "avatarDiameterRatio": 0.11,
-        "allyAvatarCenterX": 0.1171875,
-        "enemyAvatarCenterX": 0.91421247,
+        "allyAvatarCenterX": 0.107000016,
+        "enemyAvatarCenterX": 0.919,
         "top": {
           "avatarYRatio": 0.045,
           "avatarDiameterRatio": 0.072,
-          "ally5XRatio": 0.16712953,
-          "enemy5XRatio": 0.9741347
+          "ally5XRatio": 0.168,
+          "enemy5XRatio": 0.974
         },
         "bans": {
-          "ally": {"x": [0.027854925, 0.0636684, 0.09948187, 0.13529535, 0.17110883], "y": [0.052, 0.052, 0.052, 0.052, 0.052], "diameter": [0.06, 0.06, 0.06, 0.06, 0.06], "manual": false},
-          "enemy": {"x": [0.82690156, 0.8637098, 0.9005181, 0.93732643, 0.9741347], "y": [0.052, 0.052, 0.052, 0.052, 0.052], "diameter": [0.06, 0.06, 0.06, 0.06, 0.06], "manual": false}
+          "ally": {
+            "x": [0.028, 0.064, 0.1, 0.136, 0.172],
+            "y": [0.052, 0.052, 0.052, 0.052, 0.052],
+            "diameter": [0.06, 0.06, 0.06, 0.06, 0.06],
+            "manual": false
+          },
+          "enemy": {
+            "x": [0.826, 0.863, 0.9, 0.937, 0.974],
+            "y": [0.052, 0.052, 0.052, 0.052, 0.052],
+            "diameter": [0.06, 0.06, 0.06, 0.06, 0.06],
+            "manual": false
+          }
         },
-        "allySlots": {"x": [0.1171875, 0.08828125, 0.08828125, 0.08828125, 0.08828125], "y": [0.1892361, 0.32415208, 0.45833334, 0.5915132, 0.7256944], "diameter": [0.105, 0.105, 0.105, 0.105, 0.1]},
-        "enemySlots": {"x": [0.91421247, 0.91421247, 0.91421247, 0.91421247, 0.91421247], "y": [0.188, 0.324, 0.457, 0.59, 0.722], "diameter": [0.105, 0.105, 0.105, 0.105, 0.105]}
-      }
-    },
-    {
-      "profileId": "xiaomi-25062rn2dl-2340x1080",
-      "device": {
-        "manufacturer": "Xiaomi",
-        "model": "25062RN2DL",
-        "androidApi": 35,
-        "androidVersion": "15",
-        "width": 2340,
-        "height": 1080,
-        "density": 2.8125,
-        "fontScale": 1.1
-      },
-      "calibration": {
-        "avatarDiameterRatio": 0.11,
-        "allyAvatarCenterX": 0.15031247,
-        "enemyAvatarCenterX": 0.959,
-        "top": {
-          "avatarYRatio": 0.045,
-          "avatarDiameterRatio": 0.072,
-          "ally5XRatio": 0.17138515,
-          "enemy5XRatio": 0.9734761
+        "allySlots": {
+          "x": [0.107000016, 0.107000016, 0.107000016, 0.107000016, 0.107000016],
+          "y": [0.188, 0.324, 0.458, 0.591, 0.725],
+          "diameter": [0.11, 0.11, 0.11, 0.11, 0.105]
         },
-        "bans": {
-          "ally": {"x": [0.028564192, 0.06528959, 0.102014974, 0.13874036, 0.17546576], "y": [0.052, 0.052, 0.052, 0.052, 0.052], "diameter": [0.06, 0.06, 0.06, 0.06, 0.06], "manual": false},
-          "enemy": {"x": [0.8224939, 0.86023945, 0.897985, 0.9357306, 0.9734761], "y": [0.052, 0.052, 0.052, 0.052, 0.052], "diameter": [0.06, 0.06, 0.06, 0.06, 0.06], "manual": false}
-        },
-        "allySlots": {"x": [0.15031247, 0.11906247, 0.11906247, 0.11906247, 0.11906247], "y": [0.19120136, 0.32453611, 0.45854485, 0.5915535, 0.72556216], "diameter": [0.11, 0.11, 0.11, 0.11, 0.105]},
-        "enemySlots": {"x": [0.959, 0.959, 0.959, 0.959, 0.959], "y": [0.188, 0.324, 0.457, 0.59, 0.722], "diameter": [0.11, 0.11, 0.11, 0.11, 0.11]}
-      }
-    },
-    {
-      "profileId": "nubia-nx809j-2688x1216",
-      "device": {
-        "manufacturer": "nubia",
-        "model": "NX809J",
-        "androidApi": 36,
-        "androidVersion": "16",
-        "width": 2688,
-        "height": 1216,
-        "density": 3.25,
-        "fontScale": 1.0
-      },
-      "calibration": {
-        "avatarDiameterRatio": 0.11,
-        "allyAvatarCenterX": 0.08704145,
-        "enemyAvatarCenterX": 0.975,
-        "top": {
-          "avatarYRatio": 0.045,
-          "avatarDiameterRatio": 0.072,
-          "ally5XRatio": 0.1680967,
-          "enemy5XRatio": 0.973985
-        },
-        "bans": {
-          "ally": {"x": [0.02801612, 0.064036846, 0.100057565, 0.1360783, 0.17209902], "y": [0.052, 0.052, 0.052, 0.052, 0.052], "diameter": [0.06, 0.06, 0.06, 0.06, 0.06], "manual": false},
-          "enemy": {"x": [0.82589984, 0.8629211, 0.8999424, 0.9369637, 0.973985], "y": [0.052, 0.052, 0.052, 0.052, 0.052], "diameter": [0.06, 0.06, 0.06, 0.06, 0.06], "manual": false}
-        },
-        "allySlots": {"x": [0.08704145, 0.08704145, 0.08704145, 0.08704145, 0.08704145], "y": [0.23799995, 0.37399995, 0.50799996, 0.641, 0.775], "diameter": [0.11999999, 0.11999999, 0.11999999, 0.11999999, 0.11499999]},
-        "enemySlots": {"x": [0.975, 0.975, 0.975, 0.975, 0.975], "y": [0.15306476, 0.28906476, 0.42206478, 0.55506474, 0.68706477], "diameter": [0.11, 0.11, 0.11, 0.11, 0.11]}
+        "enemySlots": {
+          "x": [0.919, 0.919, 0.919, 0.919, 0.919],
+          "y": [0.188, 0.324, 0.457, 0.59, 0.722],
+          "diameter": [0.11, 0.11, 0.11, 0.11, 0.11]
+        }
       }
     }
   ]

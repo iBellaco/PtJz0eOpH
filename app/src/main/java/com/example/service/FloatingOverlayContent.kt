@@ -868,7 +868,8 @@ internal fun FloatingOverlayContent(
                             .clickable {
                                 isExpanded = true
                                 onExpandedChange(true)
-                            },
+                            }
+                            .testTag("overlay_minimized_bubble"),
                         contentAlignment = Alignment.Center
                     ) {
                         if (isScanning) {

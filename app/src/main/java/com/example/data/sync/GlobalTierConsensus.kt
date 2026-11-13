@@ -55,7 +55,7 @@ object GlobalTierConsensus {
         val grouped = mutableMapOf<String, MutableList<ChampionMetaStats>>()
         sources.forEach { source ->
             source.forEach { (id, stats) ->
-                if (stats.isUsable()) {
+                if (stats.isComplete()) {
                     grouped.getOrPut(RegionalTierParser.canonical(id)) { mutableListOf() }.add(stats)
                 }
             }
@@ -76,7 +76,10 @@ object GlobalTierConsensus {
     fun fuseRoleStats(sources: List<Map<String, Map<com.example.model.LaneRole, ChampionMetaStats>>>): Map<String, Map<com.example.model.LaneRole, ChampionMetaStats>> {
         val output = linkedMapOf<String, MutableMap<com.example.model.LaneRole, ChampionMetaStats>>()
         sources.forEach { source -> source.forEach { (id, lanes) -> lanes.forEach { (lane, stats) ->
-            if (stats.isUsable()) output.getOrPut(RegionalTierParser.canonical(id)) { linkedMapOf() }[lane] = stats
+            // Flex profiles are rendered with the same three metrics as the
+            // global card. Do not persist a lane row that would replace a
+            // complete global value with a partial one.
+            if (stats.isComplete()) output.getOrPut(RegionalTierParser.canonical(id)) { linkedMapOf() }[lane] = stats
         } } }
         return output
     }
@@ -85,5 +88,10 @@ object GlobalTierConsensus {
         previous: Map<String, Map<com.example.model.LaneRole, ChampionMetaStats>>,
         fresh: Map<String, Map<com.example.model.LaneRole, ChampionMetaStats>>
     ): Map<String, Map<com.example.model.LaneRole, ChampionMetaStats>> =
-        (previous.keys + fresh.keys).associateWith { id -> previous[id].orEmpty() + fresh[id].orEmpty() }
+        (previous.keys + fresh.keys).associateWith { id ->
+            // A role cache can outlive the publisher row that created it. Do
+            // not resurrect a two-rate lane after a fresh sync or app restart.
+            (previous[id].orEmpty() + fresh[id].orEmpty())
+                .filterValues { it.isComplete() }
+        }.filterValues { it.isNotEmpty() }
 }

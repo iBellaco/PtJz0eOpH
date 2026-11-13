@@ -12,6 +12,7 @@ data class ChampionMetaStats(
     val banRate: Double? = null
 ) {
     fun isUsable(): Boolean = listOf(winRate, pickRate, banRate).any { it != null && it.isFinite() && it in 0.0..100.0 }
+    fun isComplete(): Boolean = listOf(winRate, pickRate, banRate).all { it != null && it.isFinite() && it in 0.0..100.0 }
 }
 
 /** Each publisher has its own schema. Never carry a tier into navigation/footer links. */
@@ -198,6 +199,14 @@ object RegionalTierParser {
                 grid.select("a[href*=/guia/]").forEach { link ->
                     add(link.attr("href").substringBefore('?').substringAfterLast('/'), category)
                 }
+            }
+        }
+        if (source == null || source == "wildrifter") {
+            doc.select("a[href*=/champion/]").forEach { link ->
+                val category = link.selectFirst("[aria-label^=Tier]")?.attr("aria-label")
+                    ?.removePrefix("Tier ")?.let(::tier) ?: return@forEach
+                add(link.attr("href").substringBefore('?').substringBefore('#')
+                    .trimEnd('/').substringAfterLast('/'), category)
             }
         }
         return result

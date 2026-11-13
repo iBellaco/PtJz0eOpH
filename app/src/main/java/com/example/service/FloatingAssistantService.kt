@@ -19,8 +19,6 @@ import android.os.Build
 import android.os.IBinder
 import android.view.Gravity
 import android.view.WindowManager
-import android.animation.ValueAnimator
-import android.view.animation.DecelerateInterpolator
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Spring
@@ -157,7 +155,6 @@ class FloatingAssistantService : Service(), LifecycleOwner, ViewModelStoreOwner,
     private val store = ViewModelStore()
     private val savedStateRegistryController = SavedStateRegistryController.create(this)
     private val serviceScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
-    private var bubbleSnapAnimator: ValueAnimator? = null
 
     private fun configureWindowComposeView(
         view: ComposeView,
@@ -674,8 +671,6 @@ class FloatingAssistantService : Service(), LifecycleOwner, ViewModelStoreOwner,
                             screenCaptureManager = screenCaptureManager,
                             onClose = { stopSelf() },
                             onDragDelta = { dx, dy, isDragging, isEnded ->
-                                bubbleSnapAnimator?.cancel()
-                                bubbleSnapAnimator = null
                                 val currentMetrics = resources.displayMetrics
                                 val currentScreenWidth = currentMetrics.widthPixels
                                 val currentScreenHeight = currentMetrics.heightPixels
@@ -730,29 +725,10 @@ class FloatingAssistantService : Service(), LifecycleOwner, ViewModelStoreOwner,
                                             closeTargetComposeView?.visibility = android.view.View.GONE
                                             stopSelf()
                                         } else {
-                                            // AUTO-SNAP: Cuando se suelta en forma de burbuja, pegarlo al borde lateral con animación fluida
-                                            val targetX = if (params.x < currentScreenWidth / 2) marginPx else maxX
-                                            val targetY = params.y
-
-                                            val animator = ValueAnimator.ofFloat(0f, 1f)
-                                            bubbleSnapAnimator = animator
-                                            animator.duration = 250 // ms
-                                            animator.interpolator = DecelerateInterpolator()
-
-                                            val startX = params.x
-                                            val startY = params.y
-
-                                            animator.addUpdateListener { animation ->
-                                                val fraction = animation.animatedFraction
-                                                params.x = (startX + (targetX - startX) * fraction).toInt()
-                                                params.y = (startY + (targetY - startY) * fraction).toInt()
-                                                try {
-                                                    if (this@apply.isAttachedToWindow) {
-                                                        windowManager?.updateViewLayout(this@apply, params)
-                                                    }
-                                                } catch (_: Exception) {}
-                                            }
-                                            animator.start()
+                                            // Conservar exactamente el punto donde se soltó. La
+                                            // burbuja minimizada debe poder quedarse en cualquier
+                                            // posición de la pantalla; el cierre solo ocurre al
+                                            // soltarla explícitamente sobre el objetivo inferior.
                                         }
                                     }
                                 } else {
@@ -826,8 +802,6 @@ class FloatingAssistantService : Service(), LifecycleOwner, ViewModelStoreOwner,
     }
 
     private fun removeFloatingOverlay() {
-        bubbleSnapAnimator?.cancel()
-        bubbleSnapAnimator = null
         val wm = windowManager
         disposeWindowComposeView(floatingComposeView, floatingWindowLifecycleOwner, wm)
         floatingComposeView = null

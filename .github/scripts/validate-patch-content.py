@@ -18,10 +18,11 @@ FILES.append(ROOT / "tools/build_coaching.py")
 
 
 def valid_source_patch_bindings(scraper):
+    expected_ids = {'wildriftfire', 'wildriftcore', 'wildrifter'}
     sources = re.findall(r'GlobalScrapingSource\s*\(([^()]*)\)', scraper, re.DOTALL)
     ids = [re.match(r'\s*"([^"]+)"', source) for source in sources]
-    return (len(sources) == 2 and all(ids)
-            and {match.group(1) for match in ids} == {'wildriftfire', 'wildriftcore'}
+    return (len(sources) == len(expected_ids) and all(ids)
+            and {match.group(1) for match in ids} == expected_ids
             and all(re.search(r',\s*com\.example\.data\.GamePatch\.VERSION\s*,?\s*$', source)
                     for source in sources))
 
@@ -90,7 +91,7 @@ def main() -> int:
             errors.append(f"Fuente {source}: versión de evidencia ausente, inválida o futura")
     scraper = (ROOT / "app/src/main/java/com/example/data/sync/BestBuildWrScraper.kt").read_text()
     if not valid_source_patch_bindings(scraper):
-        errors.append("Las dos fuentes activas deben usar GamePatch.VERSION")
+        errors.append("Las tres fuentes activas deben usar GamePatch.VERSION")
     if errors:
         print("PATCH_CONTENT_VALIDATION: FAILED")
         print("\n".join(errors))

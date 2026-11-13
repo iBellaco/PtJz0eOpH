@@ -10,7 +10,7 @@ spec.loader.exec_module(module)
 class PatchContentTest(unittest.TestCase):
     def test_cache_patch_reference_does_not_change_source_validation(self):
         sources = '\n'.join(f'GlobalScrapingSource("{name}", "label", "url", "display", com.example.data.GamePatch.VERSION)'
-                            for name in ['wildriftfire', 'wildriftcore'])
+                            for name in ['wildriftfire', 'wildriftcore', 'wildrifter'])
         self.assertTrue(module.valid_source_patch_bindings(sources))
         self.assertTrue(module.valid_source_patch_bindings(sources + '\nprefs.putString("patch", com.example.data.GamePatch.VERSION)'))
         self.assertFalse(module.valid_source_patch_bindings(sources.replace('com.example.data.GamePatch.VERSION', '"7.2"', 1)))

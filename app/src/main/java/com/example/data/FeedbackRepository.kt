@@ -133,7 +133,7 @@ object FeedbackRepository {
         val remoteStatus = report.status?.trim()?.uppercase(Locale.US)
         if (!remoteStatus.isNullOrBlank()) {
             val normalized = when (remoteStatus) {
-                "SOLVED", "SOLUCIONADO", "RESUELTO" -> STATUS_SOLVED
+                "SOLVED", "SOLUCIONADO", "RESUELTO", "CLOSED", "CERRADO" -> STATUS_SOLVED
                 "READ", "LEIDO", "LEÍDO" -> STATUS_READ
                 "ACCEPTED", "ACEPTADA", "ACEPTADO" -> STATUS_ACCEPTED
                 "REJECTED", "RECHAZADA", "RECHAZADO" -> STATUS_REJECTED
@@ -398,12 +398,38 @@ object FeedbackRepository {
             SupportReportDecoder.decode(doc.id, doc.data.orEmpty())
         }.distinctBy { it.id }.sortedWith(compareByDescending<FeedbackReport> { it.lastActivityAtMillis }.thenBy { it.id.orEmpty() })
 
-    /** Bulk removal touches only solved tickets; pending and read messages remain. */
+    /**
+     * Estados que ya fueron procesados por el personal y que el botón general
+     * puede retirar. Los pendientes se conservan para no borrar una solicitud
+     * que todavía necesita atención.
+     */
+    fun isBulkDeletableStatus(raw: String): Boolean =
+        when (SupportTicketPresentation.status(raw)) {
+            STATUS_READ, STATUS_SOLVED, STATUS_ACCEPTED, STATUS_REJECTED -> true
+            else -> false
+        }
+
+    /** Bulk removal kept for callers that explicitly want only solved tickets. */
     suspend fun clearSolvedFeedbacks(): Result<Unit> = withContext(Dispatchers.IO) {
         if (!SupportTicketAccess.isAdmin()) return@withContext Result.failure(SecurityException("Solo el administrador puede eliminar mensajes"))
         runCatching {
             getAllFeedbacks().getOrThrow().filter { SupportTicketPresentation.status(it.status.orEmpty()) == STATUS_SOLVED }
                 .forEach { deleteFeedback(it, onlySolved = true).getOrThrow() }
+        }
+    }
+
+    /**
+     * Elimina en una sola acción todos los reportes ya leídos, solucionados,
+     * aceptados o rechazados. Se consulta el estado local y el remoto para que
+     * un reporte que solo cambió en el panel no vuelva a aparecer después de
+     * recargar la lista.
+     */
+    suspend fun clearProcessedFeedbacks(context: Context): Result<Unit> = withContext(Dispatchers.IO) {
+        if (!SupportTicketAccess.isAdmin()) return@withContext Result.failure(SecurityException("Solo el administrador puede eliminar mensajes"))
+        runCatching {
+            getAllFeedbacks().getOrThrow()
+                .filter { isBulkDeletableStatus(getReportStatus(context, it)) }
+                .forEach { deleteFeedback(it, onlySolved = false).getOrThrow() }
         }
     }
 

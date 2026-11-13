@@ -114,7 +114,10 @@ internal fun isTierListChampionVisible(champion: Champion, selectedLane: LaneRol
     if (champion.tier.trim().uppercase(java.util.Locale.ROOT) !in setOf("S+", "S", "A+", "A", "B", "C")) return false
     if (!champion.hasRegionalStats || champion.statsCheckedAt <= 0L) return false
     val stats = tierDisplayedStats(champion, selectedLane)
-    return listOf(stats.win, stats.pick, stats.ban).any { it.isFinite() && it in 0.0..100.0 }
+    // A tier entry must have the same three current metrics shown in its
+    // detail sheet. Partial publisher rows stay out of the competitive list
+    // until win, pick and ban are all available.
+    return listOf(stats.win, stats.pick, stats.ban).all { it.isFinite() && it in 0.0..100.0 }
 }
 
 @OptIn(ExperimentalLayoutApi::class)

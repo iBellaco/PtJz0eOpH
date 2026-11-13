@@ -26,7 +26,8 @@ object BestBuildWrScraper {
     // Only publishers used by the statistics pipeline belong in live monitoring.
     val GLOBAL_SCRAPING_SOURCES = listOf(
         GlobalScrapingSource("wildriftfire", "WildRiftFire", "https://www.wildriftfire.com/tier-list", "wildriftfire.com/tier-list", com.example.data.GamePatch.VERSION),
-        GlobalScrapingSource("wildriftcore", "WildRiftCore", "https://wildriftcore.com/en/tierlist/", "wildriftcore.com/en/tierlist/", com.example.data.GamePatch.VERSION)
+        GlobalScrapingSource("wildriftcore", "WildRiftCore", "https://wildriftcore.com/en/tierlist/", "wildriftcore.com/en/tierlist/", com.example.data.GamePatch.VERSION),
+        GlobalScrapingSource("wildrifter", "WildRifter", "https://wildrifter.com/en?patch=${com.example.data.GamePatch.VERSION}", "wildrifter.com/en", com.example.data.GamePatch.VERSION)
     )
 
     private val _freshness = MutableStateFlow(MetaFreshness())
@@ -92,7 +93,11 @@ object BestBuildWrScraper {
                 val saved = prefs.getString("snapshot_$region", null) ?: continue
                 val data = JSONObject(saved)
                 val tiers = data.keys().asSequence().associateWith { data.getString(it) }
+                // Drop legacy partial rows before they reach the first frame;
+                // they were the reason a champion could render two rates and a
+                // dash until the next network sync.
                 val stats = decodeStats(prefs.getString(STATS_SNAPSHOT_PREFIX + region, null))
+                    .filterValues { it.isComplete() }
                 val roleStats = decodeRoleStats(prefs.getString(ROLE_STATS_SNAPSHOT_PREFIX + region, null))
                 val at = prefs.getLong("timestamp_$region", 0)
                 WildRiftRepository.applyRegionalTierList(region, tiers, stats, roleStats = roleStats,
@@ -207,14 +212,23 @@ object BestBuildWrScraper {
                 // Fallback publishers only fill champions absent from the primary report.
                 val freshStats = linkedMapOf<String, ChampionMetaStats>()
                 val statOrigins = mutableMapOf<String, String>()
-                listOf("wildriftfire", "wildriftcore").forEach { id ->
+                // WildRifter currently publishes all three rates for every
+                // champion with data. It is the preferred complete snapshot;
+                // the other publishers fill only fields or champions it lacks.
+                listOf("wildrifter", "wildriftfire", "wildriftcore").forEach { id ->
                     validSources.firstOrNull { it.source.id == id }?.stats?.forEach { (champion, rates) ->
-                        if (champion !in freshStats) {
-                            freshStats[champion] = rates
+                        val existing = freshStats[champion]
+                        if (existing == null) {
                             statOrigins[champion] = id
                         }
+                        freshStats[champion] = if (existing == null) rates else mergePublishedStats(existing, rates)
                     }
                 }
+                // A partial pair (for example Core's explanatory text with no
+                // ban rate) must never be presented as a current published
+                // snapshot. It remains visible in source diagnostics only.
+                val completeFreshStats = freshStats.filterValues { it.isComplete() }
+                val completeOrigins = statOrigins.filterKeys { it in completeFreshStats }
                 val freshRoleStats = GlobalTierConsensus.fuseRoleStats(
                     validSources.sortedBy { it.source.id == "wildriftfire" }.map { it.roleStats }
                 )
@@ -224,12 +238,12 @@ object BestBuildWrScraper {
                 // is temporarily unavailable (and vice versa). Do not discard
                 // a valid rate update just because the category parser returned
                 // an empty map.
-                if (fusedTiers.isNotEmpty() || freshStats.isNotEmpty()) {
+                if (fusedTiers.isNotEmpty() || completeFreshStats.isNotEmpty()) {
                     val merged = GlobalTierConsensus.mergeSnapshot(previousTiers, fusedTiers)
                     // A successful poll publishes only what was actually
                     // observed now. Cached rates remain available only when a
                     // complete poll fails; they must not be re-dated as fresh.
-                    val mergedStats = freshStats.toMap()
+                    val mergedStats = completeFreshStats.toMap()
                     val mergedRoleStats = freshRoleStats
                     val history = decodeHistory(prefs.getString("rate_history_v2", null)).toMutableMap()
                     val publishedHistory = validSources.firstOrNull { it.source.id == "wildriftfire" }?.history.orEmpty()
@@ -238,8 +252,8 @@ object BestBuildWrScraper {
                         val ownRows = history[id].orEmpty().filter { !it.daily && it.source == "wildriftfire" }
                         history[id] = (ownRows + rows).distinctBy { Pair(it.at, it.daily) }.sortedBy { it.at }
                     }
-                    freshStats.forEach { (id, rates) -> rates.winRate?.let { value ->
-                        val origin = statOrigins[id].orEmpty()
+                    completeFreshStats.forEach { (id, rates) -> rates.winRate?.let { value ->
+                        val origin = completeOrigins[id].orEmpty()
                         history[id] = MetaRateHistory.record(history[id].orEmpty().filter { it.source == origin },
                             ObservedRate(started, value, rates.pickRate, rates.banRate, source = origin))
                     } }
@@ -247,19 +261,19 @@ object BestBuildWrScraper {
                     // temporarily absent category is not a repeated change.
                     val changedTierIds = fusedTiers.keys
                         .filter { previousTiers[it] != fusedTiers[it] }
-                    val changedStatIds = (previousStats.keys + freshStats.keys)
-                        .filter { previousStats[it] != freshStats[it] }
+                    val changedStatIds = (previousStats.keys + completeFreshStats.keys)
+                        .filter { previousStats[it] != completeFreshStats[it] }
                     val changedRoleIds = (previousRoleStats.keys + freshRoleStats.keys)
                         .filter { previousRoleStats[it] != freshRoleStats[it] }
                     val changedIds = (changedTierIds + changedStatIds + changedRoleIds).toSet().size
                     val oldHealth = _freshness.value
                     _freshness.value = oldHealth.copy(
                         tiersCheckedAt = if (fusedTiers.isNotEmpty()) started else oldHealth.tiersCheckedAt,
-                        ratesCheckedAt = if (freshStats.isNotEmpty()) started else oldHealth.ratesCheckedAt,
+                        ratesCheckedAt = if (completeFreshStats.isNotEmpty()) started else oldHealth.ratesCheckedAt,
                         lastChangedAt = if (changedIds > 0 || oldHealth.lastChangedAt == 0L) started else oldHealth.lastChangedAt,
                         unchangedChecks = if (changedIds > 0) 0 else oldHealth.unchangedChecks + 1,
-                        tierCount = fusedTiers.size, statsCount = freshStats.size,
-                        updatedChampionCount = freshStats.size,
+                        tierCount = fusedTiers.size, statsCount = completeFreshStats.size,
+                        updatedChampionCount = completeFreshStats.size,
                         changedChampions = changedIds)
                     prefs.edit().putString("rate_history_v2", encodeHistory(history).toString())
                         .putLong("tiers_checked", _freshness.value.tiersCheckedAt)
@@ -281,7 +295,7 @@ object BestBuildWrScraper {
                     roleStatsCache = encodeRoleStats(mergedRoleStats)
                     success = true
                 }
-                message = if (success) "Categorías y estadísticas globales actualizadas (${validSources.size}/${GLOBAL_SCRAPING_SOURCES.size} fuentes)"
+                message = if (success) "Categorías y estadísticas completas actualizadas (${validSources.size}/${GLOBAL_SCRAPING_SOURCES.size} fuentes)"
                     else "Sin actualizar; conservando datos."
 
             }
@@ -328,6 +342,13 @@ object BestBuildWrScraper {
         }) }
     }
 
+    private fun mergePublishedStats(current: ChampionMetaStats, fallback: ChampionMetaStats): ChampionMetaStats =
+        ChampionMetaStats(
+            winRate = current.winRate ?: fallback.winRate,
+            pickRate = current.pickRate ?: fallback.pickRate,
+            banRate = current.banRate ?: fallback.banRate
+        )
+
     private fun decodeStats(raw: String?): Map<String, ChampionMetaStats> {
         if (raw.isNullOrBlank()) return emptyMap()
         return runCatching {
@@ -368,8 +389,8 @@ object BestBuildWrScraper {
                         value.optDouble("pickRate", Double.NaN).takeIf(Double::isFinite),
                         value.optDouble("banRate", Double.NaN).takeIf(Double::isFinite)
                     )
-                }.toMap()
-            }
+                }.toMap().filterValues { it.isComplete() }
+            }.filterValues { it.isNotEmpty() }
         }.getOrDefault(emptyMap())
     }
 

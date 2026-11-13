@@ -241,7 +241,12 @@ object WildRiftRepository {
             val samples = history[com.example.data.sync.RegionalTierParser.canonical(champion.id)].orEmpty()
             val day = com.example.data.sync.MetaRateHistory.sampleAtAge(samples, checkedAt, 24)
             val halfDay = com.example.data.sync.MetaRateHistory.sampleAtAge(samples, checkedAt, 12)
-            val hasCurrentStats = meta?.isUsable() == true
+            // The tier list and the detail sheet only expose a current
+            // snapshot when all three published rates are present. A source
+            // can legitimately publish only win/pick, but showing that pair
+            // beside a dash ban rate makes the entry look complete when it is
+            // not.
+            val hasCurrentStats = meta?.isComplete() == true
             fun change(current: Double?, old: Double?): Double =
                 if (current != null && old != null && current.isFinite() && old.isFinite()) current - old else 0.0
 
