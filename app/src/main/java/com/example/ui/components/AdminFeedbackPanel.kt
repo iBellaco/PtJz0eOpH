@@ -1192,7 +1192,7 @@ fun AdminFeedbackBottomSheet(
                             // Descargar Imagen
                             IconButton(
                                 onClick = {
-                                    saveBitmapToGallery(context, previewImageBitmap!!)
+                                    saveFeedbackBitmapToGallery(context, previewImageBitmap!!)
                                 },
                                 modifier = Modifier.size(36.dp)
                             ) {
@@ -1291,7 +1291,7 @@ private fun StatusFilterChip(
     }
 }
 
-private fun saveBitmapToGallery(context: Context, bitmap: Bitmap) {
+internal fun saveFeedbackBitmapToGallery(context: Context, bitmap: Bitmap) {
     try {
         val filename = "WR_Feedback_${System.currentTimeMillis()}.png"
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
