@@ -31,6 +31,27 @@ internal object CalibrationEvidenceImage {
         val sha256: String
     )
 
+    /**
+     * Chooses the geometry to draw for the ban row without allowing an
+     * incomplete observation to move the remaining saved positions.
+     */
+    internal fun evidenceBanRegions(
+        config: VisionCalibrationConfig,
+        banSlots: List<BanSlot>,
+        isAlly: Boolean
+    ): List<BanRegion> {
+        val side = if (isAlly) BanSide.ALLY else BanSide.ENEMY
+        val observedByIndex = banSlots
+            .asSequence()
+            .filter { it.side == side && it.index in 0..4 && it.region != null }
+            .associateBy { it.index }
+        return if ((0..4).all { observedByIndex[it]?.region != null }) {
+            (0..4).mapNotNull { observedByIndex[it]?.region }
+        } else {
+            config.banRegions(isAlly)
+        }
+    }
+
     fun encode(
         frame: CalibrationEvidenceFrame,
         config: VisionCalibrationConfig,
@@ -145,7 +166,7 @@ internal object CalibrationEvidenceImage {
             // regiones adaptativas que un fotograma defectuoso pudo proponer.
             // Así los cinco baneos permanecen alineados y los huecos no se
             // desplazan por una observación aislada.
-            config.banRegions(isAlly).forEachIndexed { index, region ->
+            evidenceBanRegions(config, banSlots, isAlly).forEachIndexed { index, region ->
                 drawAvatar(
                     "${if (isAlly) "ally" else "enemy"}_ban_$index",
                     RectF(
