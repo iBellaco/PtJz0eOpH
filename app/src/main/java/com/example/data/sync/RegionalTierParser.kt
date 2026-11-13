@@ -16,6 +16,11 @@ data class ChampionMetaStats(
 
 /** Each publisher has its own schema. Never carry a tier into navigation/footer links. */
 object RegionalTierParser {
+    private data class CoreEmbeddedStats(
+        val global: Map<String, ChampionMetaStats> = emptyMap(),
+        val roles: Map<String, Map<com.example.model.LaneRole, ChampionMetaStats>> = emptyMap()
+    )
+
     fun role(value: String?): com.example.model.LaneRole? = when (value?.trim()?.uppercase(Locale.ROOT)) {
         "TOP", "BARON", "BARON LANE" -> com.example.model.LaneRole.TOP
         "JUNGLE", "JG" -> com.example.model.LaneRole.JUNGLE
@@ -43,6 +48,83 @@ object RegionalTierParser {
     private val order = listOf("S+", "S", "A+", "A", "B", "C", "D")
     private fun tier(value: String): String? = value.trim().uppercase(Locale.ROOT)
         .replace("SPLUS", "S+").takeIf { it in order }
+
+    private fun mergeMissingStats(current: ChampionMetaStats, fallback: ChampionMetaStats): ChampionMetaStats =
+        ChampionMetaStats(
+            winRate = current.winRate ?: fallback.winRate,
+            pickRate = current.pickRate ?: fallback.pickRate,
+            banRate = current.banRate ?: fallback.banRate
+        )
+
+    /**
+     * WildRiftCore keeps the complete ranked dataset in `tlRankData`, even
+     * when a tile omits the rate badges.  The array format is
+     * [championSlug, tierIndex, winRate, pickRate, banRate].  Reading this
+     * published JSON prevents the HTML presentation from hiding real rates.
+     */
+    private fun parseCoreEmbeddedStats(doc: org.jsoup.nodes.Document): CoreEmbeddedStats {
+        val root = runCatching {
+            doc.selectFirst("script#tlRankData")?.data()?.takeIf { it.isNotBlank() }?.let(::JSONObject)
+        }.getOrNull() ?: return CoreEmbeddedStats()
+        val tiers = root.optJSONObject("b") ?: return CoreEmbeddedStats()
+        val global = linkedMapOf<String, ChampionMetaStats>()
+        val roles = linkedMapOf<String, MutableMap<com.example.model.LaneRole, ChampionMetaStats>>()
+
+        fun number(row: JSONArray, index: Int): Double? {
+            val raw = row.opt(index)
+            val value = when (raw) {
+                is Number -> raw.toDouble()
+                is String -> raw.replace(',', '.').toDoubleOrNull()
+                else -> null
+            } ?: return null
+            return value.takeIf { it.isFinite() && it in 0.0..100.0 }
+        }
+
+        fun putGlobal(id: String, value: ChampionMetaStats) {
+            val previous = global[id]
+            if (previous == null || (value.pickRate ?: -1.0) > (previous.pickRate ?: -1.0)) {
+                global[id] = value
+            }
+        }
+
+        tiers.keys().forEach { tierKey ->
+            val byRole = tiers.optJSONObject(tierKey) ?: return@forEach
+            byRole.keys().forEach { roleKey ->
+                val lane = role(roleKey) ?: return@forEach
+                val rows = byRole.optJSONArray(roleKey) ?: return@forEach
+                for (index in 0 until rows.length()) {
+                    val row = rows.optJSONArray(index) ?: continue
+                    val id = canonical(row.optString(0))
+                    if (id.length !in 2..30) continue
+                    val value = ChampionMetaStats(number(row, 2), number(row, 3), number(row, 4))
+                    if (!value.isUsable()) continue
+                    val laneValues = roles.getOrPut(id) { linkedMapOf() }
+                    val previous = laneValues[lane]
+                    if (previous == null || (value.pickRate ?: -1.0) > (previous.pickRate ?: -1.0)) {
+                        laneValues[lane] = value
+                    }
+                    putGlobal(id, value)
+                }
+            }
+        }
+        return CoreEmbeddedStats(global, roles)
+    }
+
+    /** Some Core tiles publish a current win/pick pair in their explanation
+     * attribute while intentionally hiding the metric badges.  Accept only
+     * the explicit current-patch sentence; approximate historical text is
+     * deliberately ignored.
+     */
+    private fun parseCoreReasonStats(tile: Element): ChampionMetaStats? {
+        val text = tile.attr("data-reason").ifBlank { tile.attr("title") }
+        val match = Regex(
+            "Win\\s+rate\\s+([0-9]+(?:[.,][0-9]+)?)%\\s+at\\s+([0-9]+(?:[.,][0-9]+)?)%\\s+pick\\s+rate",
+            RegexOption.IGNORE_CASE
+        ).find(text) ?: return null
+        val win = match.groupValues[1].replace(',', '.').toDoubleOrNull()
+        val pick = match.groupValues[2].replace(',', '.').toDoubleOrNull()
+        return ChampionMetaStats(win, pick, null).takeIf { it.isUsable() }
+    }
 
     fun parse(html: String, source: String? = null): Map<String, String> {
         if (html.isBlank()) return emptyMap()
@@ -173,14 +255,25 @@ object RegionalTierParser {
                 ?.let { Regex("[0-9]+(?:[.,][0-9]+)?").find(it)?.value }
                 ?.replace(',', '.')?.toDoubleOrNull()?.takeIf { it in 0.0..100.0 }
             val stats = ChampionMetaStats(rate(".tl-champ-wr"), rate(".tl-champ-pr"), rate(".tl-champ-br"))
-            if (id.length !in 2..30 || !stats.isUsable()) return@forEach
+            if (id.length !in 2..30) return@forEach
+            val published = if (stats.isUsable()) stats else parseCoreReasonStats(tile)
+            if (published == null) return@forEach
             // A champion can appear in several lane panels. The last panel is
             // not a global statistic, so retain the row with the highest
             // published pick rate as the most representative fallback.
             val previous = output[id]
-            if (previous == null || (stats.pickRate ?: 0.0) > (previous.pickRate ?: 0.0)) {
-                output[id] = stats
+            if (previous == null || (published.pickRate ?: -1.0) > (previous.pickRate ?: -1.0)) {
+                output[id] = published
+            } else {
+                output[id] = mergeMissingStats(previous, published)
             }
+        }
+        // On current WildRiftCore releases some rate badges are omitted from
+        // the tile HTML, but the publisher still exposes the same values in
+        // its embedded ranked dataset. Fill only missing fields; explicit ALL
+        // panel values remain authoritative.
+        parseCoreEmbeddedStats(doc).global.forEach { (id, published) ->
+            output[id] = output[id]?.let { mergeMissingStats(it, published) } ?: published
         }
         // The complete rankings table publishes rates for the entire roster;
         // tierlist's podium only contains a small subset of champions.
@@ -213,7 +306,18 @@ object RegionalTierParser {
         if (source == "wildriftfire") return PublishedStatsParser.fire(html).roleStats
         if (source != null && source != "wildriftcore") return emptyMap()
         val output = linkedMapOf<String, MutableMap<com.example.model.LaneRole, ChampionMetaStats>>()
-        Jsoup.parse(html).select("li.tl-cell, tr.rk-row, tr.rkc-row").forEach { row ->
+        val doc = Jsoup.parse(html)
+        fun putRole(id: String, lane: com.example.model.LaneRole, stats: ChampionMetaStats) {
+            if (id.length !in 2..30 || !stats.isUsable()) return
+            val byLane = output.getOrPut(id) { linkedMapOf() }
+            val previous = byLane[lane]
+            if (previous == null || (stats.pickRate ?: -1.0) > (previous.pickRate ?: -1.0)) {
+                byLane[lane] = stats
+            } else {
+                byLane[lane] = mergeMissingStats(previous, stats)
+            }
+        }
+        doc.select("li.tl-cell, tr.rk-row, tr.rkc-row").forEach { row ->
             val dataKeyRole = row.attr("data-k").substringAfterLast(':', "").takeIf { it.isNotBlank() }
             val lane = role(row.selectFirst("[data-role]")?.attr("data-role")
                 ?: row.parents().firstOrNull { it.hasAttr("data-role") }?.attr("data-role")
@@ -231,7 +335,10 @@ object RegionalTierParser {
             val stats = ChampionMetaStats(
                 rate(".tl-cell__wr b, .rk-val--win, .rk-stat--win, .rkc-c-win .rkc-v"), pick, ban
             )
-            if (id.length in 2..30 && stats.isUsable()) output.getOrPut(id) { linkedMapOf() }[lane] = stats
+            putRole(id, lane, stats)
+        }
+        parseCoreEmbeddedStats(doc).roles.forEach { (id, lanes) ->
+            lanes.forEach { (lane, stats) -> putRole(id, lane, stats) }
         }
         return output
     }
