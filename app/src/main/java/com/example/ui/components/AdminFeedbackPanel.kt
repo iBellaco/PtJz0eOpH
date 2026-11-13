@@ -115,6 +115,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.R
 import com.example.data.remote.model.FeedbackReport
 import com.example.data.FeedbackRepository
 import com.example.model.WildRiftItem
@@ -196,6 +197,10 @@ fun AdminFeedbackBottomSheet(
 
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+    val deleteProcessedTitle = localizedString(R.string.feedback_delete_processed_title)
+    val deleteProcessedBody = localizedString(R.string.feedback_delete_processed_body)
+    val deleteProcessedDone = localizedString(R.string.feedback_delete_processed_done)
+    val deleteProcessedConfirm = localizedString(R.string.feedback_delete_processed_confirm)
     var currentCategoryTab by remember { mutableStateOf(FeedbackCategoryTab.ALL) }
     var selectedSubFilter by remember { mutableStateOf("ALL") }
     var searchQuery by remember { mutableStateOf("") }
@@ -1015,12 +1020,12 @@ fun AdminFeedbackBottomSheet(
             title = {
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     Icon(Icons.Default.DeleteSweep, contentDescription = null, tint = DangerRed, modifier = Modifier.size(24.dp))
-                    Text(localizedString(R.string.feedback_delete_processed_title), color = DangerRed, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                    Text(deleteProcessedTitle, color = DangerRed, fontSize = 16.sp, fontWeight = FontWeight.Bold)
                 }
             },
             text = {
                 Text(
-                    text = localizedString(R.string.feedback_delete_processed_body),
+                    text = deleteProcessedBody,
                     color = TextSecondary,
                     fontSize = 13.sp
                 )
@@ -1034,7 +1039,7 @@ fun AdminFeedbackBottomSheet(
                             isDeleting = false
                             showClearAllConfirm = false
                             if (res.isSuccess) {
-                                Toast.makeText(context, localizedString(R.string.feedback_delete_processed_done), Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, deleteProcessedDone, Toast.LENGTH_SHORT).show()
                                 loadReports()
                             } else {
                                 Toast.makeText(context, com.example.util.appTr("Error: ${res.exceptionOrNull()?.message}"), Toast.LENGTH_SHORT).show()
@@ -1048,7 +1053,7 @@ fun AdminFeedbackBottomSheet(
                     if (isDeleting) {
                         CircularProgressIndicator(color = Color.White, modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
                     } else {
-                        Text(localizedString(R.string.feedback_delete_processed_confirm), color = Color.White, fontWeight = FontWeight.Bold)
+                        Text(deleteProcessedConfirm, color = Color.White, fontWeight = FontWeight.Bold)
                     }
                 }
             },
