@@ -5,10 +5,8 @@ import java.util.Locale
 /**
  * Competitive datasets shown by the tier list.
  *
- * Global is the default live dataset. China is the regional classification
- * bundled with the champion catalog; it is deliberately kept separate from
- * the live global rate feeds because its public endpoint does not publish the
- * same three current metrics for every champion.
+ * Global is the default live dataset. China is a separate live dataset backed
+ * by the official mainland Tencent feed and is never fused with Global rates.
  */
 object MetaRegion {
     const val DEFAULT = "GLOBAL"
@@ -22,9 +20,9 @@ object MetaRegion {
     }
 
     fun label(region: String): String = when (normalize(region)) {
-        CHINA -> "China / Local"
+        CHINA -> "China"
         else -> "Global"
     }
 
-    fun hasLiveRateStats(region: String): Boolean = normalize(region) == DEFAULT
+    fun hasLiveRateStats(region: String): Boolean = normalize(region) in setOf(DEFAULT, CHINA)
 }

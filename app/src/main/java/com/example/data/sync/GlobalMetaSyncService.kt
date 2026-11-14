@@ -68,11 +68,7 @@ object GlobalMetaSyncService {
             .putString("selected_meta_region", region).apply()
         WildRiftRepository.selectMetaRegion(region)
         BestBuildWrScraper.selectRegion(region)
-        if (MetaRegion.hasLiveRateStats(region)) {
-            scope.launch { syncGlobalMeta(context, forceRefresh = true) }
-        } else {
-            _syncState.value = MetaSyncState.Success("Clasificación China integrada")
-        }
+        scope.launch { syncGlobalMeta(context, forceRefresh = true) }
     }
 
     suspend fun syncGlobalMeta(context: Context, forceRefresh: Boolean = false) {
@@ -80,10 +76,6 @@ object GlobalMetaSyncService {
         try {
         _syncState.value = MetaSyncState.Syncing
         val requestedRegion = _currentRegion.value
-        if (!MetaRegion.hasLiveRateStats(requestedRegion)) {
-            _syncState.value = MetaSyncState.Success("Clasificación China integrada")
-            return
-        }
         BestBuildWrScraper.syncGlobalTierList(context, requestedRegion, force = forceRefresh)
         if (requestedRegion != _currentRegion.value) return
         _syncState.value = if (BestBuildWrScraper.isLastSyncSuccess.value)

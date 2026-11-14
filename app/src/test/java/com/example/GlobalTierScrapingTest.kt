@@ -7,6 +7,21 @@ import org.junit.Assert.*
 import org.junit.Test
 
 class GlobalTierScrapingTest {
+    @Test fun `WildRiftFire fills missing master rows from the most complete bracket`() {
+        val html = """
+            <script id="wf-stats-data" type="application/json">
+              {"patch":"7.3f","brackets":{
+                "master":{"rows":[{"slug":"ahri","champion":"Ahri","role":"Mid","main":true,"win":52.0,"pick":4.0,"ban":1.0}]},
+                "apex":{"rows":[{"slug":"ahri","champion":"Ahri","role":"Mid","main":true,"win":51.0,"pick":3.0,"ban":0.8},{"slug":"bard","champion":"Bard","role":"Support","main":true,"win":54.0,"pick":2.0,"ban":1.2}]}
+              }}
+            </script>
+        """.trimIndent()
+        val report = com.example.data.sync.PublishedStatsParser.fire(html)
+        assertEquals(2, report.stats.size)
+        assertEquals(52.0, report.stats["ahri"]!!.winRate!!, .001)
+        assertEquals(54.0, report.stats["bard"]!!.winRate!!, .001)
+    }
+
     @Test fun `active live pages parse their current fixture and real tier rows`() {
         listOf("core" to "wildriftcore", "fire" to "wildriftfire").forEach { (file, source) ->
             val html = javaClass.getResource("/tier-sources-302/$file.html")!!.readText()
