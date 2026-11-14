@@ -22,6 +22,33 @@ object RegionalTierParser {
         val roles: Map<String, Map<com.example.model.LaneRole, ChampionMetaStats>> = emptyMap()
     )
 
+    private fun mergeEmbeddedStats(current: CoreEmbeddedStats, fallback: CoreEmbeddedStats): CoreEmbeddedStats {
+        val global = linkedMapOf<String, ChampionMetaStats>()
+        (current.global.keys + fallback.global.keys).forEach { id ->
+            val value = current.global[id]
+            val other = fallback.global[id]
+            global[id] = when {
+                value == null -> other!!
+                other == null -> value
+                else -> mergeMissingStats(value, other)
+            }
+        }
+        val roles = linkedMapOf<String, MutableMap<com.example.model.LaneRole, ChampionMetaStats>>()
+        (current.roles.keys + fallback.roles.keys).forEach { id ->
+            val byLane = roles.getOrPut(id) { linkedMapOf() }
+            (current.roles[id].orEmpty().keys + fallback.roles[id].orEmpty().keys).forEach { lane ->
+                val value = current.roles[id]?.get(lane)
+                val other = fallback.roles[id]?.get(lane)
+                byLane[lane] = when {
+                    value == null -> other!!
+                    other == null -> value
+                    else -> mergeMissingStats(value, other)
+                }
+            }
+        }
+        return CoreEmbeddedStats(global, roles.mapValues { it.value.toMap() })
+    }
+
     fun role(value: String?): com.example.model.LaneRole? = when (value?.trim()?.uppercase(Locale.ROOT)) {
         "TOP", "BARON", "BARON LANE" -> com.example.model.LaneRole.TOP
         "JUNGLE", "JG" -> com.example.model.LaneRole.JUNGLE
@@ -109,6 +136,66 @@ object RegionalTierParser {
             }
         }
         return CoreEmbeddedStats(global, roles)
+    }
+
+    /**
+     * WildRiftCore's rankings page keeps a second, complete JSON dataset in
+     * `rk-data`.  The HTML table is only the first ten rows per lane, so
+     * scraping the rendered rows silently loses champions such as Bard,
+     * Norra and Singed.  Read every published row and use it only to fill
+     * fields absent from the tier-list payload; no percentage is inferred.
+     */
+    private fun parseCoreRankData(doc: org.jsoup.nodes.Document): CoreEmbeddedStats {
+        val root = runCatching {
+            doc.selectFirst("script#rk-data")?.data()?.takeIf { it.isNotBlank() }?.let(::JSONObject)
+        }.getOrNull() ?: return CoreEmbeddedStats()
+        val brackets = root.optJSONObject("d") ?: return CoreEmbeddedStats()
+        val primary = runCatching {
+            doc.selectFirst("script#rk-cfg")?.data()?.let(::JSONObject)?.optString("dan")
+        }.getOrNull().orEmpty()
+        val order = listOf(primary, "1", "0", "3", "4").filter { it.isNotBlank() }.distinct()
+        val global = linkedMapOf<String, ChampionMetaStats>()
+        val globalBracket = mutableMapOf<String, String>()
+        val roles = linkedMapOf<String, MutableMap<com.example.model.LaneRole, ChampionMetaStats>>()
+        val roleBracket = mutableMapOf<Pair<String, com.example.model.LaneRole>, String>()
+
+        fun number(row: JSONArray, index: Int): Double? = when (val raw = row.opt(index)) {
+            is Number -> raw.toDouble()
+            is String -> raw.replace(',', '.').toDoubleOrNull()
+            else -> null
+        }?.takeIf { it.isFinite() && it in 0.0..100.0 }
+
+        fun preferred(value: ChampionMetaStats, bracket: String, previous: ChampionMetaStats?, previousBracket: String?): Boolean {
+            if (previous == null || !previous.isComplete()) return true
+            if (bracket == primary && previousBracket != primary) return true
+            return bracket == previousBracket &&
+                (value.pickRate ?: -1.0) > (previous.pickRate ?: -1.0)
+        }
+
+        order.forEach { bracketKey ->
+            val rows = brackets.optJSONObject(bracketKey)?.optJSONArray("r") ?: return@forEach
+            for (index in 0 until rows.length()) {
+                val row = rows.optJSONArray(index) ?: continue
+                val id = canonical(row.optString(0))
+                val lane = role(row.optString(1))
+                if (id.length !in 2..30 || lane == null) continue
+                val value = ChampionMetaStats(number(row, 3), number(row, 4), number(row, 5))
+                if (!value.isUsable()) continue
+                val previous = global[id]
+                if (preferred(value, bracketKey, previous, globalBracket[id])) {
+                    global[id] = value
+                    globalBracket[id] = bracketKey
+                }
+                val byLane = roles.getOrPut(id) { linkedMapOf() }
+                val laneKey = id to lane
+                val old = byLane[lane]
+                if (preferred(value, bracketKey, old, roleBracket[laneKey])) {
+                    byLane[lane] = value
+                    roleBracket[laneKey] = bracketKey
+                }
+            }
+        }
+        return CoreEmbeddedStats(global, roles.mapValues { it.value.toMap() })
     }
 
     /** Some Core tiles publish a current win/pick pair in their explanation
@@ -272,7 +359,8 @@ object RegionalTierParser {
         // the tile HTML, but the publisher still exposes the same values in
         // its embedded ranked dataset. Fill only missing fields; explicit ALL
         // panel values remain authoritative.
-        parseCoreEmbeddedStats(doc).global.forEach { (id, published) ->
+        val embedded = mergeEmbeddedStats(parseCoreEmbeddedStats(doc), parseCoreRankData(doc))
+        embedded.global.forEach { (id, published) ->
             output[id] = output[id]?.let { mergeMissingStats(it, published) } ?: published
         }
         // The complete rankings table publishes rates for the entire roster;
@@ -337,7 +425,8 @@ object RegionalTierParser {
             )
             putRole(id, lane, stats)
         }
-        parseCoreEmbeddedStats(doc).roles.forEach { (id, lanes) ->
+        val embedded = mergeEmbeddedStats(parseCoreEmbeddedStats(doc), parseCoreRankData(doc))
+        embedded.roles.forEach { (id, lanes) ->
             lanes.forEach { (lane, stats) -> putRole(id, lane, stats) }
         }
         return output

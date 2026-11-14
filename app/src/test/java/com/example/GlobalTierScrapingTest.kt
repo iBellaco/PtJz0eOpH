@@ -85,6 +85,25 @@ class GlobalTierScrapingTest {
             .getValue(com.example.model.LaneRole.MID)
         assertEquals(global, mid)
     }
+    @Test fun `WildRiftCore reads the complete rankings dataset instead of only rendered rows`() {
+        val html = """
+            <script id="rk-cfg" type="application/json">{"dan":"2"}</script>
+            <main class="rkc">
+              <script id="rk-data" type="application/json">
+                {"d":{"2":{"r":[["bard","SUPPORT",0,51.5,1.2,0.8],["zoe","MID",0,50.4,2.1,1.4]]}}}
+              </script>
+              <section class="rkc-sec" data-role="SUPPORT"><table><tbody>
+                <tr class="rkc-row"><td><a class="rkc-champ" href="/en/champions/bard/">Bard</a></td></tr>
+              </tbody></table></section>
+            </main>
+        """.trimIndent()
+        val stats = RegionalTierParser.parseStats(html, "wildriftcore")
+        assertEquals(51.5, stats["bard"]!!.winRate!!, 0.001)
+        assertEquals(1.2, stats["bard"]!!.pickRate!!, 0.001)
+        assertEquals(0.8, stats["bard"]!!.banRate!!, 0.001)
+        val roles = RegionalTierParser.parseRoleStats(html, "wildriftcore")
+        assertEquals(51.5, roles["bard"]!![com.example.model.LaneRole.SUPPORT]!!.winRate!!, 0.001)
+    }
     @Test fun `WildRiftCore global fallback keeps the most representative repeated lane`() {
         val html = """
             <section data-role="TOP"><a class="tl-champ-tile" href="/en/champions/yone/">
