@@ -522,7 +522,18 @@ object DraftVisionScanner {
         // stay identical (full-screen HUD versus the same surface with outer bars).
         val refresh = refreshGeometry || alignedBase == null || alignedSize != (bitmap.width to bitmap.height) || lastAlignmentAt == 0L || now-lastAlignmentAt >= 2000
         if (refresh) activeViewport = DraftFrameGeometry.contentBounds(bitmap)
-        val normalized = AdaptiveScreenLayoutEngine.computeAdaptiveConfig(bitmap.width, bitmap.height, calibrationConfig)
+        // The generic aspect-ratio transform is defined for the full capture.
+        // When black bars expose a smaller game viewport, that viewport already
+        // carries the reference game's aspect ratio; applying the outer frame's
+        // ratio again would move the side slots before ring alignment can verify
+        // them (notably on square/foldable captures). Map the unscaled reference
+        // config into the observed viewport instead.
+        val fullFrame = activeViewport == Rect(0, 0, bitmap.width, bitmap.height)
+        val normalized = if (fullFrame) {
+            AdaptiveScreenLayoutEngine.computeAdaptiveConfig(bitmap.width, bitmap.height, calibrationConfig)
+        } else {
+            calibrationConfig
+        }
         val base = if (manual) normalized else DraftFrameGeometry.calculateMultideviceBoxes(normalized, activeViewport, bitmap.width, bitmap.height)
         if (alignedBase != base || alignedSize != (bitmap.width to bitmap.height)) {
             geometryStability.reset()

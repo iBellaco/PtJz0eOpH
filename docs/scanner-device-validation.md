@@ -33,9 +33,10 @@ No convertir las imágenes redimensionadas ni un emulador en registros físicos.
 
 ## Respaldo de coordenadas aportadas
 
-El catálogo anterior de mediciones fue retirado para comenzar una nueva carga
-verificable. El respaldo activo contiene únicamente `motorola edge 30 neo` en
-2174×1080 y se usa solo cuando coinciden fabricante, modelo y dimensiones exactas
-de captura. Una calibración guardada por el usuario siempre prevalece. No se
-reutiliza un perfil en otro modelo solo porque comparta resolución, y el registro
-no sustituye una validación física de la secuencia completa.
+El catálogo de mediciones fue retirado para probar el motor multidispositivo sin
+presets precargados. El respaldo del proyecto está vacío: el lector comienza
+con geometría adaptativa y valida el viewport real antes de alinear slots y
+baneos. Una calibración guardada explícitamente por el usuario sigue teniendo
+prioridad en ese dispositivo y captura, pero no se copia a otro equipo ni se
+convierte en un valor por defecto. El registro no sustituye una validación
+física de la secuencia completa.
