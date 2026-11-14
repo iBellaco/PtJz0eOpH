@@ -407,6 +407,10 @@ object WildRiftRepository {
             baseChampions.clear()
             baseChampions.addAll(parsed1)
             baseChampions.addAll(parsed2)
+            // A forced catalog reload starts from the canonical global view;
+            // the persisted regional choice is restored immediately afterward
+            // by GlobalMetaSyncService.loadRegion().
+            activeRegionName = com.example.data.sync.MetaRegion.DEFAULT
             androidx.compose.runtime.snapshots.Snapshot.withMutableSnapshot {
                 champions.clear()
                 champions.addAll(baseChampions)
