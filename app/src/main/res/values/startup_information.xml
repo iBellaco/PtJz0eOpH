@@ -82,7 +82,7 @@
     <string name="onboarding_tier_list_oficial" formatted="false">Clasificación comunitaria</string>
     <string name="onboarding_meta_global_y_counters" formatted="false">Análisis global y enfrentamientos</string>
     <string name="onboarding_consulta_la_tier_list_oficial_actualizada_al_ultimo_parche_y_desc" formatted="false">Consulta la clasificación S+, S, A, B y C combinada desde las fuentes públicas indicadas, con tasas de victoria, selección y bloqueo publicadas para cada línea disponible. Los campeones sin estadísticas competitivas actuales no se muestran como tier.</string>
-    <string name="onboarding_tier_list_global_y_de_servidores_asiaticos" formatted="false">Tres fuentes públicas de clasificación</string>
+    <string name="onboarding_tier_list_global_y_de_servidores_asiaticos" formatted="false">Dos fuentes globales y clasificación China / Local</string>
     <string name="onboarding_identificacion_de_mejores_picks_del_meta" formatted="false">Estadísticas separadas por línea publicada</string>
     <string name="onboarding_analisis_de_enfrentamientos_directos" formatted="false">Historial y tier list personal</string>
     <string name="onboarding_ventajas_suscripcion_premium" formatted="false">Ventajas &amp; Suscripción Premium</string>
