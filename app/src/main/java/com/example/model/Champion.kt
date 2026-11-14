@@ -131,7 +131,7 @@ data class Champion(
     val pickRateDelta: Double = 0.0,
     val banRateDelta: Double = 0.0,
     val laneStats: Map<String, ChampionLaneStats> = emptyMap(),
-    val cnTier: String = "", // Clasificación China integrada (T0–T5); no aporta tasas globales.
+    val cnTier: String = "", // Clasificación heredada del catálogo; la vista China usa el feed vivo.
     val damageType: DamageType = DamageType.PHYSICAL,
     val summary: String = "",
     val advantageAgainst: List<String> = emptyList(),

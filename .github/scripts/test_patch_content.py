@@ -13,6 +13,7 @@ class PatchContentTest(unittest.TestCase):
                             for name in ['wildriftfire', 'wildriftcore'])
         self.assertTrue(module.valid_source_patch_bindings(sources))
         self.assertTrue(module.valid_source_patch_bindings(sources + '\nprefs.putString("patch", com.example.data.GamePatch.VERSION)'))
+        self.assertTrue(module.valid_source_patch_bindings(sources + '\nGlobalScrapingSource("china_lolm", "China", "url", "display")'))
         self.assertFalse(module.valid_source_patch_bindings(sources.replace('com.example.data.GamePatch.VERSION', '"7.2"', 1)))
         self.assertFalse(module.valid_source_patch_bindings(sources.splitlines()[0]))
         self.assertFalse(module.valid_source_patch_bindings(sources + '\n' + sources.splitlines()[0]))

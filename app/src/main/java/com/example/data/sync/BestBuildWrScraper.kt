@@ -29,6 +29,13 @@ object BestBuildWrScraper {
         GlobalScrapingSource("wildriftfire", "WildRiftFire", "https://www.wildriftfire.com/tier-list", "wildriftfire.com/tier-list", com.example.data.GamePatch.VERSION),
         GlobalScrapingSource("wildriftcore", "WildRiftCore", "https://wildriftcore.com/en/tierlist/", "wildriftcore.com/en/tierlist/", com.example.data.GamePatch.VERSION)
     )
+    /** The mainland-China feed is intentionally a single-source region. */
+    val CHINA_SCRAPING_SOURCES = listOf(
+        GlobalScrapingSource(
+            "china_lolm", "China", "https://lolm.qq.com/act/a20220818raider/index.html",
+            "lolm.qq.com/act/a20220818raider/index.html", region = MetaRegion.CHINA
+        )
+    )
 
     private val _freshness = MutableStateFlow(MetaFreshness())
     val freshness = _freshness.asStateFlow()
@@ -52,10 +59,10 @@ object BestBuildWrScraper {
     private val _lastSyncFormattedTime = MutableStateFlow("Sin sincronización")
     val lastSyncFormattedTime = _lastSyncFormattedTime.asStateFlow()
 
-    private val initialSourceMap = GLOBAL_SCRAPING_SOURCES.associate { source ->
-        "global_${source.id}" to ScraperSourceStatus(
+    private val initialSourceMap = (GLOBAL_SCRAPING_SOURCES + CHINA_SCRAPING_SOURCES).associate { source ->
+        "${source.region.lowercase(Locale.ROOT)}_${source.id}" to ScraperSourceStatus(
             name = "${source.name} (${source.displayUrl})", url = source.url,
-            isHealthy = false, lastChecked = 0L, responseTimeMs = 0L,
+            region = source.region, isHealthy = false, lastChecked = 0L, responseTimeMs = 0L,
             errorMessage = "Pendiente de comprobación"
         )
     }
@@ -84,18 +91,19 @@ object BestBuildWrScraper {
         if (initialized) return
         initialized = true
         // Do not carry a status for a publisher removed from a previous
-        // installation into the current two-source monitor.
+        // installation into the current regional monitor.
         _sourceStatuses.value = initialSourceMap
         PatchTierMovementStore.initialize(context)
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         if (prefs.getString("patch", null) != com.example.data.GamePatch.VERSION) {
             prefs.edit().clear().putString("patch", com.example.data.GamePatch.VERSION).apply()
         }
-        val activeSourceSet = GLOBAL_SCRAPING_SOURCES.joinToString(",") { it.id }
+        val activeSourceSet = (GLOBAL_SCRAPING_SOURCES + CHINA_SCRAPING_SOURCES)
+            .joinToString(",") { "${it.region}:${it.id}" }
         if (prefs.getString(SOURCE_SET_KEY, null) != activeSourceSet) {
             // A previous build could have persisted rates fused from a
-            // different publisher set. Discard that snapshot so a retired
-            // source cannot reappear until the two active pages are checked.
+            // different publisher set. Discard the global snapshot so a
+            // retired source cannot reappear until its active pages are checked.
             prefs.edit()
                 .remove("snapshot_${MetaRegion.DEFAULT}")
                 .remove(STATS_SNAPSHOT_PREFIX + MetaRegion.DEFAULT)
@@ -140,11 +148,6 @@ object BestBuildWrScraper {
         syncMutex.lock()
         try {
             initialize(context)
-            if (!MetaRegion.hasLiveRateStats(requested)) {
-                regions[requested] = RegionState(System.currentTimeMillis(), true, "Clasificación China integrada")
-                if (selectedRegion == requested) selectRegion(requested)
-                return@withContext
-            }
             _isOnline.value = checkNetwork(context)
             val previous = regions[requested] ?: RegionState()
             if (!force && previous.success && System.currentTimeMillis() - previous.at < MetaFreshness.POLL_INTERVAL_MS) return@withContext
@@ -164,14 +167,16 @@ object BestBuildWrScraper {
                     status.copy(isHealthy = false, errorMessage = message)
                 }
             } else {
+                val activeSources = if (requested == MetaRegion.CHINA) CHINA_SCRAPING_SOURCES else GLOBAL_SCRAPING_SOURCES
+                val activeKeys = activeSources.map { "${it.region.lowercase(Locale.ROOT)}_${it.id}" }.toSet()
                 val knownIds = WildRiftRepository.baseChampionsList.flatMap {
                     listOf(it.id, it.name, it.ddragonId).filter(String::isNotBlank)
                 }.toSet()
                 val results = coroutineScope {
-                    GLOBAL_SCRAPING_SOURCES.map { source -> async {
+                    activeSources.map { source -> async {
                         sourceClient.fetch(source, knownIds).also { result ->
                             synchronized(this@BestBuildWrScraper) {
-                                val key = "global_${source.id}"
+                                val key = "${source.region.lowercase(Locale.ROOT)}_${source.id}"
                                 val old = _sourceStatuses.value[key]
                                 _sourceStatuses.value = _sourceStatuses.value + (key to result.status.copy(
                                     lastSuccessAt = old?.lastSuccessAt ?: 0,
@@ -182,9 +187,84 @@ object BestBuildWrScraper {
                         }
                     } }.awaitAll()
                 }
+                // China is a separate live region and must never be fused with
+                // Global publishers. Apply the single Tencent snapshot as-is,
+                // preserving an older valid snapshot when this poll fails.
+                if (requested == MetaRegion.CHINA) {
+                    val result = results.singleOrNull()
+                    val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+                    if (result != null) {
+                        val key = "${result.source.region.lowercase(Locale.ROOT)}_${result.source.id}"
+                        val oldStatus = _sourceStatuses.value[key]
+                        val fingerprint = (result.tiers.toSortedMap().toString() + result.stats.toSortedMap().toString())
+                            .let { value -> java.security.MessageDigest.getInstance("SHA-256")
+                                .digest(value.toByteArray()).joinToString("") { byte -> "%02x".format(byte) } }
+                        val ratesFingerprint = result.stats.toSortedMap().toString().let { value ->
+                            java.security.MessageDigest.getInstance("SHA-256").digest(value.toByteArray())
+                                .joinToString("") { byte -> "%02x".format(byte) }
+                        }
+                        val changed = fingerprint != prefs.getString("hash_$key", null)
+                        val ratesChanged = ratesFingerprint != prefs.getString("rates_hash_$key", null)
+                        val changedAt = if (result.status.isHealthy && changed) started
+                            else oldStatus?.lastChangedAt ?: prefs.getLong("changed_$key", 0)
+                        val ratesChangedAt = if (result.status.isHealthy && ratesChanged) started
+                            else oldStatus?.lastRatesChangedAt ?: prefs.getLong("rates_changed_$key", 0)
+                        _sourceStatuses.value = _sourceStatuses.value + (key to result.status.copy(
+                            lastSuccessAt = if (result.status.isHealthy) started else oldStatus?.lastSuccessAt ?: 0L,
+                            lastChangedAt = changedAt, lastRatesChangedAt = ratesChangedAt,
+                            unchangedChecks = if (changed) 0 else (oldStatus?.unchangedChecks ?: 0) + 1
+                        ))
+                        if (result.status.isHealthy) prefs.edit()
+                            .putString("hash_$key", fingerprint)
+                            .putString("rates_hash_$key", ratesFingerprint)
+                            .putLong("changed_$key", changedAt)
+                            .putLong("rates_changed_$key", ratesChangedAt)
+                            .putLong("success_$key", started)
+                            .apply()
+                    }
+                    val previousSnapshot = prefs.getString("snapshot_$requested", null)
+                    val previousTiers = runCatching {
+                        val json = JSONObject(previousSnapshot.orEmpty())
+                        json.keys().asSequence().associateWith { json.getString(it) }
+                    }.getOrDefault(emptyMap())
+                    val previousStats = decodeStats(prefs.getString(STATS_SNAPSHOT_PREFIX + requested, null))
+                    val previousRoleStats = decodeRoleStats(prefs.getString(ROLE_STATS_SNAPSHOT_PREFIX + requested, null))
+                    val completeStats = result?.stats.orEmpty().filterValues { it.isComplete() }
+                    val successNow = result?.status?.isHealthy == true &&
+                        (result.tiers.isNotEmpty() || completeStats.isNotEmpty())
+                    if (successNow) {
+                        val checked = started
+                        WildRiftRepository.applyRegionalTierList(
+                            MetaRegion.CHINA, result!!.tiers, completeStats,
+                            roleStats = result.roleStats,
+                            previousStats = previousStats, previousRoleStats = previousRoleStats,
+                            previousTiers = previousTiers, checkedAt = checked
+                        )
+                        _freshness.value = _freshness.value.copy(
+                            tiersCheckedAt = if (result.tiers.isNotEmpty()) checked else _freshness.value.tiersCheckedAt,
+                            ratesCheckedAt = if (completeStats.isNotEmpty()) checked else _freshness.value.ratesCheckedAt,
+                            tierCount = result.tiers.size, statsCount = completeStats.size,
+                            updatedChampionCount = completeStats.size,
+                            changedChampions = (previousStats.keys + completeStats.keys)
+                                .count { previousStats[it] != completeStats[it] }
+                        )
+                        prefs.edit().putLong("timestamp_$requested", checked)
+                            .putString("snapshot_$requested", JSONObject(result.tiers).toString())
+                            .putString(STATS_SNAPSHOT_PREFIX + requested, encodeStats(completeStats).toString())
+                            .putString(ROLE_STATS_SNAPSHOT_PREFIX + requested, encodeRoleStats(result.roleStats).toString())
+                            .apply()
+                        regions[requested] = RegionState(checked, true,
+                            "China actualizada (${completeStats.size}/${WildRiftRepository.baseChampionsList.size} estadísticas completas)")
+                    } else {
+                        regions[requested] = RegionState(regions[requested]?.at ?: 0L, false,
+                            result?.status?.errorMessage ?: "Sin datos nuevos; conservando China guardada.")
+                    }
+                    if (selectedRegion == requested) selectRegion(requested)
+                    return@withContext
+                }
                 val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-                _sourceStatuses.value = results.associate { result ->
-                    val key = "global_${result.source.id}"
+                _sourceStatuses.value = _sourceStatuses.value.filterKeys { it !in activeKeys } + results.associate { result ->
+                    val key = "${result.source.region.lowercase(Locale.ROOT)}_${result.source.id}"
                     val old = _sourceStatuses.value[key]
                     val fingerprint = (result.tiers.toSortedMap().toString() + result.stats.toSortedMap().toString())
                         .let { bytes -> java.security.MessageDigest.getInstance("SHA-256")

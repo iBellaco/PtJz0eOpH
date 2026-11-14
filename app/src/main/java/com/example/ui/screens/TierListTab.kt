@@ -127,10 +127,9 @@ internal fun isTierListChampionVisible(
     selectedLane: LaneRole?,
     region: String
 ): Boolean {
-    if (MetaRegion.normalize(region) == MetaRegion.CHINA) {
-        return champion.cnTier.trim().uppercase(java.util.Locale.ROOT) in
-            setOf("T0", "T1", "T2", "T3", "T4", "T5")
-    }
+    // China is now a live Tencent snapshot. Use the same completeness gate as
+    // Global so a champion without all three published rates never appears in
+    // the competitive list merely because the bundled catalog has a tier.
     return isTierListChampionVisible(champion, selectedLane)
 }
 
@@ -292,14 +291,6 @@ fun TierListTab(
                         )
                     }
                 }
-                if (isChinaRegion) {
-                    Text(
-                        text = com.example.util.tr("Referencia local • Sin estadísticas regionales en vivo"),
-                        color = TextMuted,
-                        fontSize = 10.sp,
-                        modifier = Modifier.padding(top = 3.dp)
-                    )
-                }
             }
 
             item {
@@ -441,7 +432,7 @@ fun TierListTab(
                 item {
                     TierSectionCard(
                         isOverlay = isOverlay,
-                        showStats = !isChinaRegion,
+                        showStats = true,
                         showTrend = isSignedIn,
                         tierName = "TIER S+ (${tr("Dominantes / Prioridad Pick & Ban")})",
                         tierColor = TierSPlusColor,
@@ -457,7 +448,7 @@ fun TierListTab(
                 item {
                     TierSectionCard(
                         isOverlay = isOverlay,
-                        showStats = !isChinaRegion,
+                        showStats = true,
                         showTrend = isSignedIn,
                         tierName = "TIER S (${tr("Meta Muy Fuerte / Alta Prioridad")})",
                         tierColor = TierSColor,
@@ -473,7 +464,7 @@ fun TierListTab(
                 item {
                     TierSectionCard(
                         isOverlay = isOverlay,
-                        showStats = !isChinaRegion,
+                        showStats = true,
                         showTrend = isSignedIn,
                         tierName = "TIER A (${tr("Opciones Sólidas y Balanceadas")})",
                         tierColor = TierAColor,
@@ -486,7 +477,7 @@ fun TierListTab(
 
             listOf("B" to (TierBColor to tierB), "C" to (TierCColor to tierC)).forEach { (tier, section) ->
                 if (section.second.isNotEmpty()) item {
-                    TierSectionCard(isOverlay = isOverlay, showStats = !isChinaRegion, showTrend = isSignedIn,
+                    TierSectionCard(isOverlay = isOverlay, showStats = true, showTrend = isSignedIn,
                         tierName = "TIER $tier", tierColor = section.first,
                         champions = section.second, selectedLane = selectedLane, onSelectChampion = onSelectChampion)
                 }
@@ -670,14 +661,6 @@ fun TierSectionCard(
                     color = tierColor,
                     fontSize = 13.5.sp,
                     fontWeight = FontWeight.Bold
-                )
-            }
-            if (!showStats) {
-                Text(
-                    text = com.example.util.tr("Referencia local • Sin estadísticas regionales en vivo"),
-                    color = TextMuted,
-                    fontSize = 10.sp,
-                    modifier = Modifier.padding(top = 3.dp)
                 )
             }
             Spacer(modifier = Modifier.height(10.dp))

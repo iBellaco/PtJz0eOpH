@@ -7,6 +7,21 @@ import org.junit.Assert.*
 import org.junit.Test
 
 class GlobalTierScrapingTest {
+    @Test fun `WildRiftFire fills missing master rows from the most complete bracket`() {
+        val html = """
+            <script id="wf-stats-data" type="application/json">
+              {"patch":"7.3f","brackets":{
+                "master":{"rows":[{"slug":"ahri","champion":"Ahri","role":"Mid","main":true,"win":52.0,"pick":4.0,"ban":1.0}]},
+                "apex":{"rows":[{"slug":"ahri","champion":"Ahri","role":"Mid","main":true,"win":51.0,"pick":3.0,"ban":0.8},{"slug":"bard","champion":"Bard","role":"Support","main":true,"win":54.0,"pick":2.0,"ban":1.2}]}
+              }}
+            </script>
+        """.trimIndent()
+        val report = com.example.data.sync.PublishedStatsParser.fire(html)
+        assertEquals(2, report.stats.size)
+        assertEquals(52.0, report.stats["ahri"]!!.winRate!!, .001)
+        assertEquals(54.0, report.stats["bard"]!!.winRate!!, .001)
+    }
+
     @Test fun `active live pages parse their current fixture and real tier rows`() {
         listOf("core" to "wildriftcore", "fire" to "wildriftfire").forEach { (file, source) ->
             val html = javaClass.getResource("/tier-sources-302/$file.html")!!.readText()
@@ -69,6 +84,25 @@ class GlobalTierScrapingTest {
         val mid = RegionalTierParser.parseRoleStats(html, "wildriftcore")["hwei"]!!
             .getValue(com.example.model.LaneRole.MID)
         assertEquals(global, mid)
+    }
+    @Test fun `WildRiftCore reads the complete rankings dataset instead of only rendered rows`() {
+        val html = """
+            <script id="rk-cfg" type="application/json">{"dan":"2"}</script>
+            <main class="rkc">
+              <script id="rk-data" type="application/json">
+                {"d":{"2":{"r":[["bard","SUPPORT",0,51.5,1.2,0.8],["zoe","MID",0,50.4,2.1,1.4]]}}}
+              </script>
+              <section class="rkc-sec" data-role="SUPPORT"><table><tbody>
+                <tr class="rkc-row"><td><a class="rkc-champ" href="/en/champions/bard/">Bard</a></td></tr>
+              </tbody></table></section>
+            </main>
+        """.trimIndent()
+        val stats = RegionalTierParser.parseStats(html, "wildriftcore")
+        assertEquals(51.5, stats["bard"]!!.winRate!!, 0.001)
+        assertEquals(1.2, stats["bard"]!!.pickRate!!, 0.001)
+        assertEquals(0.8, stats["bard"]!!.banRate!!, 0.001)
+        val roles = RegionalTierParser.parseRoleStats(html, "wildriftcore")
+        assertEquals(51.5, roles["bard"]!![com.example.model.LaneRole.SUPPORT]!!.winRate!!, 0.001)
     }
     @Test fun `WildRiftCore global fallback keeps the most representative repeated lane`() {
         val html = """

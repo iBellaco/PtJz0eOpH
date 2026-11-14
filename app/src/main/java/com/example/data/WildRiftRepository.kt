@@ -196,18 +196,11 @@ object WildRiftRepository {
     var regionRevision by mutableStateOf(0)
         private set
 
-    private fun chinaTierToDisplay(value: String): String = when (value.trim().uppercase(java.util.Locale.ROOT)) {
-        "T0" -> "S+"
-        "T1" -> "S"
-        "T2" -> "A"
-        "T3" -> "B"
-        "T4", "T5" -> "C"
-        else -> ""
-    }
-
     private fun chinaSnapshot(): List<Champion> = baseChampions.map { champion ->
         champion.copy(
-            tier = chinaTierToDisplay(champion.cnTier),
+            // Do not expose the old bundled classification while the live
+            // Tencent snapshot has not completed its first valid poll.
+            tier = "",
             tierMovement = 0,
             // The bundled China classification has no synchronized global
             // win/pick/ban snapshot. Keep those values out of the regional
@@ -244,12 +237,11 @@ object WildRiftRepository {
         patchMovements: Map<String, Int>? = null
     ) {
         val normalized = com.example.data.sync.MetaRegion.normalize(region)
-        if (normalized != com.example.data.sync.MetaRegion.DEFAULT) return
         val priorMovements = regionalChampions[normalized].orEmpty().associate { it.id to it.tierMovement }
         val updated = baseChampions.map { champion ->
             val category = com.example.data.sync.GlobalTierConsensus.displayCategory(tiers[com.example.data.sync.RegionalTierParser.canonical(champion.id)]
                 ?: tiers[com.example.data.sync.RegionalTierParser.canonical(champion.name)]
-                ?: champion.tier.ifBlank { "A" })
+                ?: if (normalized == com.example.data.sync.MetaRegion.CHINA) "" else champion.tier.ifBlank { "A" })
             val previousTier = previousTiers[com.example.data.sync.RegionalTierParser.canonical(champion.id)]
                 ?: previousTiers[com.example.data.sync.RegionalTierParser.canonical(champion.name)]
             fun tierRank(value: String): Int = when (value.trim().uppercase()) {
@@ -297,7 +289,8 @@ object WildRiftRepository {
                 history24hAt = if (hasCurrentStats) day?.at ?: 0L else 0L,
                 history12hAt = if (hasCurrentStats) halfDay?.at ?: 0L else 0L,
                 tier = category,
-                tierMovement = patchMovements?.get(com.example.data.sync.RegionalTierParser.canonical(champion.id)) ?: if (patchMovements != null) 0 else previousTier?.takeIf { it.isNotBlank() }?.let {
+                tierMovement = if (normalized == com.example.data.sync.MetaRegion.CHINA) 0 else
+                    patchMovements?.get(com.example.data.sync.RegionalTierParser.canonical(champion.id)) ?: if (patchMovements != null) 0 else previousTier?.takeIf { it.isNotBlank() }?.let {
                     when {
                         tierRank(category) != tierRank(it) -> tierRank(category) - tierRank(it)
                         else -> priorMovements[champion.id] ?: champion.tierMovement

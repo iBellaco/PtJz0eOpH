@@ -21,10 +21,15 @@ def valid_source_patch_bindings(scraper):
     expected_ids = {'wildriftfire', 'wildriftcore'}
     sources = re.findall(r'GlobalScrapingSource\s*\(([^()]*)\)', scraper, re.DOTALL)
     ids = [re.match(r'\s*"([^"]+)"', source) for source in sources]
-    return (len(sources) == len(expected_ids) and all(ids)
-            and {match.group(1) for match in ids} == expected_ids
+    global_sources = [source for source, match in zip(sources, ids)
+                      if match and match.group(1) in expected_ids]
+    global_ids = [match.group(1) for match in ids if match and match.group(1) in expected_ids]
+    # Regional feeds (for example China) may have their own source object and
+    # must not make the two global patch bindings fail validation.
+    return (len(global_sources) == len(expected_ids)
+            and set(global_ids) == expected_ids
             and all(re.search(r',\s*com\.example\.data\.GamePatch\.VERSION\s*,?\s*$', source)
-                    for source in sources))
+                    for source in global_sources))
 
 
 def validate_text(text, expected):
@@ -91,7 +96,7 @@ def main() -> int:
             errors.append(f"Fuente {source}: versión de evidencia ausente, inválida o futura")
     scraper = (ROOT / "app/src/main/java/com/example/data/sync/BestBuildWrScraper.kt").read_text()
     if not valid_source_patch_bindings(scraper):
-        errors.append("Las dos fuentes activas deben usar GamePatch.VERSION")
+        errors.append("Las dos fuentes globales activas deben usar GamePatch.VERSION")
     if errors:
         print("PATCH_CONTENT_VALIDATION: FAILED")
         print("\n".join(errors))

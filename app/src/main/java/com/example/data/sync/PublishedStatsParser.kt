@@ -28,24 +28,46 @@ object PublishedStatsParser {
     fun fire(html: String): FireReport = runCatching {
         val doc = Jsoup.parse(html)
         val current = JSONObject(doc.selectFirst("script#wf-stats-data")?.data().orEmpty())
-        val rows = current.getJSONObject("brackets").getJSONObject("master").getJSONArray("rows")
+        val brackets = current.optJSONObject("brackets") ?: return@runCatching FireReport()
+        val preferred = listOf("master", "apex", "challenger", "diamond")
+            .filter { brackets.optJSONObject(it) != null }
+        if (preferred.isEmpty()) return@runCatching FireReport()
         val stats = linkedMapOf<String, ChampionMetaStats>()
         val roleStats = linkedMapOf<String, MutableMap<com.example.model.LaneRole, ChampionMetaStats>>()
         val historyKeys = linkedMapOf<String, String>()
-        for (i in 0 until rows.length()) {
-            val row = rows.getJSONObject(i)
-            val id = RegionalTierParser.canonical(row.getString("slug"))
-            fun rate(key: String) = row.optDouble(key, Double.NaN).takeIf { it.isFinite() && it in 0.0..100.0 }
-            val value = ChampionMetaStats(rate("win"), rate("pick"), rate("ban"))
-            RegionalTierParser.role(row.optString("role"))?.let { role ->
-                if (value.isUsable()) roleStats.getOrPut(id) { linkedMapOf() }[role] = value
-            }
-            if (!row.optBoolean("main")) continue
-            if (value.isUsable()) {
-                stats[id] = value
-                historyKeys[id] = row.getString("champion") + " (" + row.getString("role") + ")"
+        fun readBracket(name: String, fillOnly: Boolean) {
+            val rows = brackets.optJSONObject(name)?.optJSONArray("rows") ?: return
+            for (i in 0 until rows.length()) {
+                val row = rows.optJSONObject(i) ?: continue
+                val slug = row.optString("slug")
+                val champion = row.optString("champion")
+                val roleName = row.optString("role")
+                if (slug.isBlank() || roleName.isBlank()) continue
+                val id = RegionalTierParser.canonical(slug)
+                fun rate(key: String) = row.optDouble(key, Double.NaN).takeIf { it.isFinite() && it in 0.0..100.0 }
+                val value = ChampionMetaStats(rate("win"), rate("pick"), rate("ban"))
+                RegionalTierParser.role(roleName)?.let { role ->
+                    if (value.isUsable()) {
+                        val byRole = roleStats.getOrPut(id) { linkedMapOf() }
+                        val old = byRole[role]
+                        if (old == null || !old.isComplete() || !fillOnly ||
+                            (value.pickRate ?: -1.0) > (old.pickRate ?: -1.0)) {
+                            // Master is authoritative. Apex/challenger rows
+                            // only fill a champion/role absent there.
+                            if (!fillOnly || old == null || !old.isComplete()) byRole[role] = value
+                        }
+                    }
+                }
+                if (!row.optBoolean("main")) continue
+                val old = stats[id]
+                if (old == null || !old.isComplete() ||
+                    (!fillOnly && (value.pickRate ?: -1.0) > (old.pickRate ?: -1.0))) {
+                    stats[id] = value
+                    if (champion.isNotBlank()) historyKeys[id] = "$champion ($roleName)"
+                }
             }
         }
+        preferred.forEachIndexed { index, name -> readBracket(name, fillOnly = index > 0) }
         val history = linkedMapOf<String, List<ObservedRate>>()
         val archive = doc.selectFirst("script#wf-stats-history")?.data()?.let(::JSONObject)
         val patch = current.getString("patch")
