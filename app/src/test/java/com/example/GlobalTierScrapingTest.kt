@@ -127,6 +127,27 @@ class GlobalTierScrapingTest {
         val roles = RegionalTierParser.parseRoleStats(html, "wildriftcore")
         assertEquals(47.5, roles["zoe"]!![com.example.model.LaneRole.MID]!!.winRate!!, 0.001)
     }
+
+    @Test fun `WildRifter publishes all three rates and tier`() {
+        val html = """
+            <a href="/en/champion/bard" aria-label="View Bard details">
+              <span aria-label="Tier D">D</span><h3>Bard</h3>
+              <dl><div><dt>Win</dt><dd>50.9%</dd></div>
+                  <div><dt>Pick</dt><dd>1.4%</dd></div>
+                  <div><dt>Ban</dt><dd>0.2%</dd></div></dl>
+            </a>
+            <a href="/en/champion/sylas" aria-label="View Sylas details">
+              <span>No data</span>
+            </a>
+        """.trimIndent()
+        assertEquals("D", RegionalTierParser.parse(html, "wildrifter")["bard"])
+        val stats = RegionalTierParser.parseStats(html, "wildrifter")["bard"]!!
+        assertTrue(stats.isComplete())
+        assertEquals(50.9, stats.winRate!!, 0.001)
+        assertEquals(1.4, stats.pickRate!!, 0.001)
+        assertEquals(0.2, stats.banRate!!, 0.001)
+        assertFalse(RegionalTierParser.parseStats(html, "wildrifter").containsKey("sylas"))
+    }
     @Test fun `empty error pages and insufficient unknown champions fail validation`() {
         assertTrue(RegionalTierParser.parse("<html>Service unavailable</html>").isEmpty())
         val known=(1..100).map { "champ$it" }.toSet()

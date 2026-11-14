@@ -6,6 +6,7 @@ import com.example.model.LaneRole
 import com.example.util.ChampionRoleAdapter
 import com.example.ui.screens.publishedChampionRoles
 import com.example.ui.screens.tierDisplayedStats
+import com.example.ui.screens.isTierListChampionVisible
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -63,5 +64,15 @@ class ChampionLaneStatsTest {
         assertEquals(detail.winrate, card.win, 0.001)
         assertEquals(detail.pickRate, card.pick, 0.001)
         assertEquals(detail.banRate, card.ban, 0.001)
+    }
+
+    @Test fun `tier list hides a current snapshot until all three rates exist`() {
+        val champion = Champion(
+            id = "bard", name = "Bard", primaryRole = LaneRole.SUPPORT,
+            tier = "A", hasRegionalStats = true, statsCheckedAt = 1L,
+            winrate = 51.5, pickRate = 1.2, banRate = Double.NaN
+        )
+        assertTrue(!isTierListChampionVisible(champion))
+        assertTrue(isTierListChampionVisible(champion.copy(banRate = 0.2)))
     }
 }

@@ -1,4 +1,5 @@
 name: Validación selectiva de correcciones de Coach
+run-name: Validación unificada de fix-error · ${{ github.sha }}
 
 on:
   push:

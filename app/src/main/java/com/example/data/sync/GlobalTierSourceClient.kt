@@ -15,7 +15,9 @@ data class ScraperSourceStatus(
     val tierCount: Int = 0, val statsCount: Int = 0, val lastSuccessAt: Long = 0,
     val lastChangedAt: Long = 0, val unchangedChecks: Int = 0,
     val publishedPatch: String = "", val rosterCount: Int = 0, val historyCount: Int = 0,
-    val lastRatesChangedAt: Long = 0L
+    val lastRatesChangedAt: Long = 0L,
+    val partialStatsCount: Int = 0, val missingStatsCount: Int = 0,
+    val partialStatIds: List<String> = emptyList(), val missingStatIds: List<String> = emptyList()
 )
 
 data class GlobalScrapingSource(val id: String, val name: String, val url: String,
@@ -113,12 +115,21 @@ class GlobalTierSourceClient(
         val minimumCoverage = if (known.size < 100) known.size else kotlin.math.ceil(known.size * 0.70).toInt()
         val coverage = (parsed.keys + stats.keys).map(RegionalTierParser::canonical).toSet().size
         val completeEnough = coverage >= minimumCoverage
+        val normalizedStats = stats.mapKeys { (id, _) -> RegionalTierParser.canonical(id) }
+        val completeStats = normalizedStats.count { it.value.isComplete() }
+        // Any row that arrived but cannot prove all three finite metrics is
+        // partial. This also catches malformed values instead of silently
+        // classifying them as absent.
+        val partialIds = normalizedStats.filterValues { !it.isComplete() }.keys.sorted()
+        val missingIds = (known - normalizedStats.keys).sorted()
         if (error == null && !completeEnough) error = "Cobertura insuficiente: $coverage/${known.size} (mínimo $minimumCoverage)"
         return SourceResult(source, parsed, ScraperSourceStatus(name = source.name, url = source.url,
             isHealthy = error == null && completeEnough, lastChecked = System.currentTimeMillis(),
             responseTimeMs = System.currentTimeMillis() - started, errorMessage = error,
-            tierCount = parsed.size, statsCount = stats.size, publishedPatch = patch,
-            rosterCount = coverage, historyCount = history.count { it.value.isNotEmpty() }), stats, history, roleStats)
+            tierCount = parsed.size, statsCount = completeStats, publishedPatch = patch,
+            rosterCount = coverage, historyCount = history.count { it.value.isNotEmpty() },
+            partialStatsCount = partialIds.size, missingStatsCount = missingIds.size,
+            partialStatIds = partialIds, missingStatIds = missingIds), stats, history, roleStats)
     }
 
     private class SourceHttpException(val code: Int) : java.io.IOException()

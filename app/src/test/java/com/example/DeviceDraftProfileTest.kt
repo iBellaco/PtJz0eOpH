@@ -14,6 +14,7 @@ import org.robolectric.shadows.ShadowBuild
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [34], application = Application::class)
 class DeviceDraftProfileTest {
+    private data class ProfileKey(val manufacturer: String, val model: String, val width: Int, val height: Int)
     @Test fun redMagicOldCoordinatesAreDiscardedOnceButNewAdjustmentsAndOtherPhonesSurvive() {
         val context=RuntimeEnvironment.getApplication()
         val prefs=context.getSharedPreferences("vision_calibration_prefs",0)
@@ -95,95 +96,37 @@ class DeviceDraftProfileTest {
         }
     }
     @Test fun measuredDefaultsRequireTheExactDeviceAndCaptureDimensions() {
-        val samsungS948 = VisionCalibrationConfig.measuredDefaultForCapture(
-            "Samsung", "SM-S948B", 3120, 1440)
-        assertNotNull(samsungS948)
-        assertEquals(.1171875f, samsungS948!!.allyAvatarCenterX)
-        assertEquals(.91328126f, samsungS948.enemyAvatarCenterX)
-        assertEquals(.19071549f, samsungS948.allySlotYRatios.first())
+        val kenshin = VisionCalibrationConfig.measuredDefaultForCapture(
+            "motorola", "motorola edge 30 neo", 2174, 1080)
+        assertNotNull(kenshin)
+        assertEquals(.107000016f, kenshin!!.allyAvatarCenterX)
+        assertEquals(.919f, kenshin.enemyAvatarCenterX)
+        assertEquals(.188f, kenshin.allySlotYRatios.first())
+        assertEquals(.168f, kenshin.topAlly5XRatio)
+        assertEquals(.974f, kenshin.topEnemy5XRatio)
+        assertEquals(.172f, kenshin.allyBanXRatios.last())
 
         // Orientation may swap width and height, but another model or another
         // capture size must never inherit these coordinates.
-        assertEquals(samsungS948, VisionCalibrationConfig.measuredDefaultForCapture(
-            "samsung", "sm-s948b", 1440, 3120))
+        assertEquals(kenshin, VisionCalibrationConfig.measuredDefaultForCapture(
+            "MOTOROLA", "MOTOROLA EDGE 30 NEO", 1080, 2174))
+        assertEquals(kenshin, VisionCalibrationConfig.measuredDefaultForCapture(
+            "motorola", "motorola edge 30 neo", 1920, 954))
         assertNull(VisionCalibrationConfig.measuredDefaultForCapture(
-            "Samsung", "SM-S938B", 3120, 1440))
+            "motorola", "motorola edge 30 neo", 2340, 1080))
         assertNull(VisionCalibrationConfig.measuredDefaultForCapture(
-            "Samsung", "SM-S948B", 2340, 1080))
-    }
-    @Test fun sameResolutionDoesNotShareCoordinatesBetweenMeasuredPhones() {
-        val a156 = VisionCalibrationConfig.measuredDefaultForCapture("samsung", "SM-A156U", 2340, 1080)
-        val s942 = VisionCalibrationConfig.measuredDefaultForCapture("samsung", "SM-S942B", 2340, 1080)
-        val s938 = VisionCalibrationConfig.measuredDefaultForCapture("samsung", "SM-S938B", 2340, 1080)
-        assertNotNull(a156); assertNotNull(s942); assertNotNull(s938)
-        assertNotEquals(a156!!.allyAvatarCenterX, s942!!.allyAvatarCenterX)
-        assertNotEquals(s942.enemyAvatarCenterX, s938!!.enemyAvatarCenterX)
-        assertEquals(.11862696f, VisionCalibrationConfig.measuredDefaultForCapture(
-            "Xiaomi", "2412DPC0AG", 2712, 1220)!!.allyAvatarCenterX)
-        assertEquals(.90703124f, VisionCalibrationConfig.measuredDefaultForCapture(
-            "HONOR", "BVL-N49", 2800, 1280)!!.enemyAvatarCenterX)
-        assertNull(VisionCalibrationConfig.measuredDefaultForCapture("unknown", "unknown", 2340, 1080))
-    }
-    @Test fun oppoCph2791UsesItsExactMeasuredCaptureProfile() {
-        val oppo = VisionCalibrationConfig.measuredDefaultForCapture("OPPO", "CPH2791", 2354, 1080)
-        assertNotNull(oppo)
-        assertEquals(.12803629f, oppo!!.allyAvatarCenterX)
-        assertEquals(.90703124f, oppo.enemyAvatarCenterX)
-        assertEquals(.17041795f, oppo.topAlly5XRatio)
-        assertEquals(.9736258f, oppo.topEnemy5XRatio)
-        assertEquals(.18950696f, oppo.enemySlotYRatios.first())
-        assertEquals(.72302145f, oppo.enemySlotYRatios.last())
-        assertNull(VisionCalibrationConfig.measuredDefaultForCapture("OPPO", "CPH2791", 2340, 1080))
-        assertNull(VisionCalibrationConfig.measuredDefaultForCapture("OPPO", "another", 2354, 1080))
-    }
-    @Test fun xiaomi25062Rn2dlUsesItsExactMeasuredCaptureProfile() {
-        val xiaomi = VisionCalibrationConfig.measuredDefaultForCapture("Xiaomi", "25062RN2DL", 2340, 1080)
-        assertNotNull(xiaomi)
-        assertEquals(.15031247f, xiaomi!!.allyAvatarCenterX)
-        assertEquals(.959f, xiaomi.enemyAvatarCenterX)
-        assertEquals(.15031247f, xiaomi.allySlotXRatios.first())
-        assertEquals(.11906247f, xiaomi.allySlotXRatios[1])
-        assertEquals(.19120136f, xiaomi.allySlotYRatios.first())
-        assertEquals(.72556216f, xiaomi.allySlotYRatios.last())
-        assertEquals(.105f, xiaomi.allySlotDiameterRatios.last())
-        assertEquals(.9734761f, xiaomi.topEnemy5XRatio)
-        assertNull(VisionCalibrationConfig.measuredDefaultForCapture("Xiaomi", "25062RN2DL", 2400, 1080))
-        assertNull(VisionCalibrationConfig.measuredDefaultForCapture("Xiaomi", "another", 2340, 1080))
-    }
-    @Test fun motorolaMotoG56UsesItsExactMeasuredCaptureProfile() {
-        val moto = VisionCalibrationConfig.measuredDefaultForCapture("motorola", "moto g56 5G", 2400, 1080)
-        assertNotNull(moto)
-        assertEquals(.1171875f, moto!!.allyAvatarCenterX)
-        assertEquals(.91421247f, moto.enemyAvatarCenterX)
-        assertEquals(.16712953f, moto.topAlly5XRatio)
-        assertEquals(.9741347f, moto.topEnemy5XRatio)
-        assertEquals(.1892361f, moto.allySlotYRatios.first())
-        assertEquals(.7256944f, moto.allySlotYRatios.last())
-        assertEquals(.1f, moto.allySlotDiameterRatios.last())
-        assertEquals(.91421247f, moto.enemySlotXRatios.first())
-        assertEquals(.722f, moto.enemySlotYRatios.last())
-        assertNull(VisionCalibrationConfig.measuredDefaultForCapture("motorola", "moto g56 5G", 2340, 1080))
-        assertNull(VisionCalibrationConfig.measuredDefaultForCapture("motorola", "another", 2400, 1080))
+            "motorola", "another", 2174, 1080))
     }
 
-    @Test fun nubiaNx809jUsesTheOwnerMeasurementsAndObservedCaptureAlias() {
-        val panel = VisionCalibrationConfig.measuredDefaultForCapture("nubia", "NX809J", 2688, 1216)
-        assertNotNull(panel)
-        assertEquals(.08704145f, panel!!.allyAvatarCenterX)
-        assertEquals(.975f, panel.enemyAvatarCenterX)
-        assertEquals(.23799995f, panel.allySlotYRatios.first())
-        assertEquals(.68706477f, panel.enemySlotYRatios.last())
-        assertEquals(.1680967f, panel.topAlly5XRatio)
-        assertEquals(.973985f, panel.topEnemy5XRatio)
-        assertEquals(.17209902f, panel.allyBanXRatios.last())
-
-        // This is the exact capture surface reported by the diagnostic for the
-        // same model; it uses the same normalized measurements, not a shared
-        // resolution fallback.
-        val capture = VisionCalibrationConfig.measuredDefaultForCapture("nubia", "NX809J", 1920, 869)
-        assertEquals(panel, capture)
-        assertNull(VisionCalibrationConfig.measuredDefaultForCapture("nubia", "NX809J", 1920, 868))
-        assertNull(VisionCalibrationConfig.measuredDefaultForCapture("nubia", "another", 2688, 1216))
+    @Test fun previousMeasuredCatalogIsNotUsedAfterTheOwnerReset() {
+        for ((manufacturer, model, width, height) in listOf(
+            ProfileKey("samsung", "SM-S948B", 3120, 1440),
+            ProfileKey("Xiaomi", "25062RN2DL", 2340, 1080),
+            ProfileKey("OPPO", "CPH2791", 2354, 1080),
+            ProfileKey("nubia", "NX809J", 2688, 1216)
+        )) {
+            assertNull(VisionCalibrationConfig.measuredDefaultForCapture(manufacturer, model, width, height))
+        }
     }
     @Test fun nineConfirmedTitlesIdentifyTheSideRegardlessOfAnEarlierWrongPrefix() {
         val all = List(5) { true }

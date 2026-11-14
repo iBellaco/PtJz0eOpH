@@ -69,132 +69,28 @@ internal object MeasuredDeviceCalibrationDefaults {
         )
     }
 
+    /*
+     * The previous measured catalog was intentionally removed at the owner's
+     * request after the ban overlay proved unreliable on several devices.
+     * New measurements are accepted one device/capture at a time so an old
+     * geometry cannot silently become the fallback for another phone.
+     */
+    private val kenshinConfig = measured(
+            .11f, .107000016f, .919f,
+            List(5) { .107000016f }, listOf(.188f, .324f, .458f, .591f, .725f),
+            listOf(.11f, .11f, .11f, .11f, .105f),
+            List(5) { .919f }, listOf(.188f, .324f, .457f, .59f, .722f), List(5) { .11f },
+            listOf(.028f, .064f, .1f, .136f, .172f), List(5) { .052f }, List(5) { .06f }, false,
+            listOf(.826f, .863f, .9f, .937f, .974f), List(5) { .052f }, List(5) { .06f }, false,
+            .045f, .072f, .168f, .974f
+        )
+
     private val profiles = listOf(
-        Profile("samsung", "SM-A156U", 2340, 1080, measured(
-            .11f, .09200001f, .934f,
-            List(5) { .09200001f }, listOf(.188f, .324f, .458f, .591f, .725f),
-            listOf(.12f, .12f, .12f, .12f, .115f),
-            List(5) { .934f }, listOf(.188f, .324f, .457f, .59f, .722f), List(5) { .12f },
-            listOf(.028f, .064f, .1f, .136f, .172f), List(5) { .052f }, List(5) { .06f }, false,
-            listOf(.826f, .863f, .9f, .937f, .974f), List(5) { .052f }, List(5) { .06f }, false,
-            .045f, .072f, .168f, .974f
-        )),
-        Profile("Xiaomi", "2412DPC0AG", 2712, 1220, measured(
-            .11f, .11862696f, .91106254f,
-            listOf(.11862696f, .118875f, .11862696f, .11862696f, .11862696f),
-            listOf(.188f, .32118055f, .458f, .591f, .725f), listOf(.11f, .11f, .11f, .11f, .105f),
-            List(5) { .91106254f }, listOf(.18750001f, .3244269f, .45833334f, .5922398f, .7251394f), List(5) { .11f },
-            listOf(.027854925f, .0636684f, .09948187f, .13529535f, .17110883f), List(5) { .052f }, List(5) { .06f }, false,
-            listOf(.82690156f, .8637098f, .9005181f, .93732643f, .9741347f), List(5) { .052f }, List(5) { .06f }, false,
-            .045f, .072f, .16712953f, .9741347f
-        )),
-        Profile("Xiaomi", "25062RN2DL", 2340, 1080, measured(
-            .11f, .15031247f, .959f,
-            listOf(.15031247f, .11906247f, .11906247f, .11906247f, .11906247f),
-            listOf(.19120136f, .32453611f, .45854485f, .5915535f, .72556216f),
-            listOf(.11f, .11f, .11f, .11f, .105f),
-            List(5) { .959f },
-            listOf(.188f, .324f, .457f, .59f, .722f), List(5) { .11f },
-            listOf(.028564192f, .06528959f, .102014974f, .13874036f, .17546576f),
-            List(5) { .052f }, List(5) { .06f }, false,
-            listOf(.8224939f, .86023945f, .897985f, .9357306f, .9734761f),
-            List(5) { .052f }, List(5) { .06f }, false,
-            .045f, .072f, .17138515f, .9734761f
-        )),
-        Profile("samsung", "SM-S942B", 2340, 1080, measured(
-            .11f, .073450774f, .9109375f,
-            listOf(.090450786f, .08984375f, .08984375f, .08984375f, .08984375f),
-            listOf(.189f, .32438484f, .45735165f, .5883336f, .72030044f), List(5) { .105f },
-            List(5) { .9109375f }, listOf(.18818618f, .3248731f, .45854485f, .5922166f, .7248833f), List(5) { .105f },
-            listOf(.07538463f, .1119231f, .14653845f, .18499997f, .22153842f),
-            listOf(.05138889f, .05138889f, .05277778f, .05138889f, .05138889f), List(5) { .06388889f }, true,
-            listOf(.8224939f, .86023945f, .897985f, .9357306f, .9734761f), List(5) { .052f }, List(5) { .06f }, false,
-            .045f, .072f, .17138515f, .9734761f
-        )),
-        Profile("HONOR", "BVL-N49", 2800, 1280, measured(
-            .11f, .12200002f, .90703124f,
-            List(5) { .12200002f }, listOf(.188f, .324f, .458f, .591f, .725f),
-            listOf(.11f, .11f, .11f, .11f, .105f),
-            List(5) { .90703124f }, listOf(.18571843f, .32257378f, .45641026f, .59024674f, .72307694f), List(5) { .11f },
-            listOf(.076874204f, .113723f, .1505718f, .18678527f, .22371663f),
-            listOf(.047222223f, .05277778f, .05277778f, .05277778f, .05138889f), List(5) { .058333334f }, true,
-            listOf(.826f, .863f, .9f, .937f, .974f), List(5) { .052f }, List(5) { .06f }, false,
-            .045f, .072f, .168f, .974f
-        )),
-        Profile("samsung", "SM-S938B", 2340, 1080, measured(
-            .11f, .072f, .959f,
-            List(5) { .072f }, listOf(.188f, .324f, .458f, .591f, .725f),
-            listOf(.11f, .11f, .11f, .11f, .105f),
-            List(5) { .959f }, listOf(.188f, .324f, .457f, .59f, .722f), List(5) { .11f },
-            listOf(.028f, .064f, .1f, .136f, .172f), List(5) { .052f }, List(5) { .06f }, false,
-            listOf(.826f, .863f, .9f, .937f, .974f), List(5) { .052f }, List(5) { .06f }, false,
-            .045f, .072f, .168f, .974f
-        )),
-        Profile("samsung", "SM-S948B", 3120, 1440, measured(
-            .11f, .1171875f, .91328126f,
-            List(5) { .1171875f }, listOf(.19071549f, .32604176f, .45937794f, .5917191f, .7250552f),
-            listOf(.11f, .11f, .11f, .11f, .105f),
-            List(5) { .91328126f }, listOf(.18790826f, .32473567f, .45854485f, .592354f, .7251571f), List(5) { .11f },
-            listOf(.028564192f, .06528959f, .102014974f, .13874036f, .17546576f), List(5) { .052f }, List(5) { .06f }, false,
-            listOf(.8224939f, .86023945f, .897985f, .9357306f, .9734761f), List(5) { .052f }, List(5) { .06f }, false,
-            .045f, .072f, .17138515f, .9734761f
-        )),
-        Profile("OPPO", "CPH2791", 2354, 1080, measured(
-            .11f, .12803629f, .90703124f,
-            List(5) { .12803629f }, listOf(.188f, .324f, .458f, .591f, .725f),
-            listOf(.11f, .11f, .11f, .11f, .105f),
-            List(5) { .90703124f },
-            listOf(.18950696f, .3253833f, .45826235f, .5911414f, .72302145f), List(5) { .11f },
-            listOf(.028402993f, .06492113f, .10143926f, .13795741f, .17447554f),
-            List(5) { .052f }, List(5) { .06f }, false,
-            listOf(.8234956f, .8610282f, .8985607f, .9360932f, .9736258f),
-            List(5) { .052f }, List(5) { .06f }, false,
-            .045f, .072f, .17041795f, .9736258f
-        )),
-        Profile("motorola", "moto g56 5G", 2400, 1080, measured(
-            .11f, .1171875f, .91421247f,
-            listOf(.1171875f, .08828125f, .08828125f, .08828125f, .08828125f),
-            listOf(.1892361f, .32415208f, .45833334f, .5915132f, .7256944f),
-            listOf(.105f, .105f, .105f, .105f, .1f),
-            List(5) { .91421247f }, listOf(.188f, .324f, .457f, .59f, .722f), List(5) { .105f },
-            listOf(.027854925f, .0636684f, .09948187f, .13529535f, .17110883f),
-            List(5) { .052f }, List(5) { .06f }, false,
-            listOf(.82690156f, .8637098f, .9005181f, .93732643f, .9741347f),
-            List(5) { .052f }, List(5) { .06f }, false,
-            .045f, .072f, .16712953f, .9741347f
-        )),
-        Profile("nubia", "NX809J", 2688, 1216, measured(
-            .11f, .08704145f, .975f,
-            List(5) { .08704145f },
-            listOf(.23799995f, .37399995f, .50799996f, .641f, .775f),
-            listOf(.11999999f, .11999999f, .11999999f, .11999999f, .11499999f),
-            List(5) { .975f },
-            listOf(.15306476f, .28906476f, .42206478f, .55506474f, .68706477f),
-            List(5) { .11f },
-            listOf(.02801612f, .064036846f, .100057565f, .1360783f, .17209902f),
-            List(5) { .052f }, List(5) { .06f }, false,
-            listOf(.82589984f, .8629211f, .8999424f, .9369637f, .973985f),
-            List(5) { .052f }, List(5) { .06f }, false,
-            .045f, .072f, .1680967f, .973985f
-        )),
-        // Android reports a 1920x869 capture surface for this same device.
-        // The owner supplied normalized measurements for its 2688x1216 panel;
-        // reusing those ratios on the observed capture keeps the profile exact
-        // without sharing it with another model or resolution.
-        Profile("nubia", "NX809J", 1920, 869, measured(
-            .11f, .08704145f, .975f,
-            List(5) { .08704145f },
-            listOf(.23799995f, .37399995f, .50799996f, .641f, .775f),
-            listOf(.11999999f, .11999999f, .11999999f, .11999999f, .11499999f),
-            List(5) { .975f },
-            listOf(.15306476f, .28906476f, .42206478f, .55506474f, .68706477f),
-            List(5) { .11f },
-            listOf(.02801612f, .064036846f, .100057565f, .1360783f, .17209902f),
-            List(5) { .052f }, List(5) { .06f }, false,
-            listOf(.82589984f, .8629211f, .8999424f, .9369637f, .973985f),
-            List(5) { .052f }, List(5) { .06f }, false,
-            .045f, .072f, .1680967f, .973985f
-        ))
+        Profile("motorola", "motorola edge 30 neo", 2174, 1080, kenshinConfig),
+        // ScreenCaptureManager limits wide captures to 1920 px. This is the
+        // same phone and the same normalized measurement, expressed at the
+        // exact 1920x954 surface that Android produces from 2174x1080.
+        Profile("motorola", "motorola edge 30 neo", 1920, 954, kenshinConfig)
     )
 
     fun forCapture(

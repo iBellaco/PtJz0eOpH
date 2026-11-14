@@ -36,6 +36,9 @@ fun MetaMonitoringCard() {
         status.lastChecked == 0L -> "Pendiente de comprobación"
         now - status.lastChecked > 3 * MetaFreshness.POLL_INTERVAL_MS -> "Consulta detenida"
         !status.isHealthy -> status.errorMessage ?: "Error de conexión"
+        status.partialStatsCount > 0 && status.missingStatsCount > 0 -> "Estadísticas incompletas"
+        status.partialStatsCount > 0 -> "Estadísticas parciales"
+        status.missingStatsCount > 0 -> "Faltan estadísticas publicadas"
         status.errorMessage != null -> status.errorMessage
         status.lastRatesChangedAt > 0 && now - status.lastRatesChangedAt >= 24 * 60 * 60_000L -> "Tasas sin cambios desde hace 24 horas"
         status.lastChangedAt > 0 && now - status.lastChangedAt >= 24 * 60 * 60_000L -> "Sin cambios desde hace 24 horas"
@@ -53,6 +56,8 @@ fun MetaMonitoringCard() {
             else -> "${minutes}min ${seconds % 60}s"
         }
     }
+    fun compactIds(ids: List<String>): String = ids.take(12).joinToString(", ") +
+        if (ids.size > 12) " … (+${ids.size - 12})" else ""
     val issues = sources.values.count { issue(it) != null }
     Surface(Modifier.fillMaxWidth().padding(12.dp).testTag("meta_monitoring_card"),
         color = HextechSurface, shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
@@ -79,7 +84,10 @@ fun MetaMonitoringCard() {
                     Column(Modifier.weight(1f).padding(horizontal = 8.dp)) {
                         Text(status.name.substringBefore(" ("), color = TextPrimary, fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
                         Text(tr(state) + " · " + tr("Categorías") + " ${status.tierCount}/$expected · " +
-                            tr("Estadísticas") + " ${status.statsCount}/$expected", color = color, fontSize = 10.sp)
+                            tr("Estadísticas completas") + " ${status.statsCount}/$expected" +
+                            if (status.partialStatsCount + status.missingStatsCount > 0)
+                                " · ${tr("Problemas de cobertura")}: ${status.partialStatsCount + status.missingStatsCount}" else "",
+                            color = color, fontSize = 10.sp)
                     }
                     Text(if (status.lastChecked > 0) java.text.SimpleDateFormat("HH:mm:ss", java.util.Locale.getDefault())
                         .format(java.util.Date(status.lastChecked)) else "—", color = TextMuted, fontSize = 10.sp)
@@ -104,7 +112,19 @@ fun MetaMonitoringCard() {
                 Text(tr("Parche") + ": " + status.publishedPatch.ifBlank { "—" })
                 Text(tr("Cobertura publicada") + ": ${coverage(status)}/$expected")
                 Text(tr("Categorías") + ": ${status.tierCount}/$expected")
-                Text(tr("Estadísticas") + ": ${status.statsCount}/$expected")
+                Text(tr("Estadísticas completas") + ": ${status.statsCount}/$expected")
+                if (status.partialStatsCount > 0) {
+                    Text(tr("Estadísticas parciales") + ": ${status.partialStatsCount}")
+                }
+                if (status.missingStatsCount > 0) {
+                    Text(tr("Sin estadísticas publicadas") + ": ${status.missingStatsCount}")
+                }
+                if (status.partialStatIds.isNotEmpty()) {
+                    Text(tr("Campeones con estadísticas parciales") + ": " + compactIds(status.partialStatIds))
+                }
+                if (status.missingStatIds.isNotEmpty()) {
+                    Text(tr("Campeones sin estadísticas") + ": " + compactIds(status.missingStatIds))
+                }
                 Text(tr("Historial disponible") + ": ${status.historyCount}/$expected")
                 Text(tr("Última consulta válida") + ": " + metaTime(status.lastSuccessAt))
                 Text(tr("Último cambio de valores") + ": " + metaTime(status.lastChangedAt))

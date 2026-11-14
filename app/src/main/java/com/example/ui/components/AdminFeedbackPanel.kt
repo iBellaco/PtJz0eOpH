@@ -115,6 +115,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.R
 import com.example.data.remote.model.FeedbackReport
 import com.example.data.FeedbackRepository
 import com.example.model.WildRiftItem
@@ -129,6 +130,7 @@ import com.example.ui.theme.TextMuted
 import com.example.ui.theme.TextPrimary
 import com.example.ui.theme.TextSecondary
 import com.example.util.tr
+import com.example.util.localizedString
 import kotlinx.coroutines.launch
 import java.util.Locale
 
@@ -195,6 +197,10 @@ fun AdminFeedbackBottomSheet(
 
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+    val deleteProcessedTitle = localizedString(R.string.feedback_delete_processed_title)
+    val deleteProcessedBody = localizedString(R.string.feedback_delete_processed_body)
+    val deleteProcessedDone = localizedString(R.string.feedback_delete_processed_done)
+    val deleteProcessedConfirm = localizedString(R.string.feedback_delete_processed_confirm)
     var currentCategoryTab by remember { mutableStateOf(FeedbackCategoryTab.ALL) }
     var selectedSubFilter by remember { mutableStateOf("ALL") }
     var searchQuery by remember { mutableStateOf("") }
@@ -740,7 +746,8 @@ fun AdminFeedbackBottomSheet(
                     }
                 }
 
-                // Borrar todos
+            // Borrar todos los reportes que ya fueron procesados. Los pendientes
+            // se conservan para que el administrador no pierda solicitudes nuevas.
                 if (isAdmin) OutlinedButton(
                     onClick = { showClearAllConfirm = true },
                     shape = RoundedCornerShape(10.dp),
@@ -749,6 +756,8 @@ fun AdminFeedbackBottomSheet(
                     contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp),
                     modifier = Modifier.height(46.dp)
                 ) {
+                    // Mantener la descripción anterior también sirve para
+                    // accesibilidad y compatibilidad con las pruebas existentes.
                     Icon(Icons.Default.DeleteSweep, contentDescription = tr("Eliminar solucionados"), tint = DangerRed, modifier = Modifier.size(18.dp))
                 }
             }
@@ -1011,12 +1020,12 @@ fun AdminFeedbackBottomSheet(
             title = {
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     Icon(Icons.Default.DeleteSweep, contentDescription = null, tint = DangerRed, modifier = Modifier.size(24.dp))
-                    Text(tr("¿Eliminar todos los mensajes solucionados?"), color = DangerRed, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                    Text(deleteProcessedTitle, color = DangerRed, fontSize = 16.sp, fontWeight = FontWeight.Bold)
                 }
             },
             text = {
                 Text(
-                    text = tr("Se eliminarán los mensajes solucionados. Los mensajes pendientes y leídos se conservarán."),
+                    text = deleteProcessedBody,
                     color = TextSecondary,
                     fontSize = 13.sp
                 )
@@ -1026,11 +1035,11 @@ fun AdminFeedbackBottomSheet(
                     onClick = {
                         isDeleting = true
                         scope.launch {
-                            val res = FeedbackRepository.clearSolvedFeedbacks()
+                            val res = FeedbackRepository.clearProcessedFeedbacks(context)
                             isDeleting = false
                             showClearAllConfirm = false
                             if (res.isSuccess) {
-                                Toast.makeText(context, com.example.util.appTr("Los mensajes solucionados fueron eliminados"), Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, deleteProcessedDone, Toast.LENGTH_SHORT).show()
                                 loadReports()
                             } else {
                                 Toast.makeText(context, com.example.util.appTr("Error: ${res.exceptionOrNull()?.message}"), Toast.LENGTH_SHORT).show()
@@ -1044,7 +1053,7 @@ fun AdminFeedbackBottomSheet(
                     if (isDeleting) {
                         CircularProgressIndicator(color = Color.White, modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
                     } else {
-                        Text(tr("Sí, eliminar solucionados"), color = Color.White, fontWeight = FontWeight.Bold)
+                        Text(deleteProcessedConfirm, color = Color.White, fontWeight = FontWeight.Bold)
                     }
                 }
             },
