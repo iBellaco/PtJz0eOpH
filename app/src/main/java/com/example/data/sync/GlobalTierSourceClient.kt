@@ -21,7 +21,8 @@ data class ScraperSourceStatus(
 )
 
 data class GlobalScrapingSource(val id: String, val name: String, val url: String,
-    val displayUrl: String, val expectedPatch: String? = null)
+    val displayUrl: String, val expectedPatch: String? = null,
+    val region: String = MetaRegion.DEFAULT)
 
 /** HTTP success alone is insufficient: the publisher must identify the expected game patch. */
 class GlobalTierSourceClient(
@@ -35,7 +36,7 @@ class GlobalTierSourceClient(
 
     private fun request(url: String): String = client.newCall(Request.Builder().url(url)
         .header("User-Agent", "Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 Chrome/130.0.0.0 Mobile Safari/537.36")
-        .header("Accept", "text/html,application/xhtml+xml").cacheControl(CacheControl.FORCE_NETWORK).build())
+        .header("Accept", "application/json,text/html,application/xhtml+xml").cacheControl(CacheControl.FORCE_NETWORK).build())
         .execute().use { response ->
             if (!response.isSuccessful) throw SourceHttpException(response.code)
             val body = response.body ?: error("Empty response")
@@ -45,7 +46,14 @@ class GlobalTierSourceClient(
             bytes.toString(Charsets.UTF_8)
         }
 
-    suspend fun fetch(source: GlobalScrapingSource, knownIds: Set<String>): SourceResult {
+    suspend fun fetch(source: GlobalScrapingSource, knownIds: Set<String>): SourceResult =
+        if (source.region == MetaRegion.CHINA || source.id == "china_lolm") {
+            fetchChina(source, knownIds)
+        } else {
+            fetchGlobal(source, knownIds)
+        }
+
+    private suspend fun fetchGlobal(source: GlobalScrapingSource, knownIds: Set<String>): SourceResult {
         val started = System.currentTimeMillis()
         val known = knownIds.map(RegionalTierParser::canonical).toSet()
         var parsed = emptyMap<String, String>()
@@ -79,23 +87,34 @@ class GlobalTierSourceClient(
             delay(500L)
         }
         if (source.expectedPatch == null || patch == source.expectedPatch) {
-            val extra = when {
-                source.id == "wildriftcore" && source.url.contains("/tierlist/") -> source.url.replace("/tierlist/", "/rankings/")
-                source.id == "wildriftfire" -> "https://www.wildriftfire.com/stats?patch=${source.expectedPatch.orEmpty()}"
-                else -> null
+            val extras = when {
+                source.id == "wildriftcore" && source.url.contains("/tierlist/") -> listOf(source.url.replace("/tierlist/", "/rankings/"))
+                source.id == "wildriftfire" -> listOf(
+                    "https://www.wildriftfire.com/stats?patch=${source.expectedPatch.orEmpty()}",
+                    "https://www.wildriftfire.com/stats"
+                )
+                else -> emptyList()
             }
-            if (extra != null) try {
-                val html = request(extra)
+            if (extras.isNotEmpty()) try {
+                var html: String? = null
+                var last: Exception? = null
+                for (candidate in extras) {
+                    try {
+                        html = requestWithRetry(candidate)
+                        break
+                    } catch (cancelled: CancellationException) { throw cancelled
+                    } catch (exception: Exception) { last = exception }
+                }
+                if (html == null) throw last ?: java.io.IOException("Statistics request failed")
                 if (source.id == "wildriftfire") {
-                    val report = PublishedStatsParser.fire(html)
+                    val report = PublishedStatsParser.fire(html!!)
                     if (source.expectedPatch == null || report.patch == source.expectedPatch) {
                         stats = stats + report.stats.filterKeys { it in known }
                         history = report.history.filterKeys { it in known }
                         roleStats = roleStats + report.roleStats.filterKeys { it in known }
-                        if (history.values.none { it.isNotEmpty() }) error = "Historial no disponible"
                     } else error = "El historial pertenece a otro parche"
                 } else {
-                    val extraPatch = PublishedStatsParser.patch(html, source.id)
+                    val extraPatch = PublishedStatsParser.patch(html!!, source.id)
                     if (source.expectedPatch == null || extraPatch == source.expectedPatch) {
                         val fallbackStats = RegionalTierParser.parseStats(html, source.id).filterKeys { it in known }
                         // Rankings are lane rows. They can fill a missing global
@@ -126,13 +145,93 @@ class GlobalTierSourceClient(
         return SourceResult(source, parsed, ScraperSourceStatus(name = source.name, url = source.url,
             isHealthy = error == null && completeEnough, lastChecked = System.currentTimeMillis(),
             responseTimeMs = System.currentTimeMillis() - started, errorMessage = error,
-            tierCount = parsed.size, statsCount = completeStats, publishedPatch = patch,
+            region = source.region, tierCount = parsed.size, statsCount = completeStats, publishedPatch = patch,
             rosterCount = coverage, historyCount = history.count { it.value.isNotEmpty() },
             partialStatsCount = partialIds.size, missingStatsCount = missingIds.size,
             partialStatIds = partialIds, missingStatIds = missingIds), stats, history, roleStats)
     }
 
+    private suspend fun fetchChina(source: GlobalScrapingSource, knownIds: Set<String>): SourceResult {
+        val started = System.currentTimeMillis()
+        var error: String? = null
+        var parsed = ChinaLolmParser.Parsed()
+        for (attempt in 0..1) {
+            currentCoroutineContext().ensureActive()
+            try {
+                val heroPayload = request(ChinaLolmParser.HERO_LIST_URL)
+                val rankPayload = request(ChinaLolmParser.RANK_LIST_URL)
+                parsed = ChinaLolmParser.parse(heroPayload, rankPayload, knownIds)
+                error = if (parsed.tiers.isEmpty() && parsed.stats.isEmpty())
+                    "No se encontraron datos publicados de China" else null
+                break
+            } catch (cancelled: CancellationException) { throw cancelled
+            } catch (http: SourceHttpException) {
+                error = "HTTP ${http.code}"
+                if (attempt == 1 || (http.code != 429 && http.code !in 500..599)) break
+            } catch (_: java.io.IOException) {
+                error = "No se pudo conectar con la fuente china"
+                if (attempt == 1) break
+            } catch (_: Exception) {
+                error = "No se pudo interpretar la respuesta china"
+                break
+            }
+            delay(500L)
+        }
+        val normalizedStats = parsed.stats.mapKeys { (id, _) -> RegionalTierParser.canonical(id) }
+        val normalizedTiers = parsed.tiers.mapKeys { (id, _) -> RegionalTierParser.canonical(id) }
+        val completeStats = normalizedStats.count { it.value.isComplete() }
+        val partialIds = normalizedStats.filterValues { !it.isComplete() }.keys.sorted()
+        val known = knownIds.map(RegionalTierParser::canonical).toSet()
+        val coverageIds = (normalizedTiers.keys + normalizedStats.keys).filter { it in known }.toSet()
+        val missingIds = (known - normalizedStats.keys).sorted()
+        val minimumCoverage = if (known.size < 100) known.size else kotlin.math.ceil(known.size * 0.70).toInt()
+        if (error == null && coverageIds.size < minimumCoverage) {
+            error = "Cobertura insuficiente: ${coverageIds.size}/${known.size} (mínimo $minimumCoverage)"
+        }
+        val status = ScraperSourceStatus(
+            name = source.name,
+            url = source.url,
+            region = source.region,
+            isHealthy = error == null && coverageIds.size >= minimumCoverage,
+            lastChecked = System.currentTimeMillis(),
+            responseTimeMs = System.currentTimeMillis() - started,
+            errorMessage = error,
+            tierCount = normalizedTiers.count { it.key in known },
+            statsCount = completeStats,
+            publishedPatch = parsed.publishedDate,
+            rosterCount = coverageIds.size,
+            partialStatsCount = partialIds.size,
+            missingStatsCount = missingIds.size,
+            partialStatIds = partialIds,
+            missingStatIds = missingIds
+        )
+        return SourceResult(source, normalizedTiers.filterKeys { it in known }, status, normalizedStats,
+            roleStats = parsed.roleStats.mapKeys { (id, _) -> RegionalTierParser.canonical(id) }
+                .filterKeys { it in known })
+    }
+
     private class SourceHttpException(val code: Int) : java.io.IOException()
+
+    private suspend fun requestWithRetry(url: String): String {
+        var last: Exception? = null
+        for (attempt in 0..1) {
+            currentCoroutineContext().ensureActive()
+            try {
+                return request(url)
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (http: SourceHttpException) {
+                last = http
+                if (attempt == 1 || (http.code != 429 && http.code !in 500..599)) break
+            } catch (io: java.io.IOException) {
+                last = io
+                if (attempt == 1) break
+            }
+            delay(500L)
+        }
+        throw last ?: java.io.IOException("Request failed")
+    }
+
     private fun java.io.InputStream.readBytesLimited(limit: Int): ByteArray {
         val output = java.io.ByteArrayOutputStream()
         val buffer = ByteArray(8192)

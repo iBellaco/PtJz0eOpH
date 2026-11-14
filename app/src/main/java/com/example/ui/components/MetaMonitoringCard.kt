@@ -14,22 +14,30 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.data.sync.BestBuildWrScraper
 import com.example.data.sync.MetaFreshness
+import com.example.data.sync.MetaRegion
 import com.example.data.sync.ScraperSourceStatus
 import com.example.data.WildRiftRepository
 import com.example.ui.theme.*
 import com.example.util.tr
 import kotlinx.coroutines.delay
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 /** Every source problem remains visible; technical detail is opened deliberately. */
 @Composable
 fun MetaMonitoringCard() {
     val sources by BestBuildWrScraper.sourceStatuses.collectAsState()
+    val currentRegion by com.example.data.sync.GlobalMetaSyncService.currentRegion.collectAsStateWithLifecycle()
     val health by BestBuildWrScraper.freshness.collectAsState()
     val syncing by BestBuildWrScraper.isSyncing.collectAsState()
     val version by com.example.util.AppUpdateManager.checkStatus.collectAsState()
     var now by remember { mutableStateOf(System.currentTimeMillis()) }
     var selected by remember { mutableStateOf<ScraperSourceStatus?>(null) }
     LaunchedEffect(Unit) { while (true) { delay(1_000); now = System.currentTimeMillis() } }
+    val visibleSources = remember(sources, currentRegion) {
+        val region = MetaRegion.normalize(currentRegion)
+        sources.filterValues { MetaRegion.normalize(it.region) == region }
+            .ifEmpty { sources.filterValues { MetaRegion.normalize(it.region) == MetaRegion.DEFAULT } }
+    }
     val expected = health.expectedCount.takeIf { it > 0 }
         ?: WildRiftRepository.baseChampionsList.size.takeIf { it > 0 }
         ?: 143
@@ -61,7 +69,7 @@ fun MetaMonitoringCard() {
     }
     fun compactIds(ids: List<String>): String = ids.take(12).joinToString(", ") +
         if (ids.size > 12) " … (+${ids.size - 12})" else ""
-    val issues = sources.values.count { issue(it) != null }
+    val issues = visibleSources.values.count { issue(it) != null }
     Surface(Modifier.fillMaxWidth().padding(12.dp).testTag("meta_monitoring_card"),
         color = HextechSurface, shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
         border = BorderStroke(1.dp, if (issues > 0 || health.stale(now)) HextechGold else HextechCardBorder)) {
@@ -69,12 +77,12 @@ fun MetaMonitoringCard() {
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                 Icon(Icons.Default.MonitorHeart, null, tint = HextechCyan, modifier = Modifier.size(22.dp))
                 Text(tr("Monitoreo"), Modifier.weight(1f).padding(start = 8.dp), color = HextechGold, fontWeight = FontWeight.Bold)
-                Text("${sources.size - issues}/${sources.size} " + tr("sin avisos"),
+                Text("${visibleSources.size - issues}/${visibleSources.size} " + tr("sin avisos"),
                     color = if (issues > 0) HextechGold else HextechCyan, fontSize = 12.sp)
             }
             Text(tr(if (syncing) "Comprobando fuentes" else if (health.stale(now)) "Actualización pendiente" else "Consulta automática cada minuto"),
                 color = if (health.stale(now)) HextechGold else TextSecondary, fontSize = 11.sp)
-            sources.forEach { (id, status) ->
+            visibleSources.forEach { (id, status) ->
                 val problem = issue(status)
                 val published = coverage(status)
                 val state = problem ?: if (published < expected) "Fuente parcial" else "Funcionando"

@@ -100,9 +100,8 @@ class LocalizationRegressionTest {
     }
 
     @Test fun `new region and notification labels are localized offline`() {
-        assertEquals("Referência local", trStr("pt", "Referencia local"))
+        assertEquals("China", trStr("pt", "China"))
         assertEquals("Coach Ativo", trStr("pt", "Coach Activo"))
-        assertFalse(trStr("pt", "Referencia local • Sin estadísticas regionales en vivo").contains("Sin estadísticas"))
     }
 
     @Test fun `decorations casing and copied Portuguese fields cannot leak Spanish`() {
