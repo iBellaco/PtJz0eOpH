@@ -12,6 +12,25 @@ import org.robolectric.annotation.Config
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [34], application = Application::class)
 class CaptureFrameDecoderTest {
+    @Test fun packedFramesReuseScratchButNeverOverwriteAnEarlierBitmap() {
+        val scratch = CaptureFrameDecoder.PackingBuffer()
+        val buffer = scratch.obtain(16)
+        assertSame(buffer, scratch.obtain(16))
+        val source = ByteBuffer.allocateDirect(20)
+        repeat(20) { source.put(0xff.toByte()) }
+        source.rewind()
+        val first = CaptureFrameDecoder.decode(source, 2, 2, 4, 12, scratch)!!
+        source.clear()
+        repeat(20) { source.put(0.toByte()) }
+        source.rewind()
+        val second = CaptureFrameDecoder.decode(source, 2, 2, 4, 12, scratch)!!
+        try {
+            assertNotEquals(first.getPixel(0, 0), second.getPixel(0, 0))
+            assertSame(buffer, scratch.obtain(16))
+            scratch.clear()
+            assertNotSame(buffer, scratch.obtain(16))
+        } finally { first.recycle(); second.recycle() }
+    }
     @Test fun lastRowDoesNotNeedAlignmentPadding() {
         // Two 2-pixel rows; the vendor supplies four padding bytes only after row one.
         val bytes = ByteBuffer.allocateDirect(20)

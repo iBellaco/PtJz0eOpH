@@ -18,6 +18,21 @@ import java.util.concurrent.CopyOnWriteArrayList
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk=[34],application=Application::class)
 class DraftBanWorkerTest {
+    @Test fun rapidOffersDoNotAllocateExtraHeaderFrames() = runBlocking<Unit> {
+        val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+        val worker = DraftBanWorker(scope) { _, _ -> }
+        var copies = 0
+        try {
+            for (time in listOf(0L, 100L, 250L, 500L, 749L, 750L)) {
+                worker.offer(time) {
+                    copies++
+                    DraftBanFrame(Bitmap.createBitmap(8, 8, Bitmap.Config.ARGB_8888),
+                        emptyList(), VisionCalibrationConfig(), emptySet(), time)
+                }
+            }
+            assertEquals(2, copies)
+        } finally { worker.close(); scope.cancel() }
+    }
     @Test fun busyHeaderKeepsOnlyNewestFrameAndDoesNotBlockTitles() = runBlocking<Unit> {
         val scope = CoroutineScope(SupervisorJob()+Dispatchers.Default)
         val entered = CountDownLatch(1); val release = CountDownLatch(1)

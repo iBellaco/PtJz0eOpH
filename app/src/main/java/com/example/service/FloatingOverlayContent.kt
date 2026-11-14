@@ -2,6 +2,8 @@ package com.example.service
 
 import kotlinx.coroutines.flow.collect
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.foundation.Image
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.material.icons.Icons
@@ -114,18 +116,21 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import kotlin.math.roundToInt
 
-private data class AutoScanPulse(val alpha: Float, val scale: Float)
+private data class AutoScanPulse(
+    val alpha: androidx.compose.runtime.State<Float>,
+    val scale: androidx.compose.runtime.State<Float>
+)
 
 @Composable
 private fun activeAutoScanPulse(): AutoScanPulse {
     val transition = rememberInfiniteTransition(label = "auto_scan_pulse")
-    val alpha by transition.animateFloat(
+    val alpha = transition.animateFloat(
         initialValue = 0.32f,
         targetValue = 1f,
         animationSpec = infiniteRepeatable(tween(650), RepeatMode.Reverse),
         label = "auto_scan_text_alpha"
     )
-    val scale by transition.animateFloat(
+    val scale = transition.animateFloat(
         initialValue = 0.90f,
         targetValue = 1.08f,
         animationSpec = infiniteRepeatable(tween(650), RepeatMode.Reverse),
@@ -137,13 +142,13 @@ private fun activeAutoScanPulse(): AutoScanPulse {
 @Composable
 private fun disabledAutoScanPulse(): AutoScanPulse {
     val transition = rememberInfiniteTransition(label = "auto_scan_disabled_pulse")
-    val alpha by transition.animateFloat(
+    val alpha = transition.animateFloat(
         initialValue = 0.42f,
         targetValue = 0.96f,
         animationSpec = infiniteRepeatable(tween(900), RepeatMode.Reverse),
         label = "auto_scan_disabled_alpha"
     )
-    val scale by transition.animateFloat(
+    val scale = transition.animateFloat(
         initialValue = 0.98f,
         targetValue = 1.02f,
         animationSpec = infiniteRepeatable(tween(900), RepeatMode.Reverse),
@@ -362,19 +367,14 @@ internal fun FloatingOverlayContent(
         }
     }
 
-    val analysis = remember(activeRole, isFirstPick, allies.toList(), enemies.toList(), explicitEnemyOpponent, bannedIds,
-        favoriteChampionIds, favoriteOnlyRecommendations) {
-        WildRiftRepository.analyzeDraft(
-            myRole = activeRole,
-            allies = allies.filterNotNull(),
-            enemies = enemies.filterNotNull(),
-            enemyLaneOpponent = explicitEnemyOpponent,
-            isFirstPick = isFirstPick,
-            bannedChampionIds = bannedIds,
-            favoriteChampionIds = favoriteChampionIds,
-            favoriteOnlyRecommendations = favoriteOnlyRecommendations
+    val analysis = com.example.ui.components.rememberDraftAnalysis(
+        com.example.ui.components.DraftAnalysisRequest(
+            role = activeRole, allies = allies.filterNotNull(), enemies = enemies.filterNotNull(),
+            opponent = explicitEnemyOpponent, firstPick = isFirstPick, language = currentLang,
+            bans = bannedIds.toSet(), favorites = favoriteChampionIds.toSet(),
+            favoritesOnly = favoriteOnlyRecommendations
         )
-    }
+    )
 
     val diagnosticDraftDetails = remember(
         allies.toList(), enemies.toList(), activeRole, isFirstPick, isLegendaryQueue,
@@ -397,8 +397,9 @@ internal fun FloatingOverlayContent(
         }.trimEnd()
     }
 
-    LaunchedEffect(state.autoSavePendingRequested) {
+    LaunchedEffect(state.autoSavePendingRequested, analysis) {
         if (!state.autoSavePendingRequested) return@LaunchedEffect
+        if (com.example.ui.components.isDraftAnalysisPending(analysis)) return@LaunchedEffect
         val roles = listOf(LaneRole.TOP, LaneRole.JUNGLE, LaneRole.MID, LaneRole.ADC, LaneRole.SUPPORT)
         val allyDraft = allies.mapIndexedNotNull { index, champion ->
             champion?.let { DraftSlot(it, roles[index]) }
@@ -487,7 +488,7 @@ internal fun FloatingOverlayContent(
                     continue
                 }
 
-                val cycleStartTime = System.currentTimeMillis()
+                val cycleStartTime = android.os.SystemClock.elapsedRealtime()
 
                 // Medición de fotogramas de escaneo por segundo (Scan FPS)
                 framesInSecond++
@@ -689,7 +690,7 @@ internal fun FloatingOverlayContent(
                                         }
                                     }
                                 }
-                                val processDuration = System.currentTimeMillis() - cycleStartTime
+                                val processDuration = android.os.SystemClock.elapsedRealtime() - cycleStartTime
                                 DraftVisionScanner.recordFrameProcessed(processDuration)
                             } finally {
                                 try {
@@ -699,13 +700,19 @@ internal fun FloatingOverlayContent(
                         }
                     }
 
-                    val totalCycleDuration = System.currentTimeMillis() - cycleStartTime
+                    val totalCycleDuration = android.os.SystemClock.elapsedRealtime() - cycleStartTime
                     // 3. ESTRATEGIA ADAPTATIVA: Si el ciclo tomó más tiempo del previsto,
                     // compensar el retraso para evitar ráfagas y proteger la tasa de fotogramas del live overlay
-                    val compensatedDelay = (dynamicLoopDelay - totalCycleDuration).coerceAtLeast(30L)
+                    val power = context.getSystemService(Context.POWER_SERVICE) as android.os.PowerManager
+                    val constrained = power.isPowerSaveMode ||
+                        (android.os.Build.VERSION.SDK_INT >= 29 &&
+                            power.currentThermalStatus >= android.os.PowerManager.THERMAL_STATUS_MODERATE)
+                    val compensatedDelay = com.example.service.screen.DraftSyncCadence.restDelayMs(
+                        dynamicLoopDelay, totalCycleDuration, constrained)
                     delay(compensatedDelay)
 
                 } catch (t: Throwable) {
+                    if (t is kotlinx.coroutines.CancellationException) throw t
                     AppLogger.e("FloatingService", "Error in auto-scan loop", t)
                     delay(200L)
                 } finally {
@@ -1070,8 +1077,11 @@ internal fun FloatingOverlayContent(
                                             fontWeight = FontWeight.Bold,
                                             maxLines = 1,
                                             modifier = Modifier
-                                                .alpha(if (autoScanEnabled) autoScanPulse.alpha else 0.86f)
-                                                .scale(if (autoScanEnabled) autoScanPulse.scale else 1f)
+                                                .graphicsLayer {
+                                                    alpha = if (autoScanEnabled) autoScanPulse.alpha.value else 0.86f
+                                                    scaleX = if (autoScanEnabled) autoScanPulse.scale.value else 1f
+                                                    scaleY = scaleX
+                                                }
                                         )
                                     }
                                 }
@@ -1434,8 +1444,19 @@ internal fun FloatingOverlayContent(
                                 verticalAlignment = Alignment.CenterVertically,
                                 modifier = Modifier
                                     .clip(RoundedCornerShape(6.dp))
-                                    .background(autoScanColor.copy(alpha = 0.06f + autoScanPulse.alpha * 0.10f))
-                                    .border(1.dp, autoScanColor.copy(alpha = 0.35f + autoScanPulse.alpha * 0.35f), RoundedCornerShape(6.dp))
+                                    .drawBehind {
+                                        val pulse = autoScanPulse.alpha.value
+                                        val radius = androidx.compose.ui.geometry.CornerRadius(6.dp.toPx())
+                                        drawRoundRect(autoScanColor.copy(alpha = 0.06f + pulse * 0.10f), cornerRadius = radius)
+                                        val stroke = 1.dp.toPx()
+                                        drawRoundRect(autoScanColor.copy(alpha = 0.35f + pulse * 0.35f),
+                                            topLeft = androidx.compose.ui.geometry.Offset(stroke / 2, stroke / 2),
+                                            size = androidx.compose.ui.geometry.Size(
+                                                (size.width - stroke).coerceAtLeast(0f),
+                                                (size.height - stroke).coerceAtLeast(0f)),
+                                            cornerRadius = radius,
+                                            style = androidx.compose.ui.graphics.drawscope.Stroke(stroke))
+                                    }
                                     .padding(start = 4.dp, end = 1.dp, top = 1.dp, bottom = 1.dp)
                                     .testTag("overlay_auto_scan_status")
                             ) {
@@ -1453,8 +1474,11 @@ internal fun FloatingOverlayContent(
                                     fontWeight = FontWeight.Bold,
                                     modifier = Modifier
                                         .padding(end = 4.dp)
-                                        .alpha(autoScanPulse.alpha)
-                                        .scale(autoScanPulse.scale)
+                                        .graphicsLayer {
+                                            alpha = autoScanPulse.alpha.value
+                                            scaleX = autoScanPulse.scale.value
+                                            scaleY = scaleX
+                                        }
                                         .testTag("overlay_auto_scan_label")
                                 )
                                 if (!isPremium) {
