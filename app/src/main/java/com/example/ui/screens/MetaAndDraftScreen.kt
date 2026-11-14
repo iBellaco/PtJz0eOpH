@@ -241,19 +241,14 @@ fun MetaAndDraftScreen(
             favoriteOnlyRecommendations = false
         }
     }
-    val analysis = remember(activeRole, isFirstPick, allySlots.toList(), enemySlots.toList(), lang,
-        favoriteChampionIds, favoriteOnlyRecommendations) {
-        WildRiftRepository.analyzeDraft(
-            myRole = activeRole,
-            allies = allySlots.map { it.champion },
-            enemies = enemySlots.map { it.champion },
-            enemyLaneOpponent = selectedLaneOpponent,
-            isFirstPick = isFirstPick,
-            lang = lang,
-            favoriteChampionIds = favoriteChampionIds,
-            favoriteOnlyRecommendations = favoriteOnlyRecommendations
+    val analysis = com.example.ui.components.rememberDraftAnalysis(
+        com.example.ui.components.DraftAnalysisRequest(
+            role = activeRole, allies = allySlots.map { it.champion },
+            enemies = enemySlots.map { it.champion }, opponent = selectedLaneOpponent,
+            firstPick = isFirstPick, language = lang, favorites = favoriteChampionIds.toSet(),
+            favoritesOnly = favoriteOnlyRecommendations
         )
-    }
+    )
 
     val openChampionDetails: (Champion) -> Unit = { champion ->
         selectedDetailChampion = champion

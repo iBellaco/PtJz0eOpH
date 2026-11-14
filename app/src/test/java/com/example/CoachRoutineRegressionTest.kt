@@ -6,6 +6,15 @@ import org.junit.Assert.*
 import org.junit.Test
 
 class CoachRoutineRegressionTest {
+    @Test fun `slow OCR gives CPU back to the game and recovery stays bounded`() {
+        assertEquals(180L, DraftSyncCadence.restDelayMs(100, 30))
+        assertEquals(500L, DraftSyncCadence.restDelayMs(100, 1000))
+        assertEquals(1200L, DraftSyncCadence.restDelayMs(100, 43000))
+        assertEquals(600L, DraftSyncCadence.restDelayMs(100, 30, constrained = true))
+        assertEquals(1000L, DraftSyncCadence.restDelayMs(100, 1000, constrained = true))
+        // Do not shorten an explicitly requested long idle interval.
+        assertEquals(1950L, DraftSyncCadence.restDelayMs(2000, 50))
+    }
     @Test fun `last selections never wait for metadata even when overdue`() {
         for (count in 8..10) assertFalse(DraftSyncCadence.metadataDue(60000, 0, count))
         assertTrue(DraftSyncCadence.metadataDue(60000, 0, 7))

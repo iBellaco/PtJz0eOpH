@@ -14,12 +14,11 @@ internal data class DraftBanFrame(val bitmap: Bitmap, val masks: List<Rect>,
 
 /** One background header job and at most one newest pending frame; never blocks title OCR. */
 internal class DraftBanWorker(scope: CoroutineScope, private val process: (DraftBanFrame, Job) -> Unit) {
-    // Banes are read from a small fixed header. Keeping a 1.5s gate made a
-    // confirmed ban appear late even when the rest of the draft was already
-    // recognized. The conflated channel still guarantees only the newest
-    // pending frame is retained while the worker is busy.
+    // Keep title OCR responsive while avoiding four full-frame copies and
+    // competing header passes per second alongside the game. The conflated
+    // channel retains only the newest pending observation.
     private companion object {
-        const val MIN_OFFER_INTERVAL_MS = 250L
+        const val MIN_OFFER_INTERVAL_MS = 750L
     }
     private val pending = Channel<DraftBanFrame>(Channel.CONFLATED, onUndeliveredElement = { it.bitmap.recycle() })
     private val lastOffered = AtomicLong(-MIN_OFFER_INTERVAL_MS)

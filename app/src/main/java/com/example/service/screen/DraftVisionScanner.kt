@@ -471,7 +471,7 @@ object DraftVisionScanner {
         CalibrationEvidenceFrame(copy, latestCalibrationEvidenceAtElapsedMs)
     }
 
-    private fun clearCalibrationEvidenceFrame() = synchronized(calibrationEvidenceLock) {
+    internal fun clearCalibrationEvidenceFrame() = synchronized(calibrationEvidenceLock) {
         runCatching { latestCalibrationEvidenceBitmap?.recycle() }
         latestCalibrationEvidenceBitmap = null
         latestCalibrationEvidenceAtElapsedMs = 0L
