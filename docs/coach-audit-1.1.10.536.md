@@ -5,9 +5,9 @@
 
 ## Corrección de estadísticas incompletas
 
-- Se incorporó WildRifter como fuente estadística del parche actual. La página
-  comprobada publica tres métricas válidas para 142 de 143 campeones; Sylas es
-  el único registro sin datos publicados y queda fuera de la lista competitiva.
+- Se incorporó una fuente estadística que posteriormente fue retirada. La página
+  comprobada publicaba tres métricas válidas para 142 de 143 campeones; Sylas era
+  el único registro sin datos publicados y quedaba fuera de la lista competitiva.
 - La sincronización prioriza filas completas y solo combina campos faltantes
   antes de publicar. Una fila con win rate y pick rate pero sin ban rate no se
   guarda como estadística vigente.
@@ -31,10 +31,10 @@
 
 ## Verificación realizada
 
-- Comprobación independiente de la página actual de WildRifter: 143 tarjetas,
+- Comprobación independiente de la página histórica: 143 tarjetas,
   142 completas, 0 parciales y 1 sin datos (`sylas`); las métricas de cada fila
   quedaron dentro de 0–100.
-- Pruebas unitarias añadidas para el parser WildRifter, las tres métricas
+- Pruebas unitarias añadidas para el parser de la fuente histórica, las tres métricas
   obligatorias, el diagnóstico de filas parciales y la visibilidad de la tier
   list.
 - `git diff --check` y validación JSON de traducciones sin errores.

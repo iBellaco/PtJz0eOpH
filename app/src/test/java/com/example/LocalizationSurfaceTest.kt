@@ -120,9 +120,9 @@ class LocalizationSurfaceTest {
         compose.onNodeWithText("Preguntas Frecuentes").assertExists()
         compose.onNodeWithText("Perguntas Frequentes").assertDoesNotExist()
     }
-    @Test fun `legacy region resolves to Global without a selector`() {
-        assertEquals("GLOBAL", com.example.data.sync.MetaRegion.normalize("CN"))
-        assertEquals(listOf("GLOBAL"), com.example.data.sync.MetaRegion.available)
+    @Test fun `region selector keeps Global first and exposes the China classification`() {
+        assertEquals("CHINA", com.example.data.sync.MetaRegion.normalize("CN"))
+        assertEquals(listOf("GLOBAL", "CHINA"), com.example.data.sync.MetaRegion.available)
     }
 
     @Test fun `standalone catalog fields and cached advice follow both language switches`() {

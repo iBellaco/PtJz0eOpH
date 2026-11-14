@@ -25,19 +25,6 @@ object PublishedStatsParser {
             .find(text)?.groupValues?.get(1)?.lowercase()
     }
 
-    fun rifter(html: String): Map<String, ChampionMetaStats> {
-        val output = linkedMapOf<String, ChampionMetaStats>()
-        Jsoup.parse(html).select("a[href*=/champion/]").forEach { link ->
-            val values = link.select("dl div").associate { cell ->
-                cell.selectFirst("dt")?.text().orEmpty().lowercase() to cell.selectFirst("dd")?.text()
-                    ?.removeSuffix("%")?.toDoubleOrNull()?.takeIf { it in 0.0..100.0 }
-            }
-            val stats = ChampionMetaStats(values["win"], values["pick"], values["ban"])
-            if (stats.isUsable()) output[RegionalTierParser.canonical(link.attr("href").substringAfterLast('/'))] = stats
-        }
-        return output
-    }
-
     fun fire(html: String): FireReport = runCatching {
         val doc = Jsoup.parse(html)
         val current = JSONObject(doc.selectFirst("script#wf-stats-data")?.data().orEmpty())

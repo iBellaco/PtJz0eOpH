@@ -5,11 +5,11 @@ import org.junit.Assert.*
 import org.junit.Test
 
 class PublishedMetaReportTest {
-    @Test fun `five publishers identify their own patch instead of accepting navigation text`() {
+    @Test fun `active publishers identify their own patch instead of accepting navigation text`() {
         assertEquals("7.3a", PublishedStatsParser.patch("""<script id="__NEXT_DATA__">{"props":{"pageProps":{"patchVersion":"7.3a"}}}</script><p>7.3b</p>""", "bestbuildwr"))
-        assertEquals("7.3b", PublishedStatsParser.patch("<title>Wild Rift - v7.3b</title>", "wildrifter"))
-        assertEquals("7.3f", PublishedStatsParser.patch("<title>Wild Rift Tier List — v7.3f | WildRifter</title>", "wildrifter"))
-        assertNull(PublishedStatsParser.patch("<title>Unavailable</title><p>7.3b</p>", "wildrifter"))
+        assertEquals("7.3b", PublishedStatsParser.patch("<span class='nav-patch-badge'>7.3b</span>", "wildriftcore"))
+        assertEquals("7.3f", PublishedStatsParser.patch("<title>Wild Rift Tier List — v7.3f | WildRiftFire</title>", "wildriftfire"))
+        assertNull(PublishedStatsParser.patch("<title>Unavailable</title><p>7.3b</p>", "wildriftfire"))
     }
 
     @Test fun `new publishers preserve named categories and zero published rates`() {

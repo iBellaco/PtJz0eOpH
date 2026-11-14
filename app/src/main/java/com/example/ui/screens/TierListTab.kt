@@ -51,6 +51,7 @@ import com.example.util.tr
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -67,6 +68,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.launch
 import com.example.data.WildRiftRepository
 import com.example.data.sync.GlobalMetaSyncService
+import com.example.data.sync.MetaRegion
 import com.example.model.Champion
 import com.example.model.LaneRole
 import com.example.ui.components.ChampionAvatar
@@ -120,6 +122,18 @@ internal fun isTierListChampionVisible(champion: Champion, selectedLane: LaneRol
     return listOf(stats.win, stats.pick, stats.ban).all { it.isFinite() && it in 0.0..100.0 }
 }
 
+internal fun isTierListChampionVisible(
+    champion: Champion,
+    selectedLane: LaneRole?,
+    region: String
+): Boolean {
+    if (MetaRegion.normalize(region) == MetaRegion.CHINA) {
+        return champion.cnTier.trim().uppercase(java.util.Locale.ROOT) in
+            setOf("T0", "T1", "T2", "T3", "T4", "T5")
+    }
+    return isTierListChampionVisible(champion, selectedLane)
+}
+
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun TierListTab(
@@ -144,20 +158,26 @@ fun TierListTab(
     }
 
     val favorites by FavoriteChampionsManager.favoritesFlow.collectAsStateWithLifecycle()
+    val regionScope = rememberCoroutineScope()
     var showFavoritesOnly by remember { mutableStateOf(false) }
     var selectedLane by remember { mutableStateOf<LaneRole?>(null) }
     var selectedSort by remember { mutableStateOf(TierSortOption.BY_TIER) }
     var showTierFilters by rememberSaveable { mutableStateOf(true) }
+    val isChinaRegion = MetaRegion.normalize(currentRegion) == MetaRegion.CHINA
+    androidx.compose.runtime.LaunchedEffect(currentRegion) {
+        selectedSort = TierSortOption.BY_TIER
+        showFavoritesOnly = false
+    }
 
     val rawChampionsToDisplay = remember(selectedLane, showFavoritesOnly, favorites, syncState, currentRegion, metaRevision, liveTick, WildRiftRepository.champions.toList()) {
         val champs = if (selectedLane == null) WildRiftRepository.champions.toList()
         else WildRiftRepository.champions.filter { publishedChampionRoles(it).contains(selectedLane) }
-        val visibleTiers = champs.filter { isTierListChampionVisible(it, selectedLane) }
+        val visibleTiers = champs.filter { isTierListChampionVisible(it, selectedLane, currentRegion) }
         if (showFavoritesOnly) visibleTiers.filter { it.id in favorites } else visibleTiers
     }
 
     val championsToDisplay = remember(rawChampionsToDisplay, selectedSort, selectedLane, currentRegion) {
-        when (selectedSort) {
+        when (if (isChinaRegion) TierSortOption.BY_TIER else selectedSort) {
             TierSortOption.BY_TIER -> rawChampionsToDisplay
             TierSortOption.WIN_RATE -> rawChampionsToDisplay.sortedByDescending { tierDisplayedStats(it, selectedLane).win }
             TierSortOption.BAN_RATE -> rawChampionsToDisplay.sortedByDescending { tierDisplayedStats(it, selectedLane).ban }
@@ -237,6 +257,51 @@ fun TierListTab(
         }
 
         if (showTierFilters) {
+            item {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .horizontalScroll(rememberScrollState()),
+                    horizontalArrangement = Arrangement.spacedBy(if (isOverlay) 4.dp else 6.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = com.example.util.tr("Tier List") + ":",
+                        color = HextechGold,
+                        fontSize = if (isOverlay) 10.sp else 11.5.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                    MetaRegion.available.forEach { region ->
+                        val selected = MetaRegion.normalize(currentRegion) == region
+                        FilterChip(
+                            selected = selected,
+                            onClick = {
+                                if (!selected) GlobalMetaSyncService.setRegion(context, region, regionScope)
+                            },
+                            label = {
+                                Text(
+                                    com.example.util.tr(MetaRegion.label(region)),
+                                    fontSize = if (isOverlay) 10.sp else 11.5.sp
+                                )
+                            },
+                            modifier = Modifier.testTag("tier_region_${region.lowercase(java.util.Locale.ROOT)}"),
+                            colors = FilterChipDefaults.filterChipColors(
+                                selectedContainerColor = HextechGold,
+                                selectedLabelColor = HextechDarkBg
+                            )
+                        )
+                    }
+                }
+                if (isChinaRegion) {
+                    Text(
+                        text = com.example.util.tr("Referencia local • Sin estadísticas regionales en vivo"),
+                        color = TextMuted,
+                        fontSize = 10.sp,
+                        modifier = Modifier.padding(top = 3.dp)
+                    )
+                }
+            }
+
             item {
                 // Role Filter
                 Row(
@@ -370,12 +435,13 @@ fun TierListTab(
 
         }
 
-        if (selectedSort == TierSortOption.BY_TIER) {
+        if (selectedSort == TierSortOption.BY_TIER || isChinaRegion) {
             // Tier S+ / T0
             if (tierSPlus.isNotEmpty()) {
                 item {
                     TierSectionCard(
                         isOverlay = isOverlay,
+                        showStats = !isChinaRegion,
                         showTrend = isSignedIn,
                         tierName = "TIER S+ (${tr("Dominantes / Prioridad Pick & Ban")})",
                         tierColor = TierSPlusColor,
@@ -391,6 +457,7 @@ fun TierListTab(
                 item {
                     TierSectionCard(
                         isOverlay = isOverlay,
+                        showStats = !isChinaRegion,
                         showTrend = isSignedIn,
                         tierName = "TIER S (${tr("Meta Muy Fuerte / Alta Prioridad")})",
                         tierColor = TierSColor,
@@ -406,6 +473,7 @@ fun TierListTab(
                 item {
                     TierSectionCard(
                         isOverlay = isOverlay,
+                        showStats = !isChinaRegion,
                         showTrend = isSignedIn,
                         tierName = "TIER A (${tr("Opciones Sólidas y Balanceadas")})",
                         tierColor = TierAColor,
@@ -418,7 +486,7 @@ fun TierListTab(
 
             listOf("B" to (TierBColor to tierB), "C" to (TierCColor to tierC)).forEach { (tier, section) ->
                 if (section.second.isNotEmpty()) item {
-                    TierSectionCard(isOverlay = isOverlay, showTrend = isSignedIn,
+                    TierSectionCard(isOverlay = isOverlay, showStats = !isChinaRegion, showTrend = isSignedIn,
                         tierName = "TIER $tier", tierColor = section.first,
                         champions = section.second, selectedLane = selectedLane, onSelectChampion = onSelectChampion)
                 }
@@ -572,6 +640,7 @@ fun TierListTab(
 @Composable
 fun TierSectionCard(
     isOverlay: Boolean = false,
+    showStats: Boolean = true,
     showTrend: Boolean = false,
     tierName: String,
     tierColor: Color,
@@ -601,6 +670,14 @@ fun TierSectionCard(
                     color = tierColor,
                     fontSize = 13.5.sp,
                     fontWeight = FontWeight.Bold
+                )
+            }
+            if (!showStats) {
+                Text(
+                    text = com.example.util.tr("Referencia local • Sin estadísticas regionales en vivo"),
+                    color = TextMuted,
+                    fontSize = 10.sp,
+                    modifier = Modifier.padding(top = 3.dp)
                 )
             }
             Spacer(modifier = Modifier.height(10.dp))
@@ -658,22 +735,31 @@ fun TierSectionCard(
                                     verticalAlignment = Alignment.CenterVertically,
                                     horizontalArrangement = Arrangement.spacedBy(6.dp)
                                 ) {
-                                    Column(horizontalAlignment = Alignment.End) {
-                                        Row(
-                                            verticalAlignment = Alignment.CenterVertically,
-                                            horizontalArrangement = Arrangement.spacedBy(4.dp)
-                                        ) {
-                                            Text(
-                                                text = com.example.util.tr(tr("WR") + ": ${com.example.util.championStatPercent(champ, displayed.win, "wr")}"),
-                                                color = HextechGold,
-                                                fontWeight = FontWeight.Bold,
-                                                fontSize = 12.5.sp
-                                            )
+                                    if (showStats) {
+                                        Column(horizontalAlignment = Alignment.End) {
+                                            Row(
+                                                verticalAlignment = Alignment.CenterVertically,
+                                                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                            ) {
+                                                Text(
+                                                    text = com.example.util.tr(tr("WR") + ": ${com.example.util.championStatPercent(champ, displayed.win, "wr")}"),
+                                                    color = HextechGold,
+                                                    fontWeight = FontWeight.Bold,
+                                                    fontSize = 12.5.sp
+                                                )
+                                            }
+                                            if (!isOverlay) {
+                                                Spacer(modifier = Modifier.height(2.dp))
+                                                com.example.ui.components.ChampionRateLine(champ, includePick = false, winRate = displayed.win, pickRate = displayed.pick, banRate = displayed.ban)
+                                            }
                                         }
-                                        if (!isOverlay) {
-                                            Spacer(modifier = Modifier.height(2.dp))
-                                            com.example.ui.components.ChampionRateLine(champ, includePick = false, winRate = displayed.win, pickRate = displayed.pick, banRate = displayed.ban)
-                                        }
+                                    } else {
+                                        Text(
+                                            text = com.example.util.tr("Clasificación CN"),
+                                            color = HextechGold,
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = 11.sp
+                                        )
                                     }
                                     Icon(
                                         Icons.Default.ChevronRight,
