@@ -82,7 +82,7 @@
     <string name="onboarding_tier_list_oficial" formatted="false">Classificação comunitária</string>
     <string name="onboarding_meta_global_y_counters" formatted="false">Meta Global e Vantagens nos confrontos</string>
     <string name="onboarding_consulta_la_tier_list_oficial_actualizada_al_ultimo_parche_y_desc" formatted="false">Consulte a classificação S+, S, A, B e C combinada das fontes públicas indicadas, com taxas de vitória, escolha e banimento publicadas para cada rota disponível. Campeões sem estatísticas competitivas atuais não aparecem como tier.</string>
-    <string name="onboarding_tier_list_global_y_de_servidores_asiaticos" formatted="false">Três fontes públicas de classificação</string>
+    <string name="onboarding_tier_list_global_y_de_servidores_asiaticos" formatted="false">Duas fontes globais e classificação China / Local</string>
     <string name="onboarding_identificacion_de_mejores_picks_del_meta" formatted="false">Estatísticas separadas por rota publicada</string>
     <string name="onboarding_analisis_de_enfrentamientos_directos" formatted="false">Histórico e tier list pessoal</string>
     <string name="onboarding_ventajas_suscripcion_premium" formatted="false">Vantagens &amp; Assinatura Premium</string>
