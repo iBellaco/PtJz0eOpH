@@ -127,6 +127,11 @@ internal data class CalibrationEvidenceFrame(
 
 object DraftVisionScanner {
     private const val TAG = "DraftVisionScanner"
+    // The bundled reference capture uses the game's native landscape viewport,
+    // not a 16:9 canvas. Keep that frame family unscaled; otherwise the generic
+    // 16:9 transform moves the initial side columns before visual alignment.
+    private const val REFERENCE_CAPTURE_ASPECT = 1280f / 579f
+    private const val REFERENCE_CAPTURE_ASPECT_TOLERANCE = .08f
     @Volatile private var overlayMasks = CaptureMaskSnapshot(emptyList())
     @Volatile private var diagnosticMasks = CaptureMaskSnapshot(emptyList())
     internal val screenOverlayBoundsFlow = kotlinx.coroutines.flow.MutableStateFlow<Rect?>(null)
@@ -522,7 +527,22 @@ object DraftVisionScanner {
         // stay identical (full-screen HUD versus the same surface with outer bars).
         val refresh = refreshGeometry || alignedBase == null || alignedSize != (bitmap.width to bitmap.height) || lastAlignmentAt == 0L || now-lastAlignmentAt >= 2000
         if (refresh) activeViewport = DraftFrameGeometry.contentBounds(bitmap)
-        val normalized = AdaptiveScreenLayoutEngine.computeAdaptiveConfig(bitmap.width, bitmap.height, calibrationConfig)
+        // The generic aspect-ratio transform is defined for the full capture.
+        // When black bars expose a smaller game viewport, that viewport already
+        // carries the reference game's aspect ratio; applying the outer frame's
+        // ratio again would move the side slots before ring alignment can verify
+        // them (notably on square/foldable captures). Map the unscaled reference
+        // config into the observed viewport instead.
+        val fullFrame = activeViewport == Rect(0, 0, bitmap.width, bitmap.height)
+        val captureAspect = maxOf(bitmap.width, bitmap.height).toFloat() /
+            minOf(bitmap.width, bitmap.height).coerceAtLeast(1).toFloat()
+        val nativeReferenceFrame = kotlin.math.abs(captureAspect - REFERENCE_CAPTURE_ASPECT) <=
+            REFERENCE_CAPTURE_ASPECT_TOLERANCE
+        val normalized = if (fullFrame && !nativeReferenceFrame) {
+            AdaptiveScreenLayoutEngine.computeAdaptiveConfig(bitmap.width, bitmap.height, calibrationConfig)
+        } else {
+            calibrationConfig
+        }
         val base = if (manual) normalized else DraftFrameGeometry.calculateMultideviceBoxes(normalized, activeViewport, bitmap.width, bitmap.height)
         if (alignedBase != base || alignedSize != (bitmap.width to bitmap.height)) {
             geometryStability.reset()

@@ -23,6 +23,32 @@ class BannedPortraitScannerTest {
     private val context get() = RuntimeEnvironment.getApplication()
     @Before fun prepare() { WildRiftRepository.initChampions(context, forceReload = true) }
 
+    @Test fun incompleteRowsAssignByNearestAdaptiveSlotInsteadOfFirstObservation() {
+        val scanner = BannedPortraitScanner()
+        val aspect = 16f / 9f
+        val nominal = com.example.service.screen.computeAdaptiveBanRegions(
+            aspect, com.example.service.screen.BanSide.ALLY
+        )
+        val observations = listOf(
+            com.example.service.screen.BanObservation(
+                com.example.service.screen.BanSide.ALLY,
+                nominal[3].copy(x = nominal[3].x + .004f),
+                "zed", similarity = .92f
+            ),
+            com.example.service.screen.BanObservation(
+                com.example.service.screen.BanSide.ALLY,
+                nominal[1].copy(x = nominal[1].x - .003f),
+                "jax", similarity = .92f
+            )
+        )
+        repeat(2) { scanner.update(observations, aspect) }
+        val allied = scanner.slots.filter { it.side == com.example.service.screen.BanSide.ALLY }
+        assertEquals("jax", allied[1].championId)
+        assertEquals("zed", allied[3].championId)
+        assertNull(allied[0].championId)
+        assertNull(allied[2].championId)
+    }
+
     @Test fun marginalCropScoreCannotReplaceAnAcceptedBanIdentity() {
         assertFalse(com.example.service.screen.isClearlyStrongerBan(.8514074f, .83980703f))
         assertFalse(com.example.service.screen.isClearlyStrongerBan(.89f, .81f))
