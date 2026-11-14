@@ -56,20 +56,23 @@ object GlobalMetaSyncService {
         val prefs = context.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
         val saved = prefs.getString("selected_meta_region", MetaRegion.DEFAULT) ?: MetaRegion.DEFAULT
         _currentRegion.value = MetaRegion.normalize(saved)
-        if (saved != MetaRegion.DEFAULT) prefs.edit().putString("selected_meta_region", MetaRegion.DEFAULT).apply()
+        if (saved != _currentRegion.value) prefs.edit().putString("selected_meta_region", _currentRegion.value).apply()
         WildRiftRepository.selectMetaRegion(_currentRegion.value)
         BestBuildWrScraper.selectRegion(_currentRegion.value)
     }
 
     fun setRegion(context: Context, regionId: String, scope: CoroutineScope) {
-        // La estadística publicada es global y debe ser idéntica en todos los dispositivos.
-        val region = MetaRegion.DEFAULT
+        val region = MetaRegion.normalize(regionId)
         _currentRegion.value = region
         context.getSharedPreferences("app_prefs", Context.MODE_PRIVATE).edit()
             .putString("selected_meta_region", region).apply()
         WildRiftRepository.selectMetaRegion(region)
         BestBuildWrScraper.selectRegion(region)
-        scope.launch { syncGlobalMeta(context, forceRefresh = true) }
+        if (MetaRegion.hasLiveRateStats(region)) {
+            scope.launch { syncGlobalMeta(context, forceRefresh = true) }
+        } else {
+            _syncState.value = MetaSyncState.Success("Clasificación China integrada")
+        }
     }
 
     suspend fun syncGlobalMeta(context: Context, forceRefresh: Boolean = false) {
@@ -77,6 +80,10 @@ object GlobalMetaSyncService {
         try {
         _syncState.value = MetaSyncState.Syncing
         val requestedRegion = _currentRegion.value
+        if (!MetaRegion.hasLiveRateStats(requestedRegion)) {
+            _syncState.value = MetaSyncState.Success("Clasificación China integrada")
+            return
+        }
         BestBuildWrScraper.syncGlobalTierList(context, requestedRegion, force = forceRefresh)
         if (requestedRegion != _currentRegion.value) return
         _syncState.value = if (BestBuildWrScraper.isLastSyncSuccess.value)

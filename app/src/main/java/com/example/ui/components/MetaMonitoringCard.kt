@@ -15,6 +15,7 @@ import androidx.compose.ui.unit.sp
 import com.example.data.sync.BestBuildWrScraper
 import com.example.data.sync.MetaFreshness
 import com.example.data.sync.ScraperSourceStatus
+import com.example.data.WildRiftRepository
 import com.example.ui.theme.*
 import com.example.util.tr
 import kotlinx.coroutines.delay
@@ -29,7 +30,9 @@ fun MetaMonitoringCard() {
     var now by remember { mutableStateOf(System.currentTimeMillis()) }
     var selected by remember { mutableStateOf<ScraperSourceStatus?>(null) }
     LaunchedEffect(Unit) { while (true) { delay(1_000); now = System.currentTimeMillis() } }
-    val expected = health.expectedCount.takeIf { it > 0 } ?: 142
+    val expected = health.expectedCount.takeIf { it > 0 }
+        ?: WildRiftRepository.baseChampionsList.size.takeIf { it > 0 }
+        ?: 143
     fun coverage(status: ScraperSourceStatus): Int = status.rosterCount.takeIf { it > 0 }
         ?: maxOf(status.tierCount, status.statsCount)
     fun issue(status: ScraperSourceStatus): String? = when {
