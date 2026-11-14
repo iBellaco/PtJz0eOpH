@@ -6,6 +6,17 @@ import kotlin.math.roundToInt
 
 /** Handles RGBA planes whose last row omits the vendor's alignment padding. */
 internal object CaptureFrameDecoder {
+    /** Owned by one capture session and accessed under its frame lock. */
+    class PackingBuffer {
+        private var buffer: ByteBuffer? = null
+        fun obtain(size: Int): ByteBuffer {
+            val target = buffer?.takeIf { it.capacity() == size }
+                ?: ByteBuffer.allocateDirect(size).also { buffer = it }
+            target.clear()
+            return target
+        }
+        fun clear() { buffer = null }
+    }
     fun captureSize(width: Int, height: Int): Pair<Int, Int> {
         require(width > 0 && height > 0)
         val scale = minOf(1.0, 1920.0 / width, 1080.0 / height)
@@ -13,7 +24,8 @@ internal object CaptureFrameDecoder {
             (height * scale).roundToInt().coerceAtLeast(1)
     }
 
-    fun decode(source: ByteBuffer, width: Int, height: Int, pixelStride: Int, rowStride: Int): Bitmap? {
+    fun decode(source: ByteBuffer, width: Int, height: Int, pixelStride: Int, rowStride: Int,
+        packingBuffer: PackingBuffer? = null): Bitmap? {
         if (width <= 0 || height <= 0 || pixelStride != 4 || rowStride < width.toLong() * 4) return null
         val rowBytes = width.toLong() * 4
         val required = (height - 1L) * rowStride + rowBytes
@@ -22,7 +34,7 @@ internal object CaptureFrameDecoder {
         val pixels = source.duplicate()
         val start = pixels.position()
         val packed = if (rowStride.toLong() == rowBytes) pixels else {
-            ByteBuffer.allocateDirect(packedSize.toInt()).also { target ->
+            (packingBuffer?.obtain(packedSize.toInt()) ?: ByteBuffer.allocateDirect(packedSize.toInt())).also { target ->
                 repeat(height) { row ->
                     pixels.limit(source.limit())
                     pixels.position(start + row * rowStride)

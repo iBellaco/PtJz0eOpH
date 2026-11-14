@@ -501,17 +501,21 @@ class FloatingAssistantService : Service(), LifecycleOwner, ViewModelStoreOwner,
 
     override fun onLowMemory() {
         super.onLowMemory()
-        try {
-            System.gc()
-        } catch (_: Exception) {}
+        releaseTemporaryScanMemory()
     }
 
     override fun onTrimMemory(level: Int) {
         super.onTrimMemory(level)
         if (level >= TRIM_MEMORY_MODERATE) {
-            try {
-                System.gc()
-            } catch (_: Exception) {}
+            releaseTemporaryScanMemory()
+        }
+    }
+
+    private fun releaseTemporaryScanMemory() {
+        // Release expendable images instead of forcing a stop-the-world GC during the game.
+        serviceScope.launch(Dispatchers.Default) {
+            screenCaptureManager?.trimTemporaryMemory()
+            com.example.service.screen.DraftVisionScanner.clearCalibrationEvidenceFrame()
         }
     }
 

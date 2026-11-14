@@ -61,7 +61,7 @@ class ScreenCaptureManager(private val context: Context) {
     private var screenDensity: Int = 420
 
     // Hilo secundario dedicado para procesamiento de fotogramas sin bloquear el hilo principal (UI)
-    private val captureThread = HandlerThread("ScreenCaptureThread").apply { start() }
+    private val captureThread = HandlerThread("ScreenCaptureThread", android.os.Process.THREAD_PRIORITY_BACKGROUND).apply { start() }
     private val handler = Handler(captureThread.looper)
     private var surfaceAttached = false
     private val idleCapture = Runnable {
@@ -127,6 +127,7 @@ class ScreenCaptureManager(private val context: Context) {
     }
 
     private val frameLock = Any()
+    private val packingBuffer = CaptureFrameDecoder.PackingBuffer()
     private val projectionLock = Any()
     private var lastFrame: Bitmap? = null
 
@@ -137,10 +138,10 @@ class ScreenCaptureManager(private val context: Context) {
     private fun processImageToBitmap(img: Image): Bitmap? {
         return try {
             val plane = img.planes.firstOrNull() ?: return null
-            CaptureFrameDecoder.decode(plane.buffer, img.width, img.height, plane.pixelStride, plane.rowStride)
+            CaptureFrameDecoder.decode(plane.buffer, img.width, img.height, plane.pixelStride, plane.rowStride, packingBuffer)
         } catch (oom: OutOfMemoryError) {
-            AppLogger.e(TAG, "Memoria insuficiente (OOM) en frame: forzando recoleccion segura")
-            System.gc()
+            packingBuffer.clear()
+            AppLogger.e(TAG, "Memoria insuficiente en captura; fotograma descartado")
             null
         } catch (t: Throwable) {
             AppLogger.w(TAG, "Error seguro procesando imagen a Bitmap: ${t.message}")
@@ -299,6 +300,8 @@ class ScreenCaptureManager(private val context: Context) {
         mediaProjection != null && imageReader != null && virtualDisplay != null
     }
 
+    fun trimTemporaryMemory() = synchronized(frameLock) { packingBuffer.clear() }
+
     /** Call under projectionLock; detach references before stop can dispatch its callback. */
     private fun clearProjection(stop: Boolean) {
         _projectionReady.value = false
@@ -307,6 +310,7 @@ class ScreenCaptureManager(private val context: Context) {
         val previous = mediaProjection
         mediaProjection = null
         synchronized(frameLock) {
+            packingBuffer.clear()
             lastFrame?.recycle()
             lastFrame = null
             try { virtualDisplay?.release() } catch (_: Exception) {}

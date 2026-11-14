@@ -2,6 +2,12 @@ package com.example.service.screen
 
 /** Fast title frames run between metadata scans; processing time does not force another heavy scan. */
 object DraftSyncCadence {
+    /** A slow inference must leave CPU time for the game instead of restarting after 30 ms. */
+    fun restDelayMs(targetMs: Long, processingMs: Long, constrained: Boolean = false): Long {
+        val elapsed = processingMs.coerceAtLeast(0L)
+        val recovery = (elapsed / if (constrained) 1 else 2).coerceAtMost(1200L)
+        return maxOf(targetMs - elapsed, recovery, if (constrained) 600L else 180L)
+    }
     fun metadataDue(nowMs: Long, lastFinishedMs: Long, confirmedPicks: Int = 0): Boolean =
         confirmedPicks < 8 && nowMs-lastFinishedMs>=6000L
 
