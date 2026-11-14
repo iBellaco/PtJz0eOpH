@@ -35,13 +35,12 @@ internal object DraftFrameGeometry {
         val w = bitmap.width; val h = bitmap.height
         fun black(x: Int, y: Int): Boolean {
             val c = bitmap.getPixel(x, y)
-            return ((c shr 16) and 255) < 12 && ((c shr 8) and 255) < 12 && (c and 255) < 12
+            return ((c shr 16) and 255) <= 14 && ((c shr 8) and 255) <= 14 && (c and 255) <= 14
         }
-        fun blackRow(y: Int): Boolean = (0 until 128).all { black(it * (w - 1) / 127, y) }
-        // Three interior samples reject a dark patch on just one scanline.
-        // Cached by configForFrame; no frame-wide pixel buffer is allocated.
+        fun blackRow(y: Int): Boolean =
+            (0 until 128).count { black(it * (w - 1) / 127, y) } >= 121
         fun blackColumn(x: Int, top: Int, bottom: Int): Boolean =
-            (1..3).all { black(x, top + it * (bottom - top - 1) / 4) }
+            (0 until 128).count { black(x, top + it * (bottom - top - 1) / 127) } >= 121
         var top = 0; var bottom = h; var left = 0; var right = w
         while (top < h / 3 && blackRow(top)) top++
         while (bottom > h * 2 / 3 && blackRow(bottom - 1)) bottom--

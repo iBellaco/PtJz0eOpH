@@ -76,6 +76,20 @@ class DraftMultideviceBoxesTest {
         } finally { bitmap.recycle() }
     }
 
+    @Test fun contentBoundsToleratesNearBlackBarsWithSparseGestureArtifacts() {
+        val bitmap = Bitmap.createBitmap(256, 160, Bitmap.Config.ARGB_8888)
+        try {
+            bitmap.eraseColor(Color.rgb(14, 14, 14))
+            Canvas(bitmap).drawRect(Rect(20, 0, 236, 160), Paint().apply {
+                color = Color.rgb(42, 48, 58)
+            })
+            for (index in 0 until 7) {
+                bitmap.setPixel(0, (index * 127 / 6).coerceIn(0, 159), Color.rgb(26, 26, 26))
+            }
+            assertEquals(Rect(20, 0, 236, 160), DraftFrameGeometry.contentBounds(bitmap))
+        } finally { bitmap.recycle() }
+    }
+
     @Test fun columnPackingKeepsOriginalTitlePixelsAndMasksWithoutMutatingCapture() {
         val frame = Bitmap.createBitmap(1600, 900, Bitmap.Config.ARGB_8888)
         try {
