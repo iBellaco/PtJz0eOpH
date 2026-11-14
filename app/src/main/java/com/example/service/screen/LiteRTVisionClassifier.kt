@@ -238,11 +238,21 @@ object LiteRTVisionClassifier {
             val diameter = radius * 2
             if (diameter > headerHeight) continue
             val cropPixels = IntArray(diameter * diameter)
-            for (yRatio in floatArrayOf(.044f, .048f, .052f, .056f, .060f)) {
+            // Tolerate status/navigation bars, gesture margins and camera cutouts
+            // without changing the normalized row geometry.
+            val ySamples = floatArrayOf(.038f, .044f, .048f, .050f, .052f, .056f, .060f, .062f, .068f)
+            for (yRatio in ySamples) {
                 val y = (height * yRatio).toInt()
                 if (y - radius < 0 || y + radius > headerHeight) continue
                 for (x in radius until width - radius step (radius / 4).coerceAtLeast(3)) {
-                    if (x > width * sideWidth && x < width * (1f - sideWidth)) continue
+                    // Include the portrait rim that straddles the dynamic
+                    // side-band boundary; using the center alone would drop
+                    // the outermost ban on wide captures.
+                    val scanSideWidth = maxOf(
+                        sideWidth + radius.toFloat() / width,
+                        .48f / (16f / 9f)
+                    )
+                    if (x > width * scanSideWidth && x < width * (1f - scanSideWidth)) continue
                     val cropRect = android.graphics.Rect(x - radius, y - radius, x + radius, y + radius)
                     if (exclusions.any { android.graphics.Rect.intersects(it, PortraitMatcher.sampledRect(cropRect)) }) continue
                     for (row in 0 until diameter) {
@@ -287,12 +297,28 @@ object LiteRTVisionClassifier {
                 found.add(proposal.copy(score = best.second) to best.first)
             }
         }
-        // A single gameplay HUD portrait must not be interpreted as a ban row.
-        if (found.size < 3 || found.none { it.first.x < width / 2 } || found.none { it.first.x > width / 2 }) return emptyList()
-        val observations = found.map { (proposal, champion) ->
+        // Keep valid evidence from one side when the opposite header is hidden,
+        // cropped or temporarily covered by a system inset. Two confident
+        // proposals are still required to reject isolated HUD portraits.
+        val allyProposals = found.filter { it.first.x < width / 2 }
+        val enemyProposals = found.filter { it.first.x >= width / 2 }
+        if (found.isEmpty() || (allyProposals.isEmpty() && enemyProposals.isEmpty())) return emptyList()
+        if (allyProposals.size < 2 && enemyProposals.size < 2) return emptyList()
+        val rawObservations = found.map { (proposal, champion) ->
             BanObservation(if (proposal.x < width / 2) BanSide.ALLY else BanSide.ENEMY,
                 BanRegion(proposal.x.toFloat() / width, proposal.y.toFloat() / height,
                     proposal.radius.toFloat() / height), champion?.id, champion == null, proposal.score)
+        }
+        // Vertical sampling is intentionally broad, but portraits from a
+        // neighbouring HUD row must not become ban evidence. Keep the largest
+        // coherent Y cluster independently for each side.
+        val observations = BanSide.entries.flatMap { side ->
+            val row = rawObservations.filter { it.side == side }
+            if (row.size < 3) row else {
+                val medianY = row.map { it.region.y }.sorted()[row.size / 2]
+                val coherent = row.filter { kotlin.math.abs(it.region.y - medianY) <= .012f }
+                if (coherent.size >= 2) coherent else row
+            }
         }
         // A final unused rival ban may have no crossed-out emblem. Infer its position
         // only from a regular row of at least four observed circles near the screen edge,

@@ -86,27 +86,49 @@ object AdaptiveScreenLayoutEngine {
      * Genera una configuración de calibración adaptada dinámicamente a la resolución y aspect ratio
      * del frame actual.
      */
-    fun computeAdaptiveConfig(width: Int, height: Int, baseConfig: VisionCalibrationConfig = VisionCalibrationConfig()): VisionCalibrationConfig {
+    fun computeAdaptiveConfig(
+        width: Int,
+        height: Int,
+        baseConfig: VisionCalibrationConfig = VisionCalibrationConfig(),
+        preserveExplicitCalibration: Boolean = baseConfig != VisionCalibrationConfig()
+    ): VisionCalibrationConfig {
         if (width <= 0 || height <= 0) return baseConfig
 
-        // Las coordenadas X ya están normalizadas respecto al frame capturado. No deben
-        // escalarse ni limitarse a los valores predeterminados: eso anulaba la calibración
-        // manual (por ejemplo, 15.7% terminaba escaneándose en 11%) y variaba entre formatos.
-        // El recorte final se limita a los bordes físicos en calculateSlotCropRect.
-        val adaptiveAllyCenterX = baseConfig.allyAvatarCenterX.coerceIn(0.005f, 0.495f)
-        val adaptiveEnemyCenterX = baseConfig.enemyAvatarCenterX.coerceIn(0.505f, 0.995f)
-        val adaptiveAllySlotXRatios = baseConfig.allySlotXRatios.map { it.coerceIn(0.005f, 0.495f) }
-        val adaptiveEnemySlotXRatios = baseConfig.enemySlotXRatios.map { it.coerceIn(0.505f, 0.995f) }
+        // Wild Rift mantiene los retratos laterales anclados a los bordes y deja
+        // que solamente crezca el centro en pantallas panorámicas. Una calibración
+        // explícita (guardada, medida o manual) conserva sus coordenadas exactas;
+        // la geometría genérica se transforma desde la referencia 16:9.
+        if (preserveExplicitCalibration) return baseConfig.copy(
+            allyAvatarCenterX = baseConfig.allyAvatarCenterX.coerceIn(0.005f, 0.495f),
+            enemyAvatarCenterX = baseConfig.enemyAvatarCenterX.coerceIn(0.505f, 0.995f),
+            allySlotXRatios = baseConfig.allySlotXRatios.map { it.coerceIn(0.005f, 0.495f) },
+            enemySlotXRatios = baseConfig.enemySlotXRatios.map { it.coerceIn(0.505f, 0.995f) }
+        )
+
+        val landscapeWidth = max(width, height).toFloat()
+        val landscapeHeight = min(width, height).toFloat().coerceAtLeast(1f)
+        val aspect = landscapeWidth / landscapeHeight
+        val scaleFactor = (BASE_ASPECT_RATIO / aspect).coerceIn(0.65f, 1.35f)
+
+        val adaptiveAllyCenterX = (baseConfig.allyAvatarCenterX * scaleFactor).coerceIn(0.005f, 0.45f)
+        val adaptiveEnemyCenterX = (1f - (1f - baseConfig.enemyAvatarCenterX) * scaleFactor)
+            .coerceIn(0.55f, 0.995f)
+        val adaptiveAllySlotXRatios = baseConfig.allySlotXRatios.map {
+            (it * scaleFactor).coerceIn(0.005f, 0.45f)
+        }
+        val adaptiveEnemySlotXRatios = baseConfig.enemySlotXRatios.map {
+            (1f - (1f - it) * scaleFactor).coerceIn(0.55f, 0.995f)
+        }
 
         // Rango de búsqueda OCR adaptativo:
         // Dimensiones perfectamente simétricas e idénticas en anchura horizontal para ambos bandos (Aliado y Rival)
         // Evita que el lado aliado se extienda demasiado y evita que el lado rival corte letras finales o colisione con el carrusel.
-        val ocrBoxWidth = 0.185f
-        val allyOcrMinX = (adaptiveAllyCenterX - 0.024f).coerceIn(0.005f, 0.795f)
-        val allyOcrMaxX = allyOcrMinX + ocrBoxWidth
+        val ocrBoxWidth = 0.185f * scaleFactor
+        val allyOcrMinX = (adaptiveAllyCenterX - 0.024f * scaleFactor).coerceIn(0.005f, 0.795f)
+        val allyOcrMaxX = (allyOcrMinX + ocrBoxWidth).coerceAtMost(0.995f)
 
-        val enemyOcrMaxX = (adaptiveEnemyCenterX + 0.024f).coerceIn(0.205f, 0.995f)
-        val enemyOcrMinX = enemyOcrMaxX - ocrBoxWidth
+        val enemyOcrMaxX = (adaptiveEnemyCenterX + 0.024f * scaleFactor).coerceIn(0.205f, 0.995f)
+        val enemyOcrMinX = (enemyOcrMaxX - ocrBoxWidth).coerceAtLeast(0.005f)
 
         // Header calibration is frame-relative too. Never overwrite measured
         // positions using a guessed device inset; live header detection owns alignment.

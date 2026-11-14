@@ -17,9 +17,25 @@ internal fun emptyBanSlots(): List<BanSlot> = BanSide.entries.flatMap { side ->
     List(5) { BanSlot(side, it) }
 }
 
-/** Side HUDs scale with height; a fixed 27% band cuts off the inner ban on full-screen tablets. */
+/** Side HUDs scale with height; the central artwork grows on panoramic screens. */
 internal fun banHeaderSideWidthRatio(aspect: Float): Float =
-    if (aspect >= 1.75f) .27f else (.48f / aspect.coerceAtLeast(1f)).coerceIn(.27f, .45f)
+    (.48f / aspect.coerceAtLeast(1f)).coerceIn(.20f, .45f)
+
+/** Theoretical five-slot row used only to assign incomplete observations. */
+internal fun computeAdaptiveBanRegions(aspect: Float, side: BanSide): List<BanRegion> {
+    val safeAspect = aspect.coerceAtLeast(1f)
+    val step = .080f / safeAspect
+    val radius = .030f
+    val y = .052f
+    return if (side == BanSide.ALLY) {
+        val startX = .050f / safeAspect
+        List(5) { index -> BanRegion((startX + index * step).coerceIn(0f, 1f), y, radius) }
+    } else {
+        val endX = 1f - (.050f / safeAspect)
+        val startX = endX - 4 * step
+        List(5) { index -> BanRegion((startX + index * step).coerceIn(0f, 1f), y, radius) }
+    }
+}
 
 /** Fill visible but unreadable portraits before assigning slot numbers. Never invents a champion. */
 internal fun fillHeaderPositions(observations: List<BanObservation>, aspect: Float,
@@ -69,6 +85,15 @@ internal fun fillHeaderPositions(observations: List<BanObservation>, aspect: Flo
         // can consume the bounded candidate budget.
         extend(left = side == BanSide.ALLY)
         extend(left = side != BanSide.ALLY)
+        // The classifier may reject a deliberately empty outer ring before
+        // the row selector sees it. If the ring is visible but the inner-most
+        // candidate sits exactly on the side-band boundary, treat that one as
+        // adjacent artwork and keep the four real ban portraits.
+        if (side == BanSide.ENEMY && row.size == 5 && hasOuterPortrait != null &&
+            row.first().region.x < 1f - banHeaderSideWidthRatio(aspect) + step * .2f &&
+            hasOuterPortrait(row.last().region.copy(x = row.last().region.x + step))) {
+            row.removeAt(0)
+        }
     }
     // Template similarity alone can match a textured background outside the row.
     // Select the five circles with consistent spacing before latching identities.

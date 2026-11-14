@@ -95,27 +95,21 @@ class DeviceDraftProfileTest {
             assertEquals("$brand/$model",VisionCalibrationConfig(),VisionCalibrationConfig.defaultsForDevice(brand,model))
         }
     }
-    @Test fun measuredDefaultsRequireTheExactDeviceAndCaptureDimensions() {
-        val kenshin = VisionCalibrationConfig.measuredDefaultForCapture(
-            "motorola", "motorola edge 30 neo", 2174, 1080)
-        assertNotNull(kenshin)
-        assertEquals(.107000016f, kenshin!!.allyAvatarCenterX)
-        assertEquals(.919f, kenshin.enemyAvatarCenterX)
-        assertEquals(.188f, kenshin.allySlotYRatios.first())
-        assertEquals(.168f, kenshin.topAlly5XRatio)
-        assertEquals(.974f, kenshin.topEnemy5XRatio)
-        assertEquals(.172f, kenshin.allyBanXRatios.last())
-
-        // Orientation may swap width and height, but another model or another
-        // capture size must never inherit these coordinates.
-        assertEquals(kenshin, VisionCalibrationConfig.measuredDefaultForCapture(
-            "MOTOROLA", "MOTOROLA EDGE 30 NEO", 1080, 2174))
-        assertEquals(kenshin, VisionCalibrationConfig.measuredDefaultForCapture(
-            "motorola", "motorola edge 30 neo", 1920, 954))
-        assertNull(VisionCalibrationConfig.measuredDefaultForCapture(
-            "motorola", "motorola edge 30 neo", 2340, 1080))
-        assertNull(VisionCalibrationConfig.measuredDefaultForCapture(
-            "motorola", "another", 2174, 1080))
+    @Test fun measuredDefaultsAreEmptyAfterTheCoordinateReset() {
+        // The application no longer ships device-specific coordinate presets.
+        // Every device starts with adaptive geometry and may save a calibration
+        // only when the user explicitly creates one at runtime.
+        data class Case(val manufacturer: String, val model: String, val width: Int, val height: Int)
+        for (case in listOf(
+            Case("motorola", "motorola edge 30 neo", 2174, 1080),
+            Case("MOTOROLA", "MOTOROLA EDGE 30 NEO", 1080, 2174),
+            Case("motorola", "motorola edge 30 neo", 1920, 954),
+            Case("motorola", "motorola edge 30 neo", 2340, 1080),
+            Case("motorola", "another", 2174, 1080)
+        )) {
+            assertNull(VisionCalibrationConfig.measuredDefaultForCapture(
+                case.manufacturer, case.model, case.width, case.height))
+        }
     }
 
     @Test fun previousMeasuredCatalogIsNotUsedAfterTheOwnerReset() {
