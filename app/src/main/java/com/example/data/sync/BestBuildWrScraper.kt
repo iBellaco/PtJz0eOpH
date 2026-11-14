@@ -22,12 +22,12 @@ object BestBuildWrScraper {
     private const val PREFS_NAME = "wr_tier_list_cache"
     private const val STATS_SNAPSHOT_PREFIX = "stats_snapshot_"
     private const val ROLE_STATS_SNAPSHOT_PREFIX = "role_stats_snapshot_"
+    private const val SOURCE_SET_KEY = "active_source_set_v2"
 
     // Only publishers used by the statistics pipeline belong in live monitoring.
     val GLOBAL_SCRAPING_SOURCES = listOf(
         GlobalScrapingSource("wildriftfire", "WildRiftFire", "https://www.wildriftfire.com/tier-list", "wildriftfire.com/tier-list", com.example.data.GamePatch.VERSION),
-        GlobalScrapingSource("wildriftcore", "WildRiftCore", "https://wildriftcore.com/en/tierlist/", "wildriftcore.com/en/tierlist/", com.example.data.GamePatch.VERSION),
-        GlobalScrapingSource("wildrifter", "WildRifter", "https://wildrifter.com/en?patch=${com.example.data.GamePatch.VERSION}", "wildrifter.com/en", com.example.data.GamePatch.VERSION)
+        GlobalScrapingSource("wildriftcore", "WildRiftCore", "https://wildriftcore.com/en/tierlist/", "wildriftcore.com/en/tierlist/", com.example.data.GamePatch.VERSION)
     )
 
     private val _freshness = MutableStateFlow(MetaFreshness())
@@ -83,10 +83,27 @@ object BestBuildWrScraper {
     @Synchronized fun initialize(context: Context) {
         if (initialized) return
         initialized = true
+        // Do not carry a status for a publisher removed from a previous
+        // installation into the current two-source monitor.
+        _sourceStatuses.value = initialSourceMap
         PatchTierMovementStore.initialize(context)
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         if (prefs.getString("patch", null) != com.example.data.GamePatch.VERSION) {
             prefs.edit().clear().putString("patch", com.example.data.GamePatch.VERSION).apply()
+        }
+        val activeSourceSet = GLOBAL_SCRAPING_SOURCES.joinToString(",") { it.id }
+        if (prefs.getString(SOURCE_SET_KEY, null) != activeSourceSet) {
+            // A previous build could have persisted rates fused from a
+            // different publisher set. Discard that snapshot so a retired
+            // source cannot reappear until the two active pages are checked.
+            prefs.edit()
+                .remove("snapshot_${MetaRegion.DEFAULT}")
+                .remove(STATS_SNAPSHOT_PREFIX + MetaRegion.DEFAULT)
+                .remove(ROLE_STATS_SNAPSHOT_PREFIX + MetaRegion.DEFAULT)
+                .remove("timestamp_${MetaRegion.DEFAULT}")
+                .remove("rate_history_v2")
+                .putString(SOURCE_SET_KEY, activeSourceSet)
+                .apply()
         }
         for (region in MetaRegion.available) {
             try {
@@ -123,6 +140,11 @@ object BestBuildWrScraper {
         syncMutex.lock()
         try {
             initialize(context)
+            if (!MetaRegion.hasLiveRateStats(requested)) {
+                regions[requested] = RegionState(System.currentTimeMillis(), true, "Clasificación China integrada")
+                if (selectedRegion == requested) selectRegion(requested)
+                return@withContext
+            }
             _isOnline.value = checkNetwork(context)
             val previous = regions[requested] ?: RegionState()
             if (!force && previous.success && System.currentTimeMillis() - previous.at < MetaFreshness.POLL_INTERVAL_MS) return@withContext
@@ -212,10 +234,10 @@ object BestBuildWrScraper {
                 // Fallback publishers only fill champions absent from the primary report.
                 val freshStats = linkedMapOf<String, ChampionMetaStats>()
                 val statOrigins = mutableMapOf<String, String>()
-                // WildRifter currently publishes all three rates for every
-                // champion with data. It is the preferred complete snapshot;
-                // the other publishers fill only fields or champions it lacks.
-                listOf("wildrifter", "wildriftfire", "wildriftcore").forEach { id ->
+                // Only the two active publishers contribute to the global
+                // snapshot. A source removed from monitoring must not remain
+                // as a hidden statistical fallback.
+                listOf("wildriftfire", "wildriftcore").forEach { id ->
                     validSources.firstOrNull { it.source.id == id }?.stats?.forEach { (champion, rates) ->
                         val existing = freshStats[champion]
                         if (existing == null) {

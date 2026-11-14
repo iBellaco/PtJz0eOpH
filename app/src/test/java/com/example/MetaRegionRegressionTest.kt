@@ -8,6 +8,7 @@ import com.example.data.sync.RegionalTierParser
 import com.example.data.sync.ChampionMetaStats
 import com.example.ui.screens.publishedChampionRoles
 import com.example.ui.screens.tierDisplayedStats
+import com.example.ui.screens.isTierListChampionVisible
 import com.example.util.ChampionRoleAdapter
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -34,18 +35,19 @@ class MetaRegionRegressionTest {
     @Test fun `selector order and initial choice match the restored lists`() {
         context.getSharedPreferences("app_prefs", 0).edit().clear().commit()
         GlobalMetaSyncService.loadRegion(context)
-        assertEquals(listOf("GLOBAL"), MetaRegion.available)
+        assertEquals(listOf("GLOBAL", "CHINA"), MetaRegion.available)
         assertEquals("GLOBAL", GlobalMetaSyncService.currentRegion.value)
         assertEquals("GLOBAL", MetaRegion.normalize("auto"))
-        assertEquals("GLOBAL", MetaRegion.normalize("CN"))
-        assertTrue(MetaRegion.label("GLOBAL").startsWith("🌐"))
+        assertEquals("CHINA", MetaRegion.normalize("CN"))
+        assertEquals("Global", MetaRegion.label("GLOBAL"))
+        assertEquals("China / Local", MetaRegion.label("CN"))
     }
-    @Test fun `saved Chinese preference migrates persistently to Global`() {
+    @Test fun `saved Chinese preference remains selected persistently`() {
         val prefs = context.getSharedPreferences("app_prefs", 0)
         prefs.edit().putString("selected_meta_region", "CN").commit()
         GlobalMetaSyncService.loadRegion(context)
-        assertEquals("GLOBAL", prefs.getString("selected_meta_region", ""))
-        assertEquals("GLOBAL", WildRiftRepository.activeRegionName)
+        assertEquals("CHINA", prefs.getString("selected_meta_region", ""))
+        assertEquals("CHINA", WildRiftRepository.activeRegionName)
     }
 
     @Test fun `explicit selection persists after reload`() {
@@ -56,17 +58,26 @@ class MetaRegionRegressionTest {
             assertEquals(region, WildRiftRepository.activeRegionName)
         }
     }
-    @Test fun `legacy Chinese selection keeps the Global snapshot`() {
+    @Test fun `Chinese classification stays separate from the Global snapshot`() {
         val baseline = WildRiftRepository.champions.toList()
         val id = baseline.first().id
+        val expectedChinaTier = when (baseline.first().cnTier) {
+            "T0" -> "S+"
+            "T1" -> "S"
+            "T2" -> "A"
+            "T3" -> "B"
+            "T4", "T5" -> "C"
+            else -> ""
+        }
         WildRiftRepository.applyRegionalTierList("GLOBAL", mapOf(RegionalTierParser.canonical(id) to "S+"))
         WildRiftRepository.applyRegionalTierList("CN", mapOf(RegionalTierParser.canonical(id) to "C"))
         WildRiftRepository.selectMetaRegion("GLOBAL")
         assertEquals("S+", WildRiftRepository.champions.first().tier)
         assertFalse(WildRiftRepository.champions.first().hasRegionalStats)
         WildRiftRepository.selectMetaRegion("CN")
-        assertEquals("GLOBAL", WildRiftRepository.activeRegionName)
-        assertEquals("S+", WildRiftRepository.champions.first().tier)
+        assertEquals("CHINA", WildRiftRepository.activeRegionName)
+        assertEquals(expectedChinaTier, WildRiftRepository.champions.first().tier)
+        assertFalse(WildRiftRepository.champions.first().hasRegionalStats)
         WildRiftRepository.selectMetaRegion("GLOBAL")
         assertEquals("S+", WildRiftRepository.champions.first().tier)
         assertEquals(baseline.first().winrate, WildRiftRepository.champions.first().winrate, 0.0)
@@ -79,6 +90,16 @@ class MetaRegionRegressionTest {
         val visible = WildRiftRepository.champions.toList()
         WildRiftRepository.applyRegionalTierList("CN", mapOf(RegionalTierParser.canonical(baseline.first().id) to "S+"))
         assertEquals(visible, WildRiftRepository.champions.toList())
+    }
+    @Test fun `China tier list hides champions without a local classification`() {
+        WildRiftRepository.selectMetaRegion("CHINA")
+        val visible = WildRiftRepository.champions.filter {
+            isTierListChampionVisible(it, null, "CHINA")
+        }
+        assertEquals(142, visible.size)
+        assertTrue(visible.none { it.name.equals("Sylas", ignoreCase = true) })
+        assertTrue(visible.all { !it.hasRegionalStats })
+        WildRiftRepository.selectMetaRegion("GLOBAL")
     }
     @Test fun `page parser extracts categories rather than inventing match statistics`() {
         val html = """<div class="tier splus"><a href="/guide/syndra" class="ico-holder" data-role="Mid">Syndra</a>

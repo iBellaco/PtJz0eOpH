@@ -2,7 +2,7 @@
 
 ## Fuentes
 
-- Se retiraron BestBuildWR y WildRifter del agregador de estadísticas.
+- Se retiraron BestBuildWR y una fuente histórica del agregador de estadísticas.
 - El monitoreo conserva visibles únicamente las fuentes activas restantes y sus incidencias de cobertura o sincronización.
 
 ## Estadísticas y tier list

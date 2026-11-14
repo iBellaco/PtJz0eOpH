@@ -69,6 +69,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.data.WildRiftRepository
 import com.example.data.sync.GlobalMetaSyncService
+import com.example.data.sync.MetaRegion
 import com.example.model.Champion
 import com.example.util.SubscriptionManager
 import com.example.model.LaneRole
@@ -559,7 +560,7 @@ fun ChampionsCatalogTab(
                                 ) {
                                     RateChangeBadge(if (champion.has24hComparison) champion.winrateDelta else Double.NaN)
                                     val formattedWr = com.example.util.championStatPercent(champion, champion.winrate, "wr")
-                                    val regionTag = "🌐 Global"
+                                    val regionTag = MetaRegion.label(currentRegion)
                                     Text(
                                         text = com.example.util.tr("$regionTag WR: $formattedWr"),
                                         color = HextechGold,

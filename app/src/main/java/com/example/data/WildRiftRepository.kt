@@ -196,6 +196,40 @@ object WildRiftRepository {
     var regionRevision by mutableStateOf(0)
         private set
 
+    private fun chinaTierToDisplay(value: String): String = when (value.trim().uppercase(java.util.Locale.ROOT)) {
+        "T0" -> "S+"
+        "T1" -> "S"
+        "T2" -> "A"
+        "T3" -> "B"
+        "T4", "T5" -> "C"
+        else -> ""
+    }
+
+    private fun chinaSnapshot(): List<Champion> = baseChampions.map { champion ->
+        champion.copy(
+            tier = chinaTierToDisplay(champion.cnTier),
+            tierMovement = 0,
+            // The bundled China classification has no synchronized global
+            // win/pick/ban snapshot. Keep those values out of the regional
+            // tier cards instead of presenting stale rates as Chinese data.
+            hasRegionalStats = false,
+            statsCheckedAt = 0L,
+            winrate = Double.NaN,
+            pickRate = Double.NaN,
+            banRate = Double.NaN,
+            winrateDelta = 0.0,
+            pickRateDelta = 0.0,
+            banRateDelta = 0.0,
+            winrate24h = null,
+            winrate12h = null,
+            has24hComparison = false,
+            history24hAt = 0L,
+            history12hAt = 0L,
+            historyUsesDailyReports = false,
+            laneStats = emptyMap()
+        )
+    }
+
     @Synchronized
     fun applyRegionalTierList(
         region: String,
@@ -209,8 +243,8 @@ object WildRiftRepository {
         history: Map<String, List<com.example.data.sync.ObservedRate>> = emptyMap(),
         patchMovements: Map<String, Int>? = null
     ) {
-        if (!region.equals(com.example.data.sync.MetaRegion.DEFAULT, ignoreCase = true)) return
         val normalized = com.example.data.sync.MetaRegion.normalize(region)
+        if (normalized != com.example.data.sync.MetaRegion.DEFAULT) return
         val priorMovements = regionalChampions[normalized].orEmpty().associate { it.id to it.tierMovement }
         val updated = baseChampions.map { champion ->
             val category = com.example.data.sync.GlobalTierConsensus.displayCategory(tiers[com.example.data.sync.RegionalTierParser.canonical(champion.id)]
@@ -298,13 +332,23 @@ object WildRiftRepository {
         }
     }
 
-    fun regionalSnapshot(region: String): List<Champion> =
-        regionalChampions[com.example.data.sync.MetaRegion.normalize(region)] ?: baseChampions.toList()
+    @Synchronized
+    fun regionalSnapshot(region: String): List<Champion> {
+        val normalized = com.example.data.sync.MetaRegion.normalize(region)
+        regionalChampions[normalized]?.let { return it }
+        if (normalized == com.example.data.sync.MetaRegion.CHINA) {
+            val snapshot = chinaSnapshot()
+            regionalChampions[normalized] = snapshot
+            return snapshot
+        }
+        return baseChampions.toList()
+    }
 
     @Synchronized fun applyPatchMovements(movements: Map<String, Int>) {
         regionalChampions.keys.toList().forEach { region ->
             regionalChampions[region] = regionalChampions[region].orEmpty().map {
-                it.copy(tierMovement = movements[com.example.data.sync.RegionalTierParser.canonical(it.id)] ?: 0)
+                it.copy(tierMovement = if (region == com.example.data.sync.MetaRegion.CHINA) 0 else
+                    movements[com.example.data.sync.RegionalTierParser.canonical(it.id)] ?: 0)
             }
         }
         androidx.compose.runtime.snapshots.Snapshot.withMutableSnapshot {
@@ -368,6 +412,7 @@ object WildRiftRepository {
                 champions.addAll(baseChampions)
             }
             regionalChampions.clear()
+            regionalChampions[com.example.data.sync.MetaRegion.CHINA] = chinaSnapshot()
             regionRevision++
             android.util.Log.d("WildRiftRepository", "Loaded ${champions.size} champions successfully")
         } catch (e: Exception) {
