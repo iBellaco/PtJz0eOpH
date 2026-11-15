@@ -4,8 +4,8 @@
 
 | Equipo | Estado físico | Evidencia automatizada |
 | --- | --- | --- |
-| Red Magic | Funciona según reporte del propietario | Captura proporcionada, escalado y perfiles |
-| Poco | Funciona según reporte del propietario | Perfil medido conservado y captura escalada |
+| Red Magic / nubia NX789J | Funciona según reporte del propietario | Perfil exacto 2688×1216 y alias de captura 1920×869; prueba de esta build pendiente |
+| Poco | Funciona según reporte del propietario | Captura escalada y geometría adaptativa; sin perfil exacto activo |
 | S26 | Pendiente: el propietario no lo ha probado | Simulación de resoluciones, no hardware físico |
 
 La captura de referencia permite validar los diez slots laterales y diez baneos
@@ -33,10 +33,10 @@ No convertir las imágenes redimensionadas ni un emulador en registros físicos.
 
 ## Respaldo de coordenadas aportadas
 
-El catálogo de mediciones fue retirado para probar el motor multidispositivo sin
-presets precargados. El respaldo del proyecto está vacío: el lector comienza
-con geometría adaptativa y valida el viewport real antes de alinear slots y
-baneos. Una calibración guardada explícitamente por el usuario sigue teniendo
-prioridad en ese dispositivo y captura, pero no se copia a otro equipo ni se
-convierte en un valor por defecto. El registro no sustituye una validación
-física de la secuencia completa.
+El catálogo conserva únicamente la referencia exacta de nubia NX789J para
+2688×1216 y la superficie 1920×869 observada en captura. El lector valida el
+fabricante, modelo y dimensiones antes de seleccionarla; cualquier otro equipo
+comienza con geometría adaptativa. Una calibración guardada explícitamente por
+el usuario sigue teniendo prioridad en ese dispositivo y captura, pero no se
+copia a otro equipo ni se convierte en un perfil compartido. El registro no
+sustituye una validación física de la secuencia completa.

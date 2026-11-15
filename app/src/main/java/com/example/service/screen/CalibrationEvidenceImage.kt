@@ -11,6 +11,7 @@ import java.io.ByteArrayOutputStream
 import java.security.MessageDigest
 import kotlin.math.max
 import kotlin.math.min
+import kotlin.math.round
 
 /**
  * Creates a bounded administrator-only evidence image from an actual captured
@@ -50,6 +51,20 @@ internal object CalibrationEvidenceImage {
         } else {
             config.banRegions(isAlly)
         }
+    }
+
+    /**
+     * Renders the five white top-ring markers on whole pixels. Their saved
+     * endpoints remain authoritative, while rounding the interpolated centers
+     * prevents fractional-pixel anti-aliasing from making the spacing look
+     * uneven on the 1280px evidence image.
+     */
+    internal fun evenlySpacedTopCenters(ratios: List<Float>, width: Int): List<Float> {
+        if (ratios.size < 2 || width <= 0) return ratios.map { width * it }
+        val start = width * ratios.first()
+        val end = width * ratios.last()
+        val step = (end - start) / (ratios.lastIndex.toFloat())
+        return ratios.indices.map { index -> round(start + step * index) }
     }
 
     fun encode(
@@ -243,8 +258,12 @@ internal object CalibrationEvidenceImage {
 
         val topPaint = paint(Color.WHITE.copyAlpha(0.9f))
         val topRadius = height * config.topAvatarDiameterRatio / 2f
-        config.topAllyXRatios.forEach { x -> canvas.drawCircle(width * x, height * config.topAvatarYRatio, topRadius, topPaint) }
-        config.topEnemyXRatios.forEach { x -> canvas.drawCircle(width * x, height * config.topAvatarYRatio, topRadius, topPaint) }
+        evenlySpacedTopCenters(config.topAllyXRatios, bitmap.width).forEach { x ->
+            canvas.drawCircle(x, height * config.topAvatarYRatio, topRadius, topPaint)
+        }
+        evenlySpacedTopCenters(config.topEnemyXRatios, bitmap.width).forEach { x ->
+            canvas.drawCircle(x, height * config.topAvatarYRatio, topRadius, topPaint)
+        }
 
         // No añadir una cabecera sobre la captura: en pantallas panorámicas esa
         // franja tapa la fila superior de baneos. El origen de la evidencia y el

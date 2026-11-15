@@ -123,4 +123,15 @@ class CalibrationEvidenceImageTest {
             source.recycle()
         }
     }
+
+    @Test fun topEvidenceRingsUseWholePixelSpacing() {
+        val centers = CalibrationEvidenceImage.evenlySpacedTopCenters(
+            listOf(.028f, .063f, .098f, .133f, .168f), 1280
+        )
+        assertEquals(listOf(36f, 81f, 125f, 170f, 215f), centers)
+        assertEquals(45f, centers[1] - centers[0], 0.001f)
+        assertEquals(44f, centers[2] - centers[1], 0.001f)
+        assertEquals(45f, centers[3] - centers[2], 0.001f)
+        assertEquals(45f, centers[4] - centers[3], 0.001f)
+    }
 }

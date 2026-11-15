@@ -1,7 +1,72 @@
 {
   "schema": 4,
-  "purpose": "No hay perfiles de coordenadas medidos guardados en el proyecto.",
+  "purpose": "Respaldo de mediciones normalizadas aportadas por el propietario para dispositivos y capturas exactas.",
   "coordinateSpace": "captured_frame",
-  "usage": "generic_adaptive_only",
-  "profiles": []
+  "values": "ratios normalizados entre 0 y 1",
+  "usage": "backup_and_exact_device_capture_defaults",
+  "warning": "Un perfil solo puede usarse cuando coinciden fabricante, modelo y dimensiones exactas de captura y no existe una calibración guardada.",
+  "profiles": [
+    {
+      "profileId": "nubia-nx789j-2688x1216",
+      "device": {
+        "manufacturer": "nubia",
+        "model": "NX789J",
+        "androidApi": 36,
+        "width": 2688,
+        "height": 1216,
+        "captureWidth": 2688,
+        "captureHeight": 1216
+      },
+      "calibration": {
+        "avatarDiameterRatio": 0.11,
+        "allyAvatarCenterX": 0.072,
+        "enemyAvatarCenterX": 0.959,
+        "top": {
+          "avatarYRatio": 0.045,
+          "avatarDiameterRatio": 0.072,
+          "ally5XRatio": 0.168,
+          "enemy5XRatio": 0.974,
+          "allyXRatios": [0.028, 0.063, 0.098, 0.133, 0.168],
+          "enemyXRatios": [0.834, 0.869, 0.904, 0.939, 0.974]
+        },
+        "bans": {
+          "ally": {
+            "x": [0.028, 0.064, 0.1, 0.136, 0.172],
+            "y": [0.052, 0.052, 0.052, 0.052, 0.052],
+            "diameter": [0.06, 0.06, 0.06, 0.06, 0.06],
+            "manual": false
+          },
+          "enemy": {
+            "x": [0.826, 0.863, 0.9, 0.937, 0.974],
+            "y": [0.052, 0.052, 0.052, 0.052, 0.052],
+            "diameter": [0.06, 0.06, 0.06, 0.06, 0.06],
+            "manual": false
+          }
+        },
+        "allySlots": {
+          "x": [0.072, 0.072, 0.072, 0.072, 0.072],
+          "y": [0.188, 0.324, 0.458, 0.591, 0.725],
+          "diameter": [0.11, 0.11, 0.11, 0.11, 0.105]
+        },
+        "enemySlots": {
+          "x": [0.959, 0.959, 0.959, 0.959, 0.959],
+          "y": [0.188, 0.324, 0.457, 0.59, 0.722],
+          "diameter": [0.11, 0.11, 0.11, 0.11, 0.11]
+        }
+      }
+    },
+    {
+      "profileId": "nubia-nx789j-1920x869-capture",
+      "device": {
+        "manufacturer": "nubia",
+        "model": "NX789J",
+        "androidApi": 36,
+        "width": 2688,
+        "height": 1216,
+        "captureWidth": 1920,
+        "captureHeight": 869
+      },
+      "aliasOf": "nubia-nx789j-2688x1216"
+    }
+  ]
 }
