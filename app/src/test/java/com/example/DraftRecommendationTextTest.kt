@@ -58,4 +58,18 @@ class DraftRecommendationTextTest {
         assertEquals(clean, DraftRecommendationText.clean(clean))
         assertEquals("", DraftRecommendationText.clean("Parche 7.3c: buffeado."))
     }
+
+    @Test fun `compact keeps the decision and caps verbose tactical advice`() {
+        val compact = DraftRecommendationText.compact(
+            "Controla la oleada y fuerza el retroceso. " +
+                "Guarda H4 para la entrada del jungla. " +
+                "Después rota al objetivo neutral y protege la visión profunda.",
+            maxChars = 60,
+            maxSentences = 2
+        )
+        assertTrue(compact.startsWith("Controla la oleada"))
+        assertTrue(compact.endsWith("…"))
+        assertTrue(compact.length <= 61)
+        assertFalse(compact.contains("Después rota"))
+    }
 }

@@ -33,4 +33,26 @@ object DraftRecommendationText {
             .replace(Regex("\\s{2,}"), " ")
             .trim()
     }
+
+    /**
+     * Short presentation form for draft cards and the floating assistant.
+     * The full tactical analysis remains available in the detail view; cards
+     * should expose the decision and its first condition without becoming a
+     * paragraph that pushes the next recommendation off-screen.
+     */
+    fun compact(value: String, maxChars: Int = 220, maxSentences: Int = 2): String {
+        val cleaned = clean(value)
+        if (cleaned.isBlank()) return ""
+        val sentenceLimit = maxSentences.coerceAtLeast(1)
+        val selected = cleaned
+            .split(Regex("(?<=[.!?])\\s+"))
+            .map(String::trim)
+            .filter(String::isNotBlank)
+            .take(sentenceLimit)
+            .joinToString(" ")
+        if (selected.length <= maxChars.coerceAtLeast(40)) return selected
+        val limit = maxChars.coerceAtLeast(40)
+        val cut = selected.take(limit).substringBeforeLast(' ').trimEnd('.', ',', ';', ':')
+        return if (cut.isBlank()) selected.take(limit).trimEnd() + "…" else "$cut…"
+    }
 }

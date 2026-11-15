@@ -64,6 +64,7 @@ fun DeviceDiagnosticButton(
                 val power = context.getSystemService(Context.POWER_SERVICE) as PowerManager
                 val metrics = context.resources.displayMetrics
                 val scannerSize = DraftVisionScanner.alignedFrameSizeFlow.value
+                val viewport = DraftVisionScanner.alignedViewportFlow.value
                 val batterySession = DeviceDiagnosticTelemetry.snapshot(context)
                 val lastFrameAge = DraftVisionScanner.lastFrameAtMillis.value.takeIf { it > 0L }?.let {
                     (android.os.SystemClock.elapsedRealtime() - it).coerceAtLeast(0L)
@@ -73,14 +74,14 @@ fun DeviceDiagnosticButton(
                     appendLine("Coach: ${com.example.BuildConfig.VERSION_NAME}")
                     appendLine("Dispositivo: ${Build.MANUFACTURER} ${Build.MODEL}")
                     appendLine("Android: ${Build.VERSION.RELEASE} (API ${Build.VERSION.SDK_INT})")
-                    appendLine("Pantalla: ${metrics.widthPixels}x${metrics.heightPixels}; density=${metrics.density}; font=${context.resources.configuration.fontScale}")
-                    appendLine("Captura: ${scannerSize.first}x${scannerSize.second}")
+                    appendLine("Pantalla: ${metrics.widthPixels}x${metrics.heightPixels}; density=${metrics.density}; font=${context.resources.configuration.fontScale}; orientación=${context.resources.configuration.orientation}")
+                    appendLine("Captura alineada: ${scannerSize.first}x${scannerSize.second}; viewport=${viewport.left},${viewport.top}-${viewport.right},${viewport.bottom}")
                     appendLine("Captura lista: ${screenCaptureManager?.isReady() == true}; último frame: ${DraftVisionScanner.lastFrameWidth.value}x${DraftVisionScanner.lastFrameHeight.value}; antigüedad: ${lastFrameAge?.let { "${it} ms" } ?: "N/D"}")
                     appendLine("Escáner: ${"%.2f".format(java.util.Locale.US, DraftVisionScanner.liveScanFps.value)} FPS; promedio: ${"%.2f".format(java.util.Locale.US, DraftVisionScanner.fpsAverage.value)}; rango: ${"%.2f".format(java.util.Locale.US, DraftVisionScanner.fpsMinimum.value)}-${"%.2f".format(java.util.Locale.US, DraftVisionScanner.fpsMaximum.value)} FPS")
                     appendLine("Frames recibidos/procesados: ${DraftVisionScanner.framesReceivedCount.value}/${DraftVisionScanner.framesProcessedCount.value}")
                     appendLine("Procesamiento último/promedio/mín-máx: ${DraftVisionScanner.lastProcessingDurationMs.value}/${DraftVisionScanner.processingAverageDurationMs.value}/${DraftVisionScanner.processingMinDurationMs.value}-${DraftVisionScanner.processingMaxDurationMs.value} ms")
                     appendLine("Fotogramas omitidos: ${DraftVisionScanner.framesSkippedCount.value}; procesando: ${DraftVisionScanner.isVisionEngineBusy.value}")
-                    appendLine("Calibración: ${DraftVisionScanner.calibrationSourceFlow.value}; FPS del juego / latencia de red: no medidos")
+                    appendLine("Calibración: ${DraftVisionScanner.calibrationSourceFlow.value}; visor de geometría: ${if (DraftVisionScanner.showCalibrationBoxes.value) "activo" else "inactivo"}; FPS del juego / latencia de red: no medidos")
                     appendLine("Diagnósticos enviados hoy: ${quota.used}/${DeviceDiagnosticQuota.MAX_PER_DAY}")
                     val level = battery?.getIntExtra(BatteryManager.EXTRA_LEVEL, -1) ?: -1
                     val scale = battery?.getIntExtra(BatteryManager.EXTRA_SCALE, -1) ?: -1

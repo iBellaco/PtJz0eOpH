@@ -99,4 +99,28 @@ class CalibrationEvidenceImageTest {
             portrait.recycle()
         }
     }
+
+    @Test fun cleanAndAuditedEvidenceBothEncodeSuccessfully() {
+        val source = Bitmap.createBitmap(640, 360, Bitmap.Config.ARGB_8888).apply {
+            eraseColor(Color.rgb(8, 20, 32))
+        }
+        try {
+            val clean = requireNotNull(CalibrationEvidenceImage.encode(
+                CalibrationEvidenceFrame(source, android.os.SystemClock.elapsedRealtime()),
+                VisionCalibrationConfig(),
+                visorActive = false
+            ))
+            val audited = requireNotNull(CalibrationEvidenceImage.encode(
+                CalibrationEvidenceFrame(source, android.os.SystemClock.elapsedRealtime()),
+                VisionCalibrationConfig(),
+                visorActive = true
+            ))
+            assertTrue(clean.sha256.matches(Regex("[0-9a-f]{64}")))
+            assertTrue(audited.sha256.matches(Regex("[0-9a-f]{64}")))
+            assertEquals(clean.width, audited.width)
+            assertEquals(clean.height, audited.height)
+        } finally {
+            source.recycle()
+        }
+    }
 }

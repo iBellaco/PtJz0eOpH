@@ -952,7 +952,12 @@ fun DraftAnalysisTab(
                         }
                     }
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text(tr(myEval.tacticalReason), color = TextPrimary.copy(alpha = 0.9f), fontSize = 12.sp, lineHeight = 16.sp)
+                    Text(
+                        tr(DraftRecommendationText.compact(myEval.tacticalReason, maxChars = 220, maxSentences = 2)),
+                        color = TextPrimary.copy(alpha = 0.9f),
+                        fontSize = 12.sp,
+                        lineHeight = 16.sp
+                    )
 
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
@@ -1191,7 +1196,7 @@ fun DraftAnalysisTab(
                         Spacer(modifier = Modifier.height(8.dp))
 
                         Text(
-                            text = tr(DraftRecommendationText.clean(topPick.tacticalReason)),
+                            text = tr(DraftRecommendationText.compact(topPick.tacticalReason, maxChars = 240, maxSentences = 2)),
                             color = TextPrimary.copy(alpha = 0.95f),
                             fontSize = 12.sp,
                             lineHeight = 17.sp,
@@ -1316,7 +1321,7 @@ fun DraftAnalysisTab(
                             }
 
                             Spacer(Modifier.height(8.dp))
-                            Text(tr(DraftRecommendationText.clean(rec.tacticalReason)), color = TextSecondary,
+                            Text(tr(DraftRecommendationText.compact(rec.tacticalReason, maxChars = 180, maxSentences = 2)), color = TextSecondary,
                                 fontSize = 12.sp, lineHeight = 17.sp, modifier = Modifier.fillMaxWidth())
                             Column(Modifier.fillMaxWidth().padding(top = 8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                                 com.example.ui.components.DraftAdviceSection("Sinergia / Combo:", rec.synergyDetails,

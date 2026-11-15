@@ -18,6 +18,9 @@ import com.example.util.tr
 /** Full-width paragraphs remain readable in narrow screens and with larger system text. */
 @Composable
 fun DraftAdviceSection(title: String, text: String, color: Color, tag: String) {
+    // Synergy and counter sections are the detailed evidence behind the
+    // recommendation. Keep them complete; the main recommendation cards use
+    // DraftRecommendationText.compact() separately.
     val advice = tr(DraftRecommendationText.clean(text))
     if (advice.isBlank()) return
     Column(Modifier.fillMaxWidth().testTag(tag), verticalArrangement = Arrangement.spacedBy(3.dp)) {

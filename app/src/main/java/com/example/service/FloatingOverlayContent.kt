@@ -109,6 +109,7 @@ import com.example.ui.theme.TextPrimary
 import com.example.ui.theme.TextSecondary
 import com.example.util.AppLogger
 import com.example.util.SubscriptionManager
+import com.example.util.DraftRecommendationText
 import com.example.util.tr
 import com.example.util.trStr
 import kotlinx.coroutines.Dispatchers
@@ -392,6 +393,11 @@ internal fun FloatingOverlayContent(
             appendLine("Baneos detectados: ${bannedIds.size}; selección: $selectedCount/10; Auto-Scan activo: ${if (autoScanEnabled) "sí" else "no"}")
             val recommendation = analysis.bestOverallPick ?: analysis.recommendations.firstOrNull()
             appendLine("Recomendación principal: ${recommendation?.champion?.name ?: "N/D"}; WR estimado: ${recommendation?.estimatedWinrate?.let { "%.1f%%".format(java.util.Locale.US, it) } ?: "N/D"}")
+            recommendation?.let {
+                DraftRecommendationText.compact(it.tacticalReason, maxChars = 180, maxSentences = 2)
+                    .takeIf(String::isNotBlank)
+                    ?.let { brief -> appendLine("Motivo breve: $brief") }
+            }
             appendLine("Daño aliado: físico ${analysis.allyPhysicalDamagePercent}%, mágico ${analysis.allyMagicDamagePercent}%, verdadero ${analysis.allyTrueDamagePercent}%")
             appendLine("Advertencia de composición: ${analysis.allyCompositionWarning ?: analysis.directMatchupWarning ?: "ninguna"}")
         }.trimEnd()
