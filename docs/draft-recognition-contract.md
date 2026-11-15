@@ -33,6 +33,15 @@ guardada por el usuario tiene prioridad. Una misma resolución no autoriza a
 compartir coordenadas entre modelos, porque viewport, barras e insets pueden
 variar. Sin coincidencia exacta continúa la adaptación por viewport y evidencia.
 
+Actualización del propietario, 15 de noviembre de 2026: se registra como
+referencia exacta el perfil de `nubia NX789J`, Android 16/API 36, pantalla
+2688×1216. También se conserva el alias de captura 1920×869 observado en el
+informe. Sus ratios de slots, baneos y barra superior solo se seleccionan para
+ese fabricante, modelo y captura; los demás dispositivos siguen usando la
+geometría adaptativa. Los centros de los cinco marcadores blancos de la barra
+superior se redondean a píxel entero al renderizar la evidencia para evitar una
+separación visual irregular sin alterar los ratios guardados.
+
 ## Información que se observa
 
 Regla confirmada el 2 de noviembre de 2026: el escáner automático debe ser

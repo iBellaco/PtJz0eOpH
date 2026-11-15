@@ -1,13 +1,15 @@
 # Continuidad: geometría multidispositivo del draft
 
-Este documento describe el estado vigente del escáner de Coach. El catálogo de
-mediciones aportadas por dispositivos fue eliminado para probar el motor
-multidispositivo sin coordenadas precargadas.
+Este documento describe el estado vigente del escáner de Coach. La geometría es
+adaptativa para todos los equipos y conserva únicamente los perfiles físicos
+exactos que el propietario vuelve a autorizar y documentar.
 
 ## Estado vigente
 
-- `MeasuredDeviceCalibrationDefaults` no contiene perfiles de equipos.
-- `docs/scanner-calibration-backup.json` conserva únicamente un arreglo vacío.
+- `MeasuredDeviceCalibrationDefaults` contiene la referencia exacta de `nubia
+  NX789J` para 2688×1216 y su captura 1920×869.
+- `docs/scanner-calibration-backup.json` conserva esa referencia y marca el
+  alias de captura; no contiene perfiles de otros modelos.
 - La aplicación comienza con la geometría genérica y la adapta al fotograma
   capturado, al viewport visible y a los aros detectados en tiempo de ejecución.
 - Una calibración creada manualmente se guarda solo cuando el usuario la
@@ -37,9 +39,10 @@ multidispositivo sin coordenadas precargadas.
 - `DraftFrameGeometry.kt`: límites del viewport y mapeo de barras.
 - `DraftRingAlignment.kt`: verificación visual de las columnas.
 - `DraftVisionScanner.kt`: selección de configuración efectiva.
-- `MeasuredDeviceCalibrationDefaults.kt`: catálogo medido intencionalmente
-  vacío.
-- `docs/scanner-calibration-backup.json`: respaldo intencionalmente vacío.
+- `MeasuredDeviceCalibrationDefaults.kt`: catálogo medido limitado al modelo y
+  dimensiones exactas autorizadas.
+- `docs/scanner-calibration-backup.json`: respaldo de la referencia NX789J y
+  su alias 1920×869.
 
 Las imágenes y fixtures de pruebas son evidencia de regresión; no son perfiles
 de producción ni se cargan como coordenadas por defecto.

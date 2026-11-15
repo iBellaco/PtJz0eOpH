@@ -112,7 +112,23 @@ class DeviceDraftProfileTest {
         }
     }
 
-    @Test fun previousMeasuredCatalogIsNotUsedAfterTheOwnerReset() {
+    @Test fun nx789jReferenceIsScopedToTheExactDeviceAndCaptureAliases() {
+        val physical = requireNotNull(VisionCalibrationConfig.measuredDefaultForCapture(
+            "nubia", "NX789J", 2688, 1216
+        ))
+        val capture = requireNotNull(VisionCalibrationConfig.measuredDefaultForCapture(
+            "NUBIA", "nx789j", 1920, 869
+        ))
+        assertEquals(physical, capture)
+        assertEquals(listOf(.028f, .064f, .100f, .136f, .172f), physical.allyBanXRatios)
+        assertEquals(listOf(.826f, .863f, .900f, .937f, .974f), physical.enemyBanXRatios)
+        assertEquals(.168f, physical.topAlly5XRatio, 0.0001f)
+        assertEquals(.974f, physical.topEnemy5XRatio, 0.0001f)
+        assertNull(VisionCalibrationConfig.measuredDefaultForCapture("nubia", "NX789J", 1920, 868))
+        assertNull(VisionCalibrationConfig.measuredDefaultForCapture("Xiaomi", "NX789J", 2688, 1216))
+    }
+
+    @Test fun unrelatedOldMeasuredCatalogIsNotUsedAfterTheOwnerReset() {
         for ((manufacturer, model, width, height) in listOf(
             ProfileKey("samsung", "SM-S948B", 3120, 1440),
             ProfileKey("Xiaomi", "25062RN2DL", 2340, 1080),
