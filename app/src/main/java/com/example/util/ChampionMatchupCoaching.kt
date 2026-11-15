@@ -142,6 +142,59 @@ object ChampionMatchupCoaching {
     } else if (lang == "pt") "Espere ${label(enemy.threat(), lang)} ser gasto antes de iniciar."
         else "Espera a que gaste ${label(enemy.threat(), lang)} antes de iniciar."
 
+    /**
+     * Short card copy for the live draft. The expanded coaching view keeps the
+     * four detailed sections below; recommendation cards need one concrete
+     * action tied to this champion and the observed rival instead of repeating
+     * the same generic uncertainty paragraph for every pick.
+     */
+    fun draftCardAdvice(champion: Champion, role: LaneRole, language: String, enemy: Champion? = null): String {
+        val lang = AppLanguage.normalize(language)
+        val pt = lang == "pt"
+        val me = champion.getLocalizedName(lang)
+        val lane = role.getLocalizedName(lang)
+        val rival = enemy?.getLocalizedName(lang)
+        val danger = enemy?.let { label(it.threat(), lang) }
+        val h1 = label(champion.skill("1"), lang)
+        val h3 = label(champion.skill("3"), lang)
+        val h4 = label(champion.skill("4"), lang)
+        val matchupSuffix = if (rival != null && danger != null) {
+            if (pt) " Contra $rival, respeite $danger." else " Contra $rival, respeta $danger."
+        } else ""
+
+        val text = when (champion.id) {
+            "xayah" -> if (pt)
+                "$me na $lane: acumule penas com $h1, use $h3 para recolhê-las e guarde $h4 para negar a entrada do rival.$matchupSuffix"
+            else
+                "$me en $lane: acumula plumas con $h1, usa $h3 para recogerlas y guarda $h4 para negar la entrada rival.$matchupSuffix"
+            "kai_sa" -> if (pt)
+                "$me na $lane: marque o alvo com ataques e só use H4 quando a posição estiver visível; não entre na névoa para perseguir.$matchupSuffix"
+            else
+                "$me en $lane: marca al objetivo con ataques y usa H4 solo con posición visible; no entres en niebla para perseguir.$matchupSuffix"
+            "tristana" -> if (pt)
+                "$me na $lane: use H3 para pressionar a onda, preserve $h4 para separar o rival e não salte sem visão do caçador.$matchupSuffix"
+            else
+                "$me en $lane: usa H3 para presionar la oleada, conserva $h4 para separar al rival y no saltes sin visión del jungla.$matchupSuffix"
+            "lux" -> if (pt)
+                "$me na $lane: procure acertos de $h1 antes de gastar $h3; guarde $h4 para finalizar após o controle aliado.$matchupSuffix"
+            else
+                "$me en $lane: busca impactos de $h1 antes de gastar $h3; guarda $h4 para rematar después del control aliado.$matchupSuffix"
+            "yasuo" -> if (pt)
+                "$me na $lane: acumule o tornado de $h1 antes de avançar e use $h4 apenas sobre um alvo lançado; não troque sem a barreira pronta.$matchupSuffix"
+            else
+                "$me en $lane: carga el tornado de $h1 antes de avanzar y usa $h4 solo sobre un objetivo levantado; no intercambies sin la barrera lista.$matchupSuffix"
+            "fizz" -> if (pt)
+                "$me no $lane: espere o controle rival sair, entre com $h1 e reserve $h3 para escapar; use $h4 para iniciar de fora da visão.$matchupSuffix"
+            else
+                "$me en $lane: espera a que salga el control rival, entra con $h1 y reserva $h3 para escapar; usa $h4 para iniciar desde fuera de visión.$matchupSuffix"
+            else -> if (pt)
+                "$me na $lane: use $h1 para criar a primeira troca e conserve $h4 para a disputa decisiva.$matchupSuffix"
+            else
+                "$me en $lane: usa $h1 para abrir el primer intercambio y conserva $h4 para la pelea decisiva.$matchupSuffix"
+        }
+        return DraftRecommendationText.compact(DraftRecommendationText.clean(text), maxChars = 260, maxSentences = 2)
+    }
+
     /** Four mandatory sections, grounded in the actual kit and observable game state. */
     fun sovereignFeedback(champion: Champion, role: LaneRole, language: String, enemy: Champion? = null): String {
         val lang = AppLanguage.normalize(language)

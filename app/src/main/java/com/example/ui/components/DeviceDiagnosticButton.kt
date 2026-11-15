@@ -4,6 +4,7 @@ import android.app.ActivityManager
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.graphics.Bitmap
 import android.os.BatteryManager
 import android.os.Build
 import android.os.PowerManager
@@ -19,10 +20,11 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import com.example.data.*
 import com.example.service.screen.DraftVisionScanner
+import com.example.service.screen.CalibrationEvidenceImage
 import com.example.service.screen.ScreenCaptureManager
 import kotlinx.coroutines.launch
 
-/** Explicit, one-shot report. Does not sample continuously or capture game content. */
+/** Explicit, one-shot report with an administrator-only visual evidence attachment. */
 @Composable
 fun DeviceDiagnosticButton(
     screenCaptureManager: ScreenCaptureManager? = null,
@@ -54,6 +56,7 @@ fun DeviceDiagnosticButton(
         quota = DeviceDiagnosticQuota.usage(context)
         sending = true
         scope.launch {
+            var evidenceAvatars: Map<String, Bitmap> = emptyMap()
             try {
                 val user = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser
                 check(user != null && user.isEmailVerified)
@@ -69,6 +72,72 @@ fun DeviceDiagnosticButton(
                 val lastFrameAge = DraftVisionScanner.lastFrameAtMillis.value.takeIf { it > 0L }?.let {
                     (android.os.SystemClock.elapsedRealtime() - it).coerceAtLeast(0L)
                 }
+                val language = com.example.util.AppLanguage.current.value
+                val detectedSlotLabels = DraftVisionScanner.debugVisualMatches.value.toMap()
+                val detectedBanSlots = DraftVisionScanner.banSlotsFlow.value.toList()
+                evidenceAvatars = loadEvidenceAvatars(context, detectedSlotLabels, detectedBanSlots)
+                var visualEvidence: CalibrationEvidenceImage.Encoded? = null
+                var evidenceSource = if (language.equals("pt", ignoreCase = true)) {
+                    "Captura literal de tela no momento do envio"
+                } else {
+                    "Captura literal de pantalla completa en el momento del envío"
+                }
+
+                // The attachment is an actual MediaProjection frame with the
+                // same geometry/avatars drawn on top. It never enables or
+                // changes the live visor on the sender's device.
+                captureLiteralEvidenceFrame(screenCaptureManager)?.let { literalFrame ->
+                    visualEvidence = try {
+                        CalibrationEvidenceImage.encode(
+                            literalFrame,
+                            DraftVisionScanner.calibrationReportSnapshot().config,
+                            language,
+                            visorActive = true,
+                            literalCapture = true,
+                            slotLabels = detectedSlotLabels,
+                            banSlots = detectedBanSlots,
+                            avatarBitmaps = evidenceAvatars
+                        )
+                    } finally {
+                        runCatching { literalFrame.bitmap.recycle() }
+                    }
+                }
+                if (visualEvidence == null) {
+                    evidenceSource = if (language.equals("pt", ignoreCase = true)) {
+                        "Último fotograma processado pelo scanner (captura literal indisponível)"
+                    } else {
+                        "Último fotograma procesado por el escáner (captura literal no disponible)"
+                    }
+                    DraftVisionScanner.calibrationEvidenceFrame()?.let { fallbackFrame ->
+                        visualEvidence = try {
+                            CalibrationEvidenceImage.encode(
+                                fallbackFrame,
+                                DraftVisionScanner.calibrationReportSnapshot().config,
+                                language,
+                                visorActive = true,
+                                literalCapture = false,
+                                slotLabels = detectedSlotLabels,
+                                banSlots = detectedBanSlots,
+                                avatarBitmaps = evidenceAvatars
+                            )
+                        } finally {
+                            runCatching { fallbackFrame.bitmap.recycle() }
+                        }
+                    }
+                }
+                val slotEvidenceCount = detectedSlotLabels.count { (key, value) ->
+                    value.isNotBlank() && (key.startsWith("ally_") || key.startsWith("enemy_")) && !key.contains("ban")
+                }
+                val banEvidenceCount = detectedBanSlots.count { it.championId != null }
+                val visualEvidenceText = buildString {
+                    if (visualEvidence != null) {
+                        appendLine("Evidencia visual adjunta: $evidenceSource; ${visualEvidence!!.width}x${visualEvidence!!.height}; antigüedad=${visualEvidence!!.ageMs} ms; SHA-256=${visualEvidence!!.sha256}")
+                    } else {
+                        appendLine("Evidencia visual adjunta: no había un fotograma disponible para enviar.")
+                    }
+                    appendLine("Visor en el adjunto: simulado como activo con líneas, cajas, círculos y avatares; visor del dispositivo: sin cambios.")
+                    appendLine("Identidades representadas: $slotEvidenceCount; baneos confirmados: $banEvidenceCount; retratos cargados: ${evidenceAvatars.size}.")
+                }.trimEnd()
                 val report = buildString {
                     appendLine("Usuario: $name")
                     appendLine("Coach: ${com.example.BuildConfig.VERSION_NAME}")
@@ -97,7 +166,8 @@ fun DeviceDiagnosticButton(
                         appendLine("Detalle del draft:")
                         appendLine(draftDetails)
                     }
-                    appendLine(DraftVisionScanner.detectionEvidenceReport(com.example.util.AppLanguage.current.value))
+                    appendLine(DraftVisionScanner.detectionEvidenceReport(language))
+                    appendLine(visualEvidenceText)
                     appendLine("Batería inicio/actual: ${batterySession.batteryStartPercent?.let { "$it%" } ?: "N/D"}/${batterySession.batteryPercent?.let { "$it%" } ?: "N/D"}; consumo observado: ${batterySession.batteryDrainPercent?.let { "%.2f%%".format(java.util.Locale.US, it) } ?: "N/D"}")
                     appendLine("Carga acumulada inicio/actual: ${batterySession.chargeStartMah?.let { "%.1f mAh".format(java.util.Locale.US, it) } ?: "N/D"}/${batterySession.chargeMah?.let { "%.1f mAh".format(java.util.Locale.US, it) } ?: "N/D"}; consumo real medido: ${batterySession.chargeDrainMah?.let { "%.1f mAh".format(java.util.Locale.US, it) } ?: "N/D"}")
                     val sessionHours = batterySession.sessionDurationMs / 3_600_000.0
@@ -112,8 +182,9 @@ fun DeviceDiagnosticButton(
                     appendLine("Memoria proceso: ${android.os.Debug.getPss()} KiB")
                     appendLine("Medición puntual; escáner pausado puede conservar la última duración registrada.")
                 }
-                FeedbackRepository.submitFeedback("DIAGNOSTICO", label, report, userName = name,
-                    adminOnly = true, writeUserInboxCopy = false).getOrThrow()
+                FeedbackRepository.submitFeedback("DIAGNOSTICO", label, report,
+                    imagesBase64 = visualEvidence?.let { listOf(it.base64) }.orEmpty(),
+                    userName = name, adminOnly = true, writeUserInboxCopy = false).getOrThrow()
                 lastSent = android.os.SystemClock.elapsedRealtime()
                 quota = DeviceDiagnosticQuota.usage(context)
                 Toast.makeText(context, context.getString(com.example.R.string.diagnostic_sent_with_remaining, quota.remaining), Toast.LENGTH_LONG).show()
@@ -125,7 +196,10 @@ fun DeviceDiagnosticButton(
                 DeviceDiagnosticQuota.rollback(context, reservation)
                 quota = DeviceDiagnosticQuota.usage(context)
                 Toast.makeText(context, context.getString(com.example.R.string.calibration_send_failed), Toast.LENGTH_LONG).show()
-            } finally { sending = false }
+            } finally {
+                evidenceAvatars.values.forEach { bitmap -> runCatching { if (!bitmap.isRecycled) bitmap.recycle() } }
+                sending = false
+            }
         }
     }) {
         if (sending) CircularProgressIndicator(Modifier.size(20.dp))

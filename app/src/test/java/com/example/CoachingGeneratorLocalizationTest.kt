@@ -43,6 +43,27 @@ class CoachingGeneratorLocalizationTest {
         assertTrue(analysis.contains("sua Definitiva (H4)"))
         assertFalse(analysis.contains("Habilidad 1"))
     }
+
+    @Test fun `draft cards stay short and identify the champion specific action`() {
+        val enemy = Champion(id = "twitch", name = "Twitch")
+        val xayah = Champion(id = "xayah", name = "Xayah", skills = listOf(
+            ChampionSkill(slot = "1", name = "Dagas dobles"),
+            ChampionSkill(slot = "3", name = "Invocadora de plumas"),
+            ChampionSkill(slot = "4", name = "Tormenta de plumas")
+        ))
+        val kaisa = Champion(id = "kai_sa", name = "Kai'Sa", skills = listOf(
+            ChampionSkill(slot = "4", name = "Instinto asesino")
+        ))
+        val first = CoachingGenerator.generateDraftCardAdvice(xayah, LaneRole.ADC, "es", enemy)
+        val second = CoachingGenerator.generateDraftCardAdvice(kaisa, LaneRole.ADC, "es", enemy)
+        assertTrue(first.contains("Xayah"))
+        assertTrue(first.contains("plumas", ignoreCase = true))
+        assertTrue(second.contains("Kai'Sa"))
+        assertNotEquals(first, second)
+        assertFalse(first.contains("la ventana depende", ignoreCase = true))
+        assertTrue(first.length <= 260)
+    }
+
     @Test fun `retreat advice uses the kit instead of assuming H3 is mobility`() {
         val immobile = Champion(id = "test", name = "Test", skills = listOf(
             ChampionSkill(slot = "2", name = "Protección", description = "Otorga un escudo."),

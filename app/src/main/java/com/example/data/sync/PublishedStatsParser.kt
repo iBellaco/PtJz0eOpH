@@ -33,6 +33,7 @@ object PublishedStatsParser {
             .filter { brackets.optJSONObject(it) != null }
         if (preferred.isEmpty()) return@runCatching FireReport()
         val stats = linkedMapOf<String, ChampionMetaStats>()
+        val fallbackStats = linkedMapOf<String, ChampionMetaStats>()
         val roleStats = linkedMapOf<String, MutableMap<com.example.model.LaneRole, ChampionMetaStats>>()
         val historyKeys = linkedMapOf<String, String>()
         fun readBracket(name: String, fillOnly: Boolean) {
@@ -58,7 +59,18 @@ object PublishedStatsParser {
                         }
                     }
                 }
-                if (!row.optBoolean("main")) continue
+                // Some rotations publish a complete row without marking it as
+                // the main lane. Keep the best complete fallback so a missing
+                // flag does not turn real published rates into a dash.
+                if (!row.optBoolean("main")) {
+                    if (value.isComplete()) {
+                        val oldFallback = fallbackStats[id]
+                        if (oldFallback == null || (value.pickRate ?: -1.0) > (oldFallback.pickRate ?: -1.0)) {
+                            fallbackStats[id] = value
+                        }
+                    }
+                    continue
+                }
                 val old = stats[id]
                 if (old == null || !old.isComplete() ||
                     (!fillOnly && (value.pickRate ?: -1.0) > (old.pickRate ?: -1.0))) {
@@ -68,6 +80,7 @@ object PublishedStatsParser {
             }
         }
         preferred.forEachIndexed { index, name -> readBracket(name, fillOnly = index > 0) }
+        fallbackStats.forEach { (id, value) -> if (id !in stats) stats[id] = value }
         val history = linkedMapOf<String, List<ObservedRate>>()
         val archive = doc.selectFirst("script#wf-stats-history")?.data()?.let(::JSONObject)
         val patch = current.getString("patch")

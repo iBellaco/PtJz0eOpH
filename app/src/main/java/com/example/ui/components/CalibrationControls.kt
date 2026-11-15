@@ -277,7 +277,7 @@ fun CalibrationSendButton(
 }
 
 /** Obtiene una captura literal reciente sin iniciar un bucle de monitoreo. */
-private suspend fun captureLiteralEvidenceFrame(manager: ScreenCaptureManager?): CalibrationEvidenceFrame? {
+internal suspend fun captureLiteralEvidenceFrame(manager: ScreenCaptureManager?): CalibrationEvidenceFrame? {
     if (manager == null || !manager.isReady()) return null
     repeat(4) {
         val capturedAt = android.os.SystemClock.elapsedRealtime()
@@ -295,7 +295,7 @@ private suspend fun captureLiteralEvidenceFrame(manager: ScreenCaptureManager?):
  * Evidence never downloads a remote image, so a missing asset cannot block the
  * report; the confirmed text remains visible as a fallback.
  */
-private fun loadEvidenceAvatars(
+internal fun loadEvidenceAvatars(
     context: android.content.Context,
     slotLabels: Map<String, String>,
     banSlots: List<com.example.service.screen.BanSlot>

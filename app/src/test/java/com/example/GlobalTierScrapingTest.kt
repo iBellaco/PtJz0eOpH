@@ -22,6 +22,20 @@ class GlobalTierScrapingTest {
         assertEquals(54.0, report.stats["bard"]!!.winRate!!, .001)
     }
 
+    @Test fun `WildRiftFire keeps complete rows when publisher omits the main flag`() {
+        val html = """
+            <script id="wf-stats-data" type="application/json">
+              {"patch":"7.3f","brackets":{"master":{"rows":[
+                {"slug":"gragas","champion":"Gragas","role":"Mid","main":false,"win":51.2,"pick":2.4,"ban":0.8}
+              ]}}}
+            </script>
+        """.trimIndent()
+        val report = com.example.data.sync.PublishedStatsParser.fire(html)
+        assertEquals(51.2, report.stats["gragas"]!!.winRate!!, .001)
+        assertEquals(2.4, report.stats["gragas"]!!.pickRate!!, .001)
+        assertEquals(0.8, report.stats["gragas"]!!.banRate!!, .001)
+    }
+
     @Test fun `active live pages parse their current fixture and real tier rows`() {
         listOf("core" to "wildriftcore", "fire" to "wildriftfire").forEach { (file, source) ->
             val html = javaClass.getResource("/tier-sources-302/$file.html")!!.readText()
