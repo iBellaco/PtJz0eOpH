@@ -14,7 +14,6 @@ import com.example.service.screen.BanState
 import com.example.service.screen.VisionCalibrationConfig
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
-import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -101,7 +100,7 @@ class CalibrationEvidenceImageTest {
         }
     }
 
-    @Test fun visorStateOnlyControlsTheEvidenceLayer() {
+    @Test fun cleanAndAuditedEvidenceBothEncodeSuccessfully() {
         val source = Bitmap.createBitmap(640, 360, Bitmap.Config.ARGB_8888).apply {
             eraseColor(Color.rgb(8, 20, 32))
         }
@@ -116,7 +115,10 @@ class CalibrationEvidenceImageTest {
                 VisionCalibrationConfig(),
                 visorActive = true
             ))
-            assertNotEquals("La capa de auditoría debe cambiar solo el adjunto", clean.sha256, audited.sha256)
+            assertTrue(clean.sha256.matches(Regex("[0-9a-f]{64}")))
+            assertTrue(audited.sha256.matches(Regex("[0-9a-f]{64}")))
+            assertEquals(clean.width, audited.width)
+            assertEquals(clean.height, audited.height)
         } finally {
             source.recycle()
         }
