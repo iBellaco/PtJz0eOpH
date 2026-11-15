@@ -110,9 +110,6 @@ fun CalibrationSendButton(
     val login = localizedString(R.string.calibration_verified_required)
     val dailyLimit = tr("Límite diario alcanzado")
     CoachButton(enabled = !sending, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp).testTag("calibration_send_support"), onClick = {
-        // Activarlo desde el primer toque, incluso si la sesión no está
-        // verificada todavía, deja claro qué visor se usará para la evidencia.
-        DraftVisionScanner.showCalibrationBoxes.value = true
         // Persist the device-specific calibration before attempting the cloud
         // report. The same action is intentionally used for both operations so
         // closing the overlay or losing connectivity never discards the local
@@ -135,10 +132,6 @@ fun CalibrationSendButton(
             scope.launch {
                 var evidenceAvatars: Map<String, Bitmap> = emptyMap()
                 try {
-                    // El visor debe quedar activo cuando el usuario solicita
-                    // evidencia: la imagen enviada debe mostrar qué geometría
-                    // se estaba validando, no solo el texto de coordenadas.
-                    DraftVisionScanner.showCalibrationBoxes.value = true
                     val metrics = context.resources.displayMetrics
                     val snapshot = DraftVisionScanner.calibrationReportSnapshot()
                     val displayName = CalibrationUserName.resolve(account)
@@ -156,14 +149,19 @@ fun CalibrationSendButton(
 
                     // MediaProjection entrega la pantalla real; se reintenta
                     // pocas veces porque al reanudar la superficie el primer
-                    // intento puede no tener aún un frame disponible.
+                    // intento puede no tener aún un frame disponible. La capa
+                    // de auditoría se dibuja solo dentro de la imagen: nunca
+                    // se activa el visor global del remitente para enviar un
+                    // informe.
                     captureLiteralEvidenceFrame(screenCaptureManager)?.let { literalFrame ->
                         visualEvidence = try {
                             CalibrationEvidenceImage.encode(
                                 literalFrame,
                                 snapshot.config,
                                 language,
-                                visorActive = DraftVisionScanner.showCalibrationBoxes.value,
+                                // El visor está simulado dentro del adjunto; el
+                                // estado real del overlay no se modifica.
+                                visorActive = true,
                                 literalCapture = true,
                                 slotLabels = detectedSlotLabels,
                                 banSlots = detectedBanSlots,
@@ -190,7 +188,7 @@ fun CalibrationSendButton(
                                     evidenceFrame,
                                     snapshot.config,
                                     language,
-                                    visorActive = DraftVisionScanner.showCalibrationBoxes.value,
+                                    visorActive = true,
                                     literalCapture = false,
                                     slotLabels = detectedSlotLabels,
                                     banSlots = detectedBanSlots,
@@ -202,17 +200,34 @@ fun CalibrationSendButton(
                         }
                     }
                     val encodedEvidence = visualEvidence
-                    val visualEvidenceText = if (encodedEvidence != null) {
-                        if (language.equals("pt", ignoreCase = true)) {
-                            "Evidência visual anexada: $evidenceSource; visor=${if (DraftVisionScanner.showCalibrationBoxes.value) "ativo" else "inativo"}; ${encodedEvidence.width}x${encodedEvidence.height}; idade=${encodedEvidence.ageMs} ms; SHA-256=${encodedEvidence.sha256}"
-                        } else {
-                            "Evidencia visual adjunta: $evidenceSource; visor=${if (DraftVisionScanner.showCalibrationBoxes.value) "activo" else "inactivo"}; ${encodedEvidence.width}x${encodedEvidence.height}; antigüedad=${encodedEvidence.ageMs} ms; SHA-256=${encodedEvidence.sha256}"
-                        }
-                    } else if (language.equals("pt", ignoreCase = true)) {
-                        "Evidência visual anexada: nenhum fotograma de captura disponível; visor=${if (DraftVisionScanner.showCalibrationBoxes.value) "ativo" else "inativo"}."
-                    } else {
-                        "Evidencia visual adjunta: no había un fotograma de captura disponible; visor=${if (DraftVisionScanner.showCalibrationBoxes.value) "activo" else "inactivo"}."
+                    val viewport = DraftVisionScanner.alignedViewportFlow.value
+                    val alignedSize = DraftVisionScanner.alignedFrameSizeFlow.value
+                    val slotEvidenceCount = detectedSlotLabels.count { (key, value) ->
+                        value.isNotBlank() && (key.startsWith("ally_") || key.startsWith("enemy_")) && !key.contains("ban")
                     }
+                    val banEvidenceCount = detectedBanSlots.count { it.championId != null }
+                    val avatarEvidenceCount = evidenceAvatars.size
+                    val visualEvidenceText = buildString {
+                        if (language.equals("pt", ignoreCase = true)) {
+                            if (encodedEvidence != null) {
+                                appendLine("Evidência visual anexada: $evidenceSource; ${encodedEvidence.width}x${encodedEvidence.height}; idade=${encodedEvidence.ageMs} ms; SHA-256=${encodedEvidence.sha256}")
+                            } else {
+                                appendLine("Evidência visual anexada: nenhum fotograma de captura disponível.")
+                            }
+                            appendLine("Visor no anexo: simulado como ativo com caixas, círculos e avatares; visor do dispositivo: não modificado.")
+                            appendLine("Perfil geométrico: ${DraftVisionScanner.calibrationSourceFlow.value}; captura alinhada=${alignedSize.first}x${alignedSize.second}; viewport=${viewport.left},${viewport.top}-${viewport.right},${viewport.bottom}.")
+                            appendLine("Evidência representada: posições com identidade=$slotEvidenceCount; banimentos confirmados=$banEvidenceCount; retratos carregados=$avatarEvidenceCount.")
+                        } else {
+                            if (encodedEvidence != null) {
+                                appendLine("Evidencia visual adjunta: $evidenceSource; ${encodedEvidence.width}x${encodedEvidence.height}; antigüedad=${encodedEvidence.ageMs} ms; SHA-256=${encodedEvidence.sha256}")
+                            } else {
+                                appendLine("Evidencia visual adjunta: no había un fotograma de captura disponible.")
+                            }
+                            appendLine("Visor en el adjunto: simulado como activo con cajas, círculos y avatares; visor del dispositivo: sin cambios.")
+                            appendLine("Perfil geométrico: ${DraftVisionScanner.calibrationSourceFlow.value}; captura alineada=${alignedSize.first}x${alignedSize.second}; viewport=${viewport.left},${viewport.top}-${viewport.right},${viewport.bottom}.")
+                            appendLine("Evidencia representada: posiciones con identidad=$slotEvidenceCount; baneos confirmados=$banEvidenceCount; retratos cargados=$avatarEvidenceCount.")
+                        }
+                    }.trimEnd()
                     val detectionEvidence = listOf(
                         DraftVisionScanner.detectionEvidenceReport(language),
                         visualEvidenceText

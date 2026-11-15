@@ -105,6 +105,11 @@ internal object CalibrationEvidenceImage {
         banSlots: List<BanSlot>,
         avatarBitmaps: Map<String, Bitmap>
     ) {
+        // `visorActive` describes the evidence image, not the live overlay.
+        // CalibrationSendButton always requests this audit layer explicitly;
+        // keeping the guard here prevents any other caller from accidentally
+        // painting calibration marks when it only wants a clean frame.
+        if (!visorActive) return
         val canvas = Canvas(bitmap)
         val width = bitmap.width.toFloat()
         val height = bitmap.height.toFloat()

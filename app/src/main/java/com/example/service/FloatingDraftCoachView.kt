@@ -72,6 +72,7 @@ import com.example.ui.theme.TextPrimary
 import com.example.ui.theme.TextSecondary
 import com.example.ui.theme.TierSPlusColor
 import com.example.util.SubscriptionManager
+import com.example.util.DraftRecommendationText
 import com.example.util.tr
 
 @Composable
@@ -1041,7 +1042,14 @@ private fun CoachContent(
                                 Text(com.example.util.tr("WR: ${pick.estimatedWinrate}%"), color = HextechGold, fontSize = 9.sp, fontWeight = FontWeight.Bold)
                             }
                             Text(tr(pick.advantageBadge), color = HextechCyan, fontSize = 8.5.sp, fontWeight = FontWeight.SemiBold)
-                            Text(tr(pick.tacticalReason), color = TextMuted, fontSize = 8.sp, maxLines = 1, softWrap = false, overflow = TextOverflow.Ellipsis)
+                            Text(
+                                tr(DraftRecommendationText.compact(pick.tacticalReason, maxChars = 150, maxSentences = 1)),
+                                color = TextMuted,
+                                fontSize = 8.sp,
+                                maxLines = 1,
+                                softWrap = false,
+                                overflow = TextOverflow.Ellipsis
+                            )
                         }
                     }
 
