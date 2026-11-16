@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -314,8 +315,10 @@ fun DraftAnalysisTab(
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .heightIn(min = 0.dp)
             .padding(horizontal = 16.dp)
             .verticalScroll(rememberScrollState())
+            .testTag("draft_analysis_scroll")
     ) {
         Spacer(modifier = Modifier.height(10.dp))
 

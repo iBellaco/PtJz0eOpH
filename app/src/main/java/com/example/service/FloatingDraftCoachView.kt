@@ -139,7 +139,12 @@ internal fun FloatingDraftCoachView(
     }
 
     Column(
-        modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 4.dp)
+        modifier = Modifier
+            .fillMaxSize()
+            .heightIn(min = 0.dp)
+            .verticalScroll(rememberScrollState(), enabled = true)
+            .padding(horizontal = 4.dp)
+            .testTag("draft_overlay_scroll")
     ) {
         if (unassignedAllies.isNotEmpty()) {
             Text(com.example.util.localizedString(com.example.R.string.draft_unassigned_allies,

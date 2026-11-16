@@ -54,4 +54,8 @@ object CoachingGenerator {
         synchronized(adviceCache) { adviceCache[key] = result }
         return result
     }
+
+    /** Concise, champion-specific text used on the recommendation card. */
+    fun generateDraftCardAdvice(champion: Champion, activeRole: LaneRole, lang: String, enemy: Champion? = null): String =
+        ChampionMatchupCoaching.draftCardAdvice(champion, activeRole, lang, enemy)
 }

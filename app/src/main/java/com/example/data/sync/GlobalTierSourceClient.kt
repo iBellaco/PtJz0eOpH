@@ -26,8 +26,13 @@ data class GlobalScrapingSource(val id: String, val name: String, val url: Strin
 
 /** HTTP success alone is insufficient: the publisher must identify the expected game patch. */
 class GlobalTierSourceClient(
-    private val client: OkHttpClient = OkHttpClient.Builder().connectTimeout(6, TimeUnit.SECONDS)
-        .readTimeout(10, TimeUnit.SECONDS).callTimeout(18, TimeUnit.SECONDS).followRedirects(true).build()
+    private val client: OkHttpClient = OkHttpClient.Builder()
+        .connectTimeout(10, TimeUnit.SECONDS)
+        .readTimeout(25, TimeUnit.SECONDS)
+        .callTimeout(45, TimeUnit.SECONDS)
+        .retryOnConnectionFailure(true)
+        .followRedirects(true)
+        .build()
 ) {
     data class SourceResult(val source: GlobalScrapingSource, val tiers: Map<String, String>,
         val status: ScraperSourceStatus, val stats: Map<String, ChampionMetaStats> = emptyMap(),

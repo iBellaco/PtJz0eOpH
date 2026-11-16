@@ -60,7 +60,11 @@ object FeedbackRepository {
             var deviceInfo = baseDeviceInfo
             // Coordinate evidence is already kept in the canonical photos field;
             // avoid duplicating a large Base64 image inside deviceInfo.
-            if (imagesBase64.isNotEmpty() && type != "VERIFICAR" && !isPermanentEvidenceReportType(type)) {
+            // Administrator-only reports already store their attachment in the
+            // canonical `photos` field. Duplicating a diagnostic screenshot in
+            // deviceInfo can exceed Firestore's document limit and make the
+            // report appear to send while silently failing.
+            if (imagesBase64.isNotEmpty() && !adminOnly && type != "VERIFICAR" && !isPermanentEvidenceReportType(type)) {
                 for (img in imagesBase64) {
                     deviceInfo += "\n\n[IMAGE_BASE64]\n$img"
                 }

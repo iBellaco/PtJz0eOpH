@@ -273,7 +273,10 @@ internal object CalibrationEvidenceImage {
     private fun compressBounded(bitmap: Bitmap): ByteArray {
         var quality = 82
         var bytes = ByteArray(0)
-        while (quality >= 52) {
+        // Keep the attachment bounded for Firestore while still guaranteeing
+        // an image for busy game frames. The frame is already capped at 1280px;
+        // lowering JPEG quality is preferable to silently dropping evidence.
+        while (quality >= 22) {
             ByteArrayOutputStream().use { output ->
                 bitmap.compress(Bitmap.CompressFormat.JPEG, quality, output)
                 bytes = output.toByteArray()

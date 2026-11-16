@@ -45,6 +45,13 @@ class EnemyRoleInferenceTest {
         }
     }
 
+    @Test fun rivalFlexesDuplicateMidPicksUsingCompositionInsteadOfRowOrder() {
+        val result = EnemyRoleInference.resolve(listOf("lux", "yasuo", "fizz").map(::champion))
+        assertEquals("lux", result[LaneRole.SUPPORT]?.id)
+        assertEquals("fizz", result[LaneRole.MID]?.id)
+        assertEquals("yasuo", result[LaneRole.TOP]?.id)
+    }
+
     @Test fun renderingPreservesSolvedAndManualRolesWithoutCompressingVacantRows() {
         val team = listOf(champion("yone"), null, champion("mel"), champion("jinx"), champion("nami"))
         val slots = EnemyDraftReconciler.hudSlots(team, mapOf(LaneRole.TOP to 75), mapOf(2 to "mid-player"))
