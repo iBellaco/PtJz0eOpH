@@ -113,6 +113,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.compose.ui.platform.testTag
@@ -195,6 +196,15 @@ fun MainDraftingScreen(
             repeatMode = RepeatMode.Reverse
         ),
         label = "infoButtonAlpha"
+    )
+    val infoButtonGlow by infoButtonTransition.animateFloat(
+        initialValue = 0.15f,
+        targetValue = 0.9f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1500, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "infoButtonGlow"
     )
 
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -382,25 +392,37 @@ fun MainDraftingScreen(
                             verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier.padding(start = 6.dp)
                         ) {
-                            IconButton(
-                                onClick = onNavigateToInfo,
+                            Box(
                                 modifier = Modifier
-                                    .graphicsLayer {
-                                        scaleX = infoButtonScale
-                                        scaleY = infoButtonScale
-                                    }
-                                    .clip(CircleShape)
-                                    .background(HextechSurface)
-                                    .border(1.dp, HextechGold.copy(alpha = infoButtonAlpha), CircleShape)
-                                    .size(38.dp)
-                                    .testTag("nav_info_button")
+                                    .size(48.dp)
+                                    .drawBehind {
+                                        drawCircle(
+                                            color = HextechGold.copy(alpha = 0.12f + infoButtonGlow * 0.14f),
+                                            radius = size.minDimension * (0.42f + infoButtonGlow * 0.08f)
+                                        )
+                                    },
+                                contentAlignment = Alignment.Center
                             ) {
-                                Icon(
-                                    imageVector = Icons.Default.Info,
-                                    contentDescription = tr("Información"),
-                                    tint = HextechGold,
-                                    modifier = Modifier.size(20.dp)
-                                )
+                                IconButton(
+                                    onClick = onNavigateToInfo,
+                                    modifier = Modifier
+                                        .graphicsLayer {
+                                            scaleX = infoButtonScale
+                                            scaleY = infoButtonScale
+                                        }
+                                        .clip(CircleShape)
+                                        .background(HextechSurface)
+                                        .border(1.dp, HextechGold.copy(alpha = infoButtonAlpha), CircleShape)
+                                        .size(38.dp)
+                                        .testTag("nav_info_button")
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Info,
+                                        contentDescription = tr("Información"),
+                                        tint = HextechGold,
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                }
                             }
 
                             Spacer(modifier = Modifier.width(6.dp))

@@ -503,7 +503,7 @@ object DraftVisionScanner {
             activeFrameRelativeProfile = profileConfig != null || (!keepCustomizedGlobal && measured != null)
             calibrationSourceFlow.value = when {
                 profileConfig != null -> "perfil guardado (${profile})"
-                measured != null -> "perfil medido por resolución (${profile})"
+                measured != null -> "perfil medido por dispositivo (${profile})"
                 keepCustomizedGlobal -> "calibración global guardada"
                 else -> "adaptativa predeterminada"
             }
