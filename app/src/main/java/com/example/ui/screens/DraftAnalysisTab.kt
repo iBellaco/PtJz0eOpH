@@ -1198,12 +1198,10 @@ fun DraftAnalysisTab(
 
                         Spacer(modifier = Modifier.height(8.dp))
 
-                        Text(
-                            text = tr(DraftRecommendationText.compact(topPick.tacticalReason, maxChars = 240, maxSentences = 2)),
-                            color = TextPrimary.copy(alpha = 0.95f),
-                            fontSize = 12.sp,
-                            lineHeight = 17.sp,
-                            modifier = Modifier.fillMaxWidth().testTag("draft_top_tactical_text")
+                        com.example.ui.components.DraftRecommendationSummary(
+                            text = topPick.tacticalReason,
+                            tag = "draft_top_tactical",
+                            maxChars = 240
                         )
 
                         if (topPick.synergyDetails.isNotBlank() || topPick.counterDetails.isNotBlank()) {
@@ -1324,8 +1322,11 @@ fun DraftAnalysisTab(
                             }
 
                             Spacer(Modifier.height(8.dp))
-                            Text(tr(DraftRecommendationText.compact(rec.tacticalReason, maxChars = 180, maxSentences = 2)), color = TextSecondary,
-                                fontSize = 12.sp, lineHeight = 17.sp, modifier = Modifier.fillMaxWidth())
+                            com.example.ui.components.DraftRecommendationSummary(
+                                text = rec.tacticalReason,
+                                tag = "draft_tactical_${rec.champion.id}",
+                                maxChars = 180
+                            )
                             Column(Modifier.fillMaxWidth().padding(top = 8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                                 com.example.ui.components.DraftAdviceSection("Sinergia / Combo:", rec.synergyDetails,
                                     HextechCyan, "draft_synergy_${rec.champion.id}")
