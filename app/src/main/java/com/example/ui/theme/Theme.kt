@@ -18,49 +18,50 @@ fun MyApplicationTheme(
     content: @Composable () -> Unit
 ) {
     val theme = AppThemeManager.currentTheme
+    val onPrimary = if (theme.isDark) theme.background else Color.White
     val colorScheme = if (theme.isDark) {
         darkColorScheme(
-            primary = HextechCyan,
-            onPrimary = HextechDarkBg,
-            primaryContainer = HextechBlue,
-            onPrimaryContainer = HextechCyanLight,
-            secondary = HextechGold,
-            onSecondary = HextechDarkBg,
-            secondaryContainer = HextechSurfaceVariant,
-            onSecondaryContainer = HextechGoldLight,
+            primary = theme.primary,
+            onPrimary = onPrimary,
+            primaryContainer = theme.primaryDark,
+            onPrimaryContainer = theme.primaryLight,
+            secondary = theme.secondary,
+            onSecondary = onPrimary,
+            secondaryContainer = theme.surfaceVariant,
+            onSecondaryContainer = theme.secondaryLight,
             tertiary = TierSPlusColor,
-            onTertiary = HextechDarkBg,
-            background = HextechDarkBg,
-            onBackground = TextPrimary,
-            surface = HextechSurface.copy(alpha = if (theme.isDark) 0.6f else 0.85f),
-            onSurface = TextPrimary,
-            surfaceVariant = HextechSurfaceVariant.copy(alpha = if (theme.isDark) 0.6f else 0.85f),
-            onSurfaceVariant = TextSecondary,
+            onTertiary = onPrimary,
+            background = theme.background,
+            onBackground = theme.textPrimary,
+            surface = theme.surface,
+            onSurface = theme.textPrimary,
+            surfaceVariant = theme.surfaceVariant,
+            onSurfaceVariant = theme.textSecondary,
             error = DangerRed,
             onError = Color.White,
-            outline = HextechCardBorder
+            outline = theme.cardBorder
         )
     } else {
         lightColorScheme(
-            primary = HextechCyan,
-            onPrimary = Color.White,
-            primaryContainer = HextechSurfaceVariant,
-            onPrimaryContainer = HextechCyan,
-            secondary = HextechGold,
+            primary = theme.primary,
+            onPrimary = onPrimary,
+            primaryContainer = theme.surfaceVariant,
+            onPrimaryContainer = theme.primaryDark,
+            secondary = theme.secondary,
             onSecondary = Color.White,
-            secondaryContainer = HextechSurfaceVariant,
-            onSecondaryContainer = HextechGold,
+            secondaryContainer = theme.surfaceVariant,
+            onSecondaryContainer = theme.secondaryDark,
             tertiary = TierSPlusColor,
             onTertiary = Color.White,
-            background = HextechDarkBg,
-            onBackground = TextPrimary,
-            surface = HextechSurface.copy(alpha = if (theme.isDark) 0.6f else 0.85f),
-            onSurface = TextPrimary,
-            surfaceVariant = HextechSurfaceVariant.copy(alpha = if (theme.isDark) 0.6f else 0.85f),
-            onSurfaceVariant = TextSecondary,
+            background = theme.background,
+            onBackground = theme.textPrimary,
+            surface = theme.surface,
+            onSurface = theme.textPrimary,
+            surfaceVariant = theme.surfaceVariant,
+            onSurfaceVariant = theme.textSecondary,
             error = DangerRed,
             onError = Color.White,
-            outline = HextechCardBorder
+            outline = theme.cardBorder
         )
     }
 

@@ -187,10 +187,20 @@ object ChampionMatchupCoaching {
                 "$me no $lane: espere o controle rival sair, entre com $h1 e reserve $h3 para escapar; use $h4 para iniciar de fora da visão.$matchupSuffix"
             else
                 "$me en $lane: espera a que salga el control rival, entra con $h1 y reserva $h3 para escapar; usa $h4 para iniciar desde fuera de visión.$matchupSuffix"
-            else -> if (pt)
-                "$me na $lane: use $h1 para criar a primeira troca e conserve $h4 para a disputa decisiva.$matchupSuffix"
-            else
-                "$me en $lane: usa $h1 para abrir el primer intercambio y conserva $h4 para la pelea decisiva.$matchupSuffix"
+            else -> {
+                // The catalog contains a concrete coaching sentence for each
+                // champion. Use it here instead of the same generic H1/H4
+                // sentence on every recommendation card.
+                val catalogAdvice = champion.tacticalAdvice.trim()
+                if (catalogAdvice.isNotBlank()) {
+                    if (pt) "$me na $lane: ${trStr(lang, catalogAdvice)}$matchupSuffix"
+                    else "$me en $lane: $catalogAdvice$matchupSuffix"
+                } else if (pt) {
+                    "$me na $lane: use $h1 para criar a primeira troca e conserve $h4 para a disputa decisiva.$matchupSuffix"
+                } else {
+                    "$me en $lane: usa $h1 para abrir el primer intercambio y conserva $h4 para la pelea decisiva.$matchupSuffix"
+                }
+            }
         }
         return DraftRecommendationText.compact(DraftRecommendationText.clean(text), maxChars = 260, maxSentences = 2)
     }
