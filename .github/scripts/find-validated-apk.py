@@ -4,8 +4,12 @@ import os
 from pathlib import Path
 import re
 import subprocess
+import time
 from urllib.request import urlopen
 from urllib.error import URLError
+
+VALIDATED_BRANCH = 'coach-validacion'
+API_ATTEMPTS = 3
 
 # These files cannot change the APK: delivery housekeeping and its own tests.
 DELIVERY_ONLY_FILES = {
@@ -29,22 +33,30 @@ REQUIRED_JOBS.add('native-title-preflight')
 def api(path):
     # The publication verification step has read access to this public repo.
     # Use the public API when the step intentionally has no write token.
-    if not (os.environ.get('GH_TOKEN') or os.environ.get('GITHUB_TOKEN')):
+    last_error = None
+    for attempt in range(API_ATTEMPTS):
         try:
-            with urlopen('https://api.github.com/' + path, timeout=30) as response:
-                return json.load(response)
-        except (URLError, TimeoutError) as error:
-            raise RuntimeError('No se pudo comprobar la fuente del APK validado.') from error
-    result = subprocess.run(['gh', 'api', path], stdout=subprocess.PIPE,
-                            stderr=subprocess.PIPE, text=True)
-    if result.returncode:
-        raise RuntimeError('No se pudo consultar la validación previa; se compilará de nuevo.')
-    return json.loads(result.stdout)
+            if not (os.environ.get('GH_TOKEN') or os.environ.get('GITHUB_TOKEN')):
+                with urlopen('https://api.github.com/' + path, timeout=30) as response:
+                    return json.load(response)
+            result = subprocess.run(['gh', 'api', path], stdout=subprocess.PIPE,
+                                    stderr=subprocess.PIPE, text=True, timeout=45)
+            if result.returncode:
+                raise RuntimeError(result.stderr.strip() or 'gh api falló')
+            return json.loads(result.stdout)
+        except (URLError, TimeoutError, subprocess.TimeoutExpired, RuntimeError, ValueError) as error:
+            last_error = error
+            if attempt + 1 < API_ATTEMPTS:
+                # GitHub's Actions/artifact API is eventually consistent just
+                # after a validation run completes. Give it a short retry
+                # window before deciding that the APK cannot be reused.
+                time.sleep(2 * (attempt + 1))
+    raise RuntimeError('No se pudo comprobar la fuente del APK validado.') from last_error
 
 
 def eligible(run, repository):
     return (run.get('status') == 'completed' and run.get('conclusion') == 'success'
-            and run.get('event') in {'pull_request', 'push', 'workflow_dispatch'} and run.get('head_branch') == 'coach-validacion'
+            and run.get('event') in {'pull_request', 'push', 'workflow_dispatch'} and run.get('head_branch') == VALIDATED_BRANCH
             and (run.get('head_repository') or {}).get('full_name') == repository
             and re.fullmatch(r'[0-9a-f]{40}', run.get('head_sha', '')) is not None)
 
@@ -68,7 +80,13 @@ def same_apk_inputs(repository, source_tree, target_tree, request=api):
 def find(repository, target_sha, request=api):
     prefix = f'repos/{repository}'
     target_tree = request(f'{prefix}/git/commits/{target_sha}')['tree']['sha']
-    runs = request(f'{prefix}/actions/workflows/build-apk.yml/runs?status=success&per_page=30')['workflow_runs']
+    # Scope the search to the validation branch. The previous all-branches
+    # query could omit the correct run from the first page when several fix or
+    # main runs were created close together, causing main to rebuild every
+    # heavy suite even though a matching validation artifact existed.
+    runs = request(
+        f'{prefix}/actions/workflows/build-apk.yml/runs?branch={VALIDATED_BRANCH}&status=completed&per_page=100'
+    )['workflow_runs']
     for run in runs:
         if not eligible(run, repository):
             continue

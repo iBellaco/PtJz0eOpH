@@ -18,7 +18,9 @@ class ValidatedApkTest(unittest.TestCase):
 
     def invoke(self, changed_tree=False, failed_job=None, expired=False, run=None, files=None, missing_job=None,
                failed_conclusion='failure'):
+        self.last_request_paths = []
         def request(path):
+            self.last_request_paths.append(path)
             if '/git/commits/' in path:
                 return {'tree': {'sha': 'different' if changed_tree and path.endswith('a' * 40) else 'same'}}
             if '/git/trees/' in path:
@@ -38,6 +40,13 @@ class ValidatedApkTest(unittest.TestCase):
                 return {'artifacts': [{'name': 'app-release.apk', 'expired': expired}]}
             self.fail(path)
         return validated.find(self.repository, 'b' * 40, request)
+
+    def test_search_is_scoped_to_the_validation_branch_and_fetches_a_full_page(self):
+        self.assertEqual(('42', 'a' * 40), self.invoke())
+        runs_query = next(path for path in self.last_request_paths if '/workflows/' in path)
+        self.assertIn('branch=coach-validacion', runs_query)
+        self.assertIn('status=completed', runs_query)
+        self.assertIn('per_page=100', runs_query)
 
     def test_identical_fully_validated_tree_is_reused(self):
         self.assertEqual(('42', 'a' * 40), self.invoke())
