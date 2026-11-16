@@ -1044,8 +1044,7 @@ private fun ApplicationThemeCard(
                 fontSize = 9.5.sp,
                 lineHeight = 13.sp,
                 maxLines = 2,
-                overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.weight(1f, fill = false)
+                overflow = TextOverflow.Ellipsis
             )
 
             Row(
@@ -1082,6 +1081,7 @@ private fun ApplicationThemeCard(
 
 @Composable
 private fun PremiumThemeBadge(testTag: String?) {
+    val premiumInk = Color(0xFF241A06)
     Row(
         modifier = Modifier
             .clip(RoundedCornerShape(5.dp))
@@ -1094,12 +1094,12 @@ private fun PremiumThemeBadge(testTag: String?) {
         Icon(
             imageVector = Icons.Default.Star,
             contentDescription = tr("Premium"),
-            tint = HextechDarkBg,
+            tint = premiumInk,
             modifier = Modifier.size(10.dp)
         )
         Text(
             text = tr("PREMIUM"),
-            color = HextechDarkBg,
+            color = premiumInk,
             fontSize = 8.sp,
             fontWeight = FontWeight.Black
         )
