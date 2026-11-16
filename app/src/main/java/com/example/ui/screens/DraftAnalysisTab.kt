@@ -1216,9 +1216,9 @@ fun DraftAnalysisTab(
                                 verticalArrangement = Arrangement.spacedBy(4.dp)
                             ) {
                                 com.example.ui.components.DraftAdviceSection("Sinergia / Combo:", topPick.synergyDetails,
-                                    HextechCyan, "draft_top_synergy")
+                                    HextechCyan, "draft_top_synergy", collapsedByDefault = true)
                                 com.example.ui.components.DraftAdviceSection("Ventaja / Counter:", topPick.counterDetails,
-                                    HextechGold, "draft_top_counter")
+                                    HextechGold, "draft_top_counter", collapsedByDefault = true)
                             }
                         }
 
@@ -1329,9 +1329,9 @@ fun DraftAnalysisTab(
                             )
                             Column(Modifier.fillMaxWidth().padding(top = 8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                                 com.example.ui.components.DraftAdviceSection("Sinergia / Combo:", rec.synergyDetails,
-                                    HextechCyan, "draft_synergy_${rec.champion.id}")
+                                    HextechCyan, "draft_synergy_${rec.champion.id}", collapsedByDefault = true)
                                 com.example.ui.components.DraftAdviceSection("Ventaja / Counter:", rec.counterDetails,
-                                    HextechGoldLight, "draft_counter_${rec.champion.id}")
+                                    HextechGoldLight, "draft_counter_${rec.champion.id}", collapsedByDefault = true)
                             }
                         }
                     }

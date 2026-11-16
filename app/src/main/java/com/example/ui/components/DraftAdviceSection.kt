@@ -22,9 +22,19 @@ import com.example.ui.theme.TextPrimary
 import com.example.util.DraftRecommendationText
 import com.example.util.tr
 
-/** Full-width paragraphs remain readable in narrow screens and with larger system text. */
+/**
+ * Full-width advice remains readable in narrow screens and with larger system text.
+ * Callers that render several fields in a recommendation card can opt into the
+ * compact preview while keeping the complete advice one tap away.
+ */
 @Composable
-fun DraftAdviceSection(title: String, text: String, color: Color, tag: String) {
+fun DraftAdviceSection(
+    title: String,
+    text: String,
+    color: Color,
+    tag: String,
+    collapsedByDefault: Boolean = false
+) {
     val cleaned = DraftRecommendationText.clean(text)
     val advice = tr(cleaned)
     if (advice.isBlank()) return
@@ -35,7 +45,8 @@ fun DraftAdviceSection(title: String, text: String, color: Color, tag: String) {
         preview = preview,
         tag = tag,
         color = color,
-        title = tr(title)
+        title = tr(title),
+        startExpanded = !collapsedByDefault
     )
 }
 
@@ -51,7 +62,8 @@ fun DraftRecommendationSummary(text: String, tag: String, maxChars: Int) {
         text = advice,
         preview = preview,
         tag = tag,
-        color = TextPrimary
+        color = TextPrimary,
+        startExpanded = false
     )
 }
 
@@ -61,10 +73,11 @@ private fun ExpandableDraftText(
     preview: String,
     tag: String,
     color: Color,
-    title: String? = null
+    title: String? = null,
+    startExpanded: Boolean = false
 ) {
     val canExpand = text != preview
-    var expanded by rememberSaveable(tag, text) { mutableStateOf(false) }
+    var expanded by rememberSaveable(tag, text) { mutableStateOf(startExpanded) }
 
     Column(Modifier.fillMaxWidth().testTag(tag), verticalArrangement = Arrangement.spacedBy(3.dp)) {
         title?.let {

@@ -375,7 +375,7 @@ fun ThemeCustomizationBottomSheet(
             LazyRow(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
-                contentPadding = PaddingValues(start = 2.dp, end = 2.dp, bottom = 24.dp)
+                contentPadding = PaddingValues(start = 2.dp, end = 2.dp, bottom = 8.dp)
             ) {
                 items(AppTheme.entries.filterNot { it.isApplicationTheme }, key = { "carousel_${it.id}" }) { theme ->
                     val isSelected = currentTheme == theme
@@ -974,7 +974,7 @@ private fun ApplicationThemeCard(
 ) {
     Card(
         modifier = modifier
-            .heightIn(min = 128.dp)
+            .height(132.dp)
             .clip(RoundedCornerShape(12.dp))
             .coachClickable(onClick = onSelect),
         shape = RoundedCornerShape(12.dp),
@@ -1000,8 +1000,8 @@ private fun ApplicationThemeCard(
                         listOf(theme.primary.copy(alpha = 0.18f), theme.surface)
                     )
                 )
-                .padding(10.dp),
-            verticalArrangement = Arrangement.spacedBy(5.dp)
+                .padding(horizontal = 9.dp, vertical = 8.dp),
+            verticalArrangement = Arrangement.spacedBy(3.dp)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -1026,14 +1026,14 @@ private fun ApplicationThemeCard(
                 text = tr(theme.titleKey),
                 color = theme.textPrimary,
                 fontWeight = FontWeight.ExtraBold,
-                fontSize = 13.sp,
+                fontSize = 12.5.sp,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
             Text(
                 text = tr(theme.regionTag),
                 color = theme.secondaryLight,
-                fontSize = 9.sp,
+                fontSize = 8.5.sp,
                 fontWeight = FontWeight.Bold,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
@@ -1042,15 +1042,15 @@ private fun ApplicationThemeCard(
                 text = tr(theme.descKey),
                 color = theme.textSecondary,
                 fontSize = 9.5.sp,
-                lineHeight = 13.sp,
-                maxLines = 2,
+                lineHeight = 12.sp,
+                maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
 
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .heightIn(min = 28.dp),
+                    .heightIn(min = 24.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(5.dp)
             ) {
