@@ -64,9 +64,12 @@ fun UserDetailManagementDialog(
     var currentVerified by remember { mutableStateOf((user["isVerified"] as? Boolean) == true || (user["verified"] as? Boolean) == true || currentRole == "admin" || currentRole == "moderador") }
     var currentPremiumUntil by remember { mutableStateOf(com.example.model.PremiumAccessPolicy.deadline(user["premiumUntil"])) }
     var currentPremiumPlan by remember { mutableStateOf((user["subscriptionPlan"] as? String).orEmpty()) }
+    var currentRankBorder by remember { mutableStateOf((user["rankBorder"] as? String).orEmpty().ifBlank { "NONE" }) }
     var currentBlueEssence by remember(uid) { mutableStateOf((user["blueEssence"] as? Number)?.toLong() ?: 0L) }
     var currentOrangeEssence by remember(uid) { mutableStateOf((user["orangeEssence"] as? Number)?.toLong() ?: 0L) }
     LaunchedEffect(user) {
+        currentSecondaryRole = (user["secondaryRole"] as? String).orEmpty()
+        currentRankBorder = (user["rankBorder"] as? String).orEmpty().ifBlank { "NONE" }
         currentBlueEssence = (user["blueEssence"] as? Number)?.toLong() ?: currentBlueEssence
         currentOrangeEssence = (user["orangeEssence"] as? Number)?.toLong() ?: currentOrangeEssence
     }
@@ -77,6 +80,8 @@ fun UserDetailManagementDialog(
                     currentBlueEssence = snapshot.getLong("blueEssence") ?: 0L
                     currentOrangeEssence = snapshot.getLong("orangeEssence") ?: 0L
                     snapshot.getString("role")?.let { currentRole = it }
+                    snapshot.getString("secondaryRole")?.let { currentSecondaryRole = it }
+                    snapshot.getString("rankBorder")?.let { currentRankBorder = it }
                     snapshot.getBoolean("banned")?.let { currentBanned = it }
                     if (snapshot.contains("premiumUntil")) currentPremiumUntil = com.example.model.PremiumAccessPolicy.deadline(snapshot.get("premiumUntil"))
                     snapshot.getString("subscriptionPlan")?.let { currentPremiumPlan = it }
@@ -85,8 +90,6 @@ fun UserDetailManagementDialog(
         onDispose { listener?.remove() }
     }
     val avatarId = user["avatarId"] as? String ?: "default_poro"
-    val rankBorder = user["rankBorder"] as? String ?: "NONE"
-
     val currentLoggedInRole by com.example.util.SubscriptionManager.userRole.collectAsState()
     val isMod = currentLoggedInRole == "moderador"
     val isAdmin = sessionPanelAccess()
@@ -201,11 +204,16 @@ fun UserDetailManagementDialog(
     fun changeSecondaryDirectly(target: AppUserRole) {
         if (!isAdmin || isChangingSecondaryRole) return
         isChangingSecondaryRole = true
-        updateUserSecondaryRoleInCloud(context, uid, if (target == AppUserRole.FREE) "" else target.id,
+        val previousSecondary = currentSecondaryRole
+        val targetSecondary = if (target == AppUserRole.FREE) "" else target.id
+        updateUserSecondaryRoleInCloud(context, uid, targetSecondary,
+            previousSecondaryRole = previousSecondary,
+            currentRankBorder = currentRankBorder,
             onError = { isChangingSecondaryRole = false }) { updated ->
             isChangingSecondaryRole = false
             currentSecondaryRole = updated
-            onUserUpdated(user + ("secondaryRole" to updated))
+            currentRankBorder = secondaryRoleFrameAfterChange(currentRankBorder, previousSecondary, updated)
+            onUserUpdated(user + mapOf("secondaryRole" to updated, "rankBorder" to currentRankBorder))
             onReloadAll()
         }
     }
@@ -276,7 +284,7 @@ fun UserDetailManagementDialog(
                             avatarId = avatarId,
                             size = 48.dp,
                             fallbackInitial = currentName.take(1).uppercase(),
-                            rankBorder = rankBorder,
+                            rankBorder = currentRankBorder,
                             isAdmin = (currentRole == "admin"),
                             role = currentRole,
                             secondaryRole = currentSecondaryRole
@@ -1519,12 +1527,19 @@ fun UserDetailManagementDialog(
                         isChangingSecondaryRole = true
                         val targetRoleId = if (isRemoving) "" else target.id
                         if (isAdmin) {
-                            updateUserSecondaryRoleInCloud(context, uid, targetRoleId) { newSecondaryRole ->
+                            val previousSecondary = currentSecondaryRole
+                            updateUserSecondaryRoleInCloud(
+                                context, uid, targetRoleId,
+                                previousSecondaryRole = previousSecondary,
+                                currentRankBorder = currentRankBorder
+                            ) { newSecondaryRole ->
                                 isChangingSecondaryRole = false
                                 secondaryRoleToConfirm = null
                                 currentSecondaryRole = newSecondaryRole
+                                currentRankBorder = secondaryRoleFrameAfterChange(currentRankBorder, previousSecondary, newSecondaryRole)
                                 onUserUpdated(user.toMutableMap().apply {
                                     put("secondaryRole", newSecondaryRole)
+                                    put("rankBorder", currentRankBorder)
                                 })
                                 onReloadAll()
                             }

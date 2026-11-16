@@ -26,17 +26,27 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 @Composable
 fun MetaMonitoringCard() {
     val sources by BestBuildWrScraper.sourceStatuses.collectAsState()
-    val currentRegion by com.example.data.sync.GlobalMetaSyncService.currentRegion.collectAsStateWithLifecycle()
+    val chinaEloGroups by BestBuildWrScraper.chinaEloGroups.collectAsState()
+    val chinaEloLabels = mutableListOf<String>()
+    for (option in MetaRegion.chinaEloOptions) {
+        val label = chinaEloGroups[option.id]?.label
+        if (label != null) chinaEloLabels += tr(label)
+    }
+    val chinaEloLabelText = chinaEloLabels.joinToString(" · ")
+    val chinaEloDetailText = chinaEloLabels.joinToString(", ")
     val health by BestBuildWrScraper.freshness.collectAsState()
     val syncing by BestBuildWrScraper.isSyncing.collectAsState()
     val version by com.example.util.AppUpdateManager.checkStatus.collectAsState()
     var now by remember { mutableStateOf(System.currentTimeMillis()) }
     var selected by remember { mutableStateOf<ScraperSourceStatus?>(null) }
     LaunchedEffect(Unit) { while (true) { delay(1_000); now = System.currentTimeMillis() } }
-    val visibleSources = remember(sources, currentRegion) {
-        val region = MetaRegion.normalize(currentRegion)
-        sources.filterValues { MetaRegion.normalize(it.region) == region }
-            .ifEmpty { sources.filterValues { MetaRegion.normalize(it.region) == MetaRegion.DEFAULT } }
+    // Monitoring is an administrative overview, not a mirror of the tier-list
+    // selector. Keep every configured server visible and label each source so
+    // changing the selected tier-list server never hides the other health rows.
+    val visibleSources = remember(sources) {
+        sources.toList().sortedWith(compareBy<Pair<String, ScraperSourceStatus>> {
+            MetaRegion.normalize(it.second.region) != MetaRegion.DEFAULT
+        }.thenBy { it.second.name })
     }
     val expected = health.expectedCount.takeIf { it > 0 }
         ?: WildRiftRepository.baseChampionsList.size.takeIf { it > 0 }
@@ -69,7 +79,7 @@ fun MetaMonitoringCard() {
     }
     fun compactIds(ids: List<String>): String = ids.take(12).joinToString(", ") +
         if (ids.size > 12) " … (+${ids.size - 12})" else ""
-    val issues = visibleSources.values.count { issue(it) != null }
+    val issues = visibleSources.count { issue(it.second) != null }
     Surface(Modifier.fillMaxWidth().padding(12.dp).testTag("meta_monitoring_card"),
         color = HextechSurface, shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
         border = BorderStroke(1.dp, if (issues > 0 || health.stale(now)) HextechGold else HextechCardBorder)) {
@@ -93,12 +103,21 @@ fun MetaMonitoringCard() {
                     Icon(if (problem == null) Icons.Default.CheckCircle else Icons.Default.WarningAmber,
                         null, tint = color, modifier = Modifier.size(18.dp))
                     Column(Modifier.weight(1f).padding(horizontal = 8.dp)) {
-                        Text(status.name.substringBefore(" ("), color = TextPrimary, fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
+                        Text(
+                            status.name.substringBefore(" (") + " · " + tr(MetaRegion.label(status.region)),
+                            color = TextPrimary, fontSize = 12.sp, fontWeight = FontWeight.SemiBold
+                        )
                         Text(tr(state) + " · " + tr("Categorías") + " ${status.tierCount}/$expected · " +
                             tr("Estadísticas completas") + " ${status.statsCount}/$expected" +
                             if (status.partialStatsCount + status.missingStatsCount > 0)
                                 " · ${tr("Problemas de cobertura")}: ${status.partialStatsCount + status.missingStatsCount}" else "",
                             color = color, fontSize = 10.sp)
+                        if (MetaRegion.normalize(status.region) == MetaRegion.CHINA && chinaEloGroups.isNotEmpty()) {
+                            Text(
+                                tr("Segmentos Elo") + ": " + chinaEloLabelText,
+                                color = TextMuted, fontSize = 9.sp
+                            )
+                        }
                     }
                     Text(if (status.lastChecked > 0) java.text.SimpleDateFormat("HH:mm:ss", java.util.Locale.getDefault())
                         .format(java.util.Date(status.lastChecked)) else "—", color = TextMuted, fontSize = 10.sp)
@@ -117,7 +136,7 @@ fun MetaMonitoringCard() {
         // Keep an open detail synchronized as new responses arrive.
         val status = sources.values.firstOrNull { it.url == source.url } ?: source
         AlertDialog(onDismissRequest = { selected = null }, containerColor = HextechSurface,
-            title = { Text(status.name.substringBefore(" ("), color = HextechGold) },
+            title = { Text(status.name.substringBefore(" (") + " · " + tr(MetaRegion.label(status.region)), color = HextechGold) },
             text = { Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text(tr(issue(status) ?: "Funcionando"), color = if (issue(status) != null) HextechGold else HextechCyan)
                 Text(tr("Parche") + ": " + status.publishedPatch.ifBlank { "—" })
@@ -141,6 +160,9 @@ fun MetaMonitoringCard() {
                 Text(tr("Último cambio de valores") + ": " + metaTime(status.lastChangedAt))
                 Text(tr("Tiempo sin cambios") + ": " + unchangedFor(status))
                 Text(tr("Tiempo de respuesta") + ": ${status.responseTimeMs} ms")
+                if (MetaRegion.normalize(status.region) == MetaRegion.CHINA && chinaEloGroups.isNotEmpty()) {
+                    Text(tr("Segmentos Elo") + ": " + chinaEloDetailText)
+                }
             } }, confirmButton = { CoachTextButton(onClick = { selected = null },
                 modifier = Modifier.heightIn(min = 48.dp).testTag("close_meta_source_detail")) { Text(tr("Cerrar")) } })
     }

@@ -198,34 +198,75 @@ internal fun updateUserRoleInCloud(
     }
 }
 
+internal fun secondaryRoleFrameId(role: String?): String? = when (role.orEmpty().trim().lowercase()) {
+    "esmeralda" -> "ESMERALDA"
+    "diamante" -> "DIAMANTE"
+    "maestro" -> "MAESTRO_FRAME"
+    "gran_maestro", "gran maestro" -> "GRAN_MAESTRO_FRAME"
+    "aspirante" -> "ASPIRANTE"
+    "soberano" -> "SOBERANO"
+    else -> null
+}
+
+internal fun secondaryRoleFrameAfterChange(
+    currentBorder: String,
+    previousRole: String?,
+    newRole: String?
+): String {
+    val oldFrame = secondaryRoleFrameId(previousRole)
+    return if (oldFrame != null && currentBorder.equals(oldFrame, ignoreCase = true)) {
+        secondaryRoleFrameId(newRole) ?: "NONE"
+    } else currentBorder
+}
+
 internal fun updateUserSecondaryRoleInCloud(
     context: Context,
     uid: String,
     targetSecondaryRoleId: String,
+    previousSecondaryRole: String? = null,
+    currentRankBorder: String? = null,
     onError: (Throwable) -> Unit = {},
     onSuccess: (newSecondaryRole: String) -> Unit
 ) {
     val db = FirebaseFirestore.getInstance()
-    val updatePayload = hashMapOf<String, Any>(
-        "secondaryRole" to targetSecondaryRoleId,
-        "last_secondary_role_update" to System.currentTimeMillis()
-    )
+    val userRef = db.collection("users").document(uid)
 
-    db.collection("users").document(uid)
-        .set(updatePayload, SetOptions.merge())
-        .addOnSuccessListener {
-            val roleName = if (targetSecondaryRoleId.isNotBlank()) {
-                AppUserRole.fromId(targetSecondaryRoleId).displayName
-            } else {
-                "Ninguno"
+    fun persist(previousRole: String, existingBorder: String) {
+        val updatePayload = hashMapOf<String, Any>(
+            "secondaryRole" to targetSecondaryRoleId,
+            "last_secondary_role_update" to System.currentTimeMillis()
+        )
+        val nextBorder = secondaryRoleFrameAfterChange(existingBorder, previousRole, targetSecondaryRoleId)
+        // If the user was wearing the old secondary-role frame, replace it in
+        // the same write. Unrelated frames selected manually remain intact.
+        if (nextBorder != existingBorder) {
+            updatePayload["rankBorder"] = nextBorder
+        }
+        userRef.set(updatePayload, SetOptions.merge())
+            .addOnSuccessListener {
+                val roleName = if (targetSecondaryRoleId.isNotBlank()) {
+                    AppUserRole.fromId(targetSecondaryRoleId).displayName
+                } else {
+                    "Ninguno"
+                }
+                Toast.makeText(context, com.example.util.appTr("Rol secundario actualizado a $roleName"), Toast.LENGTH_SHORT).show()
+                onSuccess(targetSecondaryRoleId)
             }
-            Toast.makeText(context, com.example.util.appTr("Rol secundario actualizado a $roleName"), Toast.LENGTH_SHORT).show()
-            onSuccess(targetSecondaryRoleId)
-        }
-        .addOnFailureListener { e ->
-            Toast.makeText(context, com.example.util.appTr("Error al actualizar rol secundario: ${e.message}"), Toast.LENGTH_LONG).show()
-            onError(e)
-        }
+            .addOnFailureListener { e ->
+                Toast.makeText(context, com.example.util.appTr("Error al actualizar rol secundario: ${e.message}"), Toast.LENGTH_LONG).show()
+                onError(e)
+            }
+    }
+
+    if (previousSecondaryRole != null && currentRankBorder != null) {
+        persist(previousSecondaryRole, currentRankBorder)
+    } else {
+        userRef.get(com.google.firebase.firestore.Source.SERVER)
+            .addOnSuccessListener { snapshot ->
+                persist(snapshot.getString("secondaryRole").orEmpty(), snapshot.getString("rankBorder").orEmpty())
+            }
+            .addOnFailureListener(onError)
+    }
 }
 
 internal fun toggleUserBanStatus(
