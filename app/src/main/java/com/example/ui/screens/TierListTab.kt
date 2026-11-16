@@ -3,6 +3,10 @@ package com.example.ui.screens
 import com.example.ui.components.CoachFilterChip as FilterChip
 import com.example.ui.components.CoachTextButton as TextButton
 import com.example.ui.components.CoachIconButton as IconButton
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.ui.res.painterResource
@@ -56,6 +60,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
@@ -97,6 +102,58 @@ enum class TierSortOption(val displayName: String, val shortLabel: String) {
 
 internal data class TierDisplayedStats(val role: LaneRole, val win: Double, val pick: Double,
     val ban: Double, val winDelta: Double)
+
+/**
+ * The server selector needs a visible state transition even when the shared
+ * button-press animation is disabled (for example in the floating overlay).
+ * Keeping the animation on the selected state also makes a region change
+ * obvious without changing the selected dataset or its persistence.
+ */
+@Composable
+private fun AnimatedRegionChip(
+    region: String,
+    selected: Boolean,
+    onClick: () -> Unit,
+    label: @Composable () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val isChina = MetaRegion.normalize(region) == MetaRegion.CHINA
+    val selectedContainer = if (isChina) Color(0xFFB56CFF) else HextechGold
+    val unselectedContainer = if (isChina) Color(0xFF321B4D).copy(alpha = 0.5f) else HextechSurfaceVariant
+    val containerColor by animateColorAsState(
+        targetValue = if (selected) selectedContainer else unselectedContainer,
+        animationSpec = spring(stiffness = 420f),
+        label = "regionContainerColor"
+    )
+    val labelColor by animateColorAsState(
+        targetValue = if (selected) HextechDarkBg else TextPrimary,
+        animationSpec = spring(stiffness = 420f),
+        label = "regionLabelColor"
+    )
+    val scale by animateFloatAsState(
+        targetValue = if (selected) 1.045f else 1f,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = 420f
+        ),
+        label = "regionScale"
+    )
+    FilterChip(
+        selected = selected,
+        onClick = onClick,
+        label = label,
+        modifier = modifier
+            .heightIn(min = 48.dp)
+            .graphicsLayer { scaleX = scale; scaleY = scale },
+        colors = FilterChipDefaults.filterChipColors(
+            selectedContainerColor = containerColor,
+            selectedLabelColor = labelColor,
+            containerColor = containerColor,
+            labelColor = labelColor
+        ),
+        border = BorderStroke(1.dp, if (selected) selectedContainer else selectedContainer.copy(alpha = 0.35f))
+    )
+}
 
 private fun completeLaneStats(stats: com.example.model.ChampionLaneStats?): Boolean =
     stats != null && listOf(stats.winRate, stats.pickRate, stats.banRate).all {
@@ -149,6 +206,24 @@ internal fun tierDisplayedStats(
         lane?.pickRate?.takeIf(Double::isFinite) ?: if (isGlobalPrimary) champion.pickRate else Double.NaN,
         lane?.banRate?.takeIf(Double::isFinite) ?: if (isGlobalPrimary) champion.banRate else Double.NaN,
         lane?.winRateDelta?.takeIf(Double::isFinite) ?: if (isGlobalPrimary) champion.winrateDelta else 0.0
+    )
+}
+
+/** Sorts the already validated rows with the metrics of the active region and lane. */
+internal fun sortTierListChampions(
+    champions: List<Champion>,
+    selectedSort: TierSortOption,
+    selectedLane: LaneRole?,
+    region: String
+): List<Champion> = when (selectedSort) {
+    TierSortOption.BY_TIER -> champions
+    TierSortOption.WIN_RATE -> champions.sortedWith(
+        compareByDescending<Champion> { tierDisplayedStats(it, selectedLane, region).win }
+            .thenBy { it.name }
+    )
+    TierSortOption.BAN_RATE -> champions.sortedWith(
+        compareByDescending<Champion> { tierDisplayedStats(it, selectedLane, region).ban }
+            .thenBy { it.name }
     )
 }
 
@@ -224,11 +299,7 @@ fun TierListTab(
     }
 
     val championsToDisplay = remember(rawChampionsToDisplay, selectedSort, selectedLane, currentRegion) {
-        when (if (isChinaRegion) TierSortOption.BY_TIER else selectedSort) {
-            TierSortOption.BY_TIER -> rawChampionsToDisplay
-            TierSortOption.WIN_RATE -> rawChampionsToDisplay.sortedByDescending { tierDisplayedStats(it, selectedLane, currentRegion).win }
-            TierSortOption.BAN_RATE -> rawChampionsToDisplay.sortedByDescending { tierDisplayedStats(it, selectedLane, currentRegion).ban }
-        }
+        sortTierListChampions(rawChampionsToDisplay, selectedSort, selectedLane, currentRegion)
     }
 
     val tierSPlus = championsToDisplay.filter { tierForLane(it, selectedLane, currentRegion) == "S+" }
@@ -322,7 +393,8 @@ fun TierListTab(
                     )
                     MetaRegion.available.forEach { region ->
                         val selected = MetaRegion.normalize(currentRegion) == region
-                        FilterChip(
+                        AnimatedRegionChip(
+                            region = region,
                             selected = selected,
                             onClick = {
                                 if (!selected) GlobalMetaSyncService.setRegion(context, region, regionScope)
@@ -334,11 +406,6 @@ fun TierListTab(
                                 )
                             },
                             modifier = Modifier.testTag("tier_region_${region.lowercase(java.util.Locale.ROOT)}"),
-                            colors = FilterChipDefaults.filterChipColors(
-                                selectedContainerColor = if (region == MetaRegion.CHINA) Color(0xFFB56CFF) else HextechGold,
-                                selectedLabelColor = HextechDarkBg,
-                                containerColor = if (region == MetaRegion.CHINA) Color(0xFF321B4D).copy(alpha = 0.5f) else HextechSurfaceVariant
-                            )
                         )
                     }
                 }
@@ -353,13 +420,6 @@ fun TierListTab(
                         border = BorderStroke(1.dp, Color(0xFFB56CFF).copy(alpha = 0.75f))
                     ) {
                         Column(Modifier.padding(horizontal = 10.dp, vertical = 8.dp)) {
-                            Text(
-                                text = tr("Segmento China por Elo"),
-                                color = Color(0xFFD9B3FF),
-                                fontSize = if (isOverlay) 10.sp else 11.5.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                            Spacer(Modifier.height(5.dp))
                             Row(
                                 modifier = Modifier.horizontalScroll(rememberScrollState()),
                                 horizontalArrangement = Arrangement.spacedBy(if (isOverlay) 4.dp else 6.dp)
@@ -379,12 +439,6 @@ fun TierListTab(
                                     )
                                 }
                             }
-                            Spacer(Modifier.height(3.dp))
-                            Text(
-                                text = tr("Datos publicados por el servidor China; cada segmento se mantiene separado."),
-                                color = TextMuted,
-                                fontSize = 9.sp
-                            )
                         }
                     }
                 }
@@ -523,7 +577,7 @@ fun TierListTab(
 
         }
 
-        if (selectedSort == TierSortOption.BY_TIER || isChinaRegion) {
+        if (selectedSort == TierSortOption.BY_TIER) {
             // Tier S+ / T0
             if (tierSPlus.isNotEmpty()) {
                 item {

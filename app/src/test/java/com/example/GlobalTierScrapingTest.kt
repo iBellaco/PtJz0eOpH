@@ -36,6 +36,20 @@ class GlobalTierScrapingTest {
         assertEquals(0.8, report.stats["gragas"]!!.banRate!!, .001)
     }
 
+    @Test fun `WildRiftFire accepts decimal wire rates and a name fallback`() {
+        val html = """
+            <script id="wf-stats-data" type="application/json">
+              {"patch":"7.3f","brackets":{"master":{"rows":[
+                {"champion":"Nilah","role":"Duo","main":true,"win":"0.5298","pick":"0.041","ban":"0.002"}
+              ]}}}
+            </script>
+        """.trimIndent()
+        val stats = com.example.data.sync.PublishedStatsParser.fire(html).stats["nilah"]!!
+        assertEquals(52.98, stats.winRate!!, .001)
+        assertEquals(4.1, stats.pickRate!!, .001)
+        assertEquals(0.2, stats.banRate!!, .001)
+    }
+
     @Test fun `active live pages parse their current fixture and real tier rows`() {
         listOf("core" to "wildriftcore", "fire" to "wildriftfire").forEach { (file, source) ->
             val html = javaClass.getResource("/tier-sources-302/$file.html")!!.readText()
