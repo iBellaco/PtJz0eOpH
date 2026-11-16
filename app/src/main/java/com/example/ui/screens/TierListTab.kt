@@ -100,6 +100,15 @@ enum class TierSortOption(val displayName: String, val shortLabel: String) {
     BAN_RATE("Ban Rate", "Ban Rate ")
 }
 
+/** Dedicated China-server palette: the selector follows the server identity,
+ * while the application theme continues to control the rest of the screen. */
+private object ChinaServerPalette {
+    val primary = Color(0xFFEF6A5B)
+    val secondary = Color(0xFFE8CA76)
+    val surface = Color(0xFF35161C)
+    val surfaceVariant = Color(0xFF4D2024)
+}
+
 internal data class TierDisplayedStats(val role: LaneRole, val win: Double, val pick: Double,
     val ban: Double, val winDelta: Double)
 
@@ -118,15 +127,17 @@ private fun AnimatedRegionChip(
     modifier: Modifier = Modifier
 ) {
     val isChina = MetaRegion.normalize(region) == MetaRegion.CHINA
-    val selectedContainer = if (isChina) Color(0xFFB56CFF) else HextechGold
-    val unselectedContainer = if (isChina) Color(0xFF321B4D).copy(alpha = 0.5f) else HextechSurfaceVariant
+    val selectedContainer = if (isChina) ChinaServerPalette.primary else HextechGold
+    val unselectedContainer = if (isChina) ChinaServerPalette.surfaceVariant.copy(alpha = 0.62f) else HextechSurfaceVariant
     val containerColor by animateColorAsState(
         targetValue = if (selected) selectedContainer else unselectedContainer,
         animationSpec = spring(stiffness = 420f),
         label = "regionContainerColor"
     )
     val labelColor by animateColorAsState(
-        targetValue = if (selected) HextechDarkBg else TextPrimary,
+        targetValue = if (selected) {
+            if (isChina) Color.White else HextechDarkBg
+        } else TextPrimary,
         animationSpec = spring(stiffness = 420f),
         label = "regionLabelColor"
     )
@@ -151,7 +162,7 @@ private fun AnimatedRegionChip(
             containerColor = containerColor,
             labelColor = labelColor
         ),
-        border = BorderStroke(1.dp, if (selected) selectedContainer else selectedContainer.copy(alpha = 0.35f))
+        border = BorderStroke(1.dp, if (selected) selectedContainer else selectedContainer.copy(alpha = 0.55f))
     )
 }
 
@@ -415,9 +426,9 @@ fun TierListTab(
                 item {
                     Surface(
                         modifier = Modifier.fillMaxWidth().testTag("china_elo_selector"),
-                        color = Color(0xFF241638).copy(alpha = 0.72f),
+                        color = ChinaServerPalette.surface.copy(alpha = 0.9f),
                         shape = RoundedCornerShape(10.dp),
-                        border = BorderStroke(1.dp, Color(0xFFB56CFF).copy(alpha = 0.75f))
+                        border = BorderStroke(1.dp, ChinaServerPalette.primary.copy(alpha = 0.75f))
                     ) {
                         Column(Modifier.padding(horizontal = 10.dp, vertical = 8.dp)) {
                             Row(
@@ -431,9 +442,10 @@ fun TierListTab(
                                         onClick = { GlobalMetaSyncService.setChinaElo(context, option.id) },
                                         label = { Text(tr(option.label), fontSize = if (isOverlay) 9.5.sp else 10.5.sp) },
                                         colors = FilterChipDefaults.filterChipColors(
-                                            selectedContainerColor = Color(0xFFB56CFF),
-                                            selectedLabelColor = HextechDarkBg,
-                                            containerColor = Color(0xFF321B4D).copy(alpha = 0.6f)
+                                            selectedContainerColor = ChinaServerPalette.primary,
+                                            selectedLabelColor = Color.White,
+                                            containerColor = ChinaServerPalette.surfaceVariant.copy(alpha = 0.82f),
+                                            labelColor = ChinaServerPalette.secondary
                                         ),
                                         modifier = Modifier.testTag("china_elo_${option.id}")
                                     )
