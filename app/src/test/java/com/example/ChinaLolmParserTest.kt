@@ -17,6 +17,7 @@ class ChinaLolmParserTest {
         assertEquals("S+", result.tiers["garen"])
         assertEquals(55.10, result.stats["garen"]!!.winRate!!, .001)
         assertEquals(LaneRole.MID, result.roleStats["garen"]!!.keys.single())
+        assertEquals("S+", result.roleStats["garen"]!![LaneRole.MID]!!.tier)
         assertEquals("A", result.tiers["aatrox"])
         assertEquals(20261113.toString(), result.publishedDate)
     }

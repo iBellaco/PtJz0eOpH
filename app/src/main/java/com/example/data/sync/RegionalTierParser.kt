@@ -9,7 +9,9 @@ import java.util.Locale
 data class ChampionMetaStats(
     val winRate: Double? = null,
     val pickRate: Double? = null,
-    val banRate: Double? = null
+    val banRate: Double? = null,
+    /** Optional category carried by sources that publish a category per lane. */
+    val tier: String? = null
 ) {
     fun isUsable(): Boolean = listOf(winRate, pickRate, banRate).any { it != null && it.isFinite() && it in 0.0..100.0 }
     fun isComplete(): Boolean = listOf(winRate, pickRate, banRate).all { it != null && it.isFinite() && it in 0.0..100.0 }
@@ -81,7 +83,8 @@ object RegionalTierParser {
         ChampionMetaStats(
             winRate = current.winRate ?: fallback.winRate,
             pickRate = current.pickRate ?: fallback.pickRate,
-            banRate = current.banRate ?: fallback.banRate
+            banRate = current.banRate ?: fallback.banRate,
+            tier = current.tier ?: fallback.tier
         )
 
     /**

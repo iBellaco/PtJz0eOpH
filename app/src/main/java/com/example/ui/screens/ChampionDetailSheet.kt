@@ -76,6 +76,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.data.local.FavoriteChampionsManager
 import com.example.data.WildRiftRepository
+import com.example.data.sync.MetaRegion
+import com.example.data.sync.GlobalMetaSyncService
 import com.example.data.SituationalItemAdvisor
 import com.example.data.SynergyAdvisor
 import com.example.model.Champion
@@ -107,7 +109,18 @@ private data class RuneDetailSelection(
     val advice: String
 )
 
-internal fun publishedChampionRoles(champion: Champion): List<LaneRole> {
+internal fun publishedChampionRoles(champion: Champion, region: String = MetaRegion.DEFAULT): List<LaneRole> {
+    if (MetaRegion.normalize(region) == MetaRegion.CHINA) {
+        val chinaRoles = champion.laneStats.entries
+            .filter { entry ->
+                val stats = entry.value
+                listOf(stats.winRate, stats.pickRate, stats.banRate).all {
+                    it.isFinite() && it in 0.0..100.0
+                }
+            }
+            .mapNotNull { runCatching { LaneRole.valueOf(it.key) }.getOrNull() }
+        if (chinaRoles.isNotEmpty()) return chinaRoles
+    }
     val publishedFlex = champion.secondaryRoles.filter { role ->
         champion.laneStats[role.name]?.let { stats ->
             stats.winRate.isFinite() && stats.pickRate.isFinite() && stats.banRate.isFinite()
@@ -130,12 +143,13 @@ fun ChampionDetailSheet(
 
     val context = LocalContext.current
     val isSignedIn by com.example.util.AuthManager.isSignedIn.collectAsStateWithLifecycle()
+    val currentRegion by GlobalMetaSyncService.currentRegion.collectAsStateWithLifecycle()
     val favorites by FavoriteChampionsManager.favoritesFlow.collectAsStateWithLifecycle()
     val isFavorite = favorites.contains(champion.id.lowercase())
 
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-    var selectedRole by remember(champion.id) {
-        mutableStateOf(champion.primaryRole)
+    var selectedRole by remember(champion.id, currentRegion) {
+        mutableStateOf(tierRole(champion, null, currentRegion))
     }
 
     var selectedMatchupName by remember(champion.id) { mutableStateOf<String?>(null) }
@@ -164,12 +178,14 @@ fun ChampionDetailSheet(
 
     // Una línea Flex solo se ofrece cuando las fuentes publican tasas propias
     // para esa combinación campeón/línea. Así nunca se presenta un panel vacío.
-    val availableRoles = remember(liveChampion.id, liveChampion.laneStats, WildRiftRepository.regionRevision) {
-        publishedChampionRoles(liveChampion)
+    val availableRoles = remember(liveChampion.id, liveChampion.laneStats, currentRegion, WildRiftRepository.regionRevision) {
+        publishedChampionRoles(liveChampion, currentRegion)
     }
 
     LaunchedEffect(liveChampion.id, availableRoles) {
-        if (selectedRole !in availableRoles) selectedRole = liveChampion.primaryRole
+        if (selectedRole !in availableRoles) {
+            selectedRole = availableRoles.firstOrNull() ?: tierRole(liveChampion, null, currentRegion)
+        }
     }
 
 

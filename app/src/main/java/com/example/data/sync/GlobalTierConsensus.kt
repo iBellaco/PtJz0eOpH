@@ -68,7 +68,8 @@ object GlobalTierConsensus {
             ChampionMetaStats(
                 winRate = average(values.map { it.winRate }),
                 pickRate = average(values.map { it.pickRate }),
-                banRate = average(values.map { it.banRate })
+                banRate = average(values.map { it.banRate }),
+                tier = values.asSequence().mapNotNull { it.tier }.firstOrNull()
             )
         }
     }

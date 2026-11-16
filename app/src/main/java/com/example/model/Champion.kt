@@ -97,7 +97,9 @@ data class ChampionLaneStats(
     val banRate: Double = Double.NaN,
     val winRateDelta: Double = 0.0,
     val pickRateDelta: Double = 0.0,
-    val banRateDelta: Double = 0.0
+    val banRateDelta: Double = 0.0,
+    /** Tier published for this lane by a region-specific source, when available. */
+    val tier: String = ""
 )
 
 @Serializable

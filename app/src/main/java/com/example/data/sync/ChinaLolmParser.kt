@@ -141,7 +141,8 @@ object ChinaLolmParser {
                     val value = ChampionMetaStats(
                         number(row, "win_rate_percent", "win_rate"),
                         number(row, "appear_rate_percent", "appear_rate"),
-                        number(row, "forbid_rate_percent", "forbid_rate")
+                        number(row, "forbid_rate_percent", "forbid_rate"),
+                        tier = tier(row)
                     )
                     val previous = stats[id]
                     if (previous == null || !previous.isComplete() ||
