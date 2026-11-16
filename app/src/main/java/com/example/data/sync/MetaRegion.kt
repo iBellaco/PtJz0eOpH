@@ -12,6 +12,18 @@ object MetaRegion {
     const val DEFAULT = "GLOBAL"
     const val CHINA = "CHINA"
 
+    /** Rank brackets published by the mainland Tencent feed. */
+    data class ChinaEloOption(val id: String, val label: String)
+
+    val chinaEloOptions = listOf(
+        ChinaEloOption("1", "Diamante+"),
+        ChinaEloOption("2", "Maestro+"),
+        ChinaEloOption("3", "Retador"),
+        ChinaEloOption("4", "Grieta del Invocador")
+    )
+
+    const val DEFAULT_CHINA_ELO = "1"
+
     val available = listOf(DEFAULT, CHINA)
 
     fun normalize(value: String?): String = when (value.orEmpty().trim().uppercase(Locale.ROOT)) {
@@ -23,6 +35,12 @@ object MetaRegion {
         CHINA -> "China"
         else -> "Global"
     }
+
+    fun chinaEloLabel(id: String): String = chinaEloOptions.firstOrNull { it.id == id }?.label
+        ?: chinaEloOptions.first().label
+
+    fun normalizeChinaElo(id: String?): String = chinaEloOptions.firstOrNull { it.id == id }?.id
+        ?: DEFAULT_CHINA_ELO
 
     fun hasLiveRateStats(region: String): Boolean = normalize(region) in setOf(DEFAULT, CHINA)
 }

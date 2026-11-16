@@ -37,7 +37,8 @@ class GlobalTierSourceClient(
     data class SourceResult(val source: GlobalScrapingSource, val tiers: Map<String, String>,
         val status: ScraperSourceStatus, val stats: Map<String, ChampionMetaStats> = emptyMap(),
         val history: Map<String, List<ObservedRate>> = emptyMap(),
-        val roleStats: Map<String, Map<com.example.model.LaneRole, ChampionMetaStats>> = emptyMap())
+        val roleStats: Map<String, Map<com.example.model.LaneRole, ChampionMetaStats>> = emptyMap(),
+        val chinaEloGroups: Map<String, ChinaLolmParser.EloSnapshot> = emptyMap())
 
     private fun request(url: String): String = client.newCall(Request.Builder().url(url)
         .header("User-Agent", "Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 Chrome/130.0.0.0 Mobile Safari/537.36")
@@ -212,7 +213,17 @@ class GlobalTierSourceClient(
         )
         return SourceResult(source, normalizedTiers.filterKeys { it in known }, status, normalizedStats,
             roleStats = parsed.roleStats.mapKeys { (id, _) -> RegionalTierParser.canonical(id) }
-                .filterKeys { it in known })
+                .filterKeys { it in known },
+            chinaEloGroups = parsed.eloGroups.mapValues { (_, group) ->
+                group.copy(
+                    tiers = group.tiers.mapKeys { (id, _) -> RegionalTierParser.canonical(id) }
+                        .filterKeys { it in known },
+                    stats = group.stats.mapKeys { (id, _) -> RegionalTierParser.canonical(id) }
+                        .filterKeys { it in known },
+                    roleStats = group.roleStats.mapKeys { (id, _) -> RegionalTierParser.canonical(id) }
+                        .filterKeys { it in known }
+                )
+            })
     }
 
     private class SourceHttpException(val code: Int) : java.io.IOException()

@@ -22,6 +22,7 @@ object BestBuildWrScraper {
     private const val PREFS_NAME = "wr_tier_list_cache"
     private const val STATS_SNAPSHOT_PREFIX = "stats_snapshot_"
     private const val ROLE_STATS_SNAPSHOT_PREFIX = "role_stats_snapshot_"
+    private const val CHINA_ELO_GROUPS_KEY = "china_elo_groups_v1"
     private const val SOURCE_SET_KEY = "active_source_set_v2"
 
     // Only publishers used by the statistics pipeline belong in live monitoring.
@@ -32,7 +33,7 @@ object BestBuildWrScraper {
     /** The mainland-China feed is intentionally a single-source region. */
     val CHINA_SCRAPING_SOURCES = listOf(
         GlobalScrapingSource(
-            "china_lolm", "China", "https://lolm.qq.com/act/a20220818raider/index.html",
+            "china_lolm", "Tencent China", "https://lolm.qq.com/act/a20220818raider/index.html",
             "lolm.qq.com/act/a20220818raider/index.html", region = MetaRegion.CHINA
         )
     )
@@ -71,6 +72,9 @@ object BestBuildWrScraper {
     val sourceStatuses = _sourceStatuses.asStateFlow()
     private val _globalSyncStatus = MutableStateFlow("Sin sincronización")
     val globalSyncStatus = _globalSyncStatus.asStateFlow()
+    private val _chinaEloGroups = MutableStateFlow<Map<String, ChinaLolmParser.EloSnapshot>>(emptyMap())
+    val chinaEloGroups = _chinaEloGroups.asStateFlow()
+    private var selectedChinaElo = MetaRegion.DEFAULT_CHINA_ELO
 
     fun checkNetwork(context: Context): Boolean = try {
         val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager
@@ -95,6 +99,9 @@ object BestBuildWrScraper {
         _sourceStatuses.value = initialSourceMap
         PatchTierMovementStore.initialize(context)
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        selectedChinaElo = MetaRegion.normalizeChinaElo(
+            prefs.getString("selected_china_elo", MetaRegion.DEFAULT_CHINA_ELO)
+        )
         if (prefs.getString("patch", null) != com.example.data.GamePatch.VERSION) {
             prefs.edit().clear().putString("patch", com.example.data.GamePatch.VERSION).apply()
         }
@@ -112,6 +119,17 @@ object BestBuildWrScraper {
                 .remove("rate_history_v2")
                 .putString(SOURCE_SET_KEY, activeSourceSet)
                 .apply()
+        }
+        val cachedChinaGroups = decodeChinaEloGroups(prefs.getString(CHINA_ELO_GROUPS_KEY, null))
+        if (cachedChinaGroups.isNotEmpty()) {
+            _chinaEloGroups.value = cachedChinaGroups
+            val checkedAt = prefs.getLong("timestamp_${MetaRegion.CHINA}", 0L)
+            cachedChinaGroups.values.forEach { group ->
+                WildRiftRepository.applyRegionalTierList(
+                    MetaRegion.CHINA, group.tiers, group.stats, roleStats = group.roleStats,
+                    checkedAt = checkedAt, snapshotKey = chinaEloSnapshotKey(group.id)
+                )
+            }
         }
         for (region in MetaRegion.available) {
             try {
@@ -140,7 +158,17 @@ object BestBuildWrScraper {
             } catch (_: Exception) { /* Leave other region caches intact. */ }
         }
         selectRegion(selectedRegion)
+        WildRiftRepository.selectChinaEloGroup(selectedChinaElo)
     }
+
+    @Synchronized
+    fun selectChinaElo(groupId: String) {
+        selectedChinaElo = MetaRegion.normalizeChinaElo(groupId)
+        WildRiftRepository.selectChinaEloGroup(selectedChinaElo)
+    }
+
+    private fun chinaEloSnapshotKey(groupId: String): String =
+        "${MetaRegion.CHINA}:$groupId"
     fun startContinuousSync(context: Context) { GlobalMetaSyncService.startLive(context, "legacy") }
 
     suspend fun syncGlobalTierList(context: Context, region: String = MetaRegion.DEFAULT, force: Boolean = false) = withContext(Dispatchers.IO) {
@@ -196,7 +224,7 @@ object BestBuildWrScraper {
                     if (result != null) {
                         val key = "${result.source.region.lowercase(Locale.ROOT)}_${result.source.id}"
                         val oldStatus = _sourceStatuses.value[key]
-                        val fingerprint = (result.tiers.toSortedMap().toString() + result.stats.toSortedMap().toString())
+                        val fingerprint = (result.tiers.toSortedMap().toString() + result.stats.toSortedMap().toString() + result.chinaEloGroups.toSortedMap().toString())
                             .let { value -> java.security.MessageDigest.getInstance("SHA-256")
                                 .digest(value.toByteArray()).joinToString("") { byte -> "%02x".format(byte) } }
                         val ratesFingerprint = result.stats.toSortedMap().toString().let { value ->
@@ -231,9 +259,22 @@ object BestBuildWrScraper {
                     val previousRoleStats = decodeRoleStats(prefs.getString(ROLE_STATS_SNAPSHOT_PREFIX + requested, null))
                     val completeStats = result?.stats.orEmpty().filterValues { it.isComplete() }
                     val successNow = result?.status?.isHealthy == true &&
-                        (result.tiers.isNotEmpty() || completeStats.isNotEmpty())
+                        (result.tiers.isNotEmpty() || completeStats.isNotEmpty() || result.chinaEloGroups.isNotEmpty())
                     if (successNow) {
                         val checked = started
+                        val groups = result!!.chinaEloGroups
+                        if (groups.isNotEmpty()) {
+                            _chinaEloGroups.value = groups
+                            groups.values.forEach { group ->
+                                WildRiftRepository.applyRegionalTierList(
+                                    MetaRegion.CHINA, group.tiers,
+                                    group.stats.filterValues { it.isComplete() },
+                                    roleStats = group.roleStats,
+                                    checkedAt = checked,
+                                    snapshotKey = chinaEloSnapshotKey(group.id)
+                                )
+                            }
+                        }
                         WildRiftRepository.applyRegionalTierList(
                             MetaRegion.CHINA, result!!.tiers, completeStats,
                             roleStats = result.roleStats,
@@ -252,7 +293,9 @@ object BestBuildWrScraper {
                             .putString("snapshot_$requested", JSONObject(result.tiers).toString())
                             .putString(STATS_SNAPSHOT_PREFIX + requested, encodeStats(completeStats).toString())
                             .putString(ROLE_STATS_SNAPSHOT_PREFIX + requested, encodeRoleStats(result.roleStats).toString())
+                            .putString(CHINA_ELO_GROUPS_KEY, encodeChinaEloGroups(result.chinaEloGroups).toString())
                             .apply()
+                        selectChinaElo(selectedChinaElo)
                         regions[requested] = RegionState(checked, true,
                             "China actualizada (${completeStats.size}/${WildRiftRepository.baseChampionsList.size} estadísticas completas)")
                     } else {
@@ -504,5 +547,37 @@ object BestBuildWrScraper {
                 value.banRate?.let { put("banRate", it) }
             }) }
         }) }
+    }
+
+    private fun encodeChinaEloGroups(groups: Map<String, ChinaLolmParser.EloSnapshot>): JSONObject = JSONObject().apply {
+        groups.forEach { (id, group) ->
+            put(id, JSONObject().apply {
+                put("label", group.label)
+                put("publishedDate", group.publishedDate)
+                put("tiers", JSONObject(group.tiers))
+                put("stats", encodeStats(group.stats))
+                put("roleStats", encodeRoleStats(group.roleStats))
+            })
+        }
+    }
+
+    private fun decodeChinaEloGroups(raw: String?): Map<String, ChinaLolmParser.EloSnapshot> {
+        if (raw.isNullOrBlank()) return emptyMap()
+        return runCatching {
+            val root = JSONObject(raw)
+            root.keys().asSequence().mapNotNull { id ->
+                val value = root.optJSONObject(id) ?: return@mapNotNull null
+                val tiersJson = value.optJSONObject("tiers")
+                val tiers = tiersJson?.keys()?.asSequence()?.associateWith { tiersJson.getString(it) }.orEmpty()
+                ChinaLolmParser.EloSnapshot(
+                    id = id,
+                    label = value.optString("label", MetaRegion.chinaEloLabel(id)),
+                    tiers = tiers,
+                    stats = decodeStats(value.optJSONObject("stats")?.toString()),
+                    roleStats = decodeRoleStats(value.optJSONObject("roleStats")?.toString()),
+                    publishedDate = value.optString("publishedDate")
+                ).let { id to it }
+            }.toMap()
+        }.getOrDefault(emptyMap())
     }
 }

@@ -16,11 +16,21 @@ object ChinaLolmParser {
     const val HERO_LIST_URL = "https://game.gtimg.cn/images/lgamem/act/lrlib/js/heroList/hero_list.js"
     const val RANK_LIST_URL = "https://mlol.qt.qq.com/go/lgame_battle_info/hero_rank_list_v2"
 
-    data class Parsed(
+    data class EloSnapshot(
+        val id: String,
+        val label: String,
         val tiers: Map<String, String> = emptyMap(),
         val stats: Map<String, ChampionMetaStats> = emptyMap(),
         val roleStats: Map<String, Map<com.example.model.LaneRole, ChampionMetaStats>> = emptyMap(),
         val publishedDate: String = ""
+    )
+
+    data class Parsed(
+        val tiers: Map<String, String> = emptyMap(),
+        val stats: Map<String, ChampionMetaStats> = emptyMap(),
+        val roleStats: Map<String, Map<com.example.model.LaneRole, ChampionMetaStats>> = emptyMap(),
+        val publishedDate: String = "",
+        val eloGroups: Map<String, EloSnapshot> = emptyMap()
     )
 
     /** Tencent's ids are not Data Dragon ids; this explicit map prevents a
@@ -78,11 +88,6 @@ object ChinaLolmParser {
         val data = runCatching { JSONObject(rankPayload).optJSONObject("data") }.getOrNull()
             ?: return Parsed()
 
-        val stats = linkedMapOf<String, ChampionMetaStats>()
-        val tiers = linkedMapOf<String, String>()
-        val roles = linkedMapOf<String, MutableMap<com.example.model.LaneRole, ChampionMetaStats>>()
-        var publishedDate = ""
-
         fun number(row: JSONObject, percentKey: String, decimalKey: String): Double? {
             val raw = row.opt(percentKey)
             val direct = when (raw) {
@@ -110,11 +115,21 @@ object ChinaLolmParser {
             else -> null
         }
 
-        // The page defaults to Diamond+ (bracket 1). Other brackets are used
-        // only to fill champions/lanes absent from that primary publication;
-        // their values never overwrite the default bracket.
-        bracketOrder.forEach { bracketKey ->
-            val bracket = data.optJSONObject(bracketKey) ?: return@forEach
+        fun tierRank(value: String): Int = when (value) {
+            "S+" -> 5
+            "S" -> 4
+            "A" -> 3
+            "B" -> 2
+            "C" -> 1
+            else -> 0
+        }
+
+        fun parseBracket(bracketKey: String): EloSnapshot? {
+            val bracket = data.optJSONObject(bracketKey) ?: return null
+            val stats = linkedMapOf<String, ChampionMetaStats>()
+            val tiers = linkedMapOf<String, String>()
+            val roles = linkedMapOf<String, MutableMap<com.example.model.LaneRole, ChampionMetaStats>>()
+            var publishedDate = ""
             bracket.keys().forEach { position ->
                 val lane = role(position)
                 val rows = bracket.optJSONArray(position) ?: return@forEach
@@ -129,24 +144,71 @@ object ChinaLolmParser {
                         number(row, "forbid_rate_percent", "forbid_rate")
                     )
                     val previous = stats[id]
-                    val useRow = previous == null || !previous.isComplete() ||
-                        (bracketKey != "1" && previous.isUsable().not()) ||
-                        (bracketKey == "1" && value.isComplete() &&
-                            (value.pickRate ?: -1.0) > (previous?.pickRate ?: -1.0))
-                    if (useRow) stats[id] = value
-                    if (bracketKey == "1" || !tiers.containsKey(id)) tier(row)?.let { tiers[id] = it }
+                    if (previous == null || !previous.isComplete() ||
+                        (value.isComplete() && (value.pickRate ?: -1.0) > (previous.pickRate ?: -1.0))) {
+                        stats[id] = value
+                    }
+                    tier(row)?.let { candidate ->
+                        val current = tiers[id]
+                        if (current == null || tierRank(candidate) > tierRank(current)) tiers[id] = candidate
+                    }
                     if (lane != null && value.isUsable()) {
                         val byLane = roles.getOrPut(id) { linkedMapOf() }
                         val old = byLane[lane]
-                        val replace = old == null || !old.isComplete() ||
-                            (bracketKey == "1" && (value.pickRate ?: -1.0) > (old.pickRate ?: -1.0))
-                        if (replace && (bracketKey == "1" || old == null || !old.isComplete())) {
+                        if (old == null || !old.isComplete() ||
+                            (value.isComplete() && (value.pickRate ?: -1.0) > (old.pickRate ?: -1.0))) {
                             byLane[lane] = value
                         }
                     }
                 }
             }
+            if (stats.isEmpty() && tiers.isEmpty()) return null
+            return EloSnapshot(
+                id = bracketKey,
+                label = MetaRegion.chinaEloLabel(bracketKey),
+                tiers = tiers,
+                stats = stats,
+                roleStats = roles.mapValues { it.value.toMap() },
+                publishedDate = publishedDate
+            )
         }
-        return Parsed(tiers, stats, roles.mapValues { it.value.toMap() }, publishedDate)
+
+        val eloGroups = listOf("1", "2", "3", "4").mapNotNull { key ->
+            parseBracket(key)?.let { key to it }
+        }.toMap()
+
+        // The page defaults to Diamond+ (bracket 1). Other brackets are used
+        // only to fill champions/lanes absent from that primary publication;
+        // their values never overwrite the default bracket. This preserves the
+        // previous aggregate behavior while exposing every Elo group to the UI.
+        val stats = linkedMapOf<String, ChampionMetaStats>()
+        val tiers = linkedMapOf<String, String>()
+        val roles = linkedMapOf<String, MutableMap<com.example.model.LaneRole, ChampionMetaStats>>()
+        var publishedDate = ""
+        bracketOrder.forEach { bracketKey ->
+            val snapshot = parseBracket(bracketKey) ?: return@forEach
+            if (snapshot.publishedDate > publishedDate) publishedDate = snapshot.publishedDate
+            snapshot.stats.forEach { (id, value) ->
+                val previous = stats[id]
+                val useRow = previous == null || !previous.isComplete() ||
+                    (bracketKey == "1" && value.isComplete() &&
+                        (value.pickRate ?: -1.0) > (previous?.pickRate ?: -1.0))
+                if (useRow) stats[id] = value
+            }
+            snapshot.tiers.forEach { (id, value) ->
+                if (bracketKey == "1" || !tiers.containsKey(id)) tiers[id] = value
+            }
+            snapshot.roleStats.forEach { (id, byLane) ->
+                val target = roles.getOrPut(id) { linkedMapOf() }
+                byLane.forEach { (lane, value) ->
+                    val old = target[lane]
+                    val replace = old == null || !old.isComplete() ||
+                        (bracketKey == "1" && value.isComplete() &&
+                            (value.pickRate ?: -1.0) > (old.pickRate ?: -1.0))
+                    if (replace && (bracketKey == "1" || old == null || !old.isComplete())) target[lane] = value
+                }
+            }
+        }
+        return Parsed(tiers, stats, roles.mapValues { it.value.toMap() }, publishedDate, eloGroups)
     }
 }

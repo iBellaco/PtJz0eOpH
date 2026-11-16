@@ -110,6 +110,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
@@ -176,6 +177,25 @@ fun MainDraftingScreen(
     onLanguageChange: (String) -> Unit = {}
 ) {
     val context = LocalContext.current
+    val infoButtonTransition = rememberInfiniteTransition(label = "infoButtonPulse")
+    val infoButtonScale by infoButtonTransition.animateFloat(
+        initialValue = 0.96f,
+        targetValue = 1.04f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1500, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "infoButtonScale"
+    )
+    val infoButtonAlpha by infoButtonTransition.animateFloat(
+        initialValue = 0.45f,
+        targetValue = 0.95f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1500, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "infoButtonAlpha"
+    )
 
     val lifecycleOwner = LocalLifecycleOwner.current
     var isAssistantActive by remember { mutableStateOf(SystemPermissionHelper.isServiceRunning(context)) }
@@ -365,9 +385,13 @@ fun MainDraftingScreen(
                             IconButton(
                                 onClick = onNavigateToInfo,
                                 modifier = Modifier
+                                    .graphicsLayer {
+                                        scaleX = infoButtonScale
+                                        scaleY = infoButtonScale
+                                    }
                                     .clip(CircleShape)
                                     .background(HextechSurface)
-                                    .border(1.dp, HextechGold.copy(alpha = 0.6f), CircleShape)
+                                    .border(1.dp, HextechGold.copy(alpha = infoButtonAlpha), CircleShape)
                                     .size(38.dp)
                                     .testTag("nav_info_button")
                             ) {

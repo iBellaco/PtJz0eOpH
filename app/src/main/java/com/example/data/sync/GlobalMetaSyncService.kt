@@ -50,15 +50,22 @@ object GlobalMetaSyncService {
 
     private val _currentRegion = MutableStateFlow(MetaRegion.DEFAULT)
     val currentRegion: StateFlow<String> = _currentRegion.asStateFlow()
+    private val _currentChinaElo = MutableStateFlow(MetaRegion.DEFAULT_CHINA_ELO)
+    val currentChinaElo: StateFlow<String> = _currentChinaElo.asStateFlow()
 
     fun loadRegion(context: Context) {
         BestBuildWrScraper.initialize(context)
         val prefs = context.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
         val saved = prefs.getString("selected_meta_region", MetaRegion.DEFAULT) ?: MetaRegion.DEFAULT
+        val savedChinaElo = MetaRegion.normalizeChinaElo(
+            prefs.getString("selected_china_elo", MetaRegion.DEFAULT_CHINA_ELO)
+        )
         _currentRegion.value = MetaRegion.normalize(saved)
+        _currentChinaElo.value = savedChinaElo
         if (saved != _currentRegion.value) prefs.edit().putString("selected_meta_region", _currentRegion.value).apply()
         WildRiftRepository.selectMetaRegion(_currentRegion.value)
         BestBuildWrScraper.selectRegion(_currentRegion.value)
+        BestBuildWrScraper.selectChinaElo(savedChinaElo)
     }
 
     fun setRegion(context: Context, regionId: String, scope: CoroutineScope) {
@@ -71,12 +78,31 @@ object GlobalMetaSyncService {
         scope.launch { syncGlobalMeta(context, forceRefresh = true) }
     }
 
+    fun setChinaElo(context: Context, groupId: String) {
+        val normalized = MetaRegion.normalizeChinaElo(groupId)
+        _currentChinaElo.value = normalized
+        context.getSharedPreferences("app_prefs", Context.MODE_PRIVATE).edit()
+            .putString("selected_china_elo", normalized).apply()
+        BestBuildWrScraper.selectChinaElo(normalized)
+        WildRiftRepository.selectChinaEloGroup(normalized)
+    }
+
     suspend fun syncGlobalMeta(context: Context, forceRefresh: Boolean = false) {
         if (!syncMutex.tryLock()) return
         try {
         _syncState.value = MetaSyncState.Syncing
         val requestedRegion = _currentRegion.value
-        BestBuildWrScraper.syncGlobalTierList(context, requestedRegion, force = forceRefresh)
+        // The tier-list selector only controls the dataset shown to the user;
+        // administrative monitoring must keep every configured server fresh.
+        // Run the selected region first so its status is available as soon as
+        // the cycle returns, then refresh the remaining regions independently.
+        val regionsToCheck = buildList {
+            add(requestedRegion)
+            MetaRegion.available.filterNot { it == requestedRegion }.forEach(::add)
+        }
+        regionsToCheck.forEach { region ->
+            BestBuildWrScraper.syncGlobalTierList(context, region, force = forceRefresh)
+        }
         if (requestedRegion != _currentRegion.value) return
         _syncState.value = if (BestBuildWrScraper.isLastSyncSuccess.value)
             MetaSyncState.Success(BestBuildWrScraper.lastSyncFormattedTime.value)

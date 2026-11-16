@@ -41,6 +41,9 @@ class MetaRegionRegressionTest {
         assertEquals("CHINA", MetaRegion.normalize("CN"))
         assertEquals("Global", MetaRegion.label("GLOBAL"))
         assertEquals("China", MetaRegion.label("CN"))
+        assertEquals(listOf("1", "2", "3", "4"), MetaRegion.chinaEloOptions.map { it.id })
+        assertEquals("Maestro+", MetaRegion.chinaEloLabel("2"))
+        assertEquals("1", MetaRegion.normalizeChinaElo("unknown"))
     }
     @Test fun `saved Chinese preference remains selected persistently`() {
         val prefs = context.getSharedPreferences("app_prefs", 0)

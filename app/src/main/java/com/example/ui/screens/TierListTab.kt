@@ -145,6 +145,7 @@ fun TierListTab(
     val context = LocalContext.current
     val syncState by GlobalMetaSyncService.syncState.collectAsStateWithLifecycle()
     val currentRegion by GlobalMetaSyncService.currentRegion.collectAsStateWithLifecycle()
+    val currentChinaElo by GlobalMetaSyncService.currentChinaElo.collectAsStateWithLifecycle()
     val metaRevision = WildRiftRepository.regionRevision
     // La vista se mantiene viva aunque el editor externo publique por lotes.
     // El valor solo cambia cuando llega una observación nueva de la fuente.
@@ -168,7 +169,7 @@ fun TierListTab(
         showFavoritesOnly = false
     }
 
-    val rawChampionsToDisplay = remember(selectedLane, showFavoritesOnly, favorites, syncState, currentRegion, metaRevision, liveTick, WildRiftRepository.champions.toList()) {
+    val rawChampionsToDisplay = remember(selectedLane, showFavoritesOnly, favorites, syncState, currentRegion, currentChinaElo, metaRevision, liveTick, WildRiftRepository.champions.toList()) {
         val champs = if (selectedLane == null) WildRiftRepository.champions.toList()
         else WildRiftRepository.champions.filter { publishedChampionRoles(it).contains(selectedLane) }
         val visibleTiers = champs.filter { isTierListChampionVisible(it, selectedLane, currentRegion) }
@@ -265,7 +266,7 @@ fun TierListTab(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = com.example.util.tr("Tier List") + ":",
+                        text = com.example.util.tr("Servidor") + ":",
                         color = HextechGold,
                         fontSize = if (isOverlay) 10.sp else 11.5.sp,
                         fontWeight = FontWeight.Bold
@@ -285,10 +286,57 @@ fun TierListTab(
                             },
                             modifier = Modifier.testTag("tier_region_${region.lowercase(java.util.Locale.ROOT)}"),
                             colors = FilterChipDefaults.filterChipColors(
-                                selectedContainerColor = HextechGold,
-                                selectedLabelColor = HextechDarkBg
+                                selectedContainerColor = if (region == MetaRegion.CHINA) Color(0xFFB56CFF) else HextechGold,
+                                selectedLabelColor = HextechDarkBg,
+                                containerColor = if (region == MetaRegion.CHINA) Color(0xFF321B4D).copy(alpha = 0.5f) else HextechSurfaceVariant
                             )
                         )
+                    }
+                }
+            }
+
+            if (isChinaRegion) {
+                item {
+                    Surface(
+                        modifier = Modifier.fillMaxWidth().testTag("china_elo_selector"),
+                        color = Color(0xFF241638).copy(alpha = 0.72f),
+                        shape = RoundedCornerShape(10.dp),
+                        border = BorderStroke(1.dp, Color(0xFFB56CFF).copy(alpha = 0.75f))
+                    ) {
+                        Column(Modifier.padding(horizontal = 10.dp, vertical = 8.dp)) {
+                            Text(
+                                text = tr("Segmento China por Elo"),
+                                color = Color(0xFFD9B3FF),
+                                fontSize = if (isOverlay) 10.sp else 11.5.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Spacer(Modifier.height(5.dp))
+                            Row(
+                                modifier = Modifier.horizontalScroll(rememberScrollState()),
+                                horizontalArrangement = Arrangement.spacedBy(if (isOverlay) 4.dp else 6.dp)
+                            ) {
+                                MetaRegion.chinaEloOptions.forEach { option ->
+                                    val selected = currentChinaElo == option.id
+                                    FilterChip(
+                                        selected = selected,
+                                        onClick = { GlobalMetaSyncService.setChinaElo(context, option.id) },
+                                        label = { Text(tr(option.label), fontSize = if (isOverlay) 9.5.sp else 10.5.sp) },
+                                        colors = FilterChipDefaults.filterChipColors(
+                                            selectedContainerColor = Color(0xFFB56CFF),
+                                            selectedLabelColor = HextechDarkBg,
+                                            containerColor = Color(0xFF321B4D).copy(alpha = 0.6f)
+                                        ),
+                                        modifier = Modifier.testTag("china_elo_${option.id}")
+                                    )
+                                }
+                            }
+                            Spacer(Modifier.height(3.dp))
+                            Text(
+                                text = tr("Datos publicados por el servidor China; cada segmento se mantiene separado."),
+                                color = TextMuted,
+                                fontSize = 9.sp
+                            )
+                        }
                     }
                 }
             }

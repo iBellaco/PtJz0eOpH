@@ -192,6 +192,7 @@ object WildRiftRepository {
         it.id.equals(canonicalChampionId(idOrName), ignoreCase = true) || it.name.equals(idOrName, ignoreCase = true)
     }
     var activeRegionName by mutableStateOf(com.example.data.sync.MetaRegion.DEFAULT)
+    var activeChinaEloGroup by mutableStateOf(com.example.data.sync.MetaRegion.DEFAULT_CHINA_ELO)
     private val regionalChampions = mutableMapOf<String, List<Champion>>()
     var regionRevision by mutableStateOf(0)
         private set
@@ -234,10 +235,12 @@ object WildRiftRepository {
         previousTiers: Map<String, String> = emptyMap(),
         checkedAt: Long = 0L,
         history: Map<String, List<com.example.data.sync.ObservedRate>> = emptyMap(),
-        patchMovements: Map<String, Int>? = null
+        patchMovements: Map<String, Int>? = null,
+        snapshotKey: String? = null
     ) {
         val normalized = com.example.data.sync.MetaRegion.normalize(region)
-        val priorMovements = regionalChampions[normalized].orEmpty().associate { it.id to it.tierMovement }
+        val storageKey = snapshotKey ?: normalized
+        val priorMovements = regionalChampions[storageKey].orEmpty().associate { it.id to it.tierMovement }
         val updated = baseChampions.map { champion ->
             val category = com.example.data.sync.GlobalTierConsensus.displayCategory(tiers[com.example.data.sync.RegionalTierParser.canonical(champion.id)]
                 ?: tiers[com.example.data.sync.RegionalTierParser.canonical(champion.name)]
@@ -315,10 +318,13 @@ object WildRiftRepository {
                 }.mapKeys { it.key.name }
             )
         }
-        regionalChampions[normalized] = updated
+        regionalChampions[storageKey] = updated
         androidx.compose.runtime.snapshots.Snapshot.withMutableSnapshot {
             regionRevision++
-            if (activeRegionName == normalized) {
+            val selectedStorageKey = if (normalized == com.example.data.sync.MetaRegion.CHINA) {
+                "${com.example.data.sync.MetaRegion.CHINA}:$activeChinaEloGroup"
+            } else normalized
+            if (activeRegionName == normalized && (storageKey == normalized || storageKey == selectedStorageKey)) {
                 champions.clear()
                 champions.addAll(updated)
             }
@@ -328,7 +334,11 @@ object WildRiftRepository {
     @Synchronized
     fun regionalSnapshot(region: String): List<Champion> {
         val normalized = com.example.data.sync.MetaRegion.normalize(region)
-        regionalChampions[normalized]?.let { return it }
+        val storageKey = if (normalized == com.example.data.sync.MetaRegion.CHINA) {
+            val groupKey = "${com.example.data.sync.MetaRegion.CHINA}:$activeChinaEloGroup"
+            if (regionalChampions.containsKey(groupKey)) groupKey else normalized
+        } else normalized
+        regionalChampions[storageKey]?.let { return it }
         if (normalized == com.example.data.sync.MetaRegion.CHINA) {
             val snapshot = chinaSnapshot()
             regionalChampions[normalized] = snapshot
@@ -340,7 +350,7 @@ object WildRiftRepository {
     @Synchronized fun applyPatchMovements(movements: Map<String, Int>) {
         regionalChampions.keys.toList().forEach { region ->
             regionalChampions[region] = regionalChampions[region].orEmpty().map {
-                it.copy(tierMovement = if (region == com.example.data.sync.MetaRegion.CHINA) 0 else
+                it.copy(tierMovement = if (region == com.example.data.sync.MetaRegion.CHINA || region.startsWith("${com.example.data.sync.MetaRegion.CHINA}:")) 0 else
                     movements[com.example.data.sync.RegionalTierParser.canonical(it.id)] ?: 0)
             }
         }
@@ -358,6 +368,20 @@ object WildRiftRepository {
         val source = regionalSnapshot(normalized)
         activeRegionName = normalized
         if (source.isNotEmpty()) androidx.compose.runtime.snapshots.Snapshot.withMutableSnapshot {
+            champions.clear()
+            champions.addAll(source)
+        }
+    }
+
+    @Synchronized
+    fun selectChinaEloGroup(groupId: String) {
+        activeChinaEloGroup = com.example.data.sync.MetaRegion.normalizeChinaElo(groupId)
+        if (activeRegionName != com.example.data.sync.MetaRegion.CHINA) return
+        val key = "${com.example.data.sync.MetaRegion.CHINA}:$activeChinaEloGroup"
+        val source = regionalChampions[key] ?: regionalChampions[com.example.data.sync.MetaRegion.CHINA]
+            ?: chinaSnapshot().also { regionalChampions[com.example.data.sync.MetaRegion.CHINA] = it }
+        androidx.compose.runtime.snapshots.Snapshot.withMutableSnapshot {
+            regionRevision++
             champions.clear()
             champions.addAll(source)
         }
@@ -410,6 +434,7 @@ object WildRiftRepository {
             }
             regionalChampions.clear()
             regionalChampions[com.example.data.sync.MetaRegion.CHINA] = chinaSnapshot()
+            activeChinaEloGroup = com.example.data.sync.MetaRegion.DEFAULT_CHINA_ELO
             regionRevision++
             android.util.Log.d("WildRiftRepository", "Loaded ${champions.size} champions successfully")
         } catch (e: Exception) {
