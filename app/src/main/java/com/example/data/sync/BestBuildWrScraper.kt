@@ -22,7 +22,11 @@ object BestBuildWrScraper {
     private const val PREFS_NAME = "wr_tier_list_cache"
     private const val STATS_SNAPSHOT_PREFIX = "stats_snapshot_"
     private const val ROLE_STATS_SNAPSHOT_PREFIX = "role_stats_snapshot_"
-    private const val CHINA_ELO_GROUPS_KEY = "china_elo_groups_v1"
+    // v2 adds the category published for each champion/lane. Ignore the old
+    // aggregate cache so the China selector cannot keep showing stale roles.
+    private const val CHINA_ELO_GROUPS_KEY = "china_elo_groups_v2"
+    private const val CHINA_ELO_GROUPS_LEGACY_KEY = "china_elo_groups_v1"
+    private const val CHINA_CACHE_SCHEMA_KEY = "china_cache_schema"
     private const val SOURCE_SET_KEY = "active_source_set_v2"
 
     // Only publishers used by the statistics pipeline belong in live monitoring.
@@ -104,6 +108,16 @@ object BestBuildWrScraper {
         )
         if (prefs.getString("patch", null) != com.example.data.GamePatch.VERSION) {
             prefs.edit().clear().putString("patch", com.example.data.GamePatch.VERSION).apply()
+        }
+        if (prefs.getString(CHINA_CACHE_SCHEMA_KEY, null) != "2") {
+            prefs.edit()
+                .remove("snapshot_${MetaRegion.CHINA}")
+                .remove(STATS_SNAPSHOT_PREFIX + MetaRegion.CHINA)
+                .remove(ROLE_STATS_SNAPSHOT_PREFIX + MetaRegion.CHINA)
+                .remove("timestamp_${MetaRegion.CHINA}")
+                .remove(CHINA_ELO_GROUPS_LEGACY_KEY)
+                .putString(CHINA_CACHE_SCHEMA_KEY, "2")
+                .apply()
         }
         val activeSourceSet = (GLOBAL_SCRAPING_SOURCES + CHINA_SCRAPING_SOURCES)
             .joinToString(",") { "${it.region}:${it.id}" }
@@ -227,7 +241,8 @@ object BestBuildWrScraper {
                         val fingerprint = (result.tiers.toSortedMap().toString() + result.stats.toSortedMap().toString() + result.chinaEloGroups.toSortedMap().toString())
                             .let { value -> java.security.MessageDigest.getInstance("SHA-256")
                                 .digest(value.toByteArray()).joinToString("") { byte -> "%02x".format(byte) } }
-                        val ratesFingerprint = result.stats.toSortedMap().toString().let { value ->
+                        val ratesFingerprint = (result.stats.toSortedMap().toString() + result.roleStats.toSortedMap().toString() +
+                            result.chinaEloGroups.toSortedMap().toString()).let { value ->
                             java.security.MessageDigest.getInstance("SHA-256").digest(value.toByteArray())
                                 .joinToString("") { byte -> "%02x".format(byte) }
                         }
@@ -309,17 +324,18 @@ object BestBuildWrScraper {
                 _sourceStatuses.value = _sourceStatuses.value.filterKeys { it !in activeKeys } + results.associate { result ->
                     val key = "${result.source.region.lowercase(Locale.ROOT)}_${result.source.id}"
                     val old = _sourceStatuses.value[key]
-                    val fingerprint = (result.tiers.toSortedMap().toString() + result.stats.toSortedMap().toString())
+                    val fingerprint = (result.tiers.toSortedMap().toString() + result.stats.toSortedMap().toString() +
+                        result.roleStats.toSortedMap().toString())
                         .let { bytes -> java.security.MessageDigest.getInstance("SHA-256")
                             .digest(bytes.toByteArray()).joinToString("") { "%02x".format(it) } }
                     val changed = fingerprint != prefs.getString("hash_$key", null)
-                    val ratesFingerprint = result.stats.toSortedMap().toString().let { bytes ->
+                    val ratesFingerprint = (result.stats.toSortedMap().toString() + result.roleStats.toSortedMap().toString()).let { bytes ->
                         java.security.MessageDigest.getInstance("SHA-256").digest(bytes.toByteArray())
                             .joinToString("") { "%02x".format(it) }
                     }
                     val previousRatesChange = old?.lastRatesChangedAt?.takeIf { it > 0 }
                         ?: prefs.getLong("rates_changed_$key", 0)
-                    val ratesChangedAt = if (result.stats.isNotEmpty() && (previousRatesChange == 0L ||
+                    val ratesChangedAt = if ((result.stats.isNotEmpty() || result.roleStats.isNotEmpty()) && (previousRatesChange == 0L ||
                         ratesFingerprint != prefs.getString("rates_hash_$key", null))) started else previousRatesChange
                     val priorChanged = old?.lastChangedAt?.takeIf { it > 0 }
                         ?: prefs.getLong("changed_$key", 0)
@@ -331,7 +347,7 @@ object BestBuildWrScraper {
                     if (result.status.isHealthy) {
                         val editor = prefs.edit().putString("hash_$key", fingerprint)
                             .putLong("changed_$key", status.lastChangedAt).putLong("success_$key", started)
-                        if (result.stats.isNotEmpty()) editor.putString("rates_hash_$key", ratesFingerprint)
+                        if (result.stats.isNotEmpty() || result.roleStats.isNotEmpty()) editor.putString("rates_hash_$key", ratesFingerprint)
                             .putLong("rates_changed_$key", ratesChangedAt)
                         editor.apply()
                     }
@@ -491,7 +507,8 @@ object BestBuildWrScraper {
         ChampionMetaStats(
             winRate = current.winRate ?: fallback.winRate,
             pickRate = current.pickRate ?: fallback.pickRate,
-            banRate = current.banRate ?: fallback.banRate
+            banRate = current.banRate ?: fallback.banRate,
+            tier = current.tier ?: fallback.tier
         )
 
     private fun decodeStats(raw: String?): Map<String, ChampionMetaStats> {
@@ -503,7 +520,8 @@ object BestBuildWrScraper {
                 val stats = ChampionMetaStats(
                     winRate = value.optDouble("winRate", Double.NaN).takeUnless { it.isNaN() },
                     pickRate = value.optDouble("pickRate", Double.NaN).takeUnless { it.isNaN() },
-                    banRate = value.optDouble("banRate", Double.NaN).takeUnless { it.isNaN() }
+                    banRate = value.optDouble("banRate", Double.NaN).takeUnless { it.isNaN() },
+                    tier = value.optString("tier").takeIf { it.isNotBlank() }
                 )
                 id to stats
             }.toMap()
@@ -516,6 +534,7 @@ object BestBuildWrScraper {
                 value.winRate?.let { put("winRate", it) }
                 value.pickRate?.let { put("pickRate", it) }
                 value.banRate?.let { put("banRate", it) }
+                value.tier?.let { put("tier", it) }
             })
         }
     }
@@ -532,7 +551,8 @@ object BestBuildWrScraper {
                     lane to ChampionMetaStats(
                         value.optDouble("winRate", Double.NaN).takeIf(Double::isFinite),
                         value.optDouble("pickRate", Double.NaN).takeIf(Double::isFinite),
-                        value.optDouble("banRate", Double.NaN).takeIf(Double::isFinite)
+                        value.optDouble("banRate", Double.NaN).takeIf(Double::isFinite),
+                        value.optString("tier").takeIf { it.isNotBlank() }
                     )
                 }.toMap().filterValues { it.isComplete() }
             }.filterValues { it.isNotEmpty() }
@@ -545,6 +565,7 @@ object BestBuildWrScraper {
                 value.winRate?.let { put("winRate", it) }
                 value.pickRate?.let { put("pickRate", it) }
                 value.banRate?.let { put("banRate", it) }
+                value.tier?.let { put("tier", it) }
             }) }
         }) }
     }

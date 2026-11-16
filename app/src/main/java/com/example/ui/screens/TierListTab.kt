@@ -98,16 +98,57 @@ enum class TierSortOption(val displayName: String, val shortLabel: String) {
 internal data class TierDisplayedStats(val role: LaneRole, val win: Double, val pick: Double,
     val ban: Double, val winDelta: Double)
 
-internal fun tierDisplayedStats(champion: Champion, selectedLane: LaneRole?): TierDisplayedStats {
-    val role = selectedLane ?: champion.primaryRole
+private fun completeLaneStats(stats: com.example.model.ChampionLaneStats?): Boolean =
+    stats != null && listOf(stats.winRate, stats.pickRate, stats.banRate).all {
+        it.isFinite() && it in 0.0..100.0
+    }
+
+private fun tierRank(value: String): Int = when (value.trim().uppercase(java.util.Locale.ROOT)) {
+    "S+" -> 5
+    "S" -> 4
+    "A+", "A" -> 3
+    "B" -> 2
+    "C", "D" -> 1
+    else -> 0
+}
+
+/** China publishes a different primary lane for some champions. */
+internal fun chinaDefaultRole(champion: Champion): LaneRole =
+    champion.laneStats.entries
+        .filter { completeLaneStats(it.value) }
+        .maxWithOrNull(compareBy<Map.Entry<String, com.example.model.ChampionLaneStats>>(
+            { tierRank(it.value.tier) },
+            { it.value.pickRate }
+        ))
+        ?.key
+        ?.let { runCatching { LaneRole.valueOf(it) }.getOrNull() }
+        ?: champion.primaryRole
+
+internal fun tierRole(champion: Champion, selectedLane: LaneRole?, region: String): LaneRole =
+    selectedLane ?: if (MetaRegion.normalize(region) == MetaRegion.CHINA) {
+        chinaDefaultRole(champion)
+    } else champion.primaryRole
+
+internal fun tierForLane(champion: Champion, selectedLane: LaneRole?, region: String = MetaRegion.DEFAULT): String {
+    val role = tierRole(champion, selectedLane, region)
+    val laneTier = champion.laneStats[role.name]?.tier.orEmpty()
+    return laneTier.ifBlank { champion.tier }
+}
+
+internal fun tierDisplayedStats(
+    champion: Champion,
+    selectedLane: LaneRole?,
+    region: String = MetaRegion.DEFAULT
+): TierDisplayedStats {
+    val role = tierRole(champion, selectedLane, region)
     val lane = champion.laneStats[role.name]
-    val isPrimary = role == champion.primaryRole
+    val isGlobalPrimary = MetaRegion.normalize(region) != MetaRegion.CHINA && role == champion.primaryRole
     return TierDisplayedStats(
         role,
-        lane?.winRate?.takeIf(Double::isFinite) ?: if (isPrimary) champion.winrate else Double.NaN,
-        lane?.pickRate?.takeIf(Double::isFinite) ?: if (isPrimary) champion.pickRate else Double.NaN,
-        lane?.banRate?.takeIf(Double::isFinite) ?: if (isPrimary) champion.banRate else Double.NaN,
-        lane?.winRateDelta?.takeIf(Double::isFinite) ?: if (isPrimary) champion.winrateDelta else 0.0
+        lane?.winRate?.takeIf(Double::isFinite) ?: if (isGlobalPrimary) champion.winrate else Double.NaN,
+        lane?.pickRate?.takeIf(Double::isFinite) ?: if (isGlobalPrimary) champion.pickRate else Double.NaN,
+        lane?.banRate?.takeIf(Double::isFinite) ?: if (isGlobalPrimary) champion.banRate else Double.NaN,
+        lane?.winRateDelta?.takeIf(Double::isFinite) ?: if (isGlobalPrimary) champion.winrateDelta else 0.0
     )
 }
 
@@ -127,10 +168,16 @@ internal fun isTierListChampionVisible(
     selectedLane: LaneRole?,
     region: String
 ): Boolean {
-    // China is now a live Tencent snapshot. Use the same completeness gate as
-    // Global so a champion without all three published rates never appears in
-    // the competitive list merely because the bundled catalog has a tier.
-    return isTierListChampionVisible(champion, selectedLane)
+    val normalized = MetaRegion.normalize(region)
+    if (normalized == MetaRegion.CHINA) {
+        val role = tierRole(champion, selectedLane, normalized)
+        if (!completeLaneStats(champion.laneStats[role.name])) return false
+    }
+    if (tierForLane(champion, selectedLane, normalized).trim().uppercase(java.util.Locale.ROOT)
+        !in setOf("S+", "S", "A+", "A", "B", "C")) return false
+    if (!champion.hasRegionalStats || champion.statsCheckedAt <= 0L) return false
+    val stats = tierDisplayedStats(champion, selectedLane, normalized)
+    return listOf(stats.win, stats.pick, stats.ban).all { it.isFinite() && it in 0.0..100.0 }
 }
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -171,7 +218,7 @@ fun TierListTab(
 
     val rawChampionsToDisplay = remember(selectedLane, showFavoritesOnly, favorites, syncState, currentRegion, currentChinaElo, metaRevision, liveTick, WildRiftRepository.champions.toList()) {
         val champs = if (selectedLane == null) WildRiftRepository.champions.toList()
-        else WildRiftRepository.champions.filter { publishedChampionRoles(it).contains(selectedLane) }
+        else WildRiftRepository.champions.filter { publishedChampionRoles(it, currentRegion).contains(selectedLane) }
         val visibleTiers = champs.filter { isTierListChampionVisible(it, selectedLane, currentRegion) }
         if (showFavoritesOnly) visibleTiers.filter { it.id in favorites } else visibleTiers
     }
@@ -179,16 +226,18 @@ fun TierListTab(
     val championsToDisplay = remember(rawChampionsToDisplay, selectedSort, selectedLane, currentRegion) {
         when (if (isChinaRegion) TierSortOption.BY_TIER else selectedSort) {
             TierSortOption.BY_TIER -> rawChampionsToDisplay
-            TierSortOption.WIN_RATE -> rawChampionsToDisplay.sortedByDescending { tierDisplayedStats(it, selectedLane).win }
-            TierSortOption.BAN_RATE -> rawChampionsToDisplay.sortedByDescending { tierDisplayedStats(it, selectedLane).ban }
+            TierSortOption.WIN_RATE -> rawChampionsToDisplay.sortedByDescending { tierDisplayedStats(it, selectedLane, currentRegion).win }
+            TierSortOption.BAN_RATE -> rawChampionsToDisplay.sortedByDescending { tierDisplayedStats(it, selectedLane, currentRegion).ban }
         }
     }
 
-    val tierSPlus = championsToDisplay.filter { it.tier == "S+" }
-    val tierS = championsToDisplay.filter { (it.tier == "S") && it !in tierSPlus }
-    val tierB = championsToDisplay.filter { it.tier == "B" }
-    val tierC = championsToDisplay.filter { it.tier == "C" }
-    val tierA = championsToDisplay.filter { (it.tier == "A+" || it.tier == "A") && it !in tierSPlus && it !in tierS }
+    val tierSPlus = championsToDisplay.filter { tierForLane(it, selectedLane, currentRegion) == "S+" }
+    val tierS = championsToDisplay.filter { tierForLane(it, selectedLane, currentRegion) == "S" }
+    val tierB = championsToDisplay.filter { tierForLane(it, selectedLane, currentRegion) == "B" }
+    val tierC = championsToDisplay.filter { tierForLane(it, selectedLane, currentRegion) == "C" }
+    val tierA = championsToDisplay.filter {
+        tierForLane(it, selectedLane, currentRegion) == "A" || tierForLane(it, selectedLane, currentRegion) == "A+"
+    }
 
     LazyColumn(
         modifier = Modifier
@@ -486,6 +535,7 @@ fun TierListTab(
                         tierColor = TierSPlusColor,
                         champions = tierSPlus,
                         selectedLane = selectedLane,
+                        region = currentRegion,
                         onSelectChampion = onSelectChampion
                     )
                 }
@@ -502,6 +552,7 @@ fun TierListTab(
                         tierColor = TierSColor,
                         champions = tierS,
                         selectedLane = selectedLane,
+                        region = currentRegion,
                         onSelectChampion = onSelectChampion
                     )
                 }
@@ -518,6 +569,7 @@ fun TierListTab(
                         tierColor = TierAColor,
                         champions = tierA,
                         selectedLane = selectedLane,
+                        region = currentRegion,
                         onSelectChampion = onSelectChampion
                     )
                 }
@@ -527,7 +579,8 @@ fun TierListTab(
                 if (section.second.isNotEmpty()) item {
                     TierSectionCard(isOverlay = isOverlay, showStats = true, showTrend = isSignedIn,
                         tierName = "TIER $tier", tierColor = section.first,
-                        champions = section.second, selectedLane = selectedLane, onSelectChampion = onSelectChampion)
+                        champions = section.second, selectedLane = selectedLane, region = currentRegion,
+                        onSelectChampion = onSelectChampion)
                 }
             }
 
@@ -552,7 +605,7 @@ fun TierListTab(
                 }
 
                 itemsIndexed(championsToDisplay) { index, champ ->
-                    val displayed = tierDisplayedStats(champ, selectedLane)
+                    val displayed = tierDisplayedStats(champ, selectedLane, currentRegion)
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -685,6 +738,7 @@ fun TierSectionCard(
     tierColor: Color,
     champions: List<Champion>,
     selectedLane: LaneRole? = null,
+    region: String = MetaRegion.DEFAULT,
     onSelectChampion: (Champion) -> Unit
 ) {
     Card(
@@ -714,7 +768,7 @@ fun TierSectionCard(
             Spacer(modifier = Modifier.height(10.dp))
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 champions.forEach { champ ->
-                    val displayed = tierDisplayedStats(champ, selectedLane)
+                    val displayed = tierDisplayedStats(champ, selectedLane, region)
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()

@@ -6,9 +6,11 @@ import com.example.data.sync.GlobalMetaSyncService
 import com.example.data.sync.MetaRegion
 import com.example.data.sync.RegionalTierParser
 import com.example.data.sync.ChampionMetaStats
+import com.example.model.LaneRole
 import com.example.ui.screens.publishedChampionRoles
 import com.example.ui.screens.tierDisplayedStats
 import com.example.ui.screens.isTierListChampionVisible
+import com.example.ui.screens.tierForLane
 import com.example.util.ChampionRoleAdapter
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -43,6 +45,7 @@ class MetaRegionRegressionTest {
         assertEquals("China", MetaRegion.label("CN"))
         assertEquals(listOf("1", "2", "3", "4"), MetaRegion.chinaEloOptions.map { it.id })
         assertEquals("Maestro+", MetaRegion.chinaEloLabel("2"))
+        assertEquals("Global", MetaRegion.chinaEloLabel("4"))
         assertEquals("1", MetaRegion.normalizeChinaElo("unknown"))
     }
     @Test fun `saved Chinese preference remains selected persistently`() {
@@ -94,6 +97,36 @@ class MetaRegionRegressionTest {
             isTierListChampionVisible(it, null, "CHINA")
         }
         assertTrue(visible.isEmpty())
+        WildRiftRepository.selectMetaRegion("GLOBAL")
+    }
+
+    @Test fun `China uses the source tier and rates for the selected lane`() {
+        val champion = WildRiftRepository.baseChampionsList.first()
+        val id = RegionalTierParser.canonical(champion.id)
+        val aggregate = ChampionMetaStats(52.0, 4.0, 1.0)
+        val laneStats = mapOf(
+            LaneRole.MID to ChampionMetaStats(51.0, 2.0, 0.5, tier = "B"),
+            LaneRole.SUPPORT to ChampionMetaStats(56.0, 3.0, 1.5, tier = "S")
+        )
+        WildRiftRepository.applyRegionalTierList(
+            "CHINA", mapOf(id to "S"), mapOf(id to aggregate),
+            roleStats = mapOf(id to laneStats), checkedAt = 10L,
+            snapshotKey = "CHINA:1"
+        )
+        WildRiftRepository.selectMetaRegion("CHINA")
+        val current = WildRiftRepository.champions.first { it.id == champion.id }
+        assertEquals("S", tierForLane(current, LaneRole.SUPPORT, "CHINA"))
+        assertEquals("B", tierForLane(current, LaneRole.MID, "CHINA"))
+        assertEquals(LaneRole.SUPPORT, tierDisplayedStats(current, null, "CHINA").role)
+        assertEquals(56.0, tierDisplayedStats(current, LaneRole.SUPPORT, "CHINA").win, .001)
+
+        WildRiftRepository.applyRegionalTierList(
+            "CHINA", mapOf(id to "C"), mapOf(id to aggregate),
+            roleStats = mapOf(id to mapOf(LaneRole.SUPPORT to laneStats[LaneRole.SUPPORT]!!)),
+            checkedAt = 20L, snapshotKey = "CHINA:2"
+        )
+        WildRiftRepository.selectChinaEloGroup("2")
+        assertEquals("C", WildRiftRepository.champions.first { it.id == champion.id }.tier)
         WildRiftRepository.selectMetaRegion("GLOBAL")
     }
     @Test fun `page parser extracts categories rather than inventing match statistics`() {

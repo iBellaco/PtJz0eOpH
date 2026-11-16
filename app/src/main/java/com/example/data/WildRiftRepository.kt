@@ -313,7 +313,8 @@ object WildRiftRepository {
                         banRate = rates.banRate ?: Double.NaN,
                         winRateDelta = change(rates.winRate, old?.winRate),
                         pickRateDelta = change(rates.pickRate, old?.pickRate),
-                        banRateDelta = change(rates.banRate, old?.banRate)
+                        banRateDelta = change(rates.banRate, old?.banRate),
+                        tier = rates.tier.orEmpty()
                     )
                 }.mapKeys { it.key.name }
             )

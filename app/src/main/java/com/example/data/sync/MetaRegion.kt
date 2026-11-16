@@ -19,7 +19,7 @@ object MetaRegion {
         ChinaEloOption("1", "Diamante+"),
         ChinaEloOption("2", "Maestro+"),
         ChinaEloOption("3", "Retador"),
-        ChinaEloOption("4", "Grieta del Invocador")
+        ChinaEloOption("4", "Global")
     )
 
     const val DEFAULT_CHINA_ELO = "1"
