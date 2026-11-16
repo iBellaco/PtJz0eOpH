@@ -40,13 +40,33 @@ object PublishedStatsParser {
             val rows = brackets.optJSONObject(name)?.optJSONArray("rows") ?: return
             for (i in 0 until rows.length()) {
                 val row = rows.optJSONObject(i) ?: continue
-                val slug = row.optString("slug")
+                // Slugs are the stable key, but a few publisher responses
+                // omit them while still providing the display name. Do not
+                // discard a valid row just because that presentation field is
+                // absent.
+                val slug = row.optString("slug").ifBlank {
+                    row.optString("id").ifBlank { championSlug(row.optString("champion")) }
+                }
                 val champion = row.optString("champion")
                 val roleName = row.optString("role")
-                if (slug.isBlank() || roleName.isBlank()) continue
+                if (slug.isBlank()) continue
                 val id = RegionalTierParser.canonical(slug)
-                fun rate(key: String) = row.optDouble(key, Double.NaN).takeIf { it.isFinite() && it in 0.0..100.0 }
-                val value = ChampionMetaStats(rate("win"), rate("pick"), rate("ban"))
+                fun rawRate(key: String): Double? {
+                    val raw = row.opt(key)
+                    return when (raw) {
+                        is Number -> raw.toDouble()
+                        is String -> raw.replace(',', '.').toDoubleOrNull()
+                        else -> null
+                    }?.takeIf { it.isFinite() && it >= 0.0 }
+                }
+                val rawRates = listOf(rawRate("win"), rawRate("pick"), rawRate("ban"))
+                // A response is either expressed as percentages (52.4, 4.1,
+                // 0.8) or as fractions (0.524, 0.041, 0.008). Decide once
+                // per row so a legitimate 0.8% ban is never turned into 80%.
+                val scale = if (rawRates.filterNotNull().maxOrNull()?.let { it <= 1.0 } == true) 100.0 else 1.0
+                fun rate(index: Int): Double? = rawRates[index]?.times(scale)
+                    ?.takeIf { it.isFinite() && it in 0.0..100.0 }
+                val value = ChampionMetaStats(rate(0), rate(1), rate(2))
                 RegionalTierParser.role(roleName)?.let { role ->
                     if (value.isUsable()) {
                         val byRole = roleStats.getOrPut(id) { linkedMapOf() }
@@ -106,4 +126,10 @@ object PublishedStatsParser {
         }
         FireReport(patch, stats, history, roleStats)
     }.getOrDefault(FireReport())
+
+    private fun championSlug(value: String): String = value.trim().lowercase(Locale.ROOT)
+        .replace("'", "")
+        .replace("’", "")
+        .replace(Regex("[^a-z0-9]+"), "-")
+        .trim('-')
 }

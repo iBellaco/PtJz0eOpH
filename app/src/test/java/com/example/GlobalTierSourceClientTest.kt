@@ -82,6 +82,47 @@ class GlobalTierSourceClientTest {
             assertEquals("/rankings/", server.takeRequest().path)
         }
     }
+
+    @Test fun `core keeps scraping rates when the tier page is temporarily unavailable`() = runBlocking {
+        MockWebServer().use { server ->
+            server.enqueue(MockResponse().setResponseCode(503))
+            server.enqueue(MockResponse().setResponseCode(503))
+            server.enqueue(MockResponse().setBody("""
+                <span class="nav-patch-badge">7.3f</span>
+                <script id="rk-cfg" type="application/json">{"dan":"2"}</script>
+                <script id="rk-data" type="application/json">
+                  {"d":{"2":{"r":[["champ1","MID",0,53.47,6.2,0.0]]}}}
+                </script>
+            """.trimIndent()))
+            val source = GlobalScrapingSource(
+                "wildriftcore", "Test", server.url("/tierlist/").toString(), "test", expectedPatch = "7.3f"
+            )
+            val result = GlobalTierSourceClient().fetch(source, setOf("champ1"))
+            assertTrue(result.status.isHealthy)
+            assertEquals(53.47, result.stats["champ1"]!!.winRate!!, .001)
+            assertEquals(3, server.requestCount)
+        }
+    }
+
+    @Test fun `core keeps a valid tier snapshot when rankings endpoint fails`() = runBlocking {
+        MockWebServer().use { server ->
+            server.enqueue(MockResponse().setBody(
+                "<span class='nav-patch-badge'>7.3f</span>" +
+                    "<section id='all-tier-list'><div class='tl-tier-row' data-tier='S'>" +
+                    "<a class='tl-champ-tile' href='/es/champions/champ1/'>champ1" +
+                    "<span class='tl-champ-wr'>53%</span><span class='tl-champ-pr'>6%</span>" +
+                    "<span class='tl-champ-br'>0%</span></a></div></section>"
+            ))
+            server.enqueue(MockResponse().setResponseCode(503))
+            val source = GlobalScrapingSource(
+                "wildriftcore", "Test", server.url("/tierlist/").toString(), "test", expectedPatch = "7.3f"
+            )
+            val result = GlobalTierSourceClient().fetch(source, setOf("champ1"))
+            assertTrue(result.status.isHealthy)
+            assertEquals("S", result.tiers["champ1"])
+            assertEquals(53.0, result.stats["champ1"]!!.winRate!!, .001)
+        }
+    }
     @Test fun `outdated patch cannot enter the live consensus even with full champion coverage`() = runBlocking {
         MockWebServer().use { server ->
             server.enqueue(MockResponse().setBody("<span class='nav-patch-badge'>7.3a</span>" + html()))

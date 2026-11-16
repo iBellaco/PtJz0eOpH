@@ -92,16 +92,21 @@ class GlobalTierSourceClient(
             } catch (_: Exception) { error = "No se pudo interpretar la respuesta"; break }
             delay(500L)
         }
-        if (source.expectedPatch == null || patch == source.expectedPatch) {
-            val extras = when {
-                source.id == "wildriftcore" && source.url.contains("/tierlist/") -> listOf(source.url.replace("/tierlist/", "/rankings/"))
-                source.id == "wildriftfire" -> listOf(
-                    "https://www.wildriftfire.com/stats?patch=${source.expectedPatch.orEmpty()}",
-                    "https://www.wildriftfire.com/stats"
-                )
-                else -> emptyList()
-            }
-            if (extras.isNotEmpty()) try {
+        // The tier page and the rates page are independent publisher endpoints.
+        // A temporary failure or a layout change in one must not prevent us
+        // from reading valid current rates from the other one. This is also
+        // important for mobile networks where the large tier page can time out
+        // while the compact rankings endpoint still responds.
+        val extras = when {
+            source.id == "wildriftcore" && source.url.contains("/tierlist/") -> listOf(source.url.replace("/tierlist/", "/rankings/"))
+            source.id == "wildriftfire" -> listOf(
+                "https://www.wildriftfire.com/stats?patch=${source.expectedPatch.orEmpty()}",
+                "https://www.wildriftfire.com/stats"
+            )
+            else -> emptyList()
+        }
+        if (extras.isNotEmpty()) {
+            try {
                 var html: String? = null
                 var last: Exception? = null
                 for (candidate in extras) {
@@ -118,7 +123,9 @@ class GlobalTierSourceClient(
                         stats = stats + report.stats.filterKeys { it in known }
                         history = report.history.filterKeys { it in known }
                         roleStats = roleStats + report.roleStats.filterKeys { it in known }
-                    } else error = "El historial pertenece a otro parche"
+                        if (report.patch.isNotBlank()) patch = report.patch
+                        if (stats.isNotEmpty()) error = null
+                    } else if (stats.isEmpty()) error = "El historial pertenece a otro parche"
                 } else {
                     val extraPatch = PublishedStatsParser.patch(html!!, source.id)
                     if (source.expectedPatch == null || extraPatch == source.expectedPatch) {
@@ -128,12 +135,17 @@ class GlobalTierSourceClient(
                         stats = fallbackStats.filterKeys { it !in stats } + stats
                         roleStats = GlobalTierConsensus.mergeRoleStats(roleStats,
                             RegionalTierParser.parseRoleStats(html, source.id).filterKeys { it in known })
-                    } else error = "Las estadísticas pertenecen a otro parche"
+                        if (!extraPatch.isNullOrBlank()) patch = extraPatch
+                        if (stats.isNotEmpty()) error = null
+                    } else if (stats.isEmpty()) error = "Las estadísticas pertenecen a otro parche"
                 }
                 if (stats.isEmpty()) error = "Estadísticas no disponibles"
             } catch (cancelled: CancellationException) { throw cancelled
-            } catch (http: SourceHttpException) { error = "Estadísticas: HTTP ${http.code}"
-            } catch (_: Exception) { error = "No se pudieron consultar las estadísticas" }
+            } catch (http: SourceHttpException) {
+                if (stats.isEmpty()) error = "Estadísticas: HTTP ${http.code}"
+            } catch (_: Exception) {
+                if (stats.isEmpty()) error = "No se pudieron consultar las estadísticas"
+            }
         }
         // Small catalogs require every known champion; full rosters require at
         // least 70%, rounded up so 99/142 cannot incorrectly pass.
