@@ -78,6 +78,83 @@ object ChampionRoleAdapter {
                 clean.contains("treads") || clean.contains("swiftness")
     }
 
+    private fun itemKey(name: String): String = name.trim().lowercase()
+
+    /** The support quest must occupy one core slot, never a situational slot. */
+    fun isSupportStarter(name: String): Boolean = itemKey(name) in setOf(
+        itemKey("Hoz espectral"),
+        itemKey("Escudo reliquia")
+    )
+
+    private fun canonicalItemName(raw: String): String =
+        WildRiftItemsData.getItemByName(raw.trim())?.name ?: raw.trim()
+
+    private fun distinctItems(items: List<String>): List<String> = items
+        .map { canonicalItemName(it) }
+        .filter { it.isNotBlank() }
+        .distinctBy(::itemKey)
+
+    private fun supportStarterFor(champion: Champion, isTank: Boolean = champion.isFrontline): String {
+        val tankLike = isTank || champion.id.lowercase() in setOf("nautilus", "leona", "alistar", "braum", "thresh")
+        return WildRiftItemsData.getItemByName(if (tankLike) "Escudo reliquia" else "Hoz espectral")?.name
+            ?: if (tankLike) "Escudo reliquia" else "Hoz espectral"
+    }
+
+    private fun normalizeCoreItems(
+        rawItems: List<String>,
+        champion: Champion,
+        role: LaneRole,
+        fallback: List<String> = emptyList()
+    ): List<String> {
+        val source = distinctItems(rawItems + fallback).filterNot(::isBootItem)
+        if (role != LaneRole.SUPPORT) return source.take(3)
+
+        // Keep a creator/publisher-selected quest when valid; otherwise choose
+        // the canonical starter for this champion's support profile.
+        val selectedStarter = source.firstOrNull(::isSupportStarter)
+            ?: supportStarterFor(champion)
+        val nonStarter = source.filterNot(::isSupportStarter)
+        return (listOf(selectedStarter) + nonStarter)
+            .distinctBy(::itemKey)
+            .take(3)
+    }
+
+    /**
+     * Cleans old or custom build records before they reach the detail sheet.
+     * Every source (official, China or creator) therefore follows the same
+     * lane rules and does not repeat an item.
+     */
+    fun normalizeBuildOption(
+        option: ChampionBuildOption,
+        champion: Champion,
+        role: LaneRole
+    ): ChampionBuildOption {
+        val coreSource = option.items.ifEmpty { option.coreItemsWithDesc.map { it.itemName } }
+        val core = normalizeCoreItems(coreSource, champion, role)
+        val coreKeys = core.map(::itemKey).toSet()
+        val situationalSource = option.situationalItems.ifEmpty {
+            option.situationalItemsWithDesc.map { it.itemName }
+        }
+        val situational = distinctItems(situationalSource)
+            .filterNot(::isBootItem)
+            .filterNot { itemKey(it) in coreKeys }
+            .take(4)
+        val spells = ensureUniqueSpells(option.spells, role)
+        val situationalKeys = situational.map(::itemKey).toSet()
+        return option.copy(
+            items = core,
+            situationalItems = situational,
+            spells = spells,
+            spellsIcons = spells.map { WildRiftSpellsAndRunes.getSpellIconByName(it) },
+            coreItemsWithDesc = option.coreItemsWithDesc
+                .filter { itemKey(it.itemName) in coreKeys }
+                .distinctBy { itemKey(it.itemName) },
+            situationalItemsWithDesc = option.situationalItemsWithDesc
+                .filter { itemKey(it.itemName) in situationalKeys }
+                .distinctBy { itemKey(it.itemName) }
+        )
+    }
+
     /**
      * Determina si un objeto es puramente de daño de carry/mid (AP burst o AD crítico/letalidad puro)
      * no apto para soportes de utilidad o tanques.
@@ -175,14 +252,21 @@ object ChampionRoleAdapter {
         val bootUpgrade = getTier3BootUpgrade(baseBoot)
 
         // 1. Extraer legendarios únicos sin botas y con filtros tácticos por rol
-        val filteredRawCore = rawCore.filter { item ->
+        val supportStarter = if (role == LaneRole.SUPPORT) {
+            rawCore.firstOrNull(::isSupportStarter)
+                ?: if (isTank) "Escudo reliquia" else "Hoz espectral"
+        } else null
+        val rawCoreForRole = if (supportStarter != null) {
+            listOf(supportStarter) + rawCore.filterNot(::isSupportStarter)
+        } else rawCore
+        val filteredRawCore = rawCoreForRole.filter { item ->
             if (isBootItem(item)) return@filter false
             // Filtro táctico de Coach: Soportes no deben recibir objetos de daño de carry
             if (role == LaneRole.SUPPORT && !isAssassinsOrAdcSupport) {
                 if (isPureDamageCarryItem(item)) return@filter false
             }
             true
-        }.distinct().toMutableList()
+        }.map(::canonicalItemName).distinctBy(::itemKey).toMutableList()
 
         // Pools tácticos contextuales de legendarios según Rol y Perfil
         val fallbackLegendaries = when (role) {
@@ -237,15 +321,16 @@ object ChampionRoleAdapter {
         val l3 = filteredRawCore.getOrElse(2) { fallbackLegendaries[2] }
 
         val usedCore = listOf(l1, l2, l3)
+        val usedCoreKeys = usedCore.map(::itemKey).toSet()
 
         // 2. Extraer 3-4 situacionales únicos respetando que NINGÚN item se repita
         val filteredRawSituational = rawSituational.filter { item ->
-            if (isBootItem(item) || usedCore.contains(item)) return@filter false
+            if (isBootItem(item) || itemKey(item) in usedCoreKeys) return@filter false
             if (role == LaneRole.SUPPORT && !isAssassinsOrAdcSupport) {
                 if (isPureDamageCarryItem(item)) return@filter false
             }
             true
-        }.distinct().toMutableList()
+        }.map(::canonicalItemName).distinctBy(::itemKey).toMutableList()
 
         val defaultSituational = when (role) {
             LaneRole.SUPPORT -> when {
@@ -263,8 +348,8 @@ object ChampionRoleAdapter {
 
         for (item in defaultSituational) {
             if (filteredRawSituational.size >= 4) break
-            if (!filteredRawSituational.contains(item) && !usedCore.contains(item)) {
-                filteredRawSituational.add(item)
+            if (!filteredRawSituational.any { itemKey(it) == itemKey(item) } && itemKey(item) !in usedCoreKeys) {
+                filteredRawSituational.add(canonicalItemName(item))
             }
         }
 
@@ -516,24 +601,25 @@ object ChampionRoleAdapter {
     }
 
     private fun ensureUniqueSpells(spells: List<String>, role: LaneRole): List<String> {
-        val unique = spells.distinct().toMutableList()
-        if (unique.size >= 2) return unique.take(2)
-
-        val defaultSecondary = when (role) {
-            LaneRole.JUNGLE -> if (unique.contains("Castigo")) "Destello" else "Castigo"
-            LaneRole.SUPPORT -> if (unique.contains("Destello")) "Ignición" else "Destello"
-            LaneRole.ADC -> if (unique.contains("Destello")) "Barrera" else "Destello"
-            LaneRole.TOP -> if (unique.contains("Destello")) "Ignición" else "Destello"
-            LaneRole.MID -> if (unique.contains("Destello")) "Ignición" else "Destello"
+        val unique = spells.mapNotNull { raw ->
+            WildRiftSpellsAndRunes.getSpellByName(raw)?.name ?: raw.trim().ifBlank { null }
+        }.distinctBy { itemKey(it) }
+        val defaults = when (role) {
+            LaneRole.JUNGLE -> listOf("Castigo", "Destello")
+            LaneRole.SUPPORT -> listOf("Destello", "Ignición")
+            LaneRole.ADC -> listOf("Destello", "Barrera")
+            LaneRole.TOP, LaneRole.MID -> listOf("Destello", "Ignición")
         }
-
-        if (!unique.contains(defaultSecondary)) {
-            unique.add(defaultSecondary)
+        val smiteKey = itemKey(WildRiftSpellsAndRunes.getSpellByName("Castigo")?.name ?: "Castigo")
+        val sanitized = unique.filterNot { itemKey(it) == smiteKey }
+        val ordered = if (role == LaneRole.JUNGLE) {
+            listOf(defaults.first()) + sanitized
+        } else {
+            sanitized + defaults
         }
-        if (unique.size < 2) {
-            unique.add("Destello")
-        }
-        return unique.distinct().take(2)
+        return ordered.mapNotNull { raw ->
+            WildRiftSpellsAndRunes.getSpellByName(raw)?.name ?: raw
+        }.distinctBy { itemKey(it) }.take(2)
     }
 
     
@@ -556,7 +642,7 @@ object ChampionRoleAdapter {
             (role == LaneRole.MID && (it.role.equals("mid", ignoreCase = true) || it.role.equals("middle", ignoreCase = true))) ||
             (role == LaneRole.ADC && (it.role.equals("adc", ignoreCase = true) || it.role.equals("duo", ignoreCase = true) || it.role.equals("bot", ignoreCase = true))) ||
             (role == LaneRole.SUPPORT && (it.role.equals("support", ignoreCase = true) || it.role.equals("supp", ignoreCase = true)))
-        } ?: champ.builds.firstOrNull()
+        }
 
         if (matchingBuild != null) {
             val b = matchingBuild
@@ -574,8 +660,16 @@ object ChampionRoleAdapter {
                 else -> b.role.ifBlank { role.shortName }
             }
 
-            val cleanCoreItems = (if (b.coreItems.isNotEmpty()) b.coreItems else if (b.items.isNotEmpty()) b.items else defaultBuild8).filter { !isBootItem(it) }.take(3)
-            val sitItems = (if (b.situationalItems.isNotEmpty()) b.situationalItems else defaultBuild8.drop(3)).filter { !isBootItem(it) && !cleanCoreItems.contains(it) }.take(4)
+            val cleanCoreItems = normalizeCoreItems(
+                if (b.coreItems.isNotEmpty()) b.coreItems else if (b.items.isNotEmpty()) b.items else emptyList(),
+                champ,
+                role,
+                fallback = defaultBuild8
+            )
+            val cleanCoreKeys = cleanCoreItems.map(::itemKey).toSet()
+            val sitItems = distinctItems(
+                if (b.situationalItems.isNotEmpty()) b.situationalItems else defaultBuild8.drop(3)
+            ).filter { !isBootItem(it) && itemKey(it) !in cleanCoreKeys }.take(4)
 
             val bBootBase = if (b.bootBase.isNotBlank()) b.bootBase else defaultBootBase
             val bBootUpgrade = if (b.bootUpgrade.isNotBlank()) b.bootUpgrade else getTier3BootUpgrade(bBootBase)
@@ -625,6 +719,8 @@ object ChampionRoleAdapter {
                 )
             }
 
+        val fallbackCoreItems = normalizeCoreItems(defaultBuild8, champ, role)
+        val fallbackCoreKeys = fallbackCoreItems.map(::itemKey).toSet()
         val fallbackOpt1 = ChampionBuildOption(
             optionNumber = 1,
             title = "Build Oficial de Línea (${role.shortName})",
@@ -632,11 +728,14 @@ object ChampionRoleAdapter {
             source = "Criterio del coach",
             badge = "CRITERIO COACH",
             tacticalReason = CoachingGenerator.generateTacticalAnalysis(champ, role, AppLanguage.current.value),
-            items = defaultBuild8.take(3),
+            items = fallbackCoreItems,
             bootBase = defaultBootBase,
             bootUpgrade = defaultBootUpgrade,
             situationalBoots = defaultSituationalBoots,
-            situationalItems = defaultBuild8.drop(3).take(4),
+            situationalItems = distinctItems(defaultBuild8.drop(3))
+                .filterNot(::isBootItem)
+                .filterNot { itemKey(it) in fallbackCoreKeys }
+                .take(4),
             runes = fallbackRunes,
             spells = resolvedSpells1,
             spellsIcons = resolvedSpellsIcons1,

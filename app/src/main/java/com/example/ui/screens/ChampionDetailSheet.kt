@@ -2,6 +2,7 @@ package com.example.ui.screens
 
 import com.example.ui.components.CoachTextButton as TextButton
 import com.example.ui.components.CoachIconButton as IconButton
+import com.example.ui.components.CoachFilterChip as FilterChip
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.ui.platform.testTag
 import com.example.util.BuildChoiceRules
@@ -47,6 +48,7 @@ import androidx.compose.material.icons.filled.PersonAdd
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -55,6 +57,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
@@ -142,6 +145,7 @@ fun ChampionDetailSheet(
     if (champion == null) return
 
     val context = LocalContext.current
+    val regionScope = rememberCoroutineScope()
     val isSignedIn by com.example.util.AuthManager.isSignedIn.collectAsStateWithLifecycle()
     val currentRegion by GlobalMetaSyncService.currentRegion.collectAsStateWithLifecycle()
     val currentChinaElo by GlobalMetaSyncService.currentChinaElo.collectAsStateWithLifecycle()
@@ -211,12 +215,20 @@ fun ChampionDetailSheet(
     }
 
     // Perfil dinámico de estadísticas, build, runas y counters adaptados a la línea elegida
-    val roleProfile = remember(champion.id, selectedRole, currentLang, WildRiftRepository.regionRevision, liveTick) {
+    val roleProfile = remember(
+        champion.id,
+        selectedRole,
+        currentRegion,
+        currentChinaElo,
+        currentLang,
+        WildRiftRepository.regionRevision,
+        liveTick
+    ) {
         ChampionRoleAdapter.getProfile(liveChampion, selectedRole, currentLang)
     }
 
     // Perfil de Sinergias del Meta y Compañeros complementarios
-    val synergyProfile = remember(champion.id, selectedRole, currentLang, WildRiftRepository.regionRevision) {
+    val synergyProfile = remember(champion.id, selectedRole, currentRegion, currentLang, WildRiftRepository.regionRevision) {
         SynergyAdvisor.getSynergyProfile(liveChampion, selectedRole, currentLang)
     }
 
@@ -560,6 +572,79 @@ fun ChampionDetailSheet(
                         }
                     }
 
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = tr("Consultar estadísticas de"),
+                        color = TextMuted,
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .horizontalScroll(rememberScrollState())
+                            .testTag("champion_server_selector"),
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        MetaRegion.available.forEach { region ->
+                            val selected = MetaRegion.normalize(currentRegion) == region
+                            FilterChip(
+                                selected = selected,
+                                onClick = {
+                                    if (!selected) GlobalMetaSyncService.setRegion(context, region, regionScope)
+                                },
+                                label = { Text(tr(MetaRegion.label(region)), fontSize = 10.sp, maxLines = 1) },
+                                modifier = Modifier
+                                    .heightIn(min = 48.dp)
+                                    .testTag("champion_server_${region.lowercase(java.util.Locale.ROOT)}"),
+                                colors = FilterChipDefaults.filterChipColors(
+                                    selectedContainerColor = HextechCyan,
+                                    selectedLabelColor = HextechDarkBg,
+                                    containerColor = HextechSurfaceVariant.copy(alpha = 0.72f),
+                                    labelColor = TextPrimary
+                                ),
+                                border = androidx.compose.foundation.BorderStroke(
+                                    1.dp,
+                                    if (selected) HextechCyan else HextechCardBorder
+                                )
+                            )
+                        }
+                    }
+                    if (MetaRegion.normalize(currentRegion) == MetaRegion.CHINA) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .horizontalScroll(rememberScrollState())
+                                .testTag("champion_china_elo_selector"),
+                            horizontalArrangement = Arrangement.spacedBy(5.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(tr("ELO CN"), color = TextMuted, fontSize = 9.5.sp, fontWeight = FontWeight.Bold)
+                            MetaRegion.chinaEloOptions.forEach { option ->
+                                val selected = currentChinaElo == option.id
+                                FilterChip(
+                                    selected = selected,
+                                    onClick = { GlobalMetaSyncService.setChinaElo(context, option.id) },
+                                    label = { Text(tr(option.label), fontSize = 9.5.sp, maxLines = 1) },
+                                    modifier = Modifier
+                                        .heightIn(min = 48.dp)
+                                        .testTag("champion_china_elo_${option.id}"),
+                                    colors = FilterChipDefaults.filterChipColors(
+                                        selectedContainerColor = HextechGold,
+                                        selectedLabelColor = HextechDarkBg,
+                                        containerColor = HextechSurfaceVariant.copy(alpha = 0.72f),
+                                        labelColor = TextPrimary
+                                    ),
+                                    border = androidx.compose.foundation.BorderStroke(
+                                        1.dp,
+                                        if (selected) HextechGold else HextechCardBorder
+                                    )
+                                )
+                            }
+                        }
+                    }
+
                     Spacer(modifier = Modifier.height(10.dp))
 
                 }
@@ -711,7 +796,7 @@ fun ChampionDetailSheet(
                 )
             }
 
-            val buildOptionsList = remember(baseBuildOptions, championCustomBuilds) {
+            val buildOptionsList = remember(baseBuildOptions, championCustomBuilds, liveChampion.id, selectedRole) {
                 val customOptions = championCustomBuilds.mapIndexed { idx, rec ->
                     val t2 = rec.bootsT2Item?.itemName?.ifBlank { null } ?: "Botas blindadas"
                     val t3 = rec.bootsT3Item?.itemName?.ifBlank { null } ?: com.example.util.ChampionRoleAdapter.getTier3BootUpgrade(t2)
@@ -752,6 +837,7 @@ fun ChampionDetailSheet(
                     )
                 }
                 listOf(customOptions.firstOrNull() ?: baseBuildOptions.first())
+                    .map { option -> ChampionRoleAdapter.normalizeBuildOption(option, liveChampion, selectedRole) }
             }
 
             val activeOption = buildOptionsList.getOrNull(selectedBuildOptionIndex.coerceIn(0, buildOptionsList.size - 1))
