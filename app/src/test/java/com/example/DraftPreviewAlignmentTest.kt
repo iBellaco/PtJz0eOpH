@@ -113,6 +113,42 @@ class DraftPreviewAlignmentTest {
         }
     }
 
+    @Test fun savingCoordinatesKeepsMeasuredRingsAndAnUntouchedSavedProfileStillAligns() {
+        val context = RuntimeEnvironment.getApplication()
+        val prefs = context.getSharedPreferences("vision_calibration_prefs", 0)
+        prefs.edit().clear().commit()
+        val frame = Bitmap.createBitmap(1280, 576, Bitmap.Config.ARGB_8888)
+        try {
+            DraftVisionScanner.initCalibration(context)
+            val baseline = DraftVisionScanner.calibrationConfig
+            val canvas = Canvas(frame)
+            canvas.drawColor(Color.rgb(10, 15, 30))
+            val ring = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.STROKE; strokeWidth = 5f }
+            for (ally in listOf(true, false)) for (index in 0..4) {
+                val x = frame.width * if (ally) .106f else .925f
+                val y = frame.height * (if (ally) baseline.allySlotYRatios else baseline.enemySlotYRatios)[index]
+                ring.color = if (ally) Color.rgb(30, 190, 220) else Color.rgb(220, 40, 60)
+                canvas.drawCircle(x, y, frame.height * baseline.getSlotDiameter(ally, index) / 2, ring)
+            }
+            val measured = DraftVisionScanner.configForFrame(frame, refreshGeometry = true)
+            assertEquals("Visible allied rim", .106f, measured.getAllySlotX(0), .008f)
+            DraftVisionScanner.saveCalibrationForDevice(context)
+            assertEquals(measured, DraftVisionScanner.alignedConfigFlow.value)
+            assertEquals(measured.getAllySlotX(0), DraftVisionScanner.calibrationReportSnapshot().config.getAllySlotX(0), 0f)
+            DraftVisionScanner.clearSessionState()
+            assertEquals(0, DraftVisionScanner.calibrationReportSnapshot().width)
+            DraftVisionScanner.initCalibration(context)
+            val reopened = DraftVisionScanner.configForFrame(frame, refreshGeometry = true)
+            assertEquals(measured.getAllySlotX(0), reopened.getAllySlotX(0), .004f)
+            assertEquals(frame.width, DraftVisionScanner.calibrationReportSnapshot().width)
+            assertNotEquals("sin captura", DraftVisionScanner.calibrationReportSnapshot().source)
+        } finally {
+            frame.recycle()
+            prefs.edit().clear().commit()
+            DraftVisionScanner.initCalibration(context)
+        }
+    }
+
     @Test fun forcedPreviewKeepsUserCalibration() {
         val context = RuntimeEnvironment.getApplication()
         val preferences = context.getSharedPreferences("vision_calibration_prefs", 0)

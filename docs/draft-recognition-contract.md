@@ -38,9 +38,10 @@ referencia exacta el perfil de `nubia NX789J`, Android 16/API 36, pantalla
 2688×1216. También se conserva el alias de captura 1920×869 observado en el
 informe. Sus ratios de slots, baneos y barra superior solo se seleccionan para
 ese fabricante, modelo y captura; los demás dispositivos siguen usando la
-geometría adaptativa. Los centros de los cinco marcadores blancos de la barra
-superior se redondean a píxel entero al renderizar la evidencia para evitar una
-separación visual irregular sin alterar los ratios guardados.
+geometría adaptativa. El informe conserva las coordenadas de la barra superior.
+Desde 1.1.10.570, el visor y el adjunto muestran los retratos originales del
+juego. Sobre la cabecera se dibuja una sola fila de contornos por equipo, usando
+las posiciones de los baneos. Las calibraciones manuales tienen prioridad.
 
 ## Información que se observa
 
@@ -218,6 +219,12 @@ Conservar las diez posiciones, aunque no se banee en alguna. Un círculo de
 omisión no es un campeón, y una observación desconocida no es un baneo confirmado.
 No desplazar los restantes para cerrar un hueco. No inventar identidades a partir
 del fondo ni del vecino; las exclusiones del visor también se aplican aquí.
+
+Una identidad puede pertenecer a un solo puesto de baneo por equipo. Los dos
+equipos pueden banear al mismo campeón. Si dos puestos nuevos del mismo equipo
+compiten con igual evidencia, conservar ambos círculos y esperar lecturas que
+distingan la identidad. Un fotograma parcial conserva el índice de cada puesto
+ya localizado en una fila completa.
 
 Actualización del propietario, 28 de octubre de 2026: el tester POCO reporta Mel
 leída como Sion y un Darius ausente en los baneos. Comparar la identidad con todo

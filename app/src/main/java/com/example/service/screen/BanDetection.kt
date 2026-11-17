@@ -94,6 +94,22 @@ internal fun fillHeaderPositions(observations: List<BanObservation>, aspect: Flo
             hasOuterPortrait(row.last().region.copy(x = row.last().region.x + step))) {
             row.removeAt(0)
         }
+        // A skipped ban can have a visible rim and a uniform interior. With four
+        // adjacent positions, one visible endpoint locates the whole row even
+        // when the HUD sits farther from the edge than the nominal side band.
+        if (row.size == 4 && hasOuterPortrait != null &&
+            row.zipWithNext().all { (a, b) -> b.region.x - a.region.x in step * .75f..step * 1.25f }) {
+            val limit = maxOf(banHeaderSideWidthRatio(aspect) + radius / aspect, .48f / (16f / 9f))
+            val endpoints = listOf(row.first().region.x - step, row.last().region.x + step)
+            val endpoint = endpoints.map { BanRegion(it, rowY, radius) }.singleOrNull { region ->
+                val fromEdge = if (side == BanSide.ALLY) region.x else 1f - region.x
+                fromEdge in radius / aspect..limit && hasOuterPortrait(region)
+            }
+            if (endpoint != null) {
+                row.add(BanObservation(side, endpoint))
+                row.sortBy { it.region.x }
+            }
+        }
     }
     // Template similarity alone can match a textured background outside the row.
     // Select the five circles with consistent spacing before latching identities.

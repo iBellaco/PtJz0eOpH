@@ -1,7 +1,5 @@
 package com.example.ui.components
 
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.os.Build
 import android.widget.Toast
 import androidx.compose.foundation.layout.*
@@ -21,13 +19,12 @@ import com.example.R
 import com.example.data.CalibrationReport
 import com.example.data.CalibrationUserName
 import com.example.data.FeedbackRepository
-import com.example.data.WildRiftRepository
-import com.example.model.Champion
 import com.example.service.screen.DraftVisionScanner
 import com.example.service.screen.CalibrationEvidenceImage
 import com.example.service.screen.CalibrationEvidenceFrame
 import com.example.service.screen.ScreenCaptureManager
-import com.example.service.screen.VisionCalibrationConfig
+import com.example.service.screen.BanState
+import com.example.service.screen.CalibrationReportSnapshot
 import com.example.util.AppLanguage
 import com.example.util.localizedString
 import com.example.util.tr
@@ -130,108 +127,15 @@ fun CalibrationSendButton(
             sending = true
             sent = false
             scope.launch {
-                var evidenceAvatars: Map<String, Bitmap> = emptyMap()
                 try {
                     val metrics = context.resources.displayMetrics
-                    val snapshot = DraftVisionScanner.calibrationReportSnapshot()
                     val displayName = CalibrationUserName.resolve(account)
-                    val coordinates = snapshot.config.toFormattedCoordinatesString()
                     val language = AppLanguage.current.value
-                    val detectedSlotLabels = DraftVisionScanner.debugVisualMatches.value.toMap()
-                    val detectedBanSlots = DraftVisionScanner.banSlotsFlow.value.toList()
-                    evidenceAvatars = loadEvidenceAvatars(context, detectedSlotLabels, detectedBanSlots)
-                    var evidenceSource = if (language.equals("pt", ignoreCase = true)) {
-                        "Captura literal da tela no momento do envio"
-                    } else {
-                        "Captura literal de pantalla en el momento del envío"
-                    }
-                    var visualEvidence: CalibrationEvidenceImage.Encoded? = null
-
-                    // MediaProjection entrega la pantalla real; se reintenta
-                    // pocas veces porque al reanudar la superficie el primer
-                    // intento puede no tener aún un frame disponible. La capa
-                    // de auditoría se dibuja solo dentro de la imagen: nunca
-                    // se activa el visor global del remitente para enviar un
-                    // informe.
-                    captureLiteralEvidenceFrame(screenCaptureManager)?.let { literalFrame ->
-                        visualEvidence = try {
-                            CalibrationEvidenceImage.encode(
-                                literalFrame,
-                                snapshot.config,
-                                language,
-                                // El visor está simulado dentro del adjunto; el
-                                // estado real del overlay no se modifica.
-                                visorActive = true,
-                                literalCapture = true,
-                                slotLabels = detectedSlotLabels,
-                                banSlots = detectedBanSlots,
-                                avatarBitmaps = evidenceAvatars
-                            )
-                        } finally {
-                            runCatching { literalFrame.bitmap.recycle() }
-                        }
-                    }
-
-                    // Si no existe permiso/proyección o la captura no pudo
-                    // codificarse, conservar la evidencia del último frame que
-                    // sí procesó el escáner y dejarlo explícito en el informe.
-                    if (visualEvidence == null) {
-                        evidenceSource = if (language.equals("pt", ignoreCase = true)) {
-                            "Último fotograma processado pelo scanner (captura literal indisponível)"
-                        } else {
-                            "Último fotograma procesado por el escáner (captura literal no disponible)"
-                        }
-                        val fallbackFrame = DraftVisionScanner.calibrationEvidenceFrame()
-                        visualEvidence = fallbackFrame?.let { evidenceFrame ->
-                            try {
-                                CalibrationEvidenceImage.encode(
-                                    evidenceFrame,
-                                    snapshot.config,
-                                    language,
-                                    visorActive = true,
-                                    literalCapture = false,
-                                    slotLabels = detectedSlotLabels,
-                                    banSlots = detectedBanSlots,
-                                    avatarBitmaps = evidenceAvatars
-                                )
-                            } finally {
-                                runCatching { evidenceFrame.bitmap.recycle() }
-                            }
-                        }
-                    }
-                    val encodedEvidence = visualEvidence
-                    val viewport = DraftVisionScanner.alignedViewportFlow.value
-                    val alignedSize = DraftVisionScanner.alignedFrameSizeFlow.value
-                    val slotEvidenceCount = detectedSlotLabels.count { (key, value) ->
-                        value.isNotBlank() && (key.startsWith("ally_") || key.startsWith("enemy_")) && !key.contains("ban")
-                    }
-                    val banEvidenceCount = detectedBanSlots.count { it.championId != null }
-                    val avatarEvidenceCount = evidenceAvatars.size
-                    val visualEvidenceText = buildString {
-                        if (language.equals("pt", ignoreCase = true)) {
-                            if (encodedEvidence != null) {
-                                appendLine("Evidência visual anexada: $evidenceSource; ${encodedEvidence.width}x${encodedEvidence.height}; idade=${encodedEvidence.ageMs} ms; SHA-256=${encodedEvidence.sha256}")
-                            } else {
-                                appendLine("Evidência visual anexada: nenhum fotograma de captura disponível.")
-                            }
-                            appendLine("Visor no anexo: simulado como ativo com caixas, círculos e avatares; visor do dispositivo: não modificado.")
-                            appendLine("Perfil geométrico: ${DraftVisionScanner.calibrationSourceFlow.value}; captura alinhada=${alignedSize.first}x${alignedSize.second}; viewport=${viewport.left},${viewport.top}-${viewport.right},${viewport.bottom}.")
-                            appendLine("Evidência representada: posições com identidade=$slotEvidenceCount; banimentos confirmados=$banEvidenceCount; retratos carregados=$avatarEvidenceCount.")
-                        } else {
-                            if (encodedEvidence != null) {
-                                appendLine("Evidencia visual adjunta: $evidenceSource; ${encodedEvidence.width}x${encodedEvidence.height}; antigüedad=${encodedEvidence.ageMs} ms; SHA-256=${encodedEvidence.sha256}")
-                            } else {
-                                appendLine("Evidencia visual adjunta: no había un fotograma de captura disponible.")
-                            }
-                            appendLine("Visor en el adjunto: simulado como activo con cajas, círculos y avatares; visor del dispositivo: sin cambios.")
-                            appendLine("Perfil geométrico: ${DraftVisionScanner.calibrationSourceFlow.value}; captura alineada=${alignedSize.first}x${alignedSize.second}; viewport=${viewport.left},${viewport.top}-${viewport.right},${viewport.bottom}.")
-                            appendLine("Evidencia representada: posiciones con identidad=$slotEvidenceCount; baneos confirmados=$banEvidenceCount; retratos cargados=$avatarEvidenceCount.")
-                        }
-                    }.trimEnd()
-                    val detectionEvidence = listOf(
-                        DraftVisionScanner.detectionEvidenceReport(language),
-                        visualEvidenceText
-                    ).joinToString("\n")
+                    val attachment = captureCalibrationAttachment(screenCaptureManager, language)
+                    val snapshot = attachment.snapshot
+                    val coordinates = snapshot.config.toFormattedCoordinatesString()
+                    val detectionEvidence = listOf(snapshot.detectionEvidenceReport(language), attachment.description(language))
+                        .joinToString("\n")
                     val payload = CalibrationReport.build(
                         "${Build.MANUFACTURER} ${Build.MODEL}",
                         "",
@@ -249,7 +153,7 @@ fun CalibrationSendButton(
                     )
                     val result = FeedbackRepository.submitFeedback(
                         "COORDENADAS", title, payload,
-                        imagesBase64 = visualEvidence?.let { listOf(it.base64) }.orEmpty(),
+                        imagesBase64 = listOfNotNull(attachment.image?.base64),
                         userName = displayName,
                         adminOnly = true,
                         writeUserInboxCopy = false
@@ -266,7 +170,6 @@ fun CalibrationSendButton(
                 } catch (_: Exception) {
                     Toast.makeText(context, failure, Toast.LENGTH_LONG).show()
                 } finally {
-                    evidenceAvatars.values.forEach { bitmap -> runCatching { if (!bitmap.isRecycled) bitmap.recycle() } }
                     sending = false
                 }
             }
@@ -290,47 +193,50 @@ internal suspend fun captureLiteralEvidenceFrame(manager: ScreenCaptureManager?)
     return null
 }
 
-/**
- * Loads the same local champion portraits used by the in-app avatar component.
- * Evidence never downloads a remote image, so a missing asset cannot block the
- * report; the confirmed text remains visible as a fallback.
- */
-internal fun loadEvidenceAvatars(
-    context: android.content.Context,
-    slotLabels: Map<String, String>,
-    banSlots: List<com.example.service.screen.BanSlot>
-): Map<String, Bitmap> {
-    val catalog = WildRiftRepository.championSnapshot()
-    val byId = catalog.associateBy { it.id.lowercase(java.util.Locale.ROOT) }
-    fun findChampion(value: String?): Champion? {
-        val normalized = value?.trim()?.lowercase(java.util.Locale.ROOT).orEmpty()
-        if (normalized.isBlank()) return null
-        return catalog.firstOrNull {
-            it.name.lowercase(java.util.Locale.ROOT) == normalized ||
-                it.nameEn.lowercase(java.util.Locale.ROOT) == normalized ||
-                it.namePt.lowercase(java.util.Locale.ROOT) == normalized
+internal data class CalibrationAttachment(
+    val snapshot: CalibrationReportSnapshot,
+    val image: CalibrationEvidenceImage.Encoded?,
+    val fromScanner: Boolean = false
+) {
+    fun description(language: String): String {
+        val pt = language.equals("pt", ignoreCase = true)
+        val viewport = snapshot.viewport
+        val geometry = "${snapshot.width}x${snapshot.height}, viewport=${viewport.left},${viewport.top}-${viewport.right},${viewport.bottom}"
+        val bans = snapshot.bans.count { it.state == BanState.CONFIRMED }
+        return buildString {
+            if (image != null) {
+                val source = if (fromScanner) {
+                    if (pt) "Último fotograma processado pelo scanner" else "Último fotograma procesado por el escáner"
+                } else {
+                    if (pt) "Captura de tela no momento do envio" else "Captura de pantalla en el momento del envío"
+                }
+                appendLine("$source · ${image.width}x${image.height} · ${image.ageMs} ms · SHA-256=${image.sha256}")
+            } else {
+                appendLine(if (pt) "Nenhum fotograma disponível." else "No había un fotograma disponible.")
+            }
+            appendLine("Perfil: ${snapshot.source} · $geometry")
+            append(if (pt) "Posições com identidade=${snapshot.picks.size} · banimentos confirmados=$bans"
+                else "Posiciones con identidad=${snapshot.picks.size} · baneos confirmados=$bans")
         }
     }
-    fun load(champion: Champion?): Bitmap? {
-        if (champion == null || champion.id.isBlank()) return null
-        return runCatching {
-            context.assets.open("champions/${champion.id}.png").use { BitmapFactory.decodeStream(it) }
-        }.getOrNull()?.takeIf { !it.isRecycled }
-    }
-
-    val result = linkedMapOf<String, Bitmap>()
-    for (index in 0..4) {
-        val ally = DraftVisionScanner.evidenceChampionForSlot(true, index)
-            ?: findChampion(slotLabels["ally_$index"])
-        val enemy = DraftVisionScanner.evidenceChampionForSlot(false, index)
-            ?: findChampion(slotLabels["enemy_$index"])
-        load(ally)?.let { result["ally_$index"] = it }
-        load(enemy)?.let { result["enemy_$index"] = it }
-    }
-    banSlots.filter { it.championId != null }.forEach { slot ->
-        val champion = byId[slot.championId!!.lowercase(java.util.Locale.ROOT)]
-        val key = "${if (slot.side == com.example.service.screen.BanSide.ALLY) "ally" else "enemy"}_ban_${slot.index}"
-        load(champion)?.let { result[key] = it }
-    }
-    return result
 }
+
+internal suspend fun captureCalibrationAttachment(manager: ScreenCaptureManager?, language: String): CalibrationAttachment =
+    withContext(Dispatchers.Default) {
+        fun encode(frame: CalibrationEvidenceFrame, fromScanner: Boolean): CalibrationAttachment? {
+            try {
+                val bitmap = frame.bitmap
+                val landscape = bitmap.width >= bitmap.height
+                val snapshot = frame.snapshot ?: DraftVisionScanner.snapshotForLiteralCapture(bitmap)
+                val image = CalibrationEvidenceImage.encode(frame, snapshot.config, visorActive = landscape,
+                    slotLabels = snapshot.slotLabels(language)) ?: return null
+                return CalibrationAttachment(snapshot, image, fromScanner)
+            } finally {
+                frame.bitmap.recycle()
+            }
+        }
+
+        captureLiteralEvidenceFrame(manager)?.let { encode(it, fromScanner = false) }
+            ?: DraftVisionScanner.calibrationEvidenceFrame()?.let { encode(it, fromScanner = true) }
+            ?: CalibrationAttachment(DraftVisionScanner.calibrationReportSnapshot(), null)
+    }

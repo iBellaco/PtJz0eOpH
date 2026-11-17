@@ -196,11 +196,23 @@ data class VisionCalibrationConfig(
     internal fun withObservedBanRow(isAlly: Boolean, regions: List<BanRegion>): VisionCalibrationConfig {
         if ((if (isAlly) manualAllyBans else manualEnemyBans) || regions.size != 5) return this
         val ys = regions.map { it.y }
-        val diameters = regions.map { (it.radius * 2f).coerceIn(.03f, .09f) }
+        val diameters = regions.map { it.radius * 2f }
         return if (isAlly) copy(allyBanXRatios = regions.map { it.x }, allyBanYRatios = ys,
             allyBanDiameterRatios = diameters)
         else copy(enemyBanXRatios = regions.map { it.x }, enemyBanYRatios = ys,
             enemyBanDiameterRatios = diameters)
+    }
+
+    /** Use the same indexed row for recognition guides, coordinates and attachments. */
+    internal fun withTrackedBanRegions(slots: List<BanSlot>): VisionCalibrationConfig {
+        var result = this
+        for (side in BanSide.entries) {
+            val row = slots.filter { it.side == side }.sortedBy { it.index }
+            if (row.map { it.index } == (0..4).toList()) {
+                result = result.withObservedBanRow(side == BanSide.ALLY, row.mapNotNull { it.region })
+            }
+        }
+        return result
     }
 
     internal fun banRegions(isAlly: Boolean): List<BanRegion> {

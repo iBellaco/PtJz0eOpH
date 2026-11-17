@@ -5,7 +5,11 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Rect
 import com.example.data.WildRiftRepository
+import com.example.service.screen.BanObservation
+import com.example.service.screen.BanRegion
+import com.example.service.screen.BanSide
 import com.example.service.screen.BannedPortraitScanner
+import com.example.service.screen.computeAdaptiveBanRegions
 import com.example.service.screen.LiteRTVisionClassifier
 import org.junit.Assert.*
 import org.junit.Before
@@ -47,6 +51,66 @@ class BannedPortraitScannerTest {
         assertEquals("zed", allied[3].championId)
         assertNull(allied[0].championId)
         assertNull(allied[2].championId)
+    }
+
+    @Test fun equalKaiSaReadingsCannotConfirmTwoAlliedSlotsAndResolveAfterTwoDistinctFrames() {
+        val scanner = BannedPortraitScanner()
+        val aspect = 2400f / 1080
+        val ally = BanSide.ALLY
+        val enemy = BanSide.ENEMY
+        val ids = listOf("yuumi", "kai_sa", "kai_sa", "nocturne", "cho_gath")
+        val scores = listOf(.92f, .95f, .95f, .93f, .90f)
+        val observations = ids.mapIndexed { index, id ->
+            BanObservation(ally, BanRegion(.065f + .036f * index, .052f, .03f), id, similarity = scores[index])
+        }
+        val opposite = observations.mapIndexed { index, ban ->
+            ban.copy(side = enemy, region = ban.region.copy(x = .80f + .036f * index),
+                championId = listOf("smolder", "syndra", "darius", "sylas", "kai_sa")[index])
+        }
+        repeat(3) { scanner.update(observations + opposite, aspect) }
+        assertEquals(listOf("yuumi", null, null, "nocturne", "cho_gath"), scanner.slots.take(5).map { it.championId })
+        assertEquals("kai_sa", scanner.slots.last().championId)
+        val resolved = observations.toMutableList().apply { this[1] = this[1].copy(championId = "jax") }
+        scanner.update(resolved, aspect)
+        assertNull(scanner.slots[2].championId)
+        scanner.update(resolved, aspect)
+        assertEquals(listOf("yuumi", "jax", "kai_sa", "nocturne", "cho_gath"), scanner.slots.take(5).map { it.championId })
+        repeat(2) { scanner.update(listOf(observations[1]), aspect) }
+        assertEquals("jax", scanner.slots[1].championId)
+        assertEquals("kai_sa", scanner.slots[2].championId)
+    }
+
+    @Test fun sparseFramesKeepMeasuredPositionsAndAllowTheSameBanOnOppositeTeams() {
+        val scanner = BannedPortraitScanner()
+        val aspect = 1920f / 864
+        val rows = BanSide.entries.flatMap { side ->
+            List(5) { index ->
+                val start = if (side == BanSide.ALLY) .065f else .796f
+                BanObservation(side, BanRegion(start + .036f * index, .05f, .03f))
+            }
+        }
+        scanner.update(rows, aspect)
+        val sparse = listOf(rows[3], rows[7]).map { it.copy(championId = "kai_sa", similarity = .95f) }
+        repeat(2) { scanner.update(sparse, aspect) }
+        assertEquals(rows.map { it.region }, scanner.slots.map { it.region })
+        assertEquals(listOf(3, 2), scanner.slots.filter { it.championId == "kai_sa" }.map { it.index })
+        repeat(2) { scanner.update(listOf(rows[1].copy(championId = "kai_sa", similarity = .95f)), aspect) }
+        assertNull(scanner.slots[1].championId)
+        assertEquals("kai_sa", scanner.slots[3].championId)
+    }
+
+    @Test fun substantiallyStrongerEvidenceCanRelocateABanOnlyAfterTwoFrames() {
+        val scanner = BannedPortraitScanner()
+        val row = computeAdaptiveBanRegions(2f, BanSide.ALLY).map { BanObservation(BanSide.ALLY, it) }
+        val prior = row.toMutableList().apply { this[0] = this[0].copy(championId = "kai_sa", similarity = .86f) }
+        repeat(2) { scanner.update(prior, 2f) }
+        val better = listOf(row[2].copy(championId = "kai_sa", similarity = .97f))
+        scanner.update(better, 2f)
+        assertEquals("kai_sa", scanner.slots[0].championId)
+        assertNull(scanner.slots[2].championId)
+        scanner.update(better, 2f)
+        assertNull(scanner.slots[0].championId)
+        assertEquals("kai_sa", scanner.slots[2].championId)
     }
 
     @Test fun marginalCropScoreCannotReplaceAnAcceptedBanIdentity() {
@@ -382,7 +446,7 @@ class BannedPortraitScannerTest {
     @Test fun confirmedBanSurvivesEmptyReplacementAndViewportUntilDraftClear() {
         val scanner = BannedPortraitScanner()
         val side = com.example.service.screen.BanSide.ALLY
-        val region = com.example.service.screen.BanRegion(.05f,.05f,.03f)
+        val region = com.example.service.screen.BanRegion(.021f,.05f,.03f)
         val portrait = com.example.service.screen.BanObservation(side,region,"ahri")
         val empty = com.example.service.screen.BanObservation(side,region,empty=true)
         scanner.update(listOf(portrait), 2f)

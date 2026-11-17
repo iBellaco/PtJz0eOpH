@@ -188,6 +188,7 @@ jobs:
               'com.example.DraftGeometryPreviewTest',
               'com.example.DraftGeometryStabilityTest',
               'com.example.DraftPreviewAlignmentTest',
+              'com.example.CalibrationEvidenceImageTest',
               'com.example.CaptureCoordinateSpaceTest',
               'com.example.PocoDebugCaptionLayoutTest',
               'com.example.DraftRingAlignmentTest',

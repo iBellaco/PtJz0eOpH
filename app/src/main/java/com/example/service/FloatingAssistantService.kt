@@ -234,7 +234,6 @@ class FloatingAssistantService : Service(), LifecycleOwner, ViewModelStoreOwner,
                             val showBoxes by com.example.service.screen.DraftVisionScanner.showCalibrationBoxes.collectAsStateWithLifecycle()
                             if (showBoxes) {
                                 com.example.ui.components.ScannerDebugOverlay(
-                                    config = com.example.service.screen.DraftVisionScanner.calibrationConfig,
                                     overlayRect = com.example.service.screen.DraftVisionScanner.overlayRect
                                 )
                             }
