@@ -31,7 +31,7 @@
     <string name="info_4_desarrollador_derechos_y_legal" formatted="false">4. Desarrollador, Derechos y Legal</string>
     <string name="info_aplicacion_creada_y_desarrollada_por_diego_barba_chavez" formatted="false">Aplicación creada y desarrollada por Diego Barba Chavez.</string>
     <string name="info_todos_los_derechos_reservados" formatted="false">Todos los derechos reservados.</string>
-    <string name="info_disenado_para_la_comunidad_competitiva_de_league_of_legends_wild" formatted="false">Diseñado para la comunidad competitiva de League of Legends: Wild Rift.</string>
+    <string name="info_disenado_para_la_comunidad_competitiva_de_league_of_legends_wild" formatted="false">Diseñado para la comunidad de League of Legends: Wild Rift.</string>
     <string name="info_coach_no_cuenta_con_el_respaldo_de_riot_games_y_no_refleja_las_op" formatted="false">Coach no cuenta con el respaldo de Riot Games y no refleja las opiniones ni los puntos de vista de Riot Games ni de ninguna persona involucrada oficialmente en la producción o administración de las propiedades de Riot Games. Riot Games y todas las propiedades asociadas son marcas comerciales o marcas comerciales registradas de Riot Games, Inc.</string>
     <string name="legal_informacion_legal" formatted="false">Información Legal</string>
     <string name="legal_debes_aceptar_los_terminos_de_servicio_y_la_politica_de_privacida" formatted="false">Debes aceptar los Términos de Servicio y la Política de Privacidad para poder ingresar a la aplicación. Si cierras esta ventana, la aplicación se cerrará.</string>
@@ -101,6 +101,6 @@
     <string name="legal_terms" formatted="false">Términos</string>
     <string name="legal_third_party" formatted="false">Terceros</string>
     <string name="info_patch">Parche %1$s</string>
-    <string name="info_version">v%1$s (Compilación %2$d) • %3$s</string>
+    <string name="info_version">v%1$s • %2$s</string>
     <string name="info_patch_description">Parche de referencia: %1$s. El catálogo y las fuentes consultadas pueden conservar datos anteriores o presentar errores. No se garantiza una actualización inmediata.</string>
 </resources>

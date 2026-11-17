@@ -274,9 +274,11 @@ object BestBuildWrScraper {
         if (selectedRegion == MetaRegion.CHINA) selectRegion(MetaRegion.CHINA)
     }
 
-    private fun sharedChinaSnapshotForUser(context: Context): ChinaMetaSnapshotStore.Snapshot? {
+    private suspend fun sharedChinaSnapshotForUser(context: Context): ChinaMetaSnapshotStore.Snapshot? {
         if (com.example.util.AuthManager.isCurrentUserAdmin()) return null
-        val snapshot = ChinaMetaSnapshotStore.current() ?: return null
+        val snapshot = ChinaMetaSnapshotStore.current()
+            ?: ChinaMetaSnapshotStore.awaitCurrent()
+            ?: return null
         if (snapshot.patch != com.example.data.GamePatch.VERSION) return null
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         return snapshot.takeIf { it.checkedAt >= prefs.getLong("timestamp_${MetaRegion.CHINA}", 0L) }

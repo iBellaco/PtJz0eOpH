@@ -31,7 +31,7 @@
     <string name="info_4_desarrollador_derechos_y_legal" formatted="false">4. Desenvolvedor, Direitos Autorais e Avisos Legais</string>
     <string name="info_aplicacion_creada_y_desarrollada_por_diego_barba_chavez" formatted="false">Aplicativo criado e desenvolvido por Diego Barba Chavez.</string>
     <string name="info_todos_los_derechos_reservados" formatted="false">Todos os direitos reservados.</string>
-    <string name="info_disenado_para_la_comunidad_competitiva_de_league_of_legends_wild" formatted="false">Projetado para a comunidade competitiva de League of Legends: Wild Rift.</string>
+    <string name="info_disenado_para_la_comunidad_competitiva_de_league_of_legends_wild" formatted="false">Projetado para a comunidade de League of Legends: Wild Rift.</string>
     <string name="info_coach_no_cuenta_con_el_respaldo_de_riot_games_y_no_refleja_las_op" formatted="false">O Coach não é aprovado nem afiliado à Riot Games e não reflete as opiniões ou pontos de vista da Riot Games ou de qualquer pessoa oficialmente envolvida na produção ou administração das propriedades da Riot Games. Riot Games e todas as propriedades associadas são marcas comerciais ou marcas registradas da Riot Games, Inc.</string>
     <string name="legal_informacion_legal" formatted="false">Informações Legais</string>
     <string name="legal_debes_aceptar_los_terminos_de_servicio_y_la_politica_de_privacida" formatted="false">Você deve aceitar os Termos de Serviço e a Política de Privacidade para entrar no aplicativo. Ao fechar esta janela, o aplicativo será encerrado.</string>
@@ -101,6 +101,6 @@
     <string name="legal_terms" formatted="false">Termos</string>
     <string name="legal_third_party" formatted="false">Terceiros</string>
     <string name="info_patch">Atualização %1$s</string>
-    <string name="info_version">v%1$s (Compilação %2$d) • %3$s</string>
+    <string name="info_version">v%1$s • %2$s</string>
     <string name="info_patch_description">Atualização de referência: %1$s. O catálogo e as fontes consultadas podem manter dados anteriores ou apresentar erros. Não garantimos atualização imediata.</string>
 </resources>
