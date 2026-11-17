@@ -8,7 +8,7 @@ import xml.etree.ElementTree as ET
 
 source = ast.parse(Path(__file__).with_name('audit-portuguese-device.py').read_text())
 functions = ast.Module(body=[n for n in source.body if isinstance(n, ast.FunctionDef) and n.name in
-    ('app_nodes', 'is_channel_name', 'is_announcement_body', 'ui_text_candidates', 'node_bounds',
+    ('app_nodes', 'app_has_rendered_content', 'is_channel_name', 'is_announcement_body', 'ui_text_candidates', 'node_bounds',
      'onboarding_fallback_point', 'finish_onboarding', 'extract_kotlin_regex_pattern')], type_ignores=[])
 namespace = {'ET': ET, 'APP': 'com.Coach', 're': __import__('re'), 'json': json}
 exec(compile(functions, 'audit-portuguese-device.py', 'exec'), namespace)
@@ -54,6 +54,16 @@ class DeviceTextAuditTest(unittest.TestCase):
     def test_only_application_nodes_enter_the_audit(self):
         xml = '<hierarchy><node package="com.Coach" text="Início"/><node package="android" text="Español"/></hierarchy>'
         self.assertEqual(['Início'], candidates(namespace['app_nodes'](xml)))
+
+    def test_launcher_hierarchy_is_not_treated_as_rendered_coach(self):
+        xml = '<hierarchy><node package="com.google.android.apps.nexuslauncher" text="Phone"/></hierarchy>'
+        self.assertFalse(namespace['app_has_rendered_content'](xml))
+
+    def test_coach_root_without_text_waits_for_the_first_rendered_surface(self):
+        empty = '<hierarchy><node package="com.Coach" text="" content-desc=""/></hierarchy>'
+        ready = '<hierarchy><node package="com.Coach" text="Escolha seu idioma"/></hierarchy>'
+        self.assertFalse(namespace['app_has_rendered_content'](empty))
+        self.assertTrue(namespace['app_has_rendered_content'](ready))
 
     def test_onboarding_fallback_prefers_wide_clickable_control_at_bottom(self):
         nodes = [
