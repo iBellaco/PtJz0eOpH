@@ -72,6 +72,66 @@ def app_nodes(xml):
     return [n for n in ET.fromstring(xml).iter("node") if n.get("package") == APP]
 
 
+def app_has_rendered_content(xml):
+    """Require Coach content, not merely a root node left by the launcher."""
+    return bool(app_nodes(xml)) and any(
+        node.get("text") or node.get("content-desc")
+        for node in app_nodes(xml)
+    )
+
+
+def launch_app():
+    """Start the exported launcher activity and verify that Coach is visible."""
+    last_error = "Coach no llegó al primer plano"
+    last_xml = ""
+    for attempt in range(3):
+        adb("shell", "am", "force-stop", APP)
+        try:
+            # Resolve the launcher activity from the installed manifest. This
+            # also works when R8 changes the generated activity class name.
+            adb("shell", "am", "start", "-W", "-a", "android.intent.action.MAIN",
+                "-c", "android.intent.category.LAUNCHER", "-p", APP)
+        except subprocess.SubprocessError as error:
+            last_error = "No se pudo iniciar el intent de Coach: " + str(error)
+
+        for _ in range(20):
+            try:
+                last_xml = window()
+                if app_has_rendered_content(last_xml):
+                    print("DEVICE_APP_READY:", attempt + 1, flush=True)
+                    return
+                last_error = "El launcher sigue visible o Coach aún no publicó su UI"
+            except (subprocess.SubprocessError, ET.ParseError) as error:
+                last_error = str(error)
+            time.sleep(0.5)
+
+        # Some Android images return success from `am start` while the launcher
+        # is still focused. Resolve the same exported entry point with Monkey
+        # before declaring the installed APK unusable.
+        try:
+            adb("shell", "monkey", "-p", APP, "-c", "android.intent.category.LAUNCHER", "1")
+        except subprocess.SubprocessError as error:
+            last_error = "No se pudo reintentar el launcher de Coach: " + str(error)
+        for _ in range(20):
+            try:
+                last_xml = window()
+                if app_has_rendered_content(last_xml):
+                    print("DEVICE_APP_READY_FALLBACK:", attempt + 1, flush=True)
+                    return
+            except (subprocess.SubprocessError, ET.ParseError) as error:
+                last_error = str(error)
+            time.sleep(0.5)
+
+    if last_xml:
+        (OUT / "launch-failure.xml").write_text(last_xml)
+        (OUT / "launch-failure.png").write_bytes(adb("exec-out", "screencap", "-p", binary=True))
+    try:
+        (OUT / "launch-failure-logcat.txt").write_text(adb("logcat", "-d", "-t", "500"))
+    except subprocess.SubprocessError as error:
+        (OUT / "launch-failure-logcat.txt").write_text("No se pudo leer logcat: " + str(error))
+    raise AssertionError("Coach no se pudo abrir en el emulador: " + last_error)
+
+
 def is_channel_name(node):
     # Channel brands are authored content; their exact names must survive localization.
     return node.get("resource-id", "").rsplit("/", 1)[-1] == "streamer_channel_name"
@@ -271,7 +331,7 @@ if MODE in ("pt", "both"):
     adb("shell", "pm", "grant", APP, "android.permission.POST_NOTIFICATIONS")
     adb("shell", "input", "keyevent", "KEYCODE_WAKEUP")
     adb("shell", "wm", "dismiss-keyguard")
-    adb("shell", "am", "start", "-W", "-n", APP + "/com.example.MainActivity")
+    launch_app()
     select_language_option(("Português", "Portugués"), "Continuar em Português")
     snapshot("language-portuguese")
     tap("Continuar em Português")
@@ -352,8 +412,7 @@ if MODE in ("pt", "both"):
         snapshot('component-item-' + item_id + '-passive')
         back()
         tap('Fechar')
-    adb("shell", "am", "force-stop", APP)
-    adb("shell", "am", "start", "-W", "-n", APP + "/com.example.MainActivity")
+    launch_app()
     tap("Início")
     tap("Informação")
     snapshot("restart-retains-portuguese")
@@ -375,7 +434,7 @@ if MODE in ("es", "both"):
     findings, authored_texts, screens = [], [], []
     adb('shell', 'pm', 'clear', APP)
     adb('shell', 'pm', 'grant', APP, 'android.permission.POST_NOTIFICATIONS')
-    adb('shell', 'am', 'start', '-W', '-n', APP + '/com.example.MainActivity')
+    launch_app()
     tap('Español')
     snapshot('language-spanish')
     tap('Continuar en Español')
@@ -440,8 +499,7 @@ if MODE in ("es", "both"):
         snapshot('component-item-' + item_id + '-passive')
         back()
         tap('Cerrar')
-    adb('shell', 'am', 'force-stop', APP)
-    adb('shell', 'am', 'start', '-W', '-n', APP + '/com.example.MainActivity')
+    launch_app()
     tap('Inicio')
     tap('Información')
     snapshot('restart-retains-spanish')
