@@ -10,9 +10,6 @@ import com.example.ui.components.coachClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -484,10 +481,8 @@ fun ThemeCustomizationBottomSheet(
             }
 
             // Temas independientes de la región. Se muestran debajo del
-            // explorador para que White, Black y los cinco estilos adicionales
-            // no se confundan con una región de Runaterra. La insignia Premium
-            // permanece visible también para suscriptores; el bloqueo solo se
-            // usa en la acción de aplicar cuando la cuenta no tiene acceso.
+            // explorador para que los doce estilos de aplicación no se
+            // confundan con una región de Runaterra.
             ApplicationThemeSection(
                 previewTheme = previewTheme,
                 currentTheme = currentTheme,
@@ -676,9 +671,9 @@ private fun RegionVisualPreviewGridCard(
                                     fontWeight = FontWeight.Bold
                                 )
                             }
-                            if (inspectedTheme.isApplicationTheme) {
+                            if (inspectedTheme.isApplicationTheme && !isPremium) {
                                 Spacer(modifier = Modifier.width(5.dp))
-                                PremiumThemeBadge(testTag = "theme_preview_premium_badge")
+                                PremiumThemeLockBadge(testTag = "theme_preview_premium_badge")
                             }
                         }
                         Text(
@@ -927,152 +922,120 @@ private fun ApplicationThemeSection(
                     fontSize = 12.sp
                 )
                 Text(
-                    text = tr("White, Black y cinco estilos Premium independientes de las regiones."),
+                    text = tr("12 estilos Premium independientes de las regiones."),
                     color = TextSecondary,
                     fontSize = 10.5.sp,
                     lineHeight = 14.sp
                 )
             }
-            PremiumThemeBadge(testTag = "theme_application_premium_badge")
-        }
-
-        applicationThemes.chunked(2).forEachIndexed { rowIndex, rowThemes ->
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .testTag("theme_application_row_$rowIndex"),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                rowThemes.forEach { theme ->
-                    val isApplied = currentTheme == theme
-                    val isInspected = previewTheme == theme
-                    ApplicationThemeCard(
-                        theme = theme,
-                        isApplied = isApplied,
-                        isInspected = isInspected,
-                        isPremium = isPremium,
-                        onSelect = { onSelect(theme) },
-                        modifier = Modifier
-                            .weight(1f)
-                            .testTag("theme_application_${theme.id.lowercase()}")
-                    )
-                }
-                if (rowThemes.size == 1) Spacer(modifier = Modifier.weight(1f))
+            if (!isPremium) {
+                PremiumThemeLockBadge(testTag = "theme_application_premium_badge")
             }
         }
-    }
-}
 
-@Composable
-private fun ApplicationThemeCard(
-    theme: AppTheme,
-    isApplied: Boolean,
-    isInspected: Boolean,
-    isPremium: Boolean,
-    onSelect: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Card(
-        modifier = modifier
-            .height(132.dp)
-            .clip(RoundedCornerShape(12.dp))
-            .coachClickable(onClick = onSelect),
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = theme.surface),
-        border = BorderStroke(
-            when {
-                isApplied -> 2.dp
-                isInspected -> 1.5.dp
-                else -> 0.8.dp
-            },
-            when {
-                isApplied -> HextechGold
-                isInspected -> theme.primary
-                else -> theme.cardBorder
-            }
-        )
-    ) {
-        Column(
+        LazyRow(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(
-                    Brush.verticalGradient(
-                        listOf(theme.primary.copy(alpha = 0.18f), theme.surface)
-                    )
-                )
-                .padding(horizontal = 9.dp, vertical = 8.dp),
-            verticalArrangement = Arrangement.spacedBy(3.dp)
+                .testTag("theme_application_carousel"),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            contentPadding = PaddingValues(start = 2.dp, end = 2.dp, bottom = 8.dp)
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                    listOf(theme.background, theme.primary, theme.secondary).forEach { color ->
+            items(applicationThemes, key = { "application_carousel_${it.id}" }) { theme ->
+                val isApplied = currentTheme == theme
+                val isInspected = previewTheme == theme
+                Card(
+                    modifier = Modifier
+                        .width(130.dp)
+                        .height(82.dp)
+                        .clip(RoundedCornerShape(10.dp))
+                        .coachClickable { onSelect(theme) }
+                        .testTag("theme_application_${theme.id.lowercase()}"),
+                    shape = RoundedCornerShape(10.dp),
+                    colors = CardDefaults.cardColors(containerColor = theme.surface),
+                    border = BorderStroke(
+                        if (isApplied) 2.dp else if (isInspected) 1.5.dp else 0.8.dp,
+                        if (isApplied) HextechGold else if (isInspected) theme.primary else theme.cardBorder
+                    )
+                ) {
+                    Box(modifier = Modifier.fillMaxSize()) {
                         Box(
                             modifier = Modifier
-                                .size(11.dp)
-                                .clip(CircleShape)
-                                .background(color)
-                                .border(0.7.dp, Color.White.copy(alpha = 0.35f), CircleShape)
+                                .fillMaxSize()
+                                .background(
+                                    Brush.verticalGradient(
+                                        listOf(theme.primary.copy(alpha = 0.2f), theme.surface)
+                                    )
+                                )
                         )
+                        if (isApplied || isInspected) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .background(
+                                        Brush.radialGradient(
+                                            listOf(
+                                                theme.primary.copy(alpha = if (isApplied) 0.3f else 0.15f),
+                                                Color.Transparent
+                                            )
+                                        )
+                                    )
+                            )
+                        }
+                        Row(
+                            modifier = Modifier
+                                .align(Alignment.TopStart)
+                                .padding(7.dp),
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            listOf(theme.background, theme.primary, theme.secondary).forEach { color ->
+                                Box(
+                                    modifier = Modifier
+                                        .size(9.dp)
+                                        .clip(CircleShape)
+                                        .background(color)
+                                        .border(0.6.dp, Color.White.copy(alpha = 0.35f), CircleShape)
+                                )
+                            }
+                        }
+                        Column(
+                            modifier = Modifier
+                                .align(Alignment.BottomStart)
+                                .padding(8.dp)
+                        ) {
+                            Text(
+                                text = tr(theme.regionTag),
+                                color = theme.primaryLight,
+                                fontSize = 8.5.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Text(
+                                text = tr(theme.titleKey),
+                                color = theme.textPrimary,
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Black,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        }
+                        if (isApplied) {
+                            Icon(
+                                imageVector = Icons.Default.CheckCircle,
+                                contentDescription = null,
+                                tint = HextechGold,
+                                modifier = Modifier
+                                    .align(Alignment.TopEnd)
+                                    .padding(6.dp)
+                                    .size(16.dp)
+                            )
+                        } else if (!isPremium) {
+                            PremiumThemeLockBadge(
+                                testTag = null,
+                                modifier = Modifier
+                                    .align(Alignment.TopEnd)
+                                    .padding(5.dp)
+                            )
+                        }
                     }
-                }
-                PremiumThemeBadge(testTag = null)
-            }
-
-            Text(
-                text = tr(theme.titleKey),
-                color = theme.textPrimary,
-                fontWeight = FontWeight.ExtraBold,
-                fontSize = 12.5.sp,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-            Text(
-                text = tr(theme.regionTag),
-                color = theme.secondaryLight,
-                fontSize = 8.5.sp,
-                fontWeight = FontWeight.Bold,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-            Text(
-                text = tr(theme.descKey),
-                color = theme.textSecondary,
-                fontSize = 9.5.sp,
-                lineHeight = 12.sp,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .heightIn(min = 24.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(5.dp)
-            ) {
-                when {
-                    isApplied -> {
-                        Icon(Icons.Default.CheckCircle, null, tint = HextechGold, modifier = Modifier.size(16.dp))
-                        Text(tr("Aplicado"), color = HextechGold, fontSize = 9.sp, fontWeight = FontWeight.Bold)
-                    }
-                    isInspected -> {
-                        Icon(Icons.Default.Visibility, null, tint = theme.primaryLight, modifier = Modifier.size(16.dp))
-                        Text(tr("Vista previa"), color = theme.primaryLight, fontSize = 9.sp, fontWeight = FontWeight.Bold)
-                    }
-                    !isPremium -> {
-                        Icon(
-                            Icons.Default.Lock,
-                            contentDescription = tr("Premium"),
-                            tint = theme.secondaryLight,
-                            modifier = Modifier.size(15.dp)
-                        )
-                        Text(tr("Requiere Premium"), color = theme.textSecondary, fontSize = 9.sp)
-                    }
-                    else -> Text(tr("Toca para previsualizar"), color = theme.textMuted, fontSize = 9.sp)
                 }
             }
         }
@@ -1080,28 +1043,25 @@ private fun ApplicationThemeCard(
 }
 
 @Composable
-private fun PremiumThemeBadge(testTag: String?) {
-    val premiumInk = Color(0xFF241A06)
-    Row(
+private fun PremiumThemeLockBadge(
+    testTag: String?,
+    modifier: Modifier = Modifier
+) {
+    Box(
         modifier = Modifier
-            .clip(RoundedCornerShape(5.dp))
-            .background(Brush.horizontalGradient(listOf(HextechGold, Color(0xFFD4AF37))))
+            .then(modifier)
+            .clip(RoundedCornerShape(4.dp))
+            .background(HextechDarkBg.copy(alpha = 0.75f))
+            .border(0.8.dp, HextechGold.copy(alpha = 0.7f), RoundedCornerShape(4.dp))
             .then(if (testTag != null) Modifier.testTag(testTag) else Modifier)
-            .padding(horizontal = 5.dp, vertical = 2.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(3.dp)
+            .padding(horizontal = 4.dp, vertical = 2.dp),
+        contentAlignment = Alignment.Center
     ) {
         Icon(
-            imageVector = Icons.Default.Star,
+            imageVector = Icons.Default.Lock,
             contentDescription = tr("Premium"),
-            tint = premiumInk,
+            tint = HextechGold,
             modifier = Modifier.size(10.dp)
-        )
-        Text(
-            text = tr("PREMIUM"),
-            color = premiumInk,
-            fontSize = 8.sp,
-            fontWeight = FontWeight.Black
         )
     }
 }

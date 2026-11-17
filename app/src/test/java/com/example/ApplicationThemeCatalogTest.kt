@@ -10,13 +10,17 @@ import org.junit.Test
 
 class ApplicationThemeCatalogTest {
     @Test
-    fun `application catalog has white black and five premium styles`() {
+    fun `application catalog has twelve premium styles`() {
         val themes = AppTheme.entries.filter { it.isApplicationTheme }
 
-        assertEquals(7, themes.size)
-        assertEquals(listOf("WHITE", "BLACK", "AURORA", "EMBER", "SAKURA", "FOREST", "COBALT"), themes.map { it.id })
+        assertEquals(12, themes.size)
+        assertEquals(
+            listOf("WHITE", "BLACK", "AURORA", "EMBER", "SAKURA", "FOREST", "COBALT", "GRAPHITE", "MINT", "VOLT", "CANDY", "SLATE"),
+            themes.map { it.id }
+        )
         assertTrue(themes.all { it.regionTag == "Tema de aplicación" })
         assertTrue(themes.map { it.descKey }.distinct().size == themes.size)
+        assertEquals(themes.size, themes.map { listOf(it.background, it.surface, it.primary, it.secondary) }.distinct().size)
         assertTrue(themes.first { it.id == "WHITE" }.isDark.not())
         assertTrue(themes.filter { it.id != "WHITE" }.all { it.isDark })
     }
