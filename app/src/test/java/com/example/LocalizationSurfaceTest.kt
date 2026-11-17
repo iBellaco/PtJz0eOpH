@@ -184,7 +184,9 @@ class LocalizationSurfaceTest {
         compose.onNodeWithText("Passo 4: Consulta de Builds e Runas").performScrollTo().assertExists()
         compose.onNodeWithText("Informações Legais e Privacidade").performScrollTo().assertExists()
         compose.onNodeWithText("Todos os direitos reservados.", substring = true).performScrollTo().assertExists()
-        compose.onAllNodesWithText("Compilação", substring = true).assertCountEquals(2)
+        // The build number is intentionally exposed only on the main screen;
+        // the information panel must not show compilation labels or metadata.
+        compose.onAllNodesWithText("Compilação", substring = true).assertCountEquals(0)
 
         compose.runOnIdle { AppLanguage.select(context, "es") }
         compose.onNodeWithText("Información").assertExists()
