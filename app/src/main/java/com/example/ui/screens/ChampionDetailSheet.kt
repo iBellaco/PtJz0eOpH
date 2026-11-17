@@ -144,6 +144,7 @@ fun ChampionDetailSheet(
     val context = LocalContext.current
     val isSignedIn by com.example.util.AuthManager.isSignedIn.collectAsStateWithLifecycle()
     val currentRegion by GlobalMetaSyncService.currentRegion.collectAsStateWithLifecycle()
+    val currentChinaElo by GlobalMetaSyncService.currentChinaElo.collectAsStateWithLifecycle()
     val favorites by FavoriteChampionsManager.favoritesFlow.collectAsStateWithLifecycle()
     val isFavorite = favorites.contains(champion.id.lowercase())
 
@@ -516,6 +517,21 @@ fun ChampionDetailSheet(
                     }
 
                     Text(tr("Última consulta válida") + ": " + com.example.ui.components.metaTime(liveChampion.statsCheckedAt), color = TextMuted, fontSize = 10.sp)
+                    Text(
+                        text = buildString {
+                            append(tr("Servidor"))
+                            append(": ")
+                            append(tr(MetaRegion.label(currentRegion)))
+                            if (MetaRegion.normalize(currentRegion) == MetaRegion.CHINA) {
+                                append(" • ")
+                                append(tr(MetaRegion.chinaEloLabel(currentChinaElo)))
+                            }
+                        },
+                        modifier = Modifier.testTag("champion_stats_region"),
+                        color = HextechCyan,
+                        fontSize = 10.5.sp,
+                        fontWeight = FontWeight.Bold
+                    )
                     Spacer(modifier = Modifier.height(8.dp))
 
                     Row(
@@ -681,8 +697,8 @@ fun ChampionDetailSheet(
                     com.example.util.ChampionBuildOption(
                         optionNumber = 1,
                         title = "Opción 1: Meta Core Estándar",
-                        subtitle = "Meta Pro • Global",
-                        source = "Meta Pro / Global",
+                        subtitle = "Meta Pro • ${MetaRegion.label(currentRegion)}",
+                        source = "Meta Pro / ${MetaRegion.label(currentRegion)}",
                         badge = "ESTÁNDAR",
                         tacticalReason = "Build estándar de referencia oficial con mayor tasa de victoria equilibrada en el meta actual de Wild Rift.",
                         items = if (roleProfile.build8Items.isNotEmpty()) roleProfile.build8Items else (roleProfile.coreItems + roleProfile.situationalItems).take(8),

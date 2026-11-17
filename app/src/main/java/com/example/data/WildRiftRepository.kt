@@ -292,8 +292,7 @@ object WildRiftRepository {
                 history24hAt = if (hasCurrentStats) day?.at ?: 0L else 0L,
                 history12hAt = if (hasCurrentStats) halfDay?.at ?: 0L else 0L,
                 tier = category,
-                tierMovement = if (normalized == com.example.data.sync.MetaRegion.CHINA) 0 else
-                    patchMovements?.get(com.example.data.sync.RegionalTierParser.canonical(champion.id)) ?: if (patchMovements != null) 0 else previousTier?.takeIf { it.isNotBlank() }?.let {
+                tierMovement = patchMovements?.get(com.example.data.sync.RegionalTierParser.canonical(champion.id)) ?: if (patchMovements != null) 0 else previousTier?.takeIf { it.isNotBlank() }?.let {
                     when {
                         tierRank(category) != tierRank(it) -> tierRank(category) - tierRank(it)
                         else -> priorMovements[champion.id] ?: champion.tierMovement
@@ -348,11 +347,15 @@ object WildRiftRepository {
         return baseChampions.toList()
     }
 
-    @Synchronized fun applyPatchMovements(movements: Map<String, Int>) {
-        regionalChampions.keys.toList().forEach { region ->
+    @Synchronized fun applyPatchMovements(movements: Map<String, Int>, region: String = com.example.data.sync.MetaRegion.DEFAULT) {
+        val normalizedRegion = com.example.data.sync.MetaRegion.normalize(region)
+        regionalChampions.keys.toList().filter { key ->
+            if (normalizedRegion == com.example.data.sync.MetaRegion.CHINA) {
+                key == com.example.data.sync.MetaRegion.CHINA || key.startsWith("${com.example.data.sync.MetaRegion.CHINA}:")
+            } else key == normalizedRegion
+        }.forEach { region ->
             regionalChampions[region] = regionalChampions[region].orEmpty().map {
-                it.copy(tierMovement = if (region == com.example.data.sync.MetaRegion.CHINA || region.startsWith("${com.example.data.sync.MetaRegion.CHINA}:")) 0 else
-                    movements[com.example.data.sync.RegionalTierParser.canonical(it.id)] ?: 0)
+                it.copy(tierMovement = movements[com.example.data.sync.RegionalTierParser.canonical(it.id)] ?: 0)
             }
         }
         androidx.compose.runtime.snapshots.Snapshot.withMutableSnapshot {
