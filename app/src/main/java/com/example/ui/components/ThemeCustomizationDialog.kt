@@ -382,7 +382,8 @@ fun ThemeCustomizationBottomSheet(
                             .width(130.dp)
                             .height(82.dp)
                             .clip(RoundedCornerShape(10.dp))
-                            .coachClickable { previewTheme = theme },
+                            .coachClickable { previewTheme = theme }
+                            .testTag("theme_region_${theme.id.lowercase()}"),
                         shape = RoundedCornerShape(10.dp),
                         colors = CardDefaults.cardColors(containerColor = theme.surface),
                         border = BorderStroke(
@@ -424,6 +425,13 @@ fun ThemeCustomizationBottomSheet(
                                     )
                             }
 
+                            ThemeColorDots(
+                                theme = theme,
+                                modifier = Modifier
+                                    .align(Alignment.TopStart)
+                                    .padding(7.dp)
+                            )
+
                             Column(
                                 modifier = Modifier
                                     .align(Alignment.BottomStart)
@@ -456,24 +464,12 @@ fun ThemeCustomizationBottomSheet(
                                         .size(16.dp)
                                 )
                             } else if (!isPremium) {
-                                Box(
+                                PremiumThemeLockBadge(
+                                    testTag = null,
                                     modifier = Modifier
                                         .align(Alignment.TopEnd)
                                         .padding(5.dp)
-                                        .clip(RoundedCornerShape(4.dp))
-                                        .background(HextechDarkBg.copy(alpha = 0.75f))
-                                        .border(0.8.dp, HextechGold.copy(alpha = 0.7f), RoundedCornerShape(4.dp))
-                                        .padding(horizontal = 4.dp, vertical = 2.dp)
-                                ) {
-                                    Row(verticalAlignment = Alignment.CenterVertically) {
-                                        Icon(
-                                            imageVector = Icons.Default.Lock,
-                                            contentDescription = com.example.util.trNullable("Premium"),
-                                            tint = HextechGold,
-                                            modifier = Modifier.size(10.dp)
-                                        )
-                                    }
-                                }
+                                )
                             }
                         }
                     }
@@ -981,22 +977,12 @@ private fun ApplicationThemeSection(
                                     )
                             )
                         }
-                        Row(
+                        ThemeColorDots(
+                            theme = theme,
                             modifier = Modifier
                                 .align(Alignment.TopStart)
-                                .padding(7.dp),
-                            horizontalArrangement = Arrangement.spacedBy(4.dp)
-                        ) {
-                            listOf(theme.background, theme.primary, theme.secondary).forEach { color ->
-                                Box(
-                                    modifier = Modifier
-                                        .size(9.dp)
-                                        .clip(CircleShape)
-                                        .background(color)
-                                        .border(0.6.dp, Color.White.copy(alpha = 0.35f), CircleShape)
-                                )
-                            }
-                        }
+                                .padding(7.dp)
+                        )
                         Column(
                             modifier = Modifier
                                 .align(Alignment.BottomStart)
@@ -1038,6 +1024,24 @@ private fun ApplicationThemeSection(
                     }
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun ThemeColorDots(theme: AppTheme, modifier: Modifier = Modifier) {
+    Row(
+        modifier = modifier,
+        horizontalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+        listOf(theme.background, theme.primary, theme.secondary).forEach { color ->
+            Box(
+                modifier = Modifier
+                    .size(9.dp)
+                    .clip(CircleShape)
+                    .background(color)
+                    .border(0.6.dp, Color.White.copy(alpha = 0.35f), CircleShape)
+            )
         }
     }
 }
