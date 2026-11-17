@@ -896,6 +896,10 @@ jobs:
     branches:
     - main
     - coach-validacion
+  pull_request:
+    branches:
+    - main
+    - coach-validacion
   workflow_dispatch:
     inputs:
       target_portuguese_run:

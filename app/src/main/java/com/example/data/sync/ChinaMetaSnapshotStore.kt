@@ -9,8 +9,11 @@ import kotlinx.coroutines.withTimeoutOrNull
 /**
  * Published China meta is shared by account sessions instead of being a
  * device-only preference. The public Tencent feed remains the source; this
- * document makes the exact parsed snapshot and tier movement available to a
- * second device as soon as an authenticated staff poll publishes it.
+ * document makes the exact parsed snapshot and tier movement available to
+ * every Coach installation, including users who have not created an account.
+ * Only the staff publisher writes this document; all clients consume the same
+ * read-only snapshot so China statistics and tier movements do not diverge by
+ * device.
  */
 object ChinaMetaSnapshotStore {
     data class Snapshot(
@@ -28,7 +31,6 @@ object ChinaMetaSnapshotStore {
 
     private const val DOCUMENT_ID = "china_meta_snapshot"
     private var initialized = false
-    private var authListener: FirebaseAuth.AuthStateListener? = null
     private var documentListener: com.google.firebase.firestore.ListenerRegistration? = null
     private var callback: ((Snapshot) -> Unit)? = null
     private var latest: Snapshot? = null
@@ -42,26 +44,40 @@ object ChinaMetaSnapshotStore {
         if (initialized) return
         initialized = true
         runCatching {
-            val auth = FirebaseAuth.getInstance()
-            val listener = FirebaseAuth.AuthStateListener { currentAuth ->
-                documentListener?.remove()
-                documentListener = null
-                if (currentAuth.currentUser != null) {
-                    documentListener = document.addSnapshotListener { snapshot, error ->
-                        if (error != null || snapshot == null || !snapshot.exists()) return@addSnapshotListener
-                        val parsed = decode(snapshot.data.orEmpty()) ?: return@addSnapshotListener
-                        synchronized(this) { latest = parsed }
-                        callback?.invoke(parsed)
-                    }
-                }
+            // This listener is deliberately attached without waiting for an
+            // authenticated session. Firestore rules expose this one document
+            // publicly; the write path below remains restricted to staff.
+            documentListener = document.addSnapshotListener { snapshot, error ->
+                if (error != null || snapshot == null || !snapshot.exists()) return@addSnapshotListener
+                val parsed = decode(snapshot.data.orEmpty()) ?: return@addSnapshotListener
+                synchronized(this) { latest = parsed }
+                callback?.invoke(parsed)
             }
-            authListener = listener
-            auth.addAuthStateListener(listener)
         }
     }
 
     @Synchronized
     fun current(): Snapshot? = latest
+
+    /**
+     * Gives a new installation a short initial read window before it falls
+     * back to the public feed. This keeps the first China render aligned with
+     * the same published snapshot used by other devices, even when the
+     * realtime callback has not fired yet.
+     */
+    suspend fun awaitCurrent(timeoutMillis: Long = 2_500L): Snapshot? {
+        current()?.let { return it }
+        return try {
+            withTimeoutOrNull(timeoutMillis) { document.get().await() }
+                ?.takeIf { it.exists() }
+                ?.let { decode(it.data.orEmpty()) }
+                ?.also { parsed -> synchronized(this) { latest = parsed } }
+        } catch (cancelled: kotlinx.coroutines.CancellationException) {
+            throw cancelled
+        } catch (_: Exception) {
+            null
+        }
+    }
 
     suspend fun publish(snapshot: Snapshot) {
         if (snapshot.patch != GamePatch.VERSION) return

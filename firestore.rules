@@ -475,6 +475,12 @@ service cloud.firestore {
       allow get: if true;
       allow write: if isAdmin();
     }
+    // China meta is a published, read-only snapshot. It must be available to
+    // signed-out installations too, while publishing remains administrator-only.
+    match /system_config/china_meta_snapshot {
+      allow get: if true;
+      allow write: if isAdmin();
+    }
     match /system_config/{document} {
       allow read: if signedIn();
       allow write: if !(document in ['streamer_live','economy_service','account_deletion_service']) && isAdmin();

@@ -474,6 +474,11 @@ object SubscriptionManager {
                         }
                     }
                     _currentAvatarId.value = avatarId
+                    // The role listener already receives the frame written in
+                    // the same update. Publish it immediately so the profile
+                    // avatar and navigation badge recompose without reopening
+                    // the panel or waiting for a second refresh.
+                    _currentRankBorder.value = rankBorder
                     
                     _unlockedAvatars.value = unlocked
 

@@ -173,7 +173,7 @@ fun InfoScreen(
                             fontWeight = FontWeight.Medium
                         )
                         Text(
-                            text = localizedString(R.string.info_version, com.example.BuildConfig.VERSION_NAME, com.example.BuildConfig.VERSION_CODE, patchLabel),
+                            text = localizedString(R.string.info_version, com.example.BuildConfig.VERSION_NAME, patchLabel),
                             color = TextMuted,
                             fontSize = 11.sp
                         )
@@ -288,42 +288,53 @@ fun InfoScreen(
             val context = LocalContext.current
             InfoCard(
                 title = localizedString(R.string.info_4_desarrollador_derechos_y_legal),
-                icon = Icons.Default.Person
+                icon = Icons.Default.Person,
+                centerTitle = true
             ) {
-                Text(
-                    text = localizedString(R.string.info_aplicacion_creada_y_desarrollada_por_diego_barba_chavez),
-                    color = TextPrimary,
-                    fontSize = 13.5.sp,
-                    fontWeight = FontWeight.SemiBold
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = "© 2026 Diego Barba Chavez. " + localizedString(R.string.info_todos_los_derechos_reservados),
-                    color = HextechGoldLight,
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Medium
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = localizedString(R.string.info_disenado_para_la_comunidad_competitiva_de_league_of_legends_wild),
-                    color = TextSecondary,
-                    fontSize = 11.5.sp,
-                    lineHeight = 16.sp
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = localizedString(R.string.info_coach_no_cuenta_con_el_respaldo_de_riot_games_y_no_refleja_las_op),
-                    color = TextMuted,
-                    fontSize = 10.5.sp,
-                    lineHeight = 14.5.sp
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = localizedString(R.string.info_version, com.example.BuildConfig.VERSION_NAME, com.example.BuildConfig.VERSION_CODE, patchLabel),
-                    color = HextechCyan.copy(alpha = 0.9f),
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.SemiBold
-                )
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = localizedString(R.string.info_aplicacion_creada_y_desarrollada_por_diego_barba_chavez),
+                        color = TextPrimary,
+                        fontSize = 13.5.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "© 2026 Diego Barba Chavez. " + localizedString(R.string.info_todos_los_derechos_reservados),
+                        color = HextechGoldLight,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Medium,
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = localizedString(R.string.info_disenado_para_la_comunidad_competitiva_de_league_of_legends_wild),
+                        color = TextSecondary,
+                        fontSize = 11.5.sp,
+                        lineHeight = 16.sp,
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = localizedString(R.string.info_coach_no_cuenta_con_el_respaldo_de_riot_games_y_no_refleja_las_op),
+                        color = TextMuted,
+                        fontSize = 10.5.sp,
+                        lineHeight = 14.5.sp,
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = localizedString(R.string.info_version, com.example.BuildConfig.VERSION_NAME, patchLabel),
+                        color = HextechCyan.copy(alpha = 0.9f),
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -347,6 +358,7 @@ fun InfoScreen(
 fun InfoCard(
     title: String,
     icon: androidx.compose.ui.graphics.vector.ImageVector,
+    centerTitle: Boolean = false,
     content: @Composable ColumnScope.() -> Unit
 ) {
     Card(
@@ -359,8 +371,9 @@ fun InfoCard(
             modifier = Modifier.padding(16.dp)
         ) {
             Row(
+                modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = if (centerTitle) Arrangement.Center else Arrangement.spacedBy(8.dp)
             ) {
                 Icon(icon, contentDescription = null, tint = HextechGold, modifier = Modifier.size(20.dp))
                 Text(

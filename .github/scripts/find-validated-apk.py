@@ -109,7 +109,7 @@ def find(repository, target_sha, request=api):
 if __name__ == '__main__':
     run_id, source_sha = '', ''
     subprocess.run(['node', '.github/scripts/cleanup-completed-runs.test.cjs'], check=True)
-    if (os.environ.get('GITHUB_REF') == 'refs/heads/main'
+    if (os.environ.get('GITHUB_REF') in {'refs/heads/main', 'refs/heads/coach-validacion'}
             or os.environ.get('GITHUB_HEAD_REF') == 'coach-validacion'):
         try:
             run_id, source_sha = find(os.environ['GITHUB_REPOSITORY'], os.environ['GITHUB_SHA'])
