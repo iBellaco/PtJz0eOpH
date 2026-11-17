@@ -27,6 +27,10 @@ object BestBuildWrScraper {
     private const val CHINA_ELO_GROUPS_KEY = "china_elo_groups_v2"
     private const val CHINA_ELO_GROUPS_LEGACY_KEY = "china_elo_groups_v1"
     private const val CHINA_CACHE_SCHEMA_KEY = "china_cache_schema"
+    private const val CHINA_PREVIOUS_GROUPS_KEY = "china_previous_elo_groups_v1"
+    private const val CHINA_MOVEMENTS_KEY = "china_tier_movements_v1"
+    private const val CHINA_GROUP_MOVEMENTS_KEY = "china_elo_movements_v1"
+    private const val CHINA_PREVIOUS_TIERS_KEY = "china_previous_tiers_v1"
     private const val SOURCE_SET_KEY = "active_source_set_v2"
 
     // Only publishers used by the statistics pipeline belong in live monitoring.
@@ -109,14 +113,18 @@ object BestBuildWrScraper {
         if (prefs.getString("patch", null) != com.example.data.GamePatch.VERSION) {
             prefs.edit().clear().putString("patch", com.example.data.GamePatch.VERSION).apply()
         }
-        if (prefs.getString(CHINA_CACHE_SCHEMA_KEY, null) != "2") {
+        if (prefs.getString(CHINA_CACHE_SCHEMA_KEY, null) != "3") {
             prefs.edit()
                 .remove("snapshot_${MetaRegion.CHINA}")
                 .remove(STATS_SNAPSHOT_PREFIX + MetaRegion.CHINA)
                 .remove(ROLE_STATS_SNAPSHOT_PREFIX + MetaRegion.CHINA)
                 .remove("timestamp_${MetaRegion.CHINA}")
                 .remove(CHINA_ELO_GROUPS_LEGACY_KEY)
-                .putString(CHINA_CACHE_SCHEMA_KEY, "2")
+                .remove(CHINA_PREVIOUS_GROUPS_KEY)
+                .remove(CHINA_MOVEMENTS_KEY)
+                .remove(CHINA_GROUP_MOVEMENTS_KEY)
+                .remove(CHINA_PREVIOUS_TIERS_KEY)
+                .putString(CHINA_CACHE_SCHEMA_KEY, "3")
                 .apply()
         }
         val activeSourceSet = (GLOBAL_SCRAPING_SOURCES + CHINA_SCRAPING_SOURCES)
@@ -138,9 +146,13 @@ object BestBuildWrScraper {
         if (cachedChinaGroups.isNotEmpty()) {
             _chinaEloGroups.value = cachedChinaGroups
             val checkedAt = prefs.getLong("timestamp_${MetaRegion.CHINA}", 0L)
+            val cachedPreviousGroups = decodeTierSnapshots(prefs.getString(CHINA_PREVIOUS_GROUPS_KEY, null))
+            val cachedGroupMovements = decodeMovementSnapshots(prefs.getString(CHINA_GROUP_MOVEMENTS_KEY, null))
             cachedChinaGroups.values.forEach { group ->
                 WildRiftRepository.applyRegionalTierList(
                     MetaRegion.CHINA, group.tiers, group.stats, roleStats = group.roleStats,
+                    previousTiers = cachedPreviousGroups[group.id].orEmpty(),
+                    patchMovements = cachedGroupMovements[group.id],
                     checkedAt = checkedAt, snapshotKey = chinaEloSnapshotKey(group.id)
                 )
             }
@@ -157,9 +169,17 @@ object BestBuildWrScraper {
                     .filterValues { it.isComplete() }
                 val roleStats = decodeRoleStats(prefs.getString(ROLE_STATS_SNAPSHOT_PREFIX + region, null))
                 val at = prefs.getLong("timestamp_$region", 0)
+                val isChina = region == MetaRegion.CHINA
+                val previousTiers = if (isChina) {
+                    decodeTierSnapshots(prefs.getString(CHINA_PREVIOUS_TIERS_KEY, null))["default"].orEmpty()
+                } else emptyMap()
+                val movements = if (isChina) {
+                    decodeMovementSnapshots(prefs.getString(CHINA_MOVEMENTS_KEY, null))["default"]
+                } else PatchTierMovementStore.snapshot()
                 WildRiftRepository.applyRegionalTierList(region, tiers, stats, roleStats = roleStats,
-                    checkedAt = at, history = decodeHistory(prefs.getString("rate_history_v2", null)),
-                    patchMovements = PatchTierMovementStore.snapshot())
+                    previousTiers = previousTiers, checkedAt = at,
+                    history = decodeHistory(prefs.getString("rate_history_v2", null)),
+                    patchMovements = movements)
                 _freshness.value = MetaFreshness(
                     tiersCheckedAt = prefs.getLong("tiers_checked", 0),
                     ratesCheckedAt = prefs.getLong("rates_checked", 0),
@@ -170,6 +190,9 @@ object BestBuildWrScraper {
                     expectedCount = WildRiftRepository.baseChampionsList.size)
                 regions[region] = RegionState(prefs.getLong("timestamp_$region", 0), false, "Datos guardados • Pendiente de actualización")
             } catch (_: Exception) { /* Leave other region caches intact. */ }
+        }
+        ChinaMetaSnapshotStore.initialize { snapshot ->
+            applySharedChinaSnapshot(context.applicationContext, snapshot)
         }
         selectRegion(selectedRegion)
         WildRiftRepository.selectChinaEloGroup(selectedChinaElo)
@@ -183,6 +206,106 @@ object BestBuildWrScraper {
 
     private fun chinaEloSnapshotKey(groupId: String): String =
         "${MetaRegion.CHINA}:$groupId"
+
+    @Synchronized
+    private fun applySharedChinaSnapshot(context: Context, snapshot: ChinaMetaSnapshotStore.Snapshot) {
+        if (snapshot.patch != com.example.data.GamePatch.VERSION) return
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        if (snapshot.checkedAt < prefs.getLong("timestamp_${MetaRegion.CHINA}", 0L)) return
+
+        val groups = decodeChinaEloGroups(snapshot.groupsJson)
+        val tiers = decodeTierSnapshots(snapshot.tiersJson)["default"].orEmpty()
+        val stats = decodeStats(snapshot.statsJson).filterValues { it.isComplete() }
+        val roleStats = decodeRoleStats(snapshot.roleStatsJson)
+        if (groups.isEmpty() && tiers.isEmpty() && stats.isEmpty()) return
+
+        val previousGroups = decodeTierSnapshots(snapshot.previousGroupsJson)
+        val groupMovements = decodeMovementSnapshots(snapshot.groupMovementsJson)
+        groups.values.forEach { group ->
+            WildRiftRepository.applyRegionalTierList(
+                MetaRegion.CHINA,
+                group.tiers,
+                group.stats.filterValues { it.isComplete() },
+                roleStats = group.roleStats,
+                previousTiers = previousGroups[group.id].orEmpty(),
+                patchMovements = groupMovements[group.id]?.takeIf { it.isNotEmpty() },
+                checkedAt = snapshot.checkedAt,
+                snapshotKey = chinaEloSnapshotKey(group.id)
+            )
+        }
+        if (tiers.isNotEmpty() || stats.isNotEmpty()) {
+            WildRiftRepository.applyRegionalTierList(
+                MetaRegion.CHINA,
+                tiers,
+                stats,
+                roleStats = roleStats,
+                previousTiers = decodeTierSnapshots(snapshot.previousTiersJson)["default"].orEmpty(),
+                patchMovements = decodeMovementSnapshots(snapshot.movementsJson)["default"]
+                    ?.takeIf { it.isNotEmpty() },
+                checkedAt = snapshot.checkedAt
+            )
+        }
+        _freshness.value = _freshness.value.copy(
+            tiersCheckedAt = snapshot.checkedAt,
+            ratesCheckedAt = snapshot.checkedAt,
+            tierCount = tiers.size,
+            statsCount = stats.size,
+            updatedChampionCount = stats.size,
+            expectedCount = WildRiftRepository.baseChampionsList.size
+        )
+        _chinaEloGroups.value = groups
+        prefs.edit()
+            .putLong("timestamp_${MetaRegion.CHINA}", snapshot.checkedAt)
+            .putString("snapshot_${MetaRegion.CHINA}", JSONObject(tiers).toString())
+            .putString(STATS_SNAPSHOT_PREFIX + MetaRegion.CHINA, snapshot.statsJson)
+            .putString(ROLE_STATS_SNAPSHOT_PREFIX + MetaRegion.CHINA, snapshot.roleStatsJson)
+            .putString(CHINA_ELO_GROUPS_KEY, snapshot.groupsJson)
+            .putString(CHINA_PREVIOUS_GROUPS_KEY, snapshot.previousGroupsJson)
+            .putString(CHINA_PREVIOUS_TIERS_KEY, snapshot.previousTiersJson)
+            .putString(CHINA_MOVEMENTS_KEY, snapshot.movementsJson)
+            .putString(CHINA_GROUP_MOVEMENTS_KEY, snapshot.groupMovementsJson)
+            .apply()
+        selectChinaElo(selectedChinaElo)
+        regions[MetaRegion.CHINA] = RegionState(
+            snapshot.checkedAt,
+            true,
+            "China compartida (${stats.size}/${WildRiftRepository.baseChampionsList.size} estadísticas completas)"
+        )
+        if (selectedRegion == MetaRegion.CHINA) selectRegion(MetaRegion.CHINA)
+    }
+
+    private fun sharedChinaSnapshotForUser(context: Context): ChinaMetaSnapshotStore.Snapshot? {
+        if (com.example.util.AuthManager.isCurrentUserAdmin()) return null
+        val snapshot = ChinaMetaSnapshotStore.current() ?: return null
+        if (snapshot.patch != com.example.data.GamePatch.VERSION) return null
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        return snapshot.takeIf { it.checkedAt >= prefs.getLong("timestamp_${MetaRegion.CHINA}", 0L) }
+    }
+
+    private fun decodeTierSnapshots(raw: String?): Map<String, Map<String, String>> = runCatching {
+        val root = JSONObject(raw ?: "{}")
+        root.keys().asSequence().associateWith { id ->
+            val value = root.optJSONObject(id) ?: JSONObject()
+            value.keys().asSequence().associateWith { value.getString(it) }
+        }
+    }.getOrDefault(emptyMap())
+
+    private fun encodeTierSnapshots(snapshots: Map<String, Map<String, String>>): JSONObject = JSONObject().apply {
+        snapshots.forEach { (id, tiers) -> put(id, JSONObject(tiers)) }
+    }
+
+    private fun decodeMovementSnapshots(raw: String?): Map<String, Map<String, Int>> = runCatching {
+        val root = JSONObject(raw ?: "{}")
+        root.keys().asSequence().associateWith { id ->
+            val value = root.optJSONObject(id) ?: JSONObject()
+            value.keys().asSequence().associateWith { value.getInt(it) }
+        }
+    }.getOrDefault(emptyMap())
+
+    private fun encodeMovementSnapshots(movements: Map<String, Map<String, Int>>): JSONObject = JSONObject().apply {
+        movements.forEach { (id, values) -> put(id, JSONObject(values)) }
+    }
+
     fun startContinuousSync(context: Context) { GlobalMetaSyncService.startLive(context, "legacy") }
 
     suspend fun syncGlobalTierList(context: Context, region: String = MetaRegion.DEFAULT, force: Boolean = false) = withContext(Dispatchers.IO) {
@@ -209,6 +332,13 @@ object BestBuildWrScraper {
                     status.copy(isHealthy = false, errorMessage = message)
                 }
             } else {
+                if (requested == MetaRegion.CHINA) {
+                    val shared = sharedChinaSnapshotForUser(context)
+                    if (shared != null) {
+                        applySharedChinaSnapshot(context.applicationContext, shared)
+                        return@withContext
+                    }
+                }
                 val activeSources = if (requested == MetaRegion.CHINA) CHINA_SCRAPING_SOURCES else GLOBAL_SCRAPING_SOURCES
                 val activeKeys = activeSources.map { "${it.region.lowercase(Locale.ROOT)}_${it.id}" }.toSet()
                 val knownIds = WildRiftRepository.baseChampionsList.flatMap {
@@ -272,19 +402,39 @@ object BestBuildWrScraper {
                     }.getOrDefault(emptyMap())
                     val previousStats = decodeStats(prefs.getString(STATS_SNAPSHOT_PREFIX + requested, null))
                     val previousRoleStats = decodeRoleStats(prefs.getString(ROLE_STATS_SNAPSHOT_PREFIX + requested, null))
+                    val previousChinaGroups = decodeChinaEloGroups(prefs.getString(CHINA_ELO_GROUPS_KEY, null))
+                    val previousGroupMovements = decodeMovementSnapshots(prefs.getString(CHINA_GROUP_MOVEMENTS_KEY, null))
+                    val previousDefaultMovement = decodeMovementSnapshots(prefs.getString(CHINA_MOVEMENTS_KEY, null))["default"].orEmpty()
                     val completeStats = result?.stats.orEmpty().filterValues { it.isComplete() }
                     val successNow = result?.status?.isHealthy == true &&
                         (result.tiers.isNotEmpty() || completeStats.isNotEmpty() || result.chinaEloGroups.isNotEmpty())
                     if (successNow) {
                         val checked = started
                         val groups = result!!.chinaEloGroups
+                        val groupMovements = groups.mapValues { (id, group) ->
+                            PatchTierMovement.update(
+                                previousChinaGroups[id]?.tiers.orEmpty(),
+                                group.tiers,
+                                previousGroupMovements[id].orEmpty()
+                            )
+                        }
+                        val defaultMovements = PatchTierMovement.update(
+                            previousTiers,
+                            result.tiers,
+                            previousDefaultMovement
+                        )
                         if (groups.isNotEmpty()) {
                             _chinaEloGroups.value = groups
                             groups.values.forEach { group ->
+                                val previousGroup = previousChinaGroups[group.id]
                                 WildRiftRepository.applyRegionalTierList(
                                     MetaRegion.CHINA, group.tiers,
                                     group.stats.filterValues { it.isComplete() },
                                     roleStats = group.roleStats,
+                                    previousStats = previousGroup?.stats.orEmpty(),
+                                    previousRoleStats = previousGroup?.roleStats.orEmpty(),
+                                    previousTiers = previousGroup?.tiers.orEmpty(),
+                                    patchMovements = groupMovements[group.id],
                                     checkedAt = checked,
                                     snapshotKey = chinaEloSnapshotKey(group.id)
                                 )
@@ -294,7 +444,8 @@ object BestBuildWrScraper {
                             MetaRegion.CHINA, result!!.tiers, completeStats,
                             roleStats = result.roleStats,
                             previousStats = previousStats, previousRoleStats = previousRoleStats,
-                            previousTiers = previousTiers, checkedAt = checked
+                            previousTiers = previousTiers, patchMovements = defaultMovements,
+                            checkedAt = checked
                         )
                         _freshness.value = _freshness.value.copy(
                             tiersCheckedAt = if (result.tiers.isNotEmpty()) checked else _freshness.value.tiersCheckedAt,
@@ -309,7 +460,24 @@ object BestBuildWrScraper {
                             .putString(STATS_SNAPSHOT_PREFIX + requested, encodeStats(completeStats).toString())
                             .putString(ROLE_STATS_SNAPSHOT_PREFIX + requested, encodeRoleStats(result.roleStats).toString())
                             .putString(CHINA_ELO_GROUPS_KEY, encodeChinaEloGroups(result.chinaEloGroups).toString())
+                            .putString(CHINA_PREVIOUS_GROUPS_KEY, encodeTierSnapshots(previousChinaGroups.mapValues { it.value.tiers }).toString())
+                            .putString(CHINA_PREVIOUS_TIERS_KEY, encodeTierSnapshots(mapOf("default" to previousTiers)).toString())
+                            .putString(CHINA_MOVEMENTS_KEY, encodeMovementSnapshots(mapOf("default" to defaultMovements)).toString())
+                            .putString(CHINA_GROUP_MOVEMENTS_KEY, encodeMovementSnapshots(groupMovements).toString())
                             .apply()
+                        val shared = ChinaMetaSnapshotStore.Snapshot(
+                            patch = com.example.data.GamePatch.VERSION,
+                            checkedAt = checked,
+                            tiersJson = encodeTierSnapshots(mapOf("default" to result.tiers)).toString(),
+                            statsJson = encodeStats(completeStats).toString(),
+                            roleStatsJson = encodeRoleStats(result.roleStats).toString(),
+                            groupsJson = encodeChinaEloGroups(result.chinaEloGroups).toString(),
+                            previousTiersJson = encodeTierSnapshots(mapOf("default" to previousTiers)).toString(),
+                            previousGroupsJson = encodeTierSnapshots(previousChinaGroups.mapValues { it.value.tiers }).toString(),
+                            movementsJson = encodeMovementSnapshots(mapOf("default" to defaultMovements)).toString(),
+                            groupMovementsJson = encodeMovementSnapshots(groupMovements).toString()
+                        )
+                        ChinaMetaSnapshotStore.publish(shared)
                         selectChinaElo(selectedChinaElo)
                         regions[requested] = RegionState(checked, true,
                             "China actualizada (${completeStats.size}/${WildRiftRepository.baseChampionsList.size} estadísticas completas)")

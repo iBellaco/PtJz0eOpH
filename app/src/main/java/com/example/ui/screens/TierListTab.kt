@@ -85,6 +85,8 @@ import com.example.ui.theme.HextechDarkBg
 import com.example.ui.theme.HextechGold
 import com.example.ui.theme.HextechSurface
 import com.example.ui.theme.HextechSurfaceVariant
+import com.example.ui.theme.AppTheme
+import com.example.ui.theme.AppThemeManager
 import com.example.ui.theme.TextMuted
 import com.example.ui.theme.TextPrimary
 import com.example.ui.theme.TextSecondary
@@ -98,15 +100,6 @@ enum class TierSortOption(val displayName: String, val shortLabel: String) {
     BY_TIER("Por Tier", "Tier "),
     WIN_RATE("Win Rate", "Win Rate "),
     BAN_RATE("Ban Rate", "Ban Rate ")
-}
-
-/** Dedicated China-server palette: the selector follows the server identity,
- * while the application theme continues to control the rest of the screen. */
-private object ChinaServerPalette {
-    val primary = Color(0xFFEF6A5B)
-    val secondary = Color(0xFFE8CA76)
-    val surface = Color(0xFF35161C)
-    val surfaceVariant = Color(0xFF4D2024)
 }
 
 internal data class TierDisplayedStats(val role: LaneRole, val win: Double, val pick: Double,
@@ -124,20 +117,38 @@ private fun AnimatedRegionChip(
     selected: Boolean,
     onClick: () -> Unit,
     label: @Composable () -> Unit,
+    theme: AppTheme,
     modifier: Modifier = Modifier
 ) {
     val isChina = MetaRegion.normalize(region) == MetaRegion.CHINA
-    val selectedContainer = if (isChina) ChinaServerPalette.primary else HextechGold
-    val unselectedContainer = if (isChina) ChinaServerPalette.surfaceVariant.copy(alpha = 0.62f) else HextechSurfaceVariant
+    AnimatedMetaChip(
+        selected = selected,
+        onClick = onClick,
+        label = label,
+        theme = theme,
+        accent = if (isChina) theme.secondary else theme.primary,
+        modifier = modifier
+    )
+}
+
+@Composable
+private fun AnimatedMetaChip(
+    selected: Boolean,
+    onClick: () -> Unit,
+    label: @Composable () -> Unit,
+    theme: AppTheme,
+    accent: Color,
+    modifier: Modifier = Modifier
+) {
+    val selectedContainer = accent
+    val unselectedContainer = theme.surfaceVariant.copy(alpha = 0.68f)
     val containerColor by animateColorAsState(
         targetValue = if (selected) selectedContainer else unselectedContainer,
         animationSpec = spring(stiffness = 420f),
         label = "regionContainerColor"
     )
     val labelColor by animateColorAsState(
-        targetValue = if (selected) {
-            if (isChina) Color.White else HextechDarkBg
-        } else TextPrimary,
+        targetValue = if (selected) theme.textPrimary else theme.textSecondary,
         animationSpec = spring(stiffness = 420f),
         label = "regionLabelColor"
     )
@@ -162,7 +173,7 @@ private fun AnimatedRegionChip(
             containerColor = containerColor,
             labelColor = labelColor
         ),
-        border = BorderStroke(1.dp, if (selected) selectedContainer else selectedContainer.copy(alpha = 0.55f))
+        border = BorderStroke(1.dp, if (selected) accent else accent.copy(alpha = 0.55f))
     )
 }
 
@@ -279,6 +290,7 @@ fun TierListTab(
     val syncState by GlobalMetaSyncService.syncState.collectAsStateWithLifecycle()
     val currentRegion by GlobalMetaSyncService.currentRegion.collectAsStateWithLifecycle()
     val currentChinaElo by GlobalMetaSyncService.currentChinaElo.collectAsStateWithLifecycle()
+    val appTheme = AppThemeManager.currentTheme
     val metaRevision = WildRiftRepository.regionRevision
     // La vista se mantiene viva aunque el editor externo publique por lotes.
     // El valor solo cambia cuando llega una observación nueva de la fuente.
@@ -398,7 +410,7 @@ fun TierListTab(
                 ) {
                     Text(
                         text = com.example.util.tr("Servidor") + ":",
-                        color = HextechGold,
+                        color = appTheme.secondary,
                         fontSize = if (isOverlay) 10.sp else 11.5.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -416,6 +428,7 @@ fun TierListTab(
                                     fontSize = if (isOverlay) 10.sp else 11.5.sp
                                 )
                             },
+                            theme = appTheme,
                             modifier = Modifier.testTag("tier_region_${region.lowercase(java.util.Locale.ROOT)}"),
                         )
                     }
@@ -426,9 +439,9 @@ fun TierListTab(
                 item {
                     Surface(
                         modifier = Modifier.fillMaxWidth().testTag("china_elo_selector"),
-                        color = ChinaServerPalette.surface.copy(alpha = 0.9f),
+                        color = appTheme.surface.copy(alpha = 0.94f),
                         shape = RoundedCornerShape(10.dp),
-                        border = BorderStroke(1.dp, ChinaServerPalette.primary.copy(alpha = 0.75f))
+                        border = BorderStroke(1.dp, appTheme.secondary.copy(alpha = 0.75f))
                     ) {
                         Column(Modifier.padding(horizontal = 10.dp, vertical = 8.dp)) {
                             Row(
@@ -437,16 +450,12 @@ fun TierListTab(
                             ) {
                                 MetaRegion.chinaEloOptions.forEach { option ->
                                     val selected = currentChinaElo == option.id
-                                    FilterChip(
+                                    AnimatedMetaChip(
                                         selected = selected,
                                         onClick = { GlobalMetaSyncService.setChinaElo(context, option.id) },
                                         label = { Text(tr(option.label), fontSize = if (isOverlay) 9.5.sp else 10.5.sp) },
-                                        colors = FilterChipDefaults.filterChipColors(
-                                            selectedContainerColor = ChinaServerPalette.primary,
-                                            selectedLabelColor = Color.White,
-                                            containerColor = ChinaServerPalette.surfaceVariant.copy(alpha = 0.82f),
-                                            labelColor = ChinaServerPalette.secondary
-                                        ),
+                                        theme = appTheme,
+                                        accent = appTheme.secondary,
                                         modifier = Modifier.testTag("china_elo_${option.id}")
                                     )
                                 }

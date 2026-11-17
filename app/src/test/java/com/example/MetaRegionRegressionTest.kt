@@ -129,6 +129,27 @@ class MetaRegionRegressionTest {
         assertEquals("C", WildRiftRepository.champions.first { it.id == champion.id }.tier)
         WildRiftRepository.selectMetaRegion("GLOBAL")
     }
+
+    @Test fun `China keeps tier movement when the published bracket changes`() {
+        val champion = WildRiftRepository.baseChampionsList.first { it.id == "ahri" }
+        val id = RegionalTierParser.canonical(champion.id)
+        WildRiftRepository.applyRegionalTierList(
+            MetaRegion.CHINA,
+            mapOf(id to "A"),
+            mapOf(id to ChampionMetaStats(51.0, 3.0, 1.0)),
+            checkedAt = 10L
+        )
+        WildRiftRepository.applyRegionalTierList(
+            MetaRegion.CHINA,
+            mapOf(id to "S+"),
+            mapOf(id to ChampionMetaStats(54.0, 4.0, 1.2)),
+            previousTiers = mapOf(id to "A"),
+            checkedAt = 20L
+        )
+        WildRiftRepository.selectMetaRegion(MetaRegion.CHINA)
+        assertEquals(2, WildRiftRepository.champions.first { it.id == "ahri" }.tierMovement)
+        WildRiftRepository.selectMetaRegion(MetaRegion.DEFAULT)
+    }
     @Test fun `page parser extracts categories rather than inventing match statistics`() {
         val html = """<div class="tier splus"><a href="/guide/syndra" class="ico-holder" data-role="Mid">Syndra</a>
             </div><div class="tier s"><a href="/guide/garen" class="ico-holder">Garen</a>
