@@ -3,6 +3,7 @@ package com.example
 import com.example.model.Champion
 import com.example.model.ChampionBuild
 import com.example.model.LaneRole
+import com.example.data.WildRiftSpellsAndRunes
 import com.example.util.ChampionBuildOption
 import com.example.util.ChampionRoleAdapter
 import org.junit.Assert.assertEquals
@@ -27,10 +28,11 @@ class ChampionRoleAdapterBuildRulesTest {
         )
 
         val option = ChampionRoleAdapter.getProfile(champion, LaneRole.JUNGLE).buildOptions.single()
+        val canonicalSmite = requireNotNull(WildRiftSpellsAndRunes.getSpellByName("Castigo")).name
 
-        assertEquals("Castigo", option.spells.first())
+        assertEquals(canonicalSmite, option.spells.first())
         assertEquals(2, option.spells.size)
-        assertFalse(option.spells.drop(1).any { it.equals("Castigo", ignoreCase = true) })
+        assertFalse(option.spells.drop(1).any { it.equals(canonicalSmite, ignoreCase = true) })
     }
 
     @Test
