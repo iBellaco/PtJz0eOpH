@@ -128,6 +128,35 @@ class DeviceDraftProfileTest {
         assertNull(VisionCalibrationConfig.measuredDefaultForCapture("Xiaomi", "NX789J", 2688, 1216))
     }
 
+    @Test fun xiaomi24122rkc7gReferenceKeepsSuppliedBanAndSlotGeometry() {
+        val physical = requireNotNull(VisionCalibrationConfig.measuredDefaultForCapture(
+            "Xiaomi", "24122RKC7G", 2400, 1080
+        ))
+        val aligned = requireNotNull(VisionCalibrationConfig.measuredDefaultForCapture(
+            "xiaomi", "24122rkc7g", 1920, 864
+        ))
+        val literal = requireNotNull(VisionCalibrationConfig.measuredDefaultForCapture(
+            "XIAOMI", "24122RKC7G", 1280, 576
+        ))
+
+        assertEquals(physical, aligned)
+        assertEquals(physical, literal)
+        assertEquals(listOf(.06875f, .087500006f, .13f, .1725f, .21499999f), physical.allyBanXRatios)
+        assertEquals(listOf(.785f, .82125f, .856875f, .8925f, .93f), physical.enemyBanXRatios)
+        assertEquals(listOf(.05277778f, .06388889f, .05138889f, .043055557f, .05138889f), physical.allyBanYRatios)
+        assertEquals(listOf(.05138889f, .05138889f, .05138889f, .047222223f, .05277778f), physical.enemyBanYRatios)
+        assertTrue(physical.manualAllyBans)
+        assertTrue(physical.manualEnemyBans)
+        assertEquals(listOf(.188f, .324f, .458f, .591f, .725f), physical.allySlotYRatios)
+        assertEquals(listOf(.18861003f, .32380405f, .4560159f, .58822775f, .71944547f), physical.enemySlotYRatios)
+        assertEquals(.11662696f, physical.allyAvatarCenterX, 0.000001f)
+        assertEquals(.9165625f, physical.enemyAvatarCenterX, 0.000001f)
+        assertEquals(.16712953f, physical.topAllyXRatios.last(), 0.000001f)
+        assertEquals(.9741347f, physical.topEnemyXRatios.last(), 0.000001f)
+        assertNull(VisionCalibrationConfig.measuredDefaultForCapture("Xiaomi", "24122RKC7G", 2400, 1081))
+        assertNull(VisionCalibrationConfig.measuredDefaultForCapture("Xiaomi", "24122DPC0AG", 2400, 1080))
+    }
+
     @Test fun unrelatedOldMeasuredCatalogIsNotUsedAfterTheOwnerReset() {
         for ((manufacturer, model, width, height) in listOf(
             ProfileKey("samsung", "SM-S948B", 3120, 1440),
