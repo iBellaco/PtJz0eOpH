@@ -27,6 +27,39 @@ class BannedPortraitScannerTest {
     private val context get() = RuntimeEnvironment.getApplication()
     @Before fun prepare() { WildRiftRepository.initChampions(context, forceReload = true) }
 
+    @Test fun isolatedBanNeedsALocatedRowOrManualCalibrationAndTwoFrames() {
+        val bitmap = javaClass.classLoader!!.getResourceAsStream("bans/poco-7457.png")!!.use {
+            BitmapFactory.decodeStream(it)!!
+        }
+        try {
+            val row = LiteRTVisionClassifier.findHeaderBanObservations(bitmap, context, emptyList())
+                .filter { it.side == BanSide.ALLY }.sortedBy { it.region.x }
+            assertEquals(5, row.size)
+            val target = row.first()
+            assertEquals("hwei", target.championId)
+            val x = target.region.x * bitmap.width
+            val radius = target.region.radius * bitmap.height
+            val masks = listOf(Rect(0, 0, (x - radius).toInt(), bitmap.height),
+                Rect((x + radius).toInt(), 0, bitmap.width, bitmap.height))
+            val fresh = BannedPortraitScanner()
+            assertTrue(fresh.scan(bitmap, context, 0, masks).isEmpty())
+            assertTrue(fresh.scan(bitmap, context, 300, masks).isEmpty())
+
+            for (manual in listOf(false, true)) {
+                val scanner = BannedPortraitScanner()
+                val config = com.example.service.screen.VisionCalibrationConfig()
+                    .withObservedBanRow(true, row.map { it.region }).copy(manualAllyBans = manual)
+                if (!manual) scanner.updateFrame(row.map { it.copy(championId = null, empty = false) }, bitmap)
+                assertTrue(scanner.scan(bitmap, context, 0, masks, config).isEmpty())
+                val next = bitmap.copy(Bitmap.Config.ARGB_8888, false)!!
+                try {
+                    assertEquals(setOf("hwei"), scanner.scan(next, context, 300, masks, config))
+                    assertEquals("hwei", scanner.slots.first().championId)
+                } finally { next.recycle() }
+            }
+        } finally { bitmap.recycle() }
+    }
+
     @Test fun incompleteRowsAssignByNearestAdaptiveSlotInsteadOfFirstObservation() {
         val scanner = BannedPortraitScanner()
         val aspect = 16f / 9f

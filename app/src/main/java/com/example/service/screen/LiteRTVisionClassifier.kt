@@ -182,8 +182,14 @@ object LiteRTVisionClassifier {
     }
 
     /** Locates small header portraits at multiple scales, independently from the pick-column calibrator. */
-    internal fun findHeaderBanObservations(bitmap: Bitmap, context: Context?, exclusions: List<android.graphics.Rect>, config: VisionCalibrationConfig = VisionCalibrationConfig()): List<BanObservation> {
-        val bounds = DraftFrameGeometry.contentBounds(bitmap)
+    internal fun findHeaderBanObservations(
+        bitmap: Bitmap,
+        context: Context?,
+        exclusions: List<android.graphics.Rect>,
+        config: VisionCalibrationConfig = VisionCalibrationConfig(),
+        trackedSides: Set<BanSide> = emptySet(),
+        bounds: android.graphics.Rect = DraftFrameGeometry.contentBounds(bitmap)
+    ): List<BanObservation> {
         if (bounds != android.graphics.Rect(0, 0, bitmap.width, bitmap.height)) {
             val content = Bitmap.createBitmap(bitmap, bounds.left, bounds.top, bounds.width(), bounds.height())
             try {
@@ -197,7 +203,7 @@ object LiteRTVisionClassifier {
                 val masks = exclusions.mapNotNull { rect ->
                     android.graphics.Rect(rect).takeIf { it.intersect(bounds) }?.apply { offset(-bounds.left, -bounds.top) }
                 }
-                return findHeaderBanObservations(content, context, masks, localConfig).map { observation ->
+                return findHeaderBanObservations(content, context, masks, localConfig, trackedSides).map { observation ->
                     observation.copy(region = BanRegion(
                         (bounds.left + observation.region.x * bounds.width()) / bitmap.width,
                         (bounds.top + observation.region.y * bounds.height()) / bitmap.height,
@@ -213,7 +219,7 @@ object LiteRTVisionClassifier {
                 val masks = exclusions.map { rect -> android.graphics.Rect(
                     kotlin.math.floor(rect.left * scale).toInt(), kotlin.math.floor(rect.top * scale).toInt(),
                     kotlin.math.ceil(rect.right * scale).toInt(), kotlin.math.ceil(rect.bottom * scale).toInt()) }
-                return findHeaderBanObservations(resized, context, masks, config)
+                return findHeaderBanObservations(resized, context, masks, config, trackedSides)
             } finally { resized.recycle() }
         }
         ensureIndexed(context)
@@ -223,7 +229,13 @@ object LiteRTVisionClassifier {
         val height = bitmap.height
         val width = bitmap.width
         val sideWidth = banHeaderSideWidthRatio(width.toFloat() / height)
-        val headerHeight = (height * .12f).toInt()
+        val manualBottom = BanSide.entries.maxOf { side ->
+            val ally = side == BanSide.ALLY
+            if (if (ally) config.manualAllyBans else config.manualEnemyBans)
+                config.banRegions(ally).maxOf { (it.y + it.radius) * height + 8f }
+            else 0f
+        }
+        val headerHeight = maxOf(height * .12f, kotlin.math.ceil(manualBottom)).toInt().coerceIn(1, height)
         val header = IntArray(width * headerHeight)
         bitmap.getPixels(header, 0, width, 0, 0, width, headerHeight)
         data class Proposal(val x: Int, val y: Int, val radius: Int, val score: Float,
@@ -297,14 +309,9 @@ object LiteRTVisionClassifier {
                 found.add(proposal.copy(score = best.second) to best.first)
             }
         }
-        // Keep valid evidence from one side when the opposite header is hidden,
-        // cropped or temporarily covered by a system inset. Two confident
-        // proposals are still required to reject isolated HUD portraits.
-        val allyProposals = found.filter { it.first.x < width / 2 }
-        val enemyProposals = found.filter { it.first.x >= width / 2 }
-        if (found.isEmpty() || (allyProposals.isEmpty() && enemyProposals.isEmpty())) return emptyList()
-        if (allyProposals.size < 2 && enemyProposals.size < 2) return emptyList()
-        val rawObservations = found.map { (proposal, champion) ->
+        val hasRowEvidence = found.count { it.first.x < width / 2 } >= 2 ||
+            found.count { it.first.x >= width / 2 } >= 2
+        val rawObservations = if (!hasRowEvidence) emptyList() else found.map { (proposal, champion) ->
             BanObservation(if (proposal.x < width / 2) BanSide.ALLY else BanSide.ENEMY,
                 BanRegion(proposal.x.toFloat() / width, proposal.y.toFloat() / height,
                     proposal.radius.toFloat() / height), champion?.id, champion == null, proposal.score)
@@ -398,12 +405,14 @@ object LiteRTVisionClassifier {
         }
         // Refine unknown and weakly matched positions. A single central template can miss
         // differently scaled portraits; the final confidence and separation gates stay unchanged.
-        val calibrated = positioned.filter { if (it.side == BanSide.ALLY) !config.manualAllyBans else !config.manualEnemyBans } +
-            BanSide.entries.flatMap { side ->
-                val ally = side == BanSide.ALLY
-                if (if (ally) config.manualAllyBans else config.manualEnemyBans)
-                    config.banRegions(ally).map { BanObservation(side, it, null, false) } else emptyList()
-            }
+        val calibrated = BanSide.entries.flatMap { side ->
+            val ally = side == BanSide.ALLY
+            val manual = if (ally) config.manualAllyBans else config.manualEnemyBans
+            // A partial header can still be read at circles located in this viewport.
+            if (manual || (!hasRowEvidence && side in trackedSides)) {
+                config.banRegions(ally).map { BanObservation(side, it) }
+            } else positioned.filter { it.side == side }
+        }
         return calibrated.map { observation ->
             if (observation.championId != null && observation.similarity >= .90f) return@map observation
             val region = observation.region
@@ -485,7 +494,7 @@ object LiteRTVisionClassifier {
                 }
             }
             refined
-        }
+        }.filter { hasRowEvidence || it.championId != null || it.empty }
     }
 
     /** An unused ban has a real rim; uniform background after five bans has none. */
