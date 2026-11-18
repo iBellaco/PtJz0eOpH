@@ -16,7 +16,7 @@ import org.robolectric.annotation.GraphicsMode
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class DraftMultideviceBoxesTest {
     @Test fun liveScannerAnchorsBothColumnsOnceAcrossFullWidthCaptures() {
-        val context = org.robolectric.RuntimeEnvironment.getApplication<Application>()
+        val context = org.robolectric.RuntimeEnvironment.getApplication()
         val base = VisionCalibrationConfig()
         DraftVisionScanner.initCalibration(context)
         for ((width, height) in listOf(1280 to 720, 1600 to 1000, 2520 to 1080)) {
