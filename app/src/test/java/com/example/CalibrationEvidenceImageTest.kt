@@ -2,9 +2,13 @@ package com.example
 
 import android.app.Application
 import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Paint
 import android.graphics.Color
 import android.graphics.BitmapFactory
 import android.util.Base64
+import com.example.model.Champion
+import com.example.service.screen.DraftVisionScanner
 import com.example.service.screen.CalibrationEvidenceFrame
 import com.example.service.screen.CalibrationEvidenceImage
 import com.example.service.screen.BanRegion
@@ -19,9 +23,13 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
+import org.robolectric.annotation.GraphicsMode
+import kotlin.math.abs
+import kotlin.math.roundToInt
 
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [34], application = Application::class)
+@GraphicsMode(GraphicsMode.Mode.NATIVE)
 class CalibrationEvidenceImageTest {
     @Test fun encodesBoundedImageWithCalibrationOverlayAndHash() {
         val source = Bitmap.createBitmap(640, 360, Bitmap.Config.ARGB_8888).apply {
@@ -30,8 +38,7 @@ class CalibrationEvidenceImageTest {
         try {
             val encoded = CalibrationEvidenceImage.encode(
                 CalibrationEvidenceFrame(source, android.os.SystemClock.elapsedRealtime()),
-                VisionCalibrationConfig(),
-                "es"
+                VisionCalibrationConfig()
             )
             assertNotNull(encoded)
             val result = encoded!!
@@ -50,54 +57,82 @@ class CalibrationEvidenceImageTest {
         }
     }
 
-    @Test fun evidenceRepeatsConfirmedPortraitsAndUsesSavedBanRegions() {
-        val source = Bitmap.createBitmap(640, 360, Bitmap.Config.ARGB_8888).apply {
-            eraseColor(Color.rgb(8, 20, 32))
+    @Test fun observedAndManualBanCoordinatesAreSharedByBothVisorsAndTheReport() {
+        val config = VisionCalibrationConfig()
+        val row = List(5) { index ->
+            BanSlot(BanSide.ALLY, index, BanRegion(.065f + index * .036f, .06f, .03f))
         }
-        val portrait = Bitmap.createBitmap(64, 64, Bitmap.Config.ARGB_8888).apply {
-            eraseColor(Color.rgb(240, 40, 60))
+        val manual = config.adjustBanSlot(true, 1, deltaX = .01f)
+        assertEquals(manual, manual.withTrackedBanRegions(row))
+        assertEquals(config, config.withTrackedBanRegions(row.drop(2)))
+        assertEquals(row.map { it.region }, config.withTrackedBanRegions(row.reversed()).banRegions(true))
+        assertEquals(config.banRegions(false), config.withTrackedBanRegions(row).banRegions(false))
+    }
+
+    @Test fun attachmentKeepsGamePixelsInsidePicksAndBansAndDrawsOneHeaderRow() {
+        val source = Bitmap.createBitmap(1280, 576, Bitmap.Config.ARGB_8888)
+        val background = Color.rgb(22, 32, 46)
+        val gameColor = Color.rgb(56, 171, 112)
+        val config = VisionCalibrationConfig()
+        val row = List(5) { index ->
+            BanSlot(BanSide.ALLY, index, BanRegion(.065f + index * .036f, .06f, .03f),
+                championId = "ban$index", state = BanState.CONFIRMED)
         }
+        val geometry = config.withTrackedBanRegions(row)
+        val allyX = (.102f * source.width).roundToInt()
+        val enemyX = (.927f * source.width).roundToInt()
+        val pickY = (.188f * source.height).roundToInt()
+        val banX = (.065f * source.width).roundToInt()
+        val banY = (.06f * source.height).roundToInt()
         try {
-            val config = VisionCalibrationConfig(
-                allyBanXRatios = listOf(.02f, .06f, .10f, .14f, .18f),
-                enemyBanXRatios = listOf(.82f, .86f, .90f, .94f, .98f)
-            )
-            val incompleteObservation = BanSlot(
-                BanSide.ALLY, 0, BanRegion(.8f, .8f, .02f),
-                championId = "jax", state = BanState.CONFIRMED
-            )
-            val fallbackRegions = CalibrationEvidenceImage.evidenceBanRegions(
-                config, listOf(incompleteObservation), isAlly = true
-            )
-            assertEquals("La observación parcial conserva la geometría guardada", .02f, fallbackRegions[0].x, .0001f)
-
-            val completeObservation = (0..4).map { index ->
-                BanSlot(
-                    BanSide.ALLY, index, BanRegion(.30f + index * .02f, .08f, .03f),
-                    championId = "champion_$index", state = BanState.CONFIRMED
-                )
-            }
-            val observedRegions = CalibrationEvidenceImage.evidenceBanRegions(
-                config, completeObservation, isAlly = true
-            )
-            assertEquals("Una fila completa conserva las regiones observadas", .30f, observedRegions[0].x, .0001f)
-            assertEquals(.38f, observedRegions[4].x, .0001f)
-
-            val encoded = requireNotNull(CalibrationEvidenceImage.encode(
-                CalibrationEvidenceFrame(source, android.os.SystemClock.elapsedRealtime()),
-                config,
-                slotLabels = mapOf("ally_0" to "Jax"),
-                banSlots = listOf(incompleteObservation),
-                avatarBitmaps = mapOf("ally_0" to portrait, "ally_ban_0" to portrait)
-            ))
-            val bytes = Base64.decode(encoded.base64, Base64.NO_WRAP)
+            source.eraseColor(background)
+            val paint = Paint().apply { color = gameColor }
+            val canvas = Canvas(source)
+            val originalCenters = listOf(allyX to pickY, enemyX to pickY, banX to banY)
+            for ((x, y) in originalCenters) canvas.drawCircle(x.toFloat(), y.toFloat(), 11f, paint)
+            val frame = CalibrationEvidenceFrame(source, android.os.SystemClock.elapsedRealtime())
+            val result = requireNotNull(CalibrationEvidenceImage.encode(frame, geometry,
+                slotLabels = mapOf("ally_0" to "Zoe", "enemy_0" to "Aurora")))
+            val bytes = Base64.decode(result.base64, Base64.NO_WRAP)
             val decoded = requireNotNull(BitmapFactory.decodeByteArray(bytes, 0, bytes.size))
-            assertTrue("La evidencia codificada conserva una imagen válida", decoded.width > 0 && decoded.height > 0)
-            decoded.recycle()
-        } finally {
-            source.recycle()
-            portrait.recycle()
-        }
+            try {
+                fun assertPixel(x: Int, y: Int, expected: Int) {
+                    val actual = decoded.getPixel(x, y)
+                    assertTrue("pixel ($x,$y) = ${Integer.toHexString(actual)}",
+                        abs(Color.red(actual) - Color.red(expected)) < 18 &&
+                        abs(Color.green(actual) - Color.green(expected)) < 18 &&
+                        abs(Color.blue(actual) - Color.blue(expected)) < 18)
+                }
+                for ((x, y) in originalCenters) assertPixel(x, y, gameColor)
+                // The reported Samsung defaults are offset from the synthetic originals.
+                assertPixel((.072f * source.width).roundToInt(), pickY, background)
+                assertPixel((.959f * source.width).roundToInt(), pickY, background)
+                val oldX = (.028f * source.width).roundToInt()
+                assertPixel(oldX, 5, background) // former white top grid
+                assertPixel(oldX, 13, background) // unmeasured default ban ring
+                val ring = decoded.getPixel(banX, ((.06f - .03f) * source.height).roundToInt())
+                assertTrue("Measured ban rim", Color.red(ring) > 145 && Color.green(ring) > 95)
+                assertEquals(background, source.getPixel(banX, 17))
+            } finally { decoded.recycle() }
+        } finally { source.recycle() }
+    }
+
+    @Test fun reportsTenIdentitiesWithTheLiveVisorHidden() {
+        val allies = listOf("Zoe", "Rell", "Yasuo", "Vayne", "Lee Sin")
+        val rivals = listOf("Aurora", "Caitlyn", "Thresh", "Vi", "Sett")
+        DraftVisionScanner.resetSlotMemory()
+        try {
+            for (i in 0..4) {
+                DraftVisionScanner.allySlotConfirmedChampions[i] = Champion(name = allies[i])
+                DraftVisionScanner.enemySlotConfirmedChampions[i] = Champion(name = rivals[i])
+            }
+            assertTrue(DraftVisionScanner.debugVisualMatches.value.isEmpty())
+            val snapshot = DraftVisionScanner.calibrationReportSnapshot()
+            assertEquals(10, snapshot.picks.size)
+            assertEquals("Lee Sin", snapshot.slotLabels("es")["ally_4"])
+            assertEquals("Sett", snapshot.slotLabels("pt")["enemy_4"])
+            assertTrue(snapshot.detectionEvidenceReport("es").contains("confirmado=Zoe"))
+        } finally { DraftVisionScanner.resetSlotMemory() }
     }
 
     @Test fun cleanAndAuditedEvidenceBothEncodeSuccessfully() {
@@ -122,16 +157,5 @@ class CalibrationEvidenceImageTest {
         } finally {
             source.recycle()
         }
-    }
-
-    @Test fun topEvidenceRingsUseWholePixelSpacing() {
-        val centers = CalibrationEvidenceImage.evenlySpacedTopCenters(
-            listOf(.028f, .063f, .098f, .133f, .168f), 1280
-        )
-        assertEquals(listOf(36f, 81f, 125f, 170f, 215f), centers)
-        assertEquals(45f, centers[1] - centers[0], 0.001f)
-        assertEquals(44f, centers[2] - centers[1], 0.001f)
-        assertEquals(45f, centers[3] - centers[2], 0.001f)
-        assertEquals(45f, centers[4] - centers[3], 0.001f)
     }
 }

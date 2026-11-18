@@ -362,9 +362,16 @@ object LiteRTVisionClassifier {
             // rim of the next portrait need not equal their mean, especially
             // after downsampling. Locate a rim at nearby sizes, without relaxing
             // the identity threshold or treating texture alone as a new position.
-            hasOuterPortrait = { region -> floatArrayOf(1f, .8f, 1.2f).any { scale ->
-                hasHeaderCircleRing(bitmap, region.copy(radius = region.radius * scale))
-            } }) { region ->
+            hasOuterPortrait = { region ->
+                val radius = region.radius * height
+                val x = region.x * width
+                val y = region.y * height
+                val crop = android.graphics.Rect((x-radius).toInt(), (y-radius).toInt(), (x+radius).toInt(), (y+radius).toInt())
+                exclusions.none { android.graphics.Rect.intersects(it, PortraitMatcher.sampledRect(crop)) } &&
+                    floatArrayOf(1f, .8f, 1.2f).any { scale ->
+                        hasHeaderCircleRing(bitmap, region.copy(radius = region.radius * scale))
+                    }
+            }) { region ->
             val cx = region.x * width
             val cy = region.y * height
             val radius = region.radius * height

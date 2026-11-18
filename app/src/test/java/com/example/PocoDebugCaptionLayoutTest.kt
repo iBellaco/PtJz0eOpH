@@ -1,7 +1,11 @@
 package com.example
 
 import android.app.Application
+import android.graphics.BitmapFactory
 import android.graphics.Rect
+import androidx.compose.foundation.background
+import androidx.compose.ui.graphics.Color
+import com.example.data.WildRiftRepository
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.height
@@ -35,6 +39,7 @@ class PocoDebugCaptionLayoutTest {
         val ctx=RuntimeEnvironment.getApplication()
         val previous=DraftVisionScanner.calibrationConfig
         try {
+            WildRiftRepository.initChampions(ctx, forceReload = true)
             DraftVisionScanner.updateCalibration(ctx,VisionCalibrationConfig(
                 allyAvatarCenterX=.12f,enemyAvatarCenterX=.911f,
                 allySlotXRatios=List(5){.12f},enemySlotXRatios=List(5){.911f},
@@ -42,12 +47,13 @@ class PocoDebugCaptionLayoutTest {
                 enemySlotYRatios=listOf(.179f,.315f,.449f,.587f,.723f)))
             DraftVisionScanner.banDetectionActiveFlow.value=true
             DraftVisionScanner.banSlotsFlow.value=emptyBanSlots().map { slot ->
-                slot.copy(region=BanRegion((if(slot.side==BanSide.ALLY) .074f else .816f)+slot.index*.036f,.052f,.031f),state=BanState.UNKNOWN)
+                slot.copy(region=BanRegion((if(slot.side==BanSide.ALLY) .074f else .816f)+slot.index*.036f,.052f,.031f),championId=if (slot.index == 0) "jax" else null,
+                    state=if (slot.index == 0) BanState.CONFIRMED else BanState.UNKNOWN)
             }
             DraftVisionScanner.debugVisualMatches.value=mapOf("ally_0" to "Senna","enemy_0" to "Viktor","ally_3" to "Línea de Barón")
             compose.setContent {
                 CompositionLocalProvider(LocalDensity provides Density(1f,1.5f)) {
-                    Box(Modifier.requiredSize(1280.dp,576.dp)) { ScannerDebugOverlay(overlayRect=null) }
+                    Box(Modifier.requiredSize(1280.dp,576.dp).background(Color(0xFF19354B))) { ScannerDebugOverlay(overlayRect=null) }
                 }
             }
             val evidence=java.io.File("build/reports/portuguese-rendered/poco-debug-large-font-es.png")
@@ -56,6 +62,14 @@ class PocoDebugCaptionLayoutTest {
                 roborazziOptions=com.github.takahirom.roborazzi.RoborazziOptions(
                     taskType=com.github.takahirom.roborazzi.RoborazziTaskType.Record))
             assertTrue("Rendered Poco evidence must exist",evidence.length()>0)
+            val rendered = requireNotNull(BitmapFactory.decodeFile(evidence.path))
+            try {
+                val background = android.graphics.Color.rgb(25, 53, 75)
+                for ((x, y) in listOf(.12f to .184f, .911f to .179f, .074f to .052f, .816f to .052f)) {
+                    assertEquals("Live guide must leave the game visible at ($x,$y)", background,
+                        rendered.getPixel((x * 1280).toInt(), (y * 576).toInt()))
+                }
+            } finally { rendered.recycle() }
             compose.runOnIdle {
                 val masks=DraftVisionScanner.debugTextRects
                 assertTrue("Rendered diagnostic masks: $masks",masks.size>=20)
