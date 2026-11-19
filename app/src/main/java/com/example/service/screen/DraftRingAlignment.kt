@@ -30,8 +30,8 @@ internal object DraftRingAlignment {
     }
 
     fun align(bitmap: Bitmap, base: VisionCalibrationConfig, excluded: Rect?, ignoreDebugRings: Boolean = false,
-              previous: VisionCalibrationConfig = base, onEnemyMeasured: (() -> Unit)? = null): VisionCalibrationConfig {
-        val bounds = DraftFrameGeometry.contentBounds(bitmap)
+              previous: VisionCalibrationConfig = base, onEnemyMeasured: (() -> Unit)? = null,
+              bounds: Rect = DraftFrameGeometry.contentBounds(bitmap)): VisionCalibrationConfig {
         if (bounds != Rect(0, 0, bitmap.width, bitmap.height)) {
             // Measure the game content before downsampling. On a square capture,
             // black bars otherwise consume most of the 720px processing budget
@@ -56,7 +56,7 @@ internal object DraftRingAlignment {
                 val mask = excluded?.let { Rect(it).takeIf { rect -> rect.intersect(bounds) }
                     ?.apply { offset(-bounds.left, -bounds.top) } }
                 return mapSlots(align(content, mapSlots(base, true), mask, ignoreDebugRings,
-                    mapSlots(previous, true), onEnemyMeasured), false)
+                    mapSlots(previous, true), onEnemyMeasured, Rect(0, 0, content.width, content.height)), false)
             } finally { content.recycle() }
         }
         if (bitmap.width > 1280 || bitmap.height > 720) {
@@ -66,7 +66,8 @@ internal object DraftRingAlignment {
             try {
                 val mask = excluded?.let { Rect(floor(it.left * scale).toInt(), floor(it.top * scale).toInt(),
                     ceil(it.right * scale).toInt(), ceil(it.bottom * scale).toInt()) }
-                return align(reduced, base, mask, ignoreDebugRings, previous, onEnemyMeasured)
+                return align(reduced, base, mask, ignoreDebugRings, previous, onEnemyMeasured,
+                    Rect(0, 0, reduced.width, reduced.height))
             } finally { reduced.recycle() }
         }
         val w = bitmap.width; val h = bitmap.height
@@ -195,7 +196,10 @@ internal object DraftRingAlignment {
                     // Route both cases through the same per-slot fallback, and
                     // only mark observed slots as eligible for diameter updates.
                     val coherentColumn = consistent.size == fits.size
-                    val measured = fits.associateBy { it.first }
+                    val measured = fits.filter { (slot, center, coverage) ->
+                        abs(center.first - medianX) <= radius / 3 || coverage >= 32 ||
+                            previous.getAllySlotX(slot) == base.getAllySlotX(slot)
+                    }.associateBy { it.first }
                     return ColumnFit(
                         List(5) { slot ->
                             val row = measured[slot]
@@ -212,7 +216,7 @@ internal object DraftRingAlignment {
                                 !coherentColumn && row.third >= 32 -> row.second.second.toFloat() / h
                                 else -> alignedYs[slot]
                             }
-                        }, diameterScale, measured.keys, coverage = fits.sumOf { it.third })
+                        }, diameterScale, measured.keys, coverage = measured.values.sumOf { it.third })
                 }
                 val measured = fits.associateBy { it.first }
                 return ColumnFit(

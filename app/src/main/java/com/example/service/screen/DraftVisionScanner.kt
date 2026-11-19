@@ -554,6 +554,7 @@ object DraftVisionScanner {
     private var activeCaptureProfile: String? = null
     private var activeCaptureDimensions: Pair<Int, Int>? = null
     private var activeFrameRelativeProfile = false
+    private var alignMeasuredSlots = false
     private var globalCalibrationConfig = VisionCalibrationConfig()
     @Synchronized
     internal fun configForFrame(bitmap: Bitmap, refreshGeometry: Boolean = false): VisionCalibrationConfig {
@@ -573,6 +574,7 @@ object DraftVisionScanner {
                 else measured ?: if (activeCaptureProfile == null && !hasProfiles) globalCalibrationConfig else generic
             // Older reports also saved untouched factory coordinates. Those still need ring alignment.
             activeFrameRelativeProfile = measured != null && selected == measured
+            alignMeasuredSlots = activeFrameRelativeProfile && profileConfig == null && !keepCustomizedGlobal
             calibrationSourceFlow.value = when {
                 profileConfig != null -> "perfil guardado (${profile})"
                 activeFrameRelativeProfile -> "perfil medido por dispositivo (${profile})"
@@ -598,26 +600,29 @@ object DraftVisionScanner {
         // Reinitialization invalidates the viewport too, even when capture dimensions
         // stay identical (full-screen HUD versus the same surface with outer bars).
         val refresh = refreshGeometry || alignedBase == null || alignedSize != (bitmap.width to bitmap.height) || lastAlignmentAt == 0L || now-lastAlignmentAt >= 2000
-        if (refresh) activeViewport = DraftFrameGeometry.contentBounds(bitmap)
+        val viewportChanged = if (refresh) {
+            val detected = DraftFrameGeometry.contentBounds(bitmap)
+            (detected != activeViewport).also { activeViewport = detected }
+        } else false
         // The reference HUD is already anchored by game height in calculateMultideviceBoxes.
         val base = if (manual) calibrationConfig else DraftFrameGeometry.calculateMultideviceBoxes(
             calibrationConfig, activeViewport, bitmap.width, bitmap.height)
-        if (alignedBase != base || alignedSize != (bitmap.width to bitmap.height)) {
+        if (viewportChanged || alignedBase != base || alignedSize != (bitmap.width to bitmap.height)) {
             geometryStability.reset()
             alignedConfigFlow.value = base
             alignedBase = base; alignedSize = bitmap.width to bitmap.height
             lastAlignmentAt = 0L
         }
-        if (!manual && (refreshGeometry || lastAlignmentAt == 0L || now-lastAlignmentAt >= 2000)) {
+        if ((!manual || alignMeasuredSlots) && refresh) {
             // Always measure against the viewport baseline. Feeding the previous
             // estimate back as the baseline compounds 0.8/1.2 scale corrections.
             var enemyMeasured = false
             val measured = DraftRingAlignment.align(bitmap, base,
                 overlayForFrame(bitmap.width, bitmap.height), showCalibrationBoxes.value,
-                previous = alignedConfigFlow.value, onEnemyMeasured = { enemyMeasured = true })
+                previous = alignedConfigFlow.value, onEnemyMeasured = { enemyMeasured = true }, bounds = activeViewport)
             alignedConfigFlow.value = geometryStability.update(measured, enemyMeasured)
-            lastAlignmentAt = now
         }
+        if (refresh) lastAlignmentAt = android.os.SystemClock.elapsedRealtime()
         alignedFrameSizeFlow.value = bitmap.width to bitmap.height
         alignedViewportFlow.value = Rect(activeViewport)
         return alignedConfigFlow.value
@@ -646,6 +651,7 @@ object DraftVisionScanner {
 
     @Synchronized
     fun updateCalibration(context: android.content.Context, newConfig: VisionCalibrationConfig) {
+        alignMeasuredSlots = false
         val old = calibrationConfig
         if (old.allyBanXRatios != newConfig.allyBanXRatios || old.enemyBanXRatios != newConfig.enemyBanXRatios ||
             old.allyBanYRatios != newConfig.allyBanYRatios || old.enemyBanYRatios != newConfig.enemyBanYRatios ||
@@ -720,20 +726,24 @@ object DraftVisionScanner {
     fun observeSelectionSlots(bitmap: Bitmap, confirmedPicksCount: Int,
         nowMillis: Long = System.nanoTime() / 1_000_000): DraftSlotLifecycle.Observation {
         if (bitmap.isRecycled) return DraftSlotLifecycle.Observation.DISAPPEARING
+        // Before title nine, visibility cannot end the draft. OCR still reads this frame.
+        if (!slotLifecycle.needsVisibilityCheck(confirmedPicksCount)) return DraftSlotLifecycle.Observation.ACTIVE
         if (bitmap.width < bitmap.height) return slotLifecycle.observe(false,confirmedPicksCount>=9, nowMillis)
         val config = configForFrame(bitmap)
-        val visibleSlots = listOf(true, false).sumOf { isAlly ->
-            (0..4).count { index ->
+        var visibleSlots = 0
+        for (isAlly in listOf(true, false)) {
+            for (index in 0..4) {
                 val crop = AdaptiveScreenLayoutEngine.extractSlotAvatarBitmap(
                     bitmap, bitmap.width, bitmap.height, isAlly, index, config)
                 try {
-                    crop != null && !crop.isRecycled && LiteRTVisionClassifier.hasSlotRing(crop, isAlly)
+                    if (crop != null && !crop.isRecycled && LiteRTVisionClassifier.hasSlotRing(crop, isAlly)) {
+                        if (++visibleSlots == 3) return slotLifecycle.observe(true, confirmedPicksCount >= 9, nowMillis)
+                    }
                 } finally { crop?.recycle() }
             }
         }
         // One circular decoration in the loading screen is not a visible draft.
-        val visible = visibleSlots >= 3
-        return slotLifecycle.observe(visible, confirmedPicksCount >= 9, nowMillis)
+        return slotLifecycle.observe(false, confirmedPicksCount >= 9, nowMillis)
     }
 
     // Filtros de estabilización temporal (anti-parpadeo y anti-oscilación)

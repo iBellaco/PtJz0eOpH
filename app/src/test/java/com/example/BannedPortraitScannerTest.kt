@@ -57,6 +57,19 @@ class BannedPortraitScannerTest {
                     assertEquals("hwei", scanner.slots.first().championId)
                 } finally { next.recycle() }
             }
+            // Leave the rival header visible. Its evidence must not change the allied slot index.
+            val oneAlly = listOf(masks.first(), Rect(masks.last().left, 0, bitmap.width / 2, bitmap.height))
+            val scanner = BannedPortraitScanner()
+            scanner.updateFrame(row.map { it.copy(championId = null, empty = false) }, bitmap)
+            scanner.scan(bitmap, context, 0, oneAlly)
+            val next = bitmap.copy(Bitmap.Config.ARGB_8888, false)!!
+            try {
+                scanner.scan(next, context, 300, oneAlly)
+                val allies = scanner.slots.filter { it.side == BanSide.ALLY }
+                assertEquals("hwei", allies.single { it.index == 0 }.championId)
+                assertTrue(allies.filter { it.index != 0 }.all { it.championId == null })
+                assertTrue(scanner.slots.any { it.side == BanSide.ENEMY && it.championId != null })
+            } finally { next.recycle() }
         } finally { bitmap.recycle() }
     }
 
