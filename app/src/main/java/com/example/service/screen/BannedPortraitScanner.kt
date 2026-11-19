@@ -12,6 +12,7 @@ internal class BannedPortraitScanner {
         private set
     private val completeRows = mutableMapOf<BanSide, List<BanRegion>>()
     private var lastViewport: Rect? = null
+    private var lastFrameSize: Pair<Int, Int>? = null
     private var lastAspect = 0f
     private var lastScanAt = -1500L
     private var revision = 0L
@@ -20,6 +21,7 @@ internal class BannedPortraitScanner {
         revision++
         completeRows.clear()
         lastViewport = null
+        lastFrameSize = null
         previous = emptyMap(); slots = emptyBanSlots(); lastScanAt = -1500L; lastAspect = 0f
     }
 
@@ -41,12 +43,20 @@ internal class BannedPortraitScanner {
             lastScanAt = nowMs
             revision
         }
-        val observations = LiteRTVisionClassifier.findHeaderBanObservations(bitmap, context, exclusions, config).map { observation ->
+        val bounds = DraftFrameGeometry.contentBounds(bitmap)
+        val tracked = synchronized(this) {
+            if (bounds == lastViewport && lastFrameSize == (bitmap.width to bitmap.height)) completeRows.toMap() else emptyMap()
+        }
+        var searchConfig = config
+        for ((side, row) in tracked) searchConfig = searchConfig.withObservedBanRow(side == BanSide.ALLY, row)
+        val observations = LiteRTVisionClassifier.findHeaderBanObservations(
+            bitmap, context, exclusions, searchConfig, tracked.keys, bounds
+        ).map { observation ->
             if (observation.championId in pickedIds) observation.copy(championId=null,empty=false) else observation
         }
         return synchronized(this) {
             if(revision != capturedRevision || !isCurrent()) return@synchronized confirmedIds()
-            updateFrame(observations, bitmap, config)
+            updateFrame(observations, bitmap, config, bounds)
             if (config.manualAllyBans || config.manualEnemyBans) slots = slots.map {
                 val manual = if (it.side == BanSide.ALLY) config.manualAllyBans else config.manualEnemyBans
                 if (manual) it.copy(region = config.banRegions(it.side == BanSide.ALLY)[it.index]) else it
@@ -59,6 +69,7 @@ internal class BannedPortraitScanner {
         revision++
         completeRows.clear()
         lastViewport = null
+        lastFrameSize = null
         previous=emptyMap()
         lastScanAt=-1500L
         slots=slots.map { slot ->
@@ -74,10 +85,12 @@ internal class BannedPortraitScanner {
     @Synchronized internal fun updateFrame(
         observations: List<BanObservation>,
         bitmap: Bitmap,
-        config: VisionCalibrationConfig = VisionCalibrationConfig()
+        config: VisionCalibrationConfig = VisionCalibrationConfig(),
+        content: Rect = DraftFrameGeometry.contentBounds(bitmap)
     ) {
-        val content = DraftFrameGeometry.contentBounds(bitmap)
-        if (content != lastViewport) {
+        val frameSize = bitmap.width to bitmap.height
+        if (content != lastViewport || frameSize != lastFrameSize) {
+            lastFrameSize = frameSize
             completeRows.clear()
             previous = emptyMap()
             slots = slots.map { it.copy(region = null) }

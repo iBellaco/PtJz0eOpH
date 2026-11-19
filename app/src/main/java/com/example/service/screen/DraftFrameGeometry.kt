@@ -28,7 +28,17 @@ internal object DraftFrameGeometry {
             topAllyXRatios = base.topAllyXRatios.map(::left),
             topEnemyXRatios = base.topEnemyXRatios.map(::right)
         )
-        return forViewport(anchored, bounds, width, height)
+        val frame = forViewport(anchored, bounds, width, height)
+        if (!base.manualAllyBans && !base.manualEnemyBans) return frame
+        // The user edits each ban row directly in captured-frame coordinates.
+        return frame.copy(
+            allyBanXRatios = if (base.manualAllyBans) base.allyBanXRatios else frame.allyBanXRatios,
+            allyBanYRatios = if (base.manualAllyBans) base.allyBanYRatios else frame.allyBanYRatios,
+            allyBanDiameterRatios = if (base.manualAllyBans) base.allyBanDiameterRatios else frame.allyBanDiameterRatios,
+            enemyBanXRatios = if (base.manualEnemyBans) base.enemyBanXRatios else frame.enemyBanXRatios,
+            enemyBanYRatios = if (base.manualEnemyBans) base.enemyBanYRatios else frame.enemyBanYRatios,
+            enemyBanDiameterRatios = if (base.manualEnemyBans) base.enemyBanDiameterRatios else frame.enemyBanDiameterRatios
+        )
     }
 
     fun contentBounds(bitmap: Bitmap): Rect {

@@ -15,6 +15,32 @@ import org.robolectric.annotation.GraphicsMode
 @Config(sdk = [34], application = Application::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class DraftMultideviceBoxesTest {
+    @Test fun liveScannerAnchorsBothColumnsOnceAcrossFullWidthCaptures() {
+        val context = org.robolectric.RuntimeEnvironment.getApplication()
+        val base = VisionCalibrationConfig()
+        DraftVisionScanner.initCalibration(context)
+        for ((width, height) in listOf(1280 to 720, 1600 to 1000, 2520 to 1080)) {
+            val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+            try {
+                bitmap.eraseColor(Color.DKGRAY)
+                val actual = DraftVisionScanner.configForFrame(bitmap, refreshGeometry = true)
+                val referenceWidth = height * (1280f / 579f)
+                assertEquals(referenceWidth * base.getAllySlotX(2), width * actual.getAllySlotX(2), 1f)
+                assertEquals(referenceWidth * (1f - base.getEnemySlotX(2)), width * (1f - actual.getEnemySlotX(2)), 1f)
+            } finally { bitmap.recycle() }
+        }
+    }
+
+    @Test fun aManualBanRowKeepsItsFrameCoordinatesWhileTheOtherTeamAdapts() {
+        val bounds = Rect(80, 60, 1200, 660)
+        for (ally in listOf(true, false)) {
+            val base = VisionCalibrationConfig().adjustBanSlot(ally, 2, deltaX = .012f)
+            val adapted = DraftFrameGeometry.calculateMultideviceBoxes(base, bounds, 1280, 720)
+            assertEquals(base.banRegions(ally), adapted.banRegions(ally))
+            assertNotEquals(base.banRegions(!ally), adapted.banRegions(!ally))
+        }
+    }
+
     @Test fun tabletInsetsReachTheSameTitleGeometryUsedByTheColumnReader() {
         val bitmap = Bitmap.createBitmap(1024, 768, Bitmap.Config.ARGB_8888)
         try {
