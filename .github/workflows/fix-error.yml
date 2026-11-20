@@ -238,7 +238,8 @@ jobs:
         run: |
           ./gradlew :app:testDebugUnitTest \
             --tests 'com.example.DraftMultiDeviceAuditTest.smallCapturePreservesJhinWhenPortraitsAndBansChange' \
-            --tests 'com.example.DeviceDraftProfileTest.xiaomi24122rkc7gReferenceKeepsSuppliedBanAndSlotGeometry' \
+            --tests 'com.example.DeviceDraftProfileTest' \
+            --tests 'com.example.DraftNativePanelTest' \
             --tests 'com.example.DraftReferenceFrameTest.measuredStartingColumnFollowsVisibleRingsAndExplicitSlotEditsTakePriority' \
             --tests 'com.example.DraftMultiDeviceAuditTest.formerlyFailingCentersStayAlignedWhenPortraitsChange' \
             --tests 'com.example.data.OverlayAccessSnapshotTest' \
@@ -261,6 +262,7 @@ jobs:
           path: |
             app/build/test-results/testDebugUnitTest/TEST-com.example.DraftMultiDeviceAuditTest.xml
             app/build/reports/scanner-multidevice/
+            app/build/reports/scanner-native/
           if-no-files-found: warn
           retention-days: 14
 
