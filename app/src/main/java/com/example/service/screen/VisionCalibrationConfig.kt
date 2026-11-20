@@ -114,6 +114,13 @@ data class VisionCalibrationConfig(
     val enemyBanYRatio: Float get() = enemyBanYRatios.averageOr(.052f)
     val banDiameterRatio: Float get() = (allyBanDiameterRatios + enemyBanDiameterRatios).averageOr(.060f)
 
+    internal fun samePickGeometry(other: VisionCalibrationConfig): Boolean =
+        allyAvatarCenterX == other.allyAvatarCenterX && enemyAvatarCenterX == other.enemyAvatarCenterX &&
+            avatarDiameterRatio == other.avatarDiameterRatio &&
+            allySlotXRatios == other.allySlotXRatios && enemySlotXRatios == other.enemySlotXRatios &&
+            allySlotYRatios == other.allySlotYRatios && enemySlotYRatios == other.enemySlotYRatios &&
+            allySlotDiameterRatios == other.allySlotDiameterRatios && enemySlotDiameterRatios == other.enemySlotDiameterRatios
+
     fun getAllySlotX(slotIdx: Int): Float = allySlotXRatios.getOrElse(slotIdx) { allyAvatarCenterX }
     fun getEnemySlotX(slotIdx: Int): Float = enemySlotXRatios.getOrElse(slotIdx) { enemyAvatarCenterX }
     fun getSlotDiameter(isAlly: Boolean, slotIdx: Int): Float =
