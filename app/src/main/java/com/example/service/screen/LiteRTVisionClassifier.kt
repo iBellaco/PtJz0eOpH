@@ -188,8 +188,10 @@ object LiteRTVisionClassifier {
         exclusions: List<android.graphics.Rect>,
         config: VisionCalibrationConfig = VisionCalibrationConfig(),
         trackedSides: Set<BanSide> = emptySet(),
-        bounds: android.graphics.Rect = DraftFrameGeometry.contentBounds(bitmap)
+        bounds: android.graphics.Rect = DraftFrameGeometry.contentBounds(bitmap),
+        isCurrent: () -> Boolean = { true }
     ): List<BanObservation> {
+        if (!isCurrent()) return emptyList()
         if (bounds != android.graphics.Rect(0, 0, bitmap.width, bitmap.height)) {
             val content = Bitmap.createBitmap(bitmap, bounds.left, bounds.top, bounds.width(), bounds.height())
             try {
@@ -203,7 +205,8 @@ object LiteRTVisionClassifier {
                 val masks = exclusions.mapNotNull { rect ->
                     android.graphics.Rect(rect).takeIf { it.intersect(bounds) }?.apply { offset(-bounds.left, -bounds.top) }
                 }
-                return findHeaderBanObservations(content, context, masks, localConfig, trackedSides).map { observation ->
+                return findHeaderBanObservations(content, context, masks, localConfig, trackedSides,
+                    android.graphics.Rect(0, 0, content.width, content.height), isCurrent).map { observation ->
                     observation.copy(region = BanRegion(
                         (bounds.left + observation.region.x * bounds.width()) / bitmap.width,
                         (bounds.top + observation.region.y * bounds.height()) / bitmap.height,
@@ -219,7 +222,8 @@ object LiteRTVisionClassifier {
                 val masks = exclusions.map { rect -> android.graphics.Rect(
                     kotlin.math.floor(rect.left * scale).toInt(), kotlin.math.floor(rect.top * scale).toInt(),
                     kotlin.math.ceil(rect.right * scale).toInt(), kotlin.math.ceil(rect.bottom * scale).toInt()) }
-                return findHeaderBanObservations(resized, context, masks, config, trackedSides)
+                return findHeaderBanObservations(resized, context, masks, config, trackedSides,
+                    android.graphics.Rect(0, 0, resized.width, resized.height), isCurrent)
             } finally { resized.recycle() }
         }
         ensureIndexed(context)
@@ -254,9 +258,11 @@ object LiteRTVisionClassifier {
             // without changing the normalized row geometry.
             val ySamples = floatArrayOf(.038f, .044f, .048f, .050f, .052f, .056f, .060f, .062f, .068f)
             for (yRatio in ySamples) {
+                if (!isCurrent()) return emptyList()
                 val y = (height * yRatio).toInt()
                 if (y - radius < 0 || y + radius > headerHeight) continue
                 for (x in radius until width - radius step (radius / 4).coerceAtLeast(3)) {
+                    if (if (x < width / 2) config.manualAllyBans else config.manualEnemyBans) continue
                     // Include the portrait rim that straddles the dynamic
                     // side-band boundary; using the center alone would drop
                     // the outermost ban on wide captures.
@@ -292,6 +298,7 @@ object LiteRTVisionClassifier {
             listOf(true, false).flatMap { ally -> source.filter { (it.x < width / 2) == ally }
                 .sortedByDescending { it.score }.take(limitPerSide) }
         for (proposal in (balanced(proposals, 100) + balanced(emptyProposals, 20)).sortedByDescending { it.score }) {
+            if (!isCurrent()) return emptyList()
             if (found.count { (it.first.x < width / 2) == (proposal.x < width / 2) } >= 7) continue
             if (found.any { kotlin.math.abs(it.first.x - proposal.x) < maxOf(it.first.radius, proposal.radius) * 1.4f }) continue
             if (proposal.shortlist.isEmpty()) {
@@ -409,11 +416,12 @@ object LiteRTVisionClassifier {
             val ally = side == BanSide.ALLY
             val manual = if (ally) config.manualAllyBans else config.manualEnemyBans
             // A partial header can still be read at circles located in this viewport.
-            if (manual || (!hasRowEvidence && side in trackedSides)) {
+            if (manual || (side in trackedSides && rawObservations.count { it.side == side } < 2)) {
                 config.banRegions(ally).map { BanObservation(side, it) }
             } else positioned.filter { it.side == side }
         }
         return calibrated.map { observation ->
+            if (!isCurrent()) return emptyList()
             if (observation.championId != null && observation.similarity >= .90f) return@map observation
             val region = observation.region
             val centerX = kotlin.math.round(region.x * width).toInt()
@@ -424,6 +432,7 @@ object LiteRTVisionClassifier {
             // Keep the best alignment at each radius: resampling can move the optimum
             // between neighbouring crop sizes even when coarse correlation is lower.
             val unresolved = mutableMapOf<Int, Triple<Float, FloatArray, List<Champion>>>()
+            val cropBuffers = mutableMapOf<Int, IntArray>()
             for (dx in intArrayOf(-4, -2, 0, 2, 4)) for (dy in -3..3) for (dr in -5..5) {
                 val x = centerX + dx; val y = centerY + dy
                 val radius = (baseRadius + dr).coerceAtLeast(6)
@@ -431,14 +440,16 @@ object LiteRTVisionClassifier {
                 if (rect.left < 0 || rect.right > width || rect.top < 0 || rect.bottom > headerHeight ||
                     exclusions.any { android.graphics.Rect.intersects(it, PortraitMatcher.sampledRect(rect)) }) continue
                 val diameter = radius * 2
-                val pixels = IntArray(diameter * diameter)
+                val pixels = cropBuffers.getOrPut(diameter) { IntArray(diameter * diameter) }
                 for (row in 0 until diameter) System.arraycopy(header,
                     (y-radius+row)*width+x-radius, pixels, row*diameter, diameter)
                 if(!PortraitMatcher.hasSpatialContrast(pixels,diameter,diameter)) continue
                 val descriptor = PortraitMatcher.descriptor(pixels, diameter, diameter)
                 val candidates = catalog.map { champion ->
                     val references = championEmbeddingCache.getValue(champion.id)
-                    champion to intArrayOf(4, 13, 22).maxOf { PortraitMatcher.correlation(descriptor, references[it]) }
+                    champion to maxOf(PortraitMatcher.correlation(descriptor, references[4]),
+                        PortraitMatcher.correlation(descriptor, references[13]),
+                        PortraitMatcher.correlation(descriptor, references[22]))
                 }.sortedByDescending { it.second }.take(8)
                 if (refined.championId == null && emptyReferences.isNotEmpty() &&
                     candidates.first().second < .65f && PortraitMatcher.similarity(descriptor, emptyReferences) >= .90f) {

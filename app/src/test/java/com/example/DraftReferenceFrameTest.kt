@@ -20,6 +20,34 @@ class DraftReferenceFrameTest {
     private val expected = listOf("senna", "ornn", "mel", "volibear", "vi",
         "alistar", "caitlyn", "nocturne", "vex", "teemo")
 
+    @Test fun measuredStartingColumnFollowsVisibleRingsAndExplicitSlotEditsTakePriority() {
+        val context = RuntimeEnvironment.getApplication()
+        val prefs = context.getSharedPreferences("vision_calibration_prefs", 0)
+        val source = javaClass.getResourceAsStream("/portraits/draft-ten-selected.jpg").use { BitmapFactory.decodeStream(it)!! }
+        val frame = Bitmap.createScaledBitmap(source, 1280, 576, true)
+        val scanner = DraftVisionScanner
+        try {
+            org.robolectric.shadows.ShadowBuild.setManufacturer("Xiaomi")
+            org.robolectric.shadows.ShadowBuild.setModel("24122RKC7G")
+            prefs.edit().clear().commit()
+            scanner.initCalibration(context)
+            val aligned = scanner.configForFrame(frame)
+            assertEquals(92f, aligned.getAllySlotX(0) * frame.width, 6f)
+            val measured = scanner.calibrationConfig
+            assertEquals(.11662696f, measured.getAllySlotX(0), .0001f)
+            assertEquals(measured.banRegions(true), aligned.banRegions(true))
+            val edited = measured.adjustDraftSlot(true, 0, deltaX = .01f)
+            scanner.updateCalibration(context, edited)
+            assertEquals(edited.getAllySlotX(0), scanner.configForFrame(frame).getAllySlotX(0), .0001f)
+        } finally {
+            frame.recycle()
+            source.recycle()
+            prefs.edit().clear().commit()
+            org.robolectric.shadows.ShadowBuild.reset()
+            scanner.initCalibration(context)
+        }
+    }
+
     @Test fun calibrationRestartInvalidatesViewportEvenAtTheSameCaptureSize() {
         val context = RuntimeEnvironment.getApplication()
         val preferences = context.getSharedPreferences("vision_calibration_prefs", 0)

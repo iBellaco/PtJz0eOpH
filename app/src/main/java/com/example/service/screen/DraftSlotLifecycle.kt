@@ -4,6 +4,7 @@ package com.example.service.screen
 class DraftSlotLifecycle {
     enum class Observation { ACTIVE, DISAPPEARING, FINISHED }
     private var observedFinalSelection = false
+    fun needsVisibilityCheck(confirmedPicks: Int) = observedFinalSelection || confirmedPicks >= 9
     private var missingFrames = 0
     private var missingSince: Long? = null
 

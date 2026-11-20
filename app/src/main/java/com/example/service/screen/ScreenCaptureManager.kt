@@ -64,6 +64,8 @@ class ScreenCaptureManager(private val context: Context) {
     private val captureThread = HandlerThread("ScreenCaptureThread", android.os.Process.THREAD_PRIORITY_BACKGROUND).apply { start() }
     private val handler = Handler(captureThread.looper)
     private var surfaceAttached = false
+    @Volatile var capturedContentVisible = true
+        private set
     private val idleCapture = Runnable {
         synchronized(projectionLock) {
             try {
@@ -77,7 +79,7 @@ class ScreenCaptureManager(private val context: Context) {
     private fun requestCapture(): Boolean = synchronized(projectionLock) {
         val display = virtualDisplay ?: return@synchronized false
         val power = context.getSystemService(Context.POWER_SERVICE) as android.os.PowerManager
-        if (!power.isInteractive) {
+        if (!power.isInteractive || !capturedContentVisible) {
             handler.removeCallbacks(idleCapture)
             handler.post(idleCapture)
             return@synchronized false
@@ -170,6 +172,17 @@ class ScreenCaptureManager(private val context: Context) {
 
                 try {
                     mediaProjection?.registerCallback(object : MediaProjection.Callback() {
+                        override fun onCapturedContentVisibilityChanged(isVisible: Boolean) {
+                            synchronized(projectionLock) {
+                                if (mediaProjection !== projection) return
+                                capturedContentVisible = isVisible
+                                if (!isVisible) {
+                                    handler.removeCallbacks(idleCapture)
+                                    idleCapture.run()
+                                }
+                            }
+                        }
+
                         override fun onStop() {
                             super.onStop()
                             AppLogger.w(TAG, "MediaProjection detenido por el sistema.")
@@ -305,6 +318,7 @@ class ScreenCaptureManager(private val context: Context) {
     /** Call under projectionLock; detach references before stop can dispatch its callback. */
     private fun clearProjection(stop: Boolean) {
         _projectionReady.value = false
+        capturedContentVisible = true
         handler.removeCallbacks(idleCapture)
         surfaceAttached = false
         val previous = mediaProjection

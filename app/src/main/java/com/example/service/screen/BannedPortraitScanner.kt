@@ -50,7 +50,7 @@ internal class BannedPortraitScanner {
         var searchConfig = config
         for ((side, row) in tracked) searchConfig = searchConfig.withObservedBanRow(side == BanSide.ALLY, row)
         val observations = LiteRTVisionClassifier.findHeaderBanObservations(
-            bitmap, context, exclusions, searchConfig, tracked.keys, bounds
+            bitmap, context, exclusions, searchConfig, tracked.keys, bounds, isCurrent
         ).map { observation ->
             if (observation.championId in pickedIds) observation.copy(championId=null,empty=false) else observation
         }

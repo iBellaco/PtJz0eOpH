@@ -472,14 +472,21 @@ internal fun FloatingOverlayContent(
         withContext(Dispatchers.Default) {
             val isProcessingFrame = java.util.concurrent.atomic.AtomicBoolean(false)
             val banWorker = com.example.service.screen.DraftBanWorker(this) { frame, job ->
-                DraftVisionScanner.processBanFrame(frame,context) { job.isActive && state.acceptsScanResult(scanGeneration) }
+                DraftVisionScanner.processBanFrame(frame,context) {
+                    job.isActive && screenCaptureManager?.capturedContentVisible == true && state.acceptsScanResult(scanGeneration)
+                }
             }
             var quickReadCount = 0
             var lastGlobalSyncFinishedAt = android.os.SystemClock.elapsedRealtime()
             var fpsLastTime = System.currentTimeMillis()
             var framesInSecond = 0
+            val power = context.getSystemService(Context.POWER_SERVICE) as android.os.PowerManager
 
             try { while (state.acceptsScanResult(scanGeneration)) {
+                if (!power.isInteractive || screenCaptureManager?.capturedContentVisible == false) {
+                    delay(1000L)
+                    continue
+                }
                 // 1. REGLA DE SALTO: Arrastre o interacción de usuario
                 if (isDraggingBubble || showSaveDraftDialog || showRoleChangeDialog) {
                     DraftVisionScanner.recordFrameSkipped()
@@ -709,7 +716,6 @@ internal fun FloatingOverlayContent(
                     val totalCycleDuration = android.os.SystemClock.elapsedRealtime() - cycleStartTime
                     // 3. ESTRATEGIA ADAPTATIVA: Si el ciclo tomó más tiempo del previsto,
                     // compensar el retraso para evitar ráfagas y proteger la tasa de fotogramas del live overlay
-                    val power = context.getSystemService(Context.POWER_SERVICE) as android.os.PowerManager
                     val constrained = power.isPowerSaveMode ||
                         (android.os.Build.VERSION.SDK_INT >= 29 &&
                             power.currentThermalStatus >= android.os.PowerManager.THERMAL_STATUS_MODERATE)

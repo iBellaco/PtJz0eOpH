@@ -8,8 +8,11 @@ import org.junit.Test
 class DraftSlotLifecycleTest {
     @Test fun lastSelectionStaysActiveUntilTheSlotsDisappear() {
         val lifecycle = DraftSlotLifecycle()
+        assertEquals(false, lifecycle.needsVisibilityCheck(8))
+        assertEquals(true, lifecycle.needsVisibilityCheck(9))
         assertEquals(ACTIVE, lifecycle.observe(false, false))
         assertEquals(ACTIVE, lifecycle.observe(true, true))
+        assertEquals(true, lifecycle.needsVisibilityCheck(8))
         repeat(10) { assertEquals(ACTIVE, lifecycle.observe(true, true)) }
         assertEquals(DISAPPEARING, lifecycle.observe(false, true, 100))
         assertEquals(DISAPPEARING, lifecycle.observe(false, true, 150))
