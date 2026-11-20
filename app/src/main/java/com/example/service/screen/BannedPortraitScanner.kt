@@ -153,7 +153,11 @@ internal class BannedPortraitScanner {
             for ((index, proposals) in assignments.groupBy { it.second }) {
                 val observation = proposals.minBy { abs(positions[index].x - it.first.region.x) }.first
                 if (!configured) located[index] = observation.region
-                assigned[side to index] = observation
+                // Confirmation copies the assigned observation into the slot.
+                // Keep its identity and score, but retain the exact center for
+                // manual or measured rows instead of reintroducing detector
+                // drift after the row was already anchored above.
+                assigned[side to index] = if (configured) observation.copy(region = positions[index]) else observation
             }
             current = current.map { slot ->
                 if (slot.side != side) slot
