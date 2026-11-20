@@ -245,19 +245,21 @@ object DraftVisionScanner {
     private val banPublicationLock = Any()
     @Volatile private var banGeneration = 0L
 
-    internal fun captureBanFrame(bitmap: Bitmap, pickedIds: Set<String>, refreshGeometry: Boolean = false): DraftBanFrame = synchronized(banPublicationLock) {
+    internal fun captureBanFrame(bitmap: Bitmap, pickedIds: Set<String>, refreshGeometry: Boolean = false,
+                                 tenthPickSide: BanSide? = null): DraftBanFrame = synchronized(banPublicationLock) {
         banDetectionActiveFlow.value=true
         val config = configForFrame(bitmap, refreshGeometry)
         DraftBanFrame(bitmap.copy(Bitmap.Config.ARGB_8888,false) ?: error("Ban frame unavailable"),
             diagnosticTextForFrame(bitmap.width,bitmap.height)+listOfNotNull(overlayForFrame(bitmap.width,bitmap.height)),
             config,
-            pickedIds,banGeneration)
+            pickedIds,banGeneration,tenthPickSide)
     }
 
     internal fun processBanFrame(frame: DraftBanFrame, context: Context, canPublish: () -> Boolean) {
         if(!synchronized(banPublicationLock) { frame.generation==banGeneration } || !canPublish()) return
         val ids = bannedPortraitScanner.scan(frame.bitmap,context,android.os.SystemClock.elapsedRealtime(),
-            frame.masks,frame.config,frame.pickedIds) { frame.generation==banGeneration && canPublish() }
+            frame.masks,frame.config,frame.pickedIds,
+            { frame.generation==banGeneration && canPublish() }, frame.tenthPickSide)
         synchronized(banPublicationLock) {
             if(frame.generation!=banGeneration || !canPublish()) return
             banDetectionActiveFlow.value=true
@@ -1958,6 +1960,12 @@ object DraftVisionScanner {
         val tenthTurn = pickSequence.last()
         val tenthIsAlly = tenthTurn.isAlly
         val tenthSlotIndex = tenthTurn.slotIndex
+        val tenthPickSideHint = when {
+            missingTenthSide != null -> if (missingTenthSide) BanSide.ALLY else BanSide.ENEMY
+            currentIsFirstPick != null -> if (tenthIsAlly) BanSide.ALLY else BanSide.ENEMY
+            detectedFirstPick != null -> if (tenthIsAlly) BanSide.ALLY else BanSide.ENEMY
+            else -> null
+        }
 
         val draftVisible = allyOcrChampions.any { it != null } || enemyOcrChampions.any { it != null } ||
             currentScanFrameOcrLanes.isNotEmpty() || isActiveSelectionDetected || isPreparationPhase
@@ -1966,7 +1974,8 @@ object DraftVisionScanner {
             val exclusions = frameDiagnosticTexts + listOfNotNull(frameOverlay)
             val pickedIds = (allyOcrChampions.filterNotNull() + enemyOcrChampions.filterNotNull()).map { it.id }.toSet()
             bannedChampionIdsFlow.value = bannedPortraitScanner.scan(bitmap, context,
-                android.os.SystemClock.elapsedRealtime(), exclusions, calib, pickedIds)
+                android.os.SystemClock.elapsedRealtime(), exclusions, calib, pickedIds,
+                tenthPickSide = tenthPickSideHint)
             banSlotsFlow.value = bannedPortraitScanner.slots
         }
 
