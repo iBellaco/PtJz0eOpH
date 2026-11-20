@@ -189,7 +189,8 @@ object LiteRTVisionClassifier {
         config: VisionCalibrationConfig = VisionCalibrationConfig(),
         trackedSides: Set<BanSide> = emptySet(),
         bounds: android.graphics.Rect = DraftFrameGeometry.contentBounds(bitmap),
-        isCurrent: () -> Boolean = { true }
+        isCurrent: () -> Boolean = { true },
+        tenthPickSide: BanSide? = null
     ): List<BanObservation> {
         if (!isCurrent()) return emptyList()
         if (bounds != android.graphics.Rect(0, 0, bitmap.width, bitmap.height)) {
@@ -201,12 +202,18 @@ object LiteRTVisionClassifier {
                     allyBanXRatios = config.allyBanXRatios.map(::x), enemyBanXRatios = config.enemyBanXRatios.map(::x),
                     allyBanYRatios = config.allyBanYRatios.map(::y), enemyBanYRatios = config.enemyBanYRatios.map(::y),
                     allyBanDiameterRatios = config.allyBanDiameterRatios.map { it * bitmap.height / bounds.height() },
-                    enemyBanDiameterRatios = config.enemyBanDiameterRatios.map { it * bitmap.height / bounds.height() })
+                    enemyBanDiameterRatios = config.enemyBanDiameterRatios.map { it * bitmap.height / bounds.height() },
+                    topAvatarYRatio = y(config.topAvatarYRatio),
+                    topAvatarDiameterRatio = config.topAvatarDiameterRatio * bitmap.height / bounds.height(),
+                    topAlly5XRatio = x(config.topAlly5XRatio),
+                    topEnemy5XRatio = x(config.topEnemy5XRatio),
+                    topAllyXRatios = config.topAllyXRatios.map(::x),
+                    topEnemyXRatios = config.topEnemyXRatios.map(::x))
                 val masks = exclusions.mapNotNull { rect ->
                     android.graphics.Rect(rect).takeIf { it.intersect(bounds) }?.apply { offset(-bounds.left, -bounds.top) }
                 }
                 return findHeaderBanObservations(content, context, masks, localConfig, trackedSides,
-                    android.graphics.Rect(0, 0, content.width, content.height), isCurrent).map { observation ->
+                    android.graphics.Rect(0, 0, content.width, content.height), isCurrent, tenthPickSide).map { observation ->
                     observation.copy(region = BanRegion(
                         (bounds.left + observation.region.x * bounds.width()) / bitmap.width,
                         (bounds.top + observation.region.y * bounds.height()) / bitmap.height,
@@ -223,7 +230,7 @@ object LiteRTVisionClassifier {
                     kotlin.math.floor(rect.left * scale).toInt(), kotlin.math.floor(rect.top * scale).toInt(),
                     kotlin.math.ceil(rect.right * scale).toInt(), kotlin.math.ceil(rect.bottom * scale).toInt()) }
                 return findHeaderBanObservations(resized, context, masks, config, trackedSides,
-                    android.graphics.Rect(0, 0, resized.width, resized.height), isCurrent)
+                    android.graphics.Rect(0, 0, resized.width, resized.height), isCurrent, tenthPickSide)
             } finally { resized.recycle() }
         }
         ensureIndexed(context)
@@ -232,10 +239,14 @@ object LiteRTVisionClassifier {
         if (catalog.isEmpty()) return emptyList()
         val height = bitmap.height
         val width = bitmap.width
+        fun isExcludedTenthPick(region: BanRegion): Boolean {
+            val side = if (region.x < .5f) BanSide.ALLY else BanSide.ENEMY
+            return tenthPickSide == side && isTenthPickHeaderRegion(region, side, config)
+        }
         val sideWidth = banHeaderSideWidthRatio(width.toFloat() / height)
         val manualBottom = BanSide.entries.maxOf { side ->
             val ally = side == BanSide.ALLY
-            if (if (ally) config.manualAllyBans else config.manualEnemyBans)
+            if ((if (ally) config.manualAllyBans else config.manualEnemyBans) || config.hasExplicitBanGeometry(ally))
                 config.banRegions(ally).maxOf { (it.y + it.radius) * height + 8f }
             else 0f
         }
@@ -262,7 +273,8 @@ object LiteRTVisionClassifier {
                 val y = (height * yRatio).toInt()
                 if (y - radius < 0 || y + radius > headerHeight) continue
                 for (x in radius until width - radius step (radius / 4).coerceAtLeast(3)) {
-                    if (if (x < width / 2) config.manualAllyBans else config.manualEnemyBans) continue
+                    if ((if (x < width / 2) config.manualAllyBans else config.manualEnemyBans) ||
+                        config.hasExplicitBanGeometry(x < width / 2)) continue
                     // Include the portrait rim that straddles the dynamic
                     // side-band boundary; using the center alone would drop
                     // the outermost ban on wide captures.
@@ -273,6 +285,8 @@ object LiteRTVisionClassifier {
                     if (x > width * scanSideWidth && x < width * (1f - scanSideWidth)) continue
                     val cropRect = android.graphics.Rect(x - radius, y - radius, x + radius, y + radius)
                     if (exclusions.any { android.graphics.Rect.intersects(it, PortraitMatcher.sampledRect(cropRect)) }) continue
+                    if (isExcludedTenthPick(BanRegion(x.toFloat() / width, y.toFloat() / height,
+                            radius.toFloat() / height))) continue
                     for (row in 0 until diameter) {
                         System.arraycopy(header, (y - radius + row) * width + x - radius, cropPixels, row * diameter, diameter)
                     }
@@ -353,6 +367,7 @@ object LiteRTVisionClassifier {
                 ((region.y * height) + region.radius * height).toInt())
             if (regular && step > 0f && region.x > 1f - step * 1.5f &&
                 region.x + region.radius * height / width < 1f &&
+                !isExcludedTenthPick(region) &&
                 exclusions.none { android.graphics.Rect.intersects(it, PortraitMatcher.sampledRect(candidateRect)) }) {
                 val colors = (0 until 24).flatMap { angleIndex ->
                     val angle = angleIndex * Math.PI * 2 / 24
@@ -382,6 +397,7 @@ object LiteRTVisionClassifier {
                 val y = region.y * height
                 val crop = android.graphics.Rect((x-radius).toInt(), (y-radius).toInt(), (x+radius).toInt(), (y+radius).toInt())
                 exclusions.none { android.graphics.Rect.intersects(it, PortraitMatcher.sampledRect(crop)) } &&
+                    !isExcludedTenthPick(region) &&
                     floatArrayOf(1f, .8f, 1.2f).any { scale ->
                         hasHeaderCircleRing(bitmap, region.copy(radius = region.radius * scale))
                     }
@@ -391,7 +407,8 @@ object LiteRTVisionClassifier {
             val radius = region.radius * height
             val rect = android.graphics.Rect((cx-radius).toInt(), (cy-radius).toInt(),
                 (cx+radius).toInt(), (cy+radius).toInt())
-            if (exclusions.any { android.graphics.Rect.intersects(it, PortraitMatcher.sampledRect(rect)) }) false else {
+            if (exclusions.any { android.graphics.Rect.intersects(it, PortraitMatcher.sampledRect(rect)) } ||
+                isExcludedTenthPick(region)) false else {
                 // A header portrait has spatial color variation; a blank background does not.
                 // This only reserves an unknown position, never confirms a ban or its identity.
                 val sums = DoubleArray(3); val squares = DoubleArray(3)
@@ -415,8 +432,9 @@ object LiteRTVisionClassifier {
         val calibrated = BanSide.entries.flatMap { side ->
             val ally = side == BanSide.ALLY
             val manual = if (ally) config.manualAllyBans else config.manualEnemyBans
+            val configured = manual || config.hasExplicitBanGeometry(ally)
             // A partial header can still be read at circles located in this viewport.
-            if (manual || (side in trackedSides && rawObservations.count { it.side == side } < 2)) {
+            if (configured || (side in trackedSides && rawObservations.count { it.side == side } < 2)) {
                 config.banRegions(ally).map { BanObservation(side, it) }
             } else positioned.filter { it.side == side }
         }

@@ -186,6 +186,33 @@ class DeviceDraftProfileTest {
         assertNull(VisionCalibrationConfig.measuredDefaultForCapture("Xiaomi", "CPH2791", 2354, 1080))
     }
 
+    @Test fun samsungSmS938bReferenceKeepsMeasuredRowsAndMovedAllySlots() {
+        val physical = requireNotNull(VisionCalibrationConfig.measuredDefaultForCapture(
+            "samsung", "SM-S938B", 2340, 1080
+        ))
+        val aligned = requireNotNull(VisionCalibrationConfig.measuredDefaultForCapture(
+            "SAMSUNG", "sm-s938b", 1920, 886
+        ))
+        val literal = requireNotNull(VisionCalibrationConfig.measuredDefaultForCapture(
+            "Samsung", "SM-S938B", 1280, 590
+        ))
+
+        assertEquals(physical, aligned)
+        assertEquals(physical, literal)
+        assertEquals(listOf(.06923077f, .10512821f, .14166667f, .17884615f, .21730769f), physical.allyBanXRatios)
+        assertEquals(listOf(.7826923f, .8211538f, .85641026f, .8923077f, .9301282f), physical.enemyBanXRatios)
+        assertFalse(physical.manualAllyBans)
+        assertFalse(physical.manualEnemyBans)
+        assertTrue(physical.hasExplicitBanGeometry(true))
+        assertTrue(physical.hasExplicitBanGeometry(false))
+        assertEquals(listOf(.1140625f, .1140625f, .06953125f, .06953125f, .06953125f), physical.allySlotXRatios)
+        assertEquals(listOf(.1928934f, .32787907f, .42808804f, .5578877f, .6886633f), physical.allySlotYRatios)
+        assertEquals(.17138515f, physical.topAlly5XRatio, .000001f)
+        assertEquals(.9734761f, physical.topEnemy5XRatio, .000001f)
+        assertNull(VisionCalibrationConfig.measuredDefaultForCapture("Samsung", "SM-S938B", 2340, 1081))
+        assertNull(VisionCalibrationConfig.measuredDefaultForCapture("Samsung", "SM-S938A", 2340, 1080))
+    }
+
     @Test fun unrelatedOldMeasuredCatalogIsNotUsedAfterTheOwnerReset() {
         for ((manufacturer, model, width, height) in listOf(
             ProfileKey("samsung", "SM-S948B", 3120, 1440),

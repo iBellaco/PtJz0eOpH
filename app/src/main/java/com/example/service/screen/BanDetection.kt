@@ -37,6 +37,27 @@ internal fun computeAdaptiveBanRegions(aspect: Float, side: BanSide): List<BanRe
     }
 }
 
+/**
+ * The last circle of the top bar is the visual tenth-pick target, not a ban.
+ * The nearest configured ban center is part of the guard so a top-left circle
+ * that happens to sit beside a real ban is not removed from the measured row.
+ */
+internal fun isTenthPickHeaderRegion(
+    region: BanRegion,
+    side: BanSide,
+    config: VisionCalibrationConfig
+): Boolean {
+    val topX = if (side == BanSide.ALLY) config.topAlly5XRatio else config.topEnemy5XRatio
+    val banXs = if (side == BanSide.ALLY) config.allyBanXRatios else config.enemyBanXRatios
+    val nearestBanDistance = banXs.minOfOrNull { kotlin.math.abs(it - region.x) } ?: 1f
+    val xTolerance = maxOf(.010f, config.topAvatarDiameterRatio * .45f)
+    val yTolerance = maxOf(.010f, config.topAvatarDiameterRatio * .45f)
+    val topDistanceX = kotlin.math.abs(region.x - topX)
+    val topDistanceY = kotlin.math.abs(region.y - config.topAvatarYRatio)
+    return topDistanceX <= xTolerance && topDistanceY <= yTolerance &&
+        topDistanceX + maxOf(.004f, config.topAvatarDiameterRatio * .06f) < nearestBanDistance
+}
+
 /** Fill visible but unreadable portraits before assigning slot numbers. Never invents a champion. */
 internal fun fillHeaderPositions(observations: List<BanObservation>, aspect: Float,
     hasOuterPortrait: ((BanRegion) -> Boolean)? = null,

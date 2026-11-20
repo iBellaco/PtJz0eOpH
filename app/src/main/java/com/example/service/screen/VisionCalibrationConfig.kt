@@ -226,6 +226,28 @@ data class VisionCalibrationConfig(
         ) }
     }
 
+    /**
+     * A measured row is useful even when the tester did not move it manually.
+     * The old check only honored [manualAllyBans]/[manualEnemyBans], which made
+     * an exact physical profile fall back to a generic aspect-ratio grid.
+     */
+    internal fun hasExplicitBanGeometry(): Boolean {
+        return hasExplicitBanGeometry(isAlly = true) || hasExplicitBanGeometry(isAlly = false)
+    }
+
+    internal fun hasExplicitBanGeometry(isAlly: Boolean): Boolean {
+        val defaults = VisionCalibrationConfig()
+        return if (isAlly) {
+            allyBanXRatios != defaults.allyBanXRatios ||
+                allyBanYRatios != defaults.allyBanYRatios ||
+                allyBanDiameterRatios != defaults.allyBanDiameterRatios
+        } else {
+            enemyBanXRatios != defaults.enemyBanXRatios ||
+                enemyBanYRatios != defaults.enemyBanYRatios ||
+                enemyBanDiameterRatios != defaults.enemyBanDiameterRatios
+        }
+    }
+
     fun toFormattedCoordinatesString(): String {
         val sb = StringBuilder()
         sb.append("=== COORDENADAS DE CALIBRACIÓN VISION DRAFT ===\n")

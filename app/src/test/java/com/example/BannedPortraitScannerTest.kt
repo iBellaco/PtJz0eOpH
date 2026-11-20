@@ -214,6 +214,39 @@ class BannedPortraitScannerTest {
         } finally { bitmap.recycle() }
     }
 
+    @Test fun tenthPickHeaderIsExcludedWithoutRemovingTheNearestRealBan() {
+        val config = requireNotNull(com.example.service.screen.VisionCalibrationConfig.measuredDefaultForCapture(
+            "Samsung", "SM-S938B", 2340, 1080
+        ))
+        assertTrue(com.example.service.screen.isTenthPickHeaderRegion(
+            BanRegion(config.topEnemy5XRatio, config.topAvatarYRatio, config.topAvatarDiameterRatio / 2f),
+            BanSide.ENEMY, config))
+        assertFalse(com.example.service.screen.isTenthPickHeaderRegion(
+            config.banRegions(false).last(), BanSide.ENEMY, config))
+        // On the left the fifth top circle is close to the fourth ban. The
+        // nearest-ban guard must preserve that measured ban position.
+        assertFalse(com.example.service.screen.isTenthPickHeaderRegion(
+            config.banRegions(true)[3], BanSide.ALLY, config))
+        assertTrue(com.example.service.screen.isTenthPickHeaderRegion(
+            BanRegion(config.topAlly5XRatio, config.topAvatarYRatio, config.topAvatarDiameterRatio / 2f),
+            BanSide.ALLY, config))
+    }
+
+    @Test fun nonManualMeasuredRowsAreNotReplacedByTheAdaptiveGrid() {
+        val config = requireNotNull(com.example.service.screen.VisionCalibrationConfig.measuredDefaultForCapture(
+            "Samsung", "SM-S938B", 2340, 1080
+        ))
+        val scanner = BannedPortraitScanner()
+        val observations = config.banRegions(true).mapIndexed { index, region ->
+            BanObservation(BanSide.ALLY, region.copy(x = region.x + .002f), "ally_$index", similarity = .95f)
+        }
+        repeat(2) { scanner.update(observations, 2340f / 1080f, config = config) }
+        assertEquals(config.banRegions(true).map { it.x },
+            scanner.slots.filter { it.side == BanSide.ALLY }.map { it.region!!.x })
+        assertEquals(observations.map { it.championId },
+            scanner.slots.filter { it.side == BanSide.ALLY }.map { it.championId })
+    }
+
     @Test fun syntheticMelAndDariusHeaderIsNotMisidentifiedAsSionAcrossCaptureScales() {
         // Constructed from local champion assets: this is not the tester's screenshot.
         val expected = listOf("caitlyn", "master_yi", "nocturne", "jax", "samira",
