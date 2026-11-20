@@ -85,12 +85,49 @@ internal object MeasuredDeviceCalibrationDefaults {
         topEnemyXRatios = listOf(.834f, .869f, .904f, .939f, .9741347f)
     )
 
+    /**
+     * Vision Draft calibration supplied from the OPPO CPH2791 capture.
+     *
+     * The ban rows are manual frame coordinates. They must remain independent
+     * from the slot columns because the supplied capture shows the picks in
+     * the expected columns while the ban circles sit on a different row.
+     * 1920x881 and 1280x587 are capture aliases of the same device profile.
+     */
+    private val oppoCph2791Reference = VisionCalibrationConfig().copy(
+        allyAvatarCenterX = .12303629f,
+        enemyAvatarCenterX = .90703124f,
+        avatarDiameterRatio = .11f,
+        allySlotXRatios = List(5) { .12303629f },
+        allySlotYRatios = listOf(.188f, .324f, .458f, .591f, .725f),
+        allySlotDiameterRatios = listOf(.11f, .11f, .11f, .11f, .105f),
+        enemySlotXRatios = List(5) { .90703124f },
+        enemySlotYRatios = listOf(.18950696f, .3253833f, .45826235f, .5911414f, .72302145f),
+        enemySlotDiameterRatios = List(5) { .11f },
+        allyBanXRatios = listOf(.078402996f, .11492116f, .15143925f, .18795736f, .22447549f),
+        allyBanYRatios = List(5) { .052f },
+        allyBanDiameterRatios = List(5) { .06f },
+        manualAllyBans = true,
+        enemyBanXRatios = listOf(.77501595f, .8100701f, .8470363f, .8833652f, .9203314f),
+        enemyBanYRatios = listOf(.05f, .048611112f, .048611112f, .05f, .05277778f),
+        enemyBanDiameterRatios = List(5) { .06f },
+        manualEnemyBans = true,
+        topAvatarYRatio = .045f,
+        topAvatarDiameterRatio = .072f,
+        topAlly5XRatio = .17041795f,
+        topEnemy5XRatio = .9736258f,
+        topAllyXRatios = listOf(.03041795f, .06541795f, .10041795f, .13541795f, .17041795f),
+        topEnemyXRatios = listOf(.8336258f, .8686258f, .9036258f, .9386258f, .9736258f)
+    )
+
     private val profiles: List<Profile> = listOf(
         Profile("nubia", "NX789J", 2688, 1216, nubiaNx789jReference),
         Profile("nubia", "NX789J", 1920, 869, nubiaNx789jReference),
         Profile("Xiaomi", "24122RKC7G", 2400, 1080, xiaomi24122rkc7gReference),
         Profile("Xiaomi", "24122RKC7G", 1920, 864, xiaomi24122rkc7gReference),
-        Profile("Xiaomi", "24122RKC7G", 1280, 576, xiaomi24122rkc7gReference)
+        Profile("Xiaomi", "24122RKC7G", 1280, 576, xiaomi24122rkc7gReference),
+        Profile("OPPO", "CPH2791", 2354, 1080, oppoCph2791Reference),
+        Profile("OPPO", "CPH2791", 1920, 881, oppoCph2791Reference),
+        Profile("OPPO", "CPH2791", 1280, 587, oppoCph2791Reference)
     )
 
     fun forCapture(
