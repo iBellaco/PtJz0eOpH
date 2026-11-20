@@ -48,6 +48,33 @@ class DraftReferenceFrameTest {
         }
     }
 
+    @Test fun oppoManualBanRowsRemainInCapturedCoordinatesWhileSlotsUseTheirOwnColumns() {
+        val context = RuntimeEnvironment.getApplication()
+        val prefs = context.getSharedPreferences("vision_calibration_prefs", 0)
+        prefs.edit().clear().commit()
+        val frame = Bitmap.createBitmap(1280, 587, Bitmap.Config.ARGB_8888)
+        try {
+            org.robolectric.shadows.ShadowBuild.setManufacturer("OPPO")
+            org.robolectric.shadows.ShadowBuild.setModel("CPH2791")
+            DraftVisionScanner.initCalibration(context)
+            val aligned = DraftVisionScanner.configForFrame(frame, refreshGeometry = true)
+            val measured = DraftVisionScanner.calibrationConfig
+            assertTrue(measured.manualAllyBans)
+            assertTrue(measured.manualEnemyBans)
+            assertEquals(measured.allyBanXRatios, aligned.allyBanXRatios)
+            assertEquals(measured.enemyBanXRatios, aligned.enemyBanXRatios)
+            assertEquals(measured.allyBanYRatios, aligned.allyBanYRatios)
+            assertEquals(measured.enemyBanYRatios, aligned.enemyBanYRatios)
+            assertEquals(.12303629f, aligned.getAllySlotX(0), .000001f)
+            assertEquals(.90703124f, aligned.getEnemySlotX(0), .000001f)
+        } finally {
+            frame.recycle()
+            prefs.edit().clear().commit()
+            org.robolectric.shadows.ShadowBuild.reset()
+            DraftVisionScanner.initCalibration(context)
+        }
+    }
+
     @Test fun calibrationRestartInvalidatesViewportEvenAtTheSameCaptureSize() {
         val context = RuntimeEnvironment.getApplication()
         val preferences = context.getSharedPreferences("vision_calibration_prefs", 0)

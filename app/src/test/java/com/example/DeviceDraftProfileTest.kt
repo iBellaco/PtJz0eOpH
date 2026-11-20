@@ -157,11 +157,39 @@ class DeviceDraftProfileTest {
         assertNull(VisionCalibrationConfig.measuredDefaultForCapture("Xiaomi", "24122DPC0AG", 2400, 1080))
     }
 
+    @Test fun oppoCph2791ReferenceKeepsManualBanRowsSeparateFromPickColumns() {
+        val physical = requireNotNull(VisionCalibrationConfig.measuredDefaultForCapture(
+            "OPPO", "CPH2791", 2354, 1080
+        ))
+        val aligned = requireNotNull(VisionCalibrationConfig.measuredDefaultForCapture(
+            "oppo", "cph2791", 1920, 881
+        ))
+        val literal = requireNotNull(VisionCalibrationConfig.measuredDefaultForCapture(
+            "OPPO", "CPH2791", 1280, 587
+        ))
+
+        assertEquals(physical, aligned)
+        assertEquals(physical, literal)
+        assertEquals(listOf(.078402996f, .11492116f, .15143925f, .18795736f, .22447549f), physical.allyBanXRatios)
+        assertEquals(listOf(.77501595f, .8100701f, .8470363f, .8833652f, .9203314f), physical.enemyBanXRatios)
+        assertEquals(List(5) { .052f }, physical.allyBanYRatios)
+        assertEquals(listOf(.05f, .048611112f, .048611112f, .05f, .05277778f), physical.enemyBanYRatios)
+        assertTrue(physical.manualAllyBans)
+        assertTrue(physical.manualEnemyBans)
+        assertEquals(.12303629f, physical.allyAvatarCenterX, .000001f)
+        assertEquals(.90703124f, physical.enemyAvatarCenterX, .000001f)
+        assertEquals(listOf(.188f, .324f, .458f, .591f, .725f), physical.allySlotYRatios)
+        assertEquals(listOf(.18950696f, .3253833f, .45826235f, .5911414f, .72302145f), physical.enemySlotYRatios)
+        assertEquals(.17041795f, physical.topAlly5XRatio, .000001f)
+        assertEquals(.9736258f, physical.topEnemy5XRatio, .000001f)
+        assertNull(VisionCalibrationConfig.measuredDefaultForCapture("OPPO", "CPH2791", 2354, 1081))
+        assertNull(VisionCalibrationConfig.measuredDefaultForCapture("Xiaomi", "CPH2791", 2354, 1080))
+    }
+
     @Test fun unrelatedOldMeasuredCatalogIsNotUsedAfterTheOwnerReset() {
         for ((manufacturer, model, width, height) in listOf(
             ProfileKey("samsung", "SM-S948B", 3120, 1440),
             ProfileKey("Xiaomi", "25062RN2DL", 2340, 1080),
-            ProfileKey("OPPO", "CPH2791", 2354, 1080),
             ProfileKey("nubia", "NX809J", 2688, 1216)
         )) {
             assertNull(VisionCalibrationConfig.measuredDefaultForCapture(manufacturer, model, width, height))
