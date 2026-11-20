@@ -27,7 +27,8 @@ internal class BannedPortraitScanner {
 
     fun scan(bitmap: Bitmap, context: Context?, nowMs: Long,
                            exclusions: List<Rect> = emptyList(), config: VisionCalibrationConfig = VisionCalibrationConfig(),
-                           pickedIds: Set<String> = emptySet(), isCurrent: () -> Boolean = { true }): Set<String> {
+                           pickedIds: Set<String> = emptySet(), isCurrent: () -> Boolean = { true },
+                           tenthPickSide: BanSide? = null): Set<String> {
         val capturedRevision = synchronized(this) {
             if (!isCurrent()) return confirmedIds()
             slots = slots.map { slot ->
@@ -50,9 +51,12 @@ internal class BannedPortraitScanner {
         var searchConfig = config
         for ((side, row) in tracked) searchConfig = searchConfig.withObservedBanRow(side == BanSide.ALLY, row)
         val observations = LiteRTVisionClassifier.findHeaderBanObservations(
-            bitmap, context, exclusions, searchConfig, tracked.keys, bounds, isCurrent
-        ).map { observation ->
-            if (observation.championId in pickedIds) observation.copy(championId=null,empty=false) else observation
+            bitmap, context, exclusions, searchConfig, tracked.keys, bounds, isCurrent, tenthPickSide
+        ).filterNot { observation ->
+            // A selected champion cannot be a ban in the same draft. Drop the
+            // observation instead of retaining its portrait as an unresolved
+            // circle, which was rendered as a duplicate in the debug viewer.
+            observation.championId != null && observation.championId in pickedIds
         }
         return synchronized(this) {
             if(revision != capturedRevision || !isCurrent()) return@synchronized confirmedIds()
@@ -124,17 +128,18 @@ internal class BannedPortraitScanner {
             val seen = observations.filter { it.side == side }.sortedBy { it.region.x }
             if (seen.isEmpty()) continue
             val manual = if (side == BanSide.ALLY) config.manualAllyBans else config.manualEnemyBans
-            val nominal = if (manual) config.banRegions(side == BanSide.ALLY)
+            val configured = manual || config.hasExplicitBanGeometry(side == BanSide.ALLY)
+            val nominal = if (configured) config.banRegions(side == BanSide.ALLY)
                 else computeAdaptiveBanRegions(aspect * contentWidthRatio / contentHeightRatio, side).map {
                     BanRegion(contentLeftRatio + it.x * contentWidthRatio, contentTopRatio + it.y * contentHeightRatio,
                         it.radius * contentHeightRatio)
                 }
-            val knownRow = if (manual) nominal else completeRows[side]
+            val knownRow = if (configured) nominal else completeRows[side]
             val nominalStep = .080f * contentHeightRatio / aspect.coerceAtLeast(1f)
             val reference = knownRow ?: nominal
             fun nearest(region: BanRegion) = reference.indices.minBy { abs(reference[it].x - region.x) }
             val nearestIndices = seen.map { nearest(it.region) }
-            val fullRow = !manual && seen.size == 5
+            val fullRow = !configured && seen.size == 5
             val positions = if (fullRow) seen.map { it.region } else reference
             if (fullRow) {
                 if (knownRow == null) current = anchorConfirmedSlots(side, current, seen, nominalStep * .55f)
@@ -147,8 +152,12 @@ internal class BannedPortraitScanner {
             // Two proposals for one position cannot confirm two identities or shift a neighbor.
             for ((index, proposals) in assignments.groupBy { it.second }) {
                 val observation = proposals.minBy { abs(positions[index].x - it.first.region.x) }.first
-                if (!manual) located[index] = observation.region
-                assigned[side to index] = observation
+                if (!configured) located[index] = observation.region
+                // Confirmation copies the assigned observation into the slot.
+                // Keep its identity and score, but retain the exact center for
+                // manual or measured rows instead of reintroducing detector
+                // drift after the row was already anchored above.
+                assigned[side to index] = if (configured) observation.copy(region = positions[index]) else observation
             }
             current = current.map { slot ->
                 if (slot.side != side) slot

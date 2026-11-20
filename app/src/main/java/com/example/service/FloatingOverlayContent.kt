@@ -304,7 +304,12 @@ internal fun FloatingOverlayContent(
             ) { bitmap ->
                 try {
                     val pickedIds = (state.allies + state.enemies).filterNotNull().map { it.id }.toSet()
-                    val banFrame = DraftVisionScanner.captureBanFrame(bitmap, pickedIds, refreshGeometry = true)
+                    val tenthPickSide = DraftVisionScanner.isFirstPickState.value?.let { firstPickAlly ->
+                        if (firstPickAlly) com.example.service.screen.BanSide.ENEMY
+                        else com.example.service.screen.BanSide.ALLY
+                    }
+                    val banFrame = DraftVisionScanner.captureBanFrame(bitmap, pickedIds,
+                        refreshGeometry = true, tenthPickSide = tenthPickSide)
                     try {
                         DraftVisionScanner.processBanFrame(banFrame, context, canPreview)
                     } finally { banFrame.bitmap.recycle() }
@@ -555,7 +560,12 @@ internal fun FloatingOverlayContent(
                             try {
                                 DraftVisionScanner.recordFrameReceived(bitmap.width, bitmap.height)
                                 if (confirmedPicksCount < 8) banWorker.offer(android.os.SystemClock.elapsedRealtime()) {
-                                    DraftVisionScanner.captureBanFrame(bitmap,confirmedHudPicks().map { it.id }.toSet())
+                                    val tenthPickSide = DraftVisionScanner.isFirstPickState.value?.let { firstPickAlly ->
+                                        if (firstPickAlly) com.example.service.screen.BanSide.ENEMY
+                                        else com.example.service.screen.BanSide.ALLY
+                                    }
+                                    DraftVisionScanner.captureBanFrame(bitmap,
+                                        confirmedHudPicks().map { it.id }.toSet(), tenthPickSide = tenthPickSide)
                                 }
                                 val slotObservation = DraftVisionScanner.observeSelectionSlots(bitmap, confirmedPicksCount)
                                 if (slotObservation != com.example.service.screen.DraftSlotLifecycle.Observation.ACTIVE) {

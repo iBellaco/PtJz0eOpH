@@ -38,6 +38,7 @@ internal object MeasuredDeviceCalibrationDefaults {
         allyBanYRatios = List(5) { .052f },
         allyBanDiameterRatios = List(5) { .06f },
         manualAllyBans = false,
+        measuredBanGeometry = true,
         enemyBanXRatios = listOf(.826f, .863f, .900f, .937f, .974f),
         enemyBanYRatios = List(5) { .052f },
         enemyBanDiameterRatios = List(5) { .06f },
@@ -73,6 +74,7 @@ internal object MeasuredDeviceCalibrationDefaults {
         allyBanYRatios = listOf(.05277778f, .06388889f, .05138889f, .043055557f, .05138889f),
         allyBanDiameterRatios = List(5) { .061111107f },
         manualAllyBans = true,
+        measuredBanGeometry = true,
         enemyBanXRatios = listOf(.785f, .82125f, .856875f, .8925f, .93f),
         enemyBanYRatios = listOf(.05138889f, .05138889f, .05138889f, .047222223f, .05277778f),
         enemyBanDiameterRatios = List(5) { .058333334f },
@@ -107,6 +109,7 @@ internal object MeasuredDeviceCalibrationDefaults {
         allyBanYRatios = List(5) { .052f },
         allyBanDiameterRatios = List(5) { .06f },
         manualAllyBans = true,
+        measuredBanGeometry = true,
         enemyBanXRatios = listOf(.77501595f, .8100701f, .8470363f, .8833652f, .9203314f),
         enemyBanYRatios = listOf(.05f, .048611112f, .048611112f, .05f, .05277778f),
         enemyBanDiameterRatios = List(5) { .06f },
@@ -119,6 +122,41 @@ internal object MeasuredDeviceCalibrationDefaults {
         topEnemyXRatios = listOf(.8336258f, .8686258f, .9036258f, .9386258f, .9736258f)
     )
 
+    /**
+     * Vision Draft calibration supplied from the Samsung SM-S938B capture.
+     *
+     * The report marks both ban rows as non-manual, but it still contains
+     * measured per-slot coordinates. The scanner now honors those coordinates
+     * as a physical starting profile without turning them into user overrides.
+     * 1920x886 and 1280x590 are capture aliases of this same device profile.
+     */
+    private val samsungSmS938bReference = VisionCalibrationConfig().copy(
+        allyAvatarCenterX = .1140625f,
+        enemyAvatarCenterX = .9164063f,
+        avatarDiameterRatio = .11f,
+        allySlotXRatios = listOf(.1140625f, .1140625f, .06953125f, .06953125f, .06953125f),
+        allySlotYRatios = listOf(.1928934f, .32787907f, .42808804f, .5578877f, .6886633f),
+        allySlotDiameterRatios = listOf(.11f, .11f, .11f, .11f, .105f),
+        enemySlotXRatios = List(5) { .9164063f },
+        enemySlotYRatios = listOf(.18819442f, .32350618f, .45583317f, .5881601f, .71949214f),
+        enemySlotDiameterRatios = List(5) { .11f },
+        allyBanXRatios = listOf(.06923077f, .10512821f, .14166667f, .17884615f, .21730769f),
+        allyBanYRatios = listOf(.05138889f, .048611112f, .05f, .048611112f, .048611112f),
+        allyBanDiameterRatios = List(5) { .06388889f },
+        manualAllyBans = false,
+        measuredBanGeometry = true,
+        enemyBanXRatios = listOf(.7826923f, .8211538f, .85641026f, .8923077f, .9301282f),
+        enemyBanYRatios = listOf(.05138889f, .05138889f, .048611112f, .047222223f, .05277778f),
+        enemyBanDiameterRatios = List(5) { .06388889f },
+        manualEnemyBans = false,
+        topAvatarYRatio = .045f,
+        topAvatarDiameterRatio = .072f,
+        topAlly5XRatio = .17138515f,
+        topEnemy5XRatio = .9734761f,
+        topAllyXRatios = listOf(.03138515f, .06638515f, .10138515f, .13638515f, .17138515f),
+        topEnemyXRatios = listOf(.8334761f, .8684761f, .9034761f, .9384761f, .9734761f)
+    )
+
     private val profiles: List<Profile> = listOf(
         Profile("nubia", "NX789J", 2688, 1216, nubiaNx789jReference),
         Profile("nubia", "NX789J", 1920, 869, nubiaNx789jReference),
@@ -127,7 +165,10 @@ internal object MeasuredDeviceCalibrationDefaults {
         Profile("Xiaomi", "24122RKC7G", 1280, 576, xiaomi24122rkc7gReference),
         Profile("OPPO", "CPH2791", 2354, 1080, oppoCph2791Reference),
         Profile("OPPO", "CPH2791", 1920, 881, oppoCph2791Reference),
-        Profile("OPPO", "CPH2791", 1280, 587, oppoCph2791Reference)
+        Profile("OPPO", "CPH2791", 1280, 587, oppoCph2791Reference),
+        Profile("Samsung", "SM-S938B", 2340, 1080, samsungSmS938bReference),
+        Profile("Samsung", "SM-S938B", 1920, 886, samsungSmS938bReference),
+        Profile("Samsung", "SM-S938B", 1280, 590, samsungSmS938bReference)
     )
 
     fun forCapture(

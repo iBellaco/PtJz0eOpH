@@ -10,7 +10,8 @@ import kotlinx.coroutines.launch
 import java.util.concurrent.atomic.AtomicLong
 
 internal data class DraftBanFrame(val bitmap: Bitmap, val masks: List<Rect>,
-    val config: VisionCalibrationConfig, val pickedIds: Set<String>, val generation: Long)
+    val config: VisionCalibrationConfig, val pickedIds: Set<String>, val generation: Long,
+    val tenthPickSide: BanSide? = null)
 
 /** One background header job and at most one newest pending frame; never blocks title OCR. */
 internal class DraftBanWorker(scope: CoroutineScope, private val process: (DraftBanFrame, Job) -> Unit) {

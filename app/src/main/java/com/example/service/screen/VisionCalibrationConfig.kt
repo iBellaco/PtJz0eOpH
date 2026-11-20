@@ -84,6 +84,11 @@ data class VisionCalibrationConfig(
     val enemyBanDiameterRatios: List<Float> = List(5) { .060f },
     val manualAllyBans: Boolean = false,
     val manualEnemyBans: Boolean = false,
+    // Exact physical profiles retain their measured ban row even when the
+    // source report says the tester did not move it manually. This marker is
+    // separate from the row values because withObservedBanRow() creates a
+    // transient frame-tracking copy that must remain adaptive.
+    val measuredBanGeometry: Boolean = false,
 
     // Hechizos de invocador aliados
     val spellLeftRatio: Float = 0.021f,
@@ -226,6 +231,21 @@ data class VisionCalibrationConfig(
         ) }
     }
 
+    /**
+     * A measured row is useful even when the tester did not move it manually.
+     * The old check only honored [manualAllyBans]/[manualEnemyBans], which made
+     * an exact physical profile fall back to a generic aspect-ratio grid.
+     */
+    internal fun hasExplicitBanGeometry(): Boolean = measuredBanGeometry
+
+    internal fun hasExplicitBanGeometry(isAlly: Boolean): Boolean {
+        // Coordinate differences alone are not enough: the scanner temporarily
+        // copies an observed adaptive row into this model between frames. Only
+        // an exact physical profile may lock geometry without a manual flag;
+        // manual rows are handled by the callers.
+        return measuredBanGeometry
+    }
+
     fun toFormattedCoordinatesString(): String {
         val sb = StringBuilder()
         sb.append("=== COORDENADAS DE CALIBRACIÓN VISION DRAFT ===\n")
@@ -292,6 +312,7 @@ VisionCalibrationConfig(
     enemyBanDiameterRatios = listOf(${enemyBanDiameterRatios.joinToString(", ") { "${it}f" }}),
     manualAllyBans = $manualAllyBans,
     manualEnemyBans = $manualEnemyBans,
+    measuredBanGeometry = $measuredBanGeometry,
     topAllyXRatios = listOf(${topAllyXRatios.joinToString(", ") { "${it}f" }}),
     topEnemyXRatios = listOf(${topEnemyXRatios.joinToString(", ") { "${it}f" }})
 )
@@ -317,6 +338,7 @@ VisionCalibrationConfig(
             putFloat("ban_diameter", banDiameterRatio)
             putBoolean("ban_manual_ally", manualAllyBans)
             putBoolean("ban_manual_enemy", manualEnemyBans)
+            putBoolean("ban_measured_geometry", measuredBanGeometry)
             putFloat("allyAvatarCenterX", allyAvatarCenterX)
             putFloat("enemyAvatarCenterX", enemyAvatarCenterX)
             putFloat("avatarDiameterRatio", avatarDiameterRatio)
@@ -355,6 +377,7 @@ VisionCalibrationConfig(
             putFloat(prefix + "banDiameterRatio", banDiameterRatio)
             putBoolean(prefix + "manualAllyBans", manualAllyBans)
             putBoolean(prefix + "manualEnemyBans", manualEnemyBans)
+            putBoolean(prefix + "measuredBanGeometry", measuredBanGeometry)
             allySlotYRatios.forEachIndexed { i, value -> putFloat(prefix + "ally_slot_y_$i", value) }
             enemySlotYRatios.forEachIndexed { i, value -> putFloat(prefix + "enemy_slot_y_$i", value) }
             allySlotXRatios.forEachIndexed { i, value -> putFloat(prefix + "ally_slot_x_$i", value) }
@@ -448,6 +471,7 @@ VisionCalibrationConfig(
                 enemyBanDiameterRatios = (0..4).map { f("enemy_ban_diameter_$it", f("banDiameterRatio", base.enemyBanDiameterRatios[it])) },
                 manualAllyBans = b("manualAllyBans", base.manualAllyBans),
                 manualEnemyBans = b("manualEnemyBans", base.manualEnemyBans),
+                measuredBanGeometry = b("measuredBanGeometry", base.measuredBanGeometry),
                 topAvatarYRatio = f("topAvatarYRatio", base.topAvatarYRatio),
                 topAvatarDiameterRatio = f("topAvatarDiameterRatio", base.topAvatarDiameterRatio),
                 topAlly5XRatio = f("topAlly5XRatio", base.topAlly5XRatio),
@@ -553,6 +577,7 @@ VisionCalibrationConfig(
                     enemyBanDiameterRatios = enemyBanD,
                     manualAllyBans = prefs.getBoolean("ban_manual_ally", false),
                     manualEnemyBans = prefs.getBoolean("ban_manual_enemy", false),
+                    measuredBanGeometry = prefs.getBoolean("ban_measured_geometry", false),
                     allyOcrMinX = prefs.getFloat("allyOcrMinX", default.allyOcrMinX),
                     allyOcrMaxX = prefs.getFloat("allyOcrMaxX", default.allyOcrMaxX),
                     enemyOcrMinX = prefs.getFloat("enemyOcrMinX", default.enemyOcrMinX),
@@ -613,7 +638,8 @@ VisionCalibrationConfig(
                 enemyBanDiameterRatios = (0..4).map { prefs.getFloat("ban_enemy_diameter_$it",
                     prefs.getFloat("ban_diameter", default.enemyBanDiameterRatios[it])) },
                 manualAllyBans = prefs.getBoolean("ban_manual_ally", false),
-                manualEnemyBans = prefs.getBoolean("ban_manual_enemy", false)
+                manualEnemyBans = prefs.getBoolean("ban_manual_enemy", false),
+                measuredBanGeometry = prefs.getBoolean("ban_measured_geometry", false)
             )
         }
 
