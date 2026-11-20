@@ -205,6 +205,7 @@ class DeviceDraftProfileTest {
         assertFalse(physical.manualEnemyBans)
         assertTrue(physical.hasExplicitBanGeometry(true))
         assertTrue(physical.hasExplicitBanGeometry(false))
+        assertTrue(physical.measuredBanGeometry)
         assertEquals(listOf(.1140625f, .1140625f, .06953125f, .06953125f, .06953125f), physical.allySlotXRatios)
         assertEquals(listOf(.1928934f, .32787907f, .42808804f, .5578877f, .6886633f), physical.allySlotYRatios)
         assertEquals(.17138515f, physical.topAlly5XRatio, .000001f)
