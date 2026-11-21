@@ -790,7 +790,9 @@ enum class CoachNavStyle(val id: String, val title: String) {
     GLASS_PILL("glass_pill", "Cápsula de vidrio"),
     TABS_V2("tabs_v2", "Pestañas compactas"),
     PURPLE_MESSAGES("purple_messages", "Mensajes violeta"),
-    MENISCUS("meniscus", "Menisco luminoso");
+    MENISCUS("meniscus", "Menisco luminoso"),
+    DARK_NEON_LINES("dark_neon_lines", "Líneas neón"),
+    SPOTLIGHT("spotlight", "Foco radial");
 
     companion object {
         fun fromId(id: String?): CoachNavStyle = entries.firstOrNull { it.id == id } ?: ORIGINAL

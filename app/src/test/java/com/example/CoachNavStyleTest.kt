@@ -26,7 +26,9 @@ class CoachNavStyleTest {
             CoachNavStyle.GLASS_PILL,
             CoachNavStyle.TABS_V2,
             CoachNavStyle.PURPLE_MESSAGES,
-            CoachNavStyle.MENISCUS
+            CoachNavStyle.MENISCUS,
+            CoachNavStyle.DARK_NEON_LINES,
+            CoachNavStyle.SPOTLIGHT
         ).forEach { style ->
             assertEquals(style, CoachNavStyle.fromId(style.id))
         }
