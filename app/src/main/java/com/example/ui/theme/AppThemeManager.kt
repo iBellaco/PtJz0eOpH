@@ -790,7 +790,21 @@ enum class CoachNavStyle(val id: String, val title: String) {
     GLASS_PILL("glass_pill", "Cápsula de vidrio"),
     TABS_V2("tabs_v2", "Pestañas compactas"),
     PURPLE_MESSAGES("purple_messages", "Mensajes violeta"),
-    MENISCUS("meniscus", "Menisco luminoso");
+    MENISCUS("meniscus", "Menisco luminoso"),
+    DARK_NEON_LINES("dark_neon_lines", "Líneas neón"),
+    SPOTLIGHT("spotlight", "Foco radial"),
+    VIDEO_LIQUID_GLASS("video_liquid_glass", "Vidrio líquido"),
+    VIDEO_DARK_NEON_LENS("video_dark_neon_lens", "Lente neón oscuro"),
+    VIDEO_BOUNCE("video_bounce", "Rebote activo"),
+    VIDEO_NEON_WAVE("video_neon_wave", "Onda neón"),
+    VIDEO_SPOTLIGHT("video_spotlight", "Foco de selección"),
+    VIDEO_FLOATING_BUTTON("video_floating_button", "Botón flotante"),
+    GLASS_WAVE("glass_wave", "Vidrio ondulante"),
+    GLASS_CONE("glass_cone", "Vidrio prismático"),
+    GLASS_BEAD("glass_bead", "Esfera de vidrio"),
+    WARM_TABS("warm_tabs", "Pestañas cálidas"),
+    RIBBON_MATRIX("ribbon_matrix", "Cinta modular"),
+    PRISM_LATTICE("prism_lattice", "Malla prismática");
 
     companion object {
         fun fromId(id: String?): CoachNavStyle = entries.firstOrNull { it.id == id } ?: ORIGINAL

@@ -61,8 +61,16 @@ fun CoachNavStyleRenderer(style: CoachNavStyle, items: List<CoachNavItem>, selec
             CoachNavStyle.ARC_GLOWING -> ArcGlowingNavBar(items, selectedIndex, background, selected, unselected, onSelected, safeModifier)
             CoachNavStyle.LIQUID -> LiquidNavBar(items, selectedIndex, background, selected, unselected, onSelected, safeModifier)
             CoachNavStyle.NEON_WAVE -> NeonWaveNavBar(items, selectedIndex, background, selected, unselected, onSelected, safeModifier)
-            CoachNavStyle.GLASS_PILL, CoachNavStyle.TABS_V2, CoachNavStyle.PURPLE_MESSAGES, CoachNavStyle.MENISCUS ->
+            CoachNavStyle.GLASS_PILL, CoachNavStyle.TABS_V2, CoachNavStyle.PURPLE_MESSAGES,
+            CoachNavStyle.MENISCUS, CoachNavStyle.DARK_NEON_LINES, CoachNavStyle.SPOTLIGHT ->
                 VideoCoachNavBar(items, selectedIndex, style, onSelected, safeModifier)
+            CoachNavStyle.VIDEO_LIQUID_GLASS, CoachNavStyle.VIDEO_DARK_NEON_LENS,
+            CoachNavStyle.VIDEO_BOUNCE, CoachNavStyle.VIDEO_NEON_WAVE,
+            CoachNavStyle.VIDEO_SPOTLIGHT, CoachNavStyle.VIDEO_FLOATING_BUTTON,
+            CoachNavStyle.GLASS_WAVE, CoachNavStyle.GLASS_CONE,
+            CoachNavStyle.GLASS_BEAD, CoachNavStyle.WARM_TABS,
+            CoachNavStyle.RIBBON_MATRIX, CoachNavStyle.PRISM_LATTICE ->
+                VideoReferenceCoachNavBar(items, selectedIndex, style, onSelected, safeModifier)
             else -> ReferenceCoachNavBar(items, selectedIndex, style, onSelected,
                 Modifier.windowInsetsPadding(WindowInsets.navigationBars))
         }
