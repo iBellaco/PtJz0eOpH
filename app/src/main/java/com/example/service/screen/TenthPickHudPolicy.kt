@@ -6,9 +6,10 @@ import com.example.model.Champion
 object TenthPickHudPolicy {
     fun targetIndex(confirmed: Boolean, champion: Champion?, ownTeam: List<Champion?>,
         otherTeam: List<Champion?>, lockedSlots: Set<Int>, expectedIndex: Int? = null,
-        replaceChampionId: String? = null): Int? {
+        replaceChampionId: String? = null,
+        unassignedOwn: List<Champion> = emptyList(), unassignedOther: List<Champion> = emptyList()): Int? {
         if (!confirmed || champion == null || ownTeam.size != 5 || otherTeam.size != 5) return null
-        val selected = (ownTeam + otherTeam).filterNotNull()
+        val selected = (ownTeam + otherTeam).filterNotNull() + unassignedOwn + unassignedOther
         if (selected.size == 10 && replaceChampionId != null) {
             val previous = ownTeam.indices.singleOrNull { ownTeam[it]?.id == replaceChampionId } ?: return null
             if (previous in lockedSlots || expectedIndex != null && expectedIndex != previous) return null
@@ -19,7 +20,12 @@ object TenthPickHudPolicy {
         // tenth pick merely because an earlier HUD slot temporarily duplicated another
         // champion; still require exactly nine occupied slots and never replace a pick.
         if (selected.size != 9 || selected.any { it.id == champion.id }) return null
-        val vacancy = ownTeam.indices.singleOrNull { ownTeam[it] == null } ?: return null
+        val vacancy = if (unassignedOwn.isEmpty()) {
+            ownTeam.indices.singleOrNull { ownTeam[it] == null }
+        } else {
+            expectedIndex?.takeIf { it in ownTeam.indices && ownTeam[it] == null &&
+                ownTeam.count { pick -> pick != null } + unassignedOwn.size == 4 }
+        } ?: return null
         if (vacancy in lockedSlots || expectedIndex != null && expectedIndex != vacancy) return null
         return vacancy
     }

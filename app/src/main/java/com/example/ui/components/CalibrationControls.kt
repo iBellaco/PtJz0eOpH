@@ -133,7 +133,7 @@ fun CalibrationSendButton(
                     val language = AppLanguage.current.value
                     val attachment = captureCalibrationAttachment(screenCaptureManager, language)
                     val snapshot = attachment.snapshot
-                    val coordinates = snapshot.config.toFormattedCoordinatesString()
+                    val coordinates = snapshot.config.toFormattedCoordinatesString(snapshot.allyRolesBySlot)
                     val detectionEvidence = listOf(snapshot.detectionEvidenceReport(language), attachment.description(language))
                         .joinToString("\n")
                     val payload = CalibrationReport.build(

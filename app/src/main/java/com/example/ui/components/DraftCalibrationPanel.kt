@@ -53,10 +53,10 @@ enum class CalibrationTarget(
     GLOBAL_ALLY_X("Columna Aliados X", "Mover horizontalmente todos los avatares aliados verticales"),
     GLOBAL_ENEMY_X("Columna Rivales X", "Mover horizontalmente todos los avatares rivales verticales"),
     AVATAR_SIZE("Tamaño Avatar Slots (⌀)", "Agrandar o reducir radio de escaneo de retratos en slots"),
-    ALLY_SLOT_0("Aliado 1 (TOP)", "Ajuste vertical Y del carril de Barón"),
-    ALLY_SLOT_1("Aliado 2 (JG)", "Ajuste vertical Y de la Jungla"),
-    ALLY_SLOT_2("Aliado 3 (MID)", "Ajuste vertical Y del carril Central"),
-    ALLY_SLOT_3("Aliado 4 (ADC)", "Ajuste vertical Y del Tirador"),
+    ALLY_SLOT_0("Aliado 1", "Ajuste vertical Y del slot 1 aliado"),
+    ALLY_SLOT_1("Aliado 2", "Ajuste vertical Y del slot 2 aliado"),
+    ALLY_SLOT_2("Aliado 3", "Ajuste vertical Y del slot 3 aliado"),
+    ALLY_SLOT_3("Aliado 4", "Ajuste vertical Y del slot 4 aliado"),
     ALLY_SLOT_4("Aliado 5 (Slot Inferior)", "Ajuste vertical Y del slot 5 aliado (abajo izquierda)"),
     ENEMY_SLOT_0("Rival 1", "Ajuste vertical Y del slot 1 rival"),
     ENEMY_SLOT_1("Rival 2", "Ajuste vertical Y del slot 2 rival"),
@@ -328,7 +328,7 @@ fun DraftCalibrationPanel(
                 }
 
                 // Slots Verticales Aliados
-                val allyRoles = listOf("TOP", "JG", "MID", "ADC", "SUP")
+                val allyRoles by DraftVisionScanner.allyRolesBySlotFlow.collectAsStateWithLifecycle()
                 Column(
                     modifier = Modifier
                         .fillMaxHeight()
@@ -349,7 +349,14 @@ fun DraftCalibrationPanel(
                                 .border(0.8.dp, if (isTargeted) HextechCyan else AllyBlue.copy(alpha = 0.5f), CircleShape),
                             contentAlignment = Alignment.Center
                         ) {
-                            Text(com.example.util.tr(allyRoles.getOrElse(i) { "$i" }), color = if (isTargeted) HextechCyan else TextMuted, fontSize = 6.5.sp, fontWeight = FontWeight.Bold)
+                            val role = allyRoles[i]
+                            val tint = if (isTargeted) HextechCyan else TextMuted
+                            if (role == null) {
+                                Text((i + 1).toString(), color = tint, fontSize = 6.5.sp, fontWeight = FontWeight.Bold)
+                            } else {
+                                Icon(androidx.compose.ui.res.painterResource(role.iconResId), tr(role.displayName),
+                                    modifier = Modifier.size(12.dp), tint = tint)
+                            }
                         }
                     }
                 }
