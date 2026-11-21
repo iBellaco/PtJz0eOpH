@@ -56,11 +56,11 @@ class OverlayState {
         val remembered = (scanner.allySlotConfirmedChampions.toList() + scanner.enemySlotConfirmedChampions.toList())
             .filterNotNull().map { it.id }.toSet()
         // Resume a populated draft; a blank hub cannot own old parser evidence.
-        if (remembered.isNotEmpty() && (displayed.isEmpty() || remembered.none { it in represented })) {
+        if (remembered.isNotEmpty() && (represented.isEmpty() || remembered.none { it in represented })) {
             trackedLastPick = null
             isFirstPickObserved = false
             scanner.resetSlotMemory(preserveBans=true)
-        } else if (displayed.isEmpty()) {
+        } else if (represented.isEmpty()) {
             // No player evidence: discard captions, retaining a live ban-only phase.
             scanner.debugVisualMatches.value = emptyMap()
         }
@@ -71,7 +71,7 @@ class OverlayState {
         // Close on sustained departure or when the complete draft opens its build.
         // A raw count without either event must not close a provisional selection.
         if ((!selectionEnded && !buildOpened) || completedDraftLocked) return false
-        val picks=(allies+enemies).filterNotNull()
+        val picks=confirmedAllies + enemies.filterNotNull()
         if ((!confirmed && trackedLastPick == null) || !autoScanEnabled || picks.size!=10 || picks.map {it.id}.distinct().size!=10) return false
         autoScanEnabled=false
         completedDraftLocked = true
@@ -112,6 +112,7 @@ class OverlayState {
     var isLoadingScreenMode by androidx.compose.runtime.mutableStateOf(false)
     var isOverlayTabsMinimized by androidx.compose.runtime.mutableStateOf(false)
     val allies = androidx.compose.runtime.mutableStateListOf<com.example.model.Champion?>().apply { repeat(5) { add(null) } }
+    internal val confirmedAllies: List<Champion> get() = (allies.filterNotNull() + unassignedAllies).distinctBy { it.id }
     val unassignedAllies = androidx.compose.runtime.mutableStateListOf<com.example.model.Champion>()
     val enemies = androidx.compose.runtime.mutableStateListOf<com.example.model.Champion?>().apply { repeat(5) { add(null) } }
     val enemyConfidences = androidx.compose.runtime.mutableStateMapOf<LaneRole, Int>()

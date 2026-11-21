@@ -141,7 +141,8 @@ internal data class CalibrationReportSnapshot(
     val source: String,
     val config: VisionCalibrationConfig,
     val picks: List<CalibrationPickEvidence>,
-    val bans: List<BanSlot>
+    val bans: List<BanSlot>,
+    val allyRolesBySlot: Map<Int, LaneRole> = emptyMap()
 ) {
     fun slotLabels(language: String): Map<String, String> = picks.associate { slot ->
         "${if (slot.isAlly) "ally" else "enemy"}_${slot.index}" to slot.champion.getLocalizedName(language)
@@ -425,20 +426,9 @@ object DraftVisionScanner {
         return AllyDraftReconciler.rememberedRoles(currentRoles, allySlotOcrLaneCache)
     }
 
-    fun getAllySlotRole(slotIndex: Int): LaneRole {
-        return allySlotOcrLaneCache[slotIndex]
-            ?: allySlotRolesCache[slotIndex]
-            ?: allySlotConfirmedChampions.getOrNull(slotIndex)?.primaryRole
-            ?: when (slotIndex) {
-                0 -> LaneRole.TOP
-                1 -> LaneRole.JUNGLE
-                2 -> LaneRole.MID
-                3 -> LaneRole.ADC
-                else -> LaneRole.SUPPORT
-            }
-    }
+    fun getAllySlotRole(slotIndex: Int): LaneRole? =
+        allySlotOcrLaneCache[slotIndex] ?: allySlotRolesCache[slotIndex]
 
-    
     /**
      * Devuelve la secuencia real de los 10 turnos del Draft de Wild Rift:
      * - Si PRIMERA SELECCIÓN (Aliado elige primero):
@@ -502,7 +492,7 @@ object DraftVisionScanner {
             }
         }
         return CalibrationReportSnapshot(alignedSize.first, alignedSize.second, Rect(activeViewport),
-            calibrationSourceFlow.value, config.withTrackedBanRegions(bans), picks, bans)
+            calibrationSourceFlow.value, config.withTrackedBanRegions(bans), picks, bans, allyRolesBySlotFlow.value.toMap())
     }
 
     /**
@@ -2114,7 +2104,7 @@ object DraftVisionScanner {
         }
 
         // Deduplicación: Un campeón aliado jamás puede aparecer en el equipo enemigo
-        val allyChampIds = alliesMap.values.map { it.id }.toSet()
+        val allyChampIds = allySlots.mapNotNull { it.champion?.id }.toSet()
         val finalEnemiesMap = enemiesMap.filterNot { allyChampIds.contains(it.value.id) }
         val enemyConfidences = enemyResolved.confidences.filterKeys { finalEnemiesMap.containsKey(it) }
 

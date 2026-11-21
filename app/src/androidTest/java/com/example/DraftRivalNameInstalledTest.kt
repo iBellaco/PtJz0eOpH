@@ -238,7 +238,7 @@ class DraftRivalNameInstalledTest {
                     assertEquals("Fast Red Magic $name allies; slots=${lastFast?.alliesBySlot}; " +
                         "rivals=${lastFast?.enemiesBySlot}; roles=${lastFast?.allyRolesBySlot}; " +
                         "status=${lastFast?.statusMessage}", setOf("senna", "fizz", "nami", "malphite"),
-                        hud.allies.filterNotNull().map { it.id }.toSet())
+                        hud.confirmedAllies.map { it.id }.toSet())
                     scanner.resetSlotMemory()
                     scanner.publishScreenDiagnosticText((0 until masks.length()).map { physicalRect(masks.getJSONArray(it)) }, sourceWidth, sourceHeight)
                     scanner.publishScreenOverlay(physicalRect(fixture.getJSONArray("overlayRect")), sourceWidth, sourceHeight)
@@ -250,7 +250,7 @@ class DraftRivalNameInstalledTest {
                         hud.syncScannedEnemies(result)
                         kotlinx.coroutines.delay(1550)
                     }
-                    val allies = hud.allies.filterNotNull().map { it.id }.toSet()
+                    val allies = hud.confirmedAllies.map { it.id }.toSet()
                     val rivals = hud.enemies.filterNotNull().map { it.id }.toSet()
                     assertTrue("$name allies=$allies", allies.containsAll(setOf("senna", "fizz", "nami", "malphite")))
                     assertTrue("$name rivals=$rivals", rivals.containsAll(setOf("heimerdinger", "braum", "tristana", "jayce", "fiddlesticks")))

@@ -249,7 +249,7 @@ internal fun FloatingOverlayContent(
             if (report.isConfirmed && report.pickedChampion != null &&
                 (report.slotDescription.startsWith("Aliado") || report.slotDescription.startsWith("Rival"))) {
                 state.applyConfirmedLastPick(com.example.service.screen.DraftScanResult(
-                    allies = allies.filterNotNull(), enemies = enemies.filterNotNull(),
+                    allies = state.confirmedAllies, enemies = enemies.filterNotNull(),
                     isLastPickConfirmed = true, isLastPickFinalized=report.isSelectionFinalized, lastPickChampion = report.pickedChampion,
                     tenthPickIsAlly = report.slotDescription.startsWith("Aliado"), tenthPickSlotIndex = 4,
                     allyRolesBySlot = DraftVisionScanner.allyRolesBySlotFlow.value,
@@ -375,7 +375,7 @@ internal fun FloatingOverlayContent(
 
     val analysis = com.example.ui.components.rememberDraftAnalysis(
         com.example.ui.components.DraftAnalysisRequest(
-            role = activeRole, allies = allies.filterNotNull(), enemies = enemies.filterNotNull(),
+            role = activeRole, allies = state.confirmedAllies, enemies = enemies.filterNotNull(),
             opponent = explicitEnemyOpponent, firstPick = isFirstPick, language = currentLang,
             bans = bannedIds.toSet(), favorites = favoriteChampionIds.toSet(),
             favoritesOnly = favoriteOnlyRecommendations
@@ -389,7 +389,7 @@ internal fun FloatingOverlayContent(
         fun championNames(slots: List<Champion?>): String = slots.mapIndexedNotNull { index, champion ->
             champion?.let { "${defaultRoles[index].shortName}: ${it.name}" }
         }.ifEmpty { listOf("sin selección") }.joinToString(" | ")
-        val selectedCount = (allies + enemies).count { it != null }
+        val selectedCount = state.confirmedAllies.size + enemies.count { it != null }
         buildString {
             appendLine("Guardado en esta sesión: ${if (isSavedRecently) "sí" else "no"}")
             appendLine("Rol: ${activeRole.displayName}; primer pick: ${if (isFirstPick) "sí" else "no"}; modo: ${if (isLegendaryQueue) "legendario" else "clasificatoria"}")
@@ -575,7 +575,7 @@ internal fun FloatingOverlayContent(
                                             val finalReport = com.example.service.screen.LiteRTVisionClassifier.finishLastVisibleSelection()
                                             if (finalReport?.pickedChampion != null) {
                                                 state.applyConfirmedLastPick(com.example.service.screen.DraftScanResult(
-                                                    allies = allies.filterNotNull(), enemies = enemies.filterNotNull(),
+                                                    allies = state.confirmedAllies, enemies = enemies.filterNotNull(),
                                                     isLastPickConfirmed = true, isLastPickFinalized=true, lastPickChampion = finalReport.pickedChampion,
                                                     tenthPickIsAlly = finalReport.slotDescription.startsWith("Aliado"),
                                                     tenthPickSlotIndex = 4,
@@ -626,7 +626,7 @@ internal fun FloatingOverlayContent(
                                             if (!state.acceptsScanResult(scanGeneration)) return@withContext
                                             for ((turn, champ) in detectedPicks) {
                                                 val scan = com.example.service.screen.DraftScanResult(
-                                                    allies = allies.filterNotNull(), enemies = enemies.filterNotNull(),
+                                                    allies = state.confirmedAllies, enemies = enemies.filterNotNull(),
                                                     isLastPickConfirmed = true,
                                                     isLastPickFinalized=com.example.service.screen.LiteRTVisionClassifier.reportFlow.value.isSelectionFinalized,
                                                     lastPickChampion = champ,
@@ -686,7 +686,7 @@ internal fun FloatingOverlayContent(
                                                 state.enemySpells.clear()
                                             }
 
-                                            val finalAlliesPicked = allies.filterNotNull().size
+                                            val finalAlliesPicked = state.confirmedAllies.size
                                             val finalEnemiesPicked = enemies.filterNotNull().size
                                             val isDraftFullyConfirmed = (finalAlliesPicked == 5 && finalEnemiesPicked == 5)
 
@@ -810,7 +810,7 @@ internal fun FloatingOverlayContent(
                         }
                         state.enemySpells.clear()
 
-                        val totalAlliesPicked = allies.filterNotNull().size
+                        val totalAlliesPicked = state.confirmedAllies.size
                         val totalEnemiesPicked = enemies.filterNotNull().size
 
                         // Fase de confirmación de picks finalizada mediante escaneo local y OCR
@@ -818,8 +818,8 @@ internal fun FloatingOverlayContent(
                             activeRole = result.detectedRole
                             com.example.util.UserPreferences.setActiveDraftRole(context, result.detectedRole)
                         }
-                        val totalDetected = allies.filterNotNull().size + enemies.filterNotNull().size
-                        scanNoticeMessage = if (allies.filterNotNull().size == 5 && enemies.filterNotNull().size == 5) {
+                        val totalDetected = totalAlliesPicked + totalEnemiesPicked
+                        scanNoticeMessage = if (totalAlliesPicked == 5 && totalEnemiesPicked == 5) {
                             context.getString(com.example.R.string.draft_collecting)
                         } else {
                             "Escaneo exitoso ($totalDetected picks" +

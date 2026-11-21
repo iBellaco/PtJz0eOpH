@@ -5,42 +5,30 @@ import com.example.service.screen.DraftScanResult
 import com.example.service.screen.TenthPickHudPolicy
 
 internal fun OverlayState.syncScannedAllies(result: DraftScanResult): Int {
-    val next = com.example.service.screen.AllyDraftReconciler.hudAllies(
-        allies.toList(), result.alliesByRole, manualLockedAllySlots.filterValues { it }.keys,
-        result.allyRolesBySlot.values.toSet())
-        .toMutableList()
-
-    // The draft rows are authoritative even when only some lane labels were
-    // readable in the same frame. This is common in the release OCR path:
-    // champion titles are visible, while a mastery badge or the viewer mask
-    // can hide one or more lane labels. Do not discard those slot identities
-    // merely because the role map is incomplete. Known roles keep their normal
-    // HUD position; unresolved slots fill the remaining positions in the
-    // stable Wild Rift row order.
-    val usedIds = next.filterNotNull().mapTo(mutableSetOf()) { it.id }
-    val unresolvedSlots = result.alliesBySlot.entries
-        .sortedBy { it.key }
-        .filter { it.value.id !in usedIds }
-    for ((slot, champion) in unresolvedSlots) {
-        val roleIndex = result.allyRolesBySlot[slot]
-            ?.let(com.example.service.screen.AllyDraftReconciler.roles::indexOf)
-            ?.takeIf { it >= 0 }
-        val target = roleIndex?.takeIf { it !in manualLockedAllySlots && next[it] == null }
-            ?: next.indices.firstOrNull { it !in manualLockedAllySlots && next[it] == null }
-        if (target != null) {
-            next[target] = champion
-            usedIds += champion.id
-        }
+    val locked = manualLockedAllySlots.filterValues { it }.keys
+    val byRole = result.alliesByRole.toMutableMap()
+    for ((slot, role) in result.allyRolesBySlot) {
+        result.alliesBySlot[slot]?.let { byRole.putIfAbsent(role, it) }
     }
+    val pending = result.alliesBySlot.filterKeys { it !in result.allyRolesBySlot }
+        .values.distinctBy { it.id }
+    val pendingIds = pending.map { it.id }.toSet()
+    val current = allies.mapIndexed { index, champion ->
+        champion.takeUnless { index !in locked && it?.id in pendingIds }
+    }
+    val next = com.example.service.screen.AllyDraftReconciler.hudAllies(
+        current, byRole, locked, result.allyRolesBySlot.values.toSet() + byRole.keys)
+    val assignedIds = next.filterNotNull().map { it.id }.toSet()
+    val detectedIds = assignedIds + pendingIds
     val changes = next.indices.count { allies[it]?.id != next[it]?.id }
     androidx.compose.runtime.snapshots.Snapshot.withMutableSnapshot {
         next.forEachIndexed { index, champion -> allies[index] = champion }
         for (index in enemies.indices) {
-            if (manualLockedEnemySlots[index] != true && next.any { it != null && it.id == enemies[index]?.id })
+            if (manualLockedEnemySlots[index] != true && enemies[index]?.id in detectedIds)
                 enemies[index] = null
         }
         unassignedAllies.clear()
-        unassignedAllies.addAll(result.alliesBySlot.filterKeys { it !in result.allyRolesBySlot }.values.distinctBy { it.id })
+        unassignedAllies.addAll(pending.filterNot { it.id in assignedIds })
     }
     return changes
 }
@@ -48,7 +36,7 @@ internal fun OverlayState.syncScannedAllies(result: DraftScanResult): Int {
 internal fun OverlayState.syncScannedEnemies(result: DraftScanResult): Int {
     val roles = com.example.service.screen.AllyDraftReconciler.roles
     val next = com.example.service.screen.EnemyDraftReconciler.hudEnemies(
-        enemies.toList(), result.enemiesByRole, allies.toList(), manualLockedEnemySlots.filterValues { it }.keys)
+        enemies.toList(), result.enemiesByRole, confirmedAllies, manualLockedEnemySlots.filterValues { it }.keys)
     val changes = next.indices.count { enemies[it]?.id != next[it]?.id }
     androidx.compose.runtime.snapshots.Snapshot.withMutableSnapshot {
         next.forEachIndexed { index, champion ->
@@ -79,11 +67,12 @@ internal fun OverlayState.applyConfirmedLastPick(result: DraftScanResult) {
                 ?.let(roles::indexOf)?.takeIf { it >= 0 }
             TenthPickHudPolicy.targetIndex(result.isLastPickConfirmed, champion,
                 allies.toList(), enemies.toList(), manualLockedAllySlots.filterValues { it }.keys,
-                expected, previousId)?.let { allies[it] = champion; applied = true }
+                expected, previousId, unassignedOwn = unassignedAllies)
+                ?.let { allies[it] = champion; applied = true }
         }
         false -> TenthPickHudPolicy.targetIndex(result.isLastPickConfirmed, champion,
             enemies.toList(), allies.toList(), manualLockedEnemySlots.filterValues { it }.keys,
-            replaceChampionId = previousId
+            replaceChampionId = previousId, unassignedOther = unassignedAllies
         )?.let { index ->
             enemies[index] = champion
             applied = true

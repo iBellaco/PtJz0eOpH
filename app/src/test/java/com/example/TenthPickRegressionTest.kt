@@ -8,6 +8,7 @@ import com.example.service.screen.DraftVisionScanner
 import com.example.service.screen.LiteRTVisionClassifier
 import com.example.service.OverlayState
 import com.example.service.applyConfirmedLastPick
+import com.example.service.syncScannedAllies
 import com.example.service.syncScannedEnemies
 import com.example.service.screen.DraftScanResult
 import kotlinx.coroutines.runBlocking
@@ -99,6 +100,28 @@ class TenthPickRegressionTest {
         DraftVisionScanner.allySlotConfirmedChampions[4] = vi
         DraftVisionScanner.enemySlotConfirmedChampions[3] = null
         assertEquals(8, DraftVisionScanner.getConfirmedPicksExcept(DraftPickTurn(10, true, 4)).size)
+    }
+
+    @Test fun centralLaneOnFifthSlotIsReservedThroughSelection() {
+        val hud = OverlayState()
+        val picks = listOf("sona", "mordekaiser", "zed", "kaisa").map { Champion(id = it) }
+        val result = DraftScanResult(picks, emptyList(), alliesBySlot = picks.withIndex().associate { it.index to it.value },
+            allyRolesBySlot = mapOf(4 to LaneRole.MID), isSuccessful = true, statusMessage = "")
+        hud.syncScannedAllies(result)
+        assertTrue(hud.allies.all { it == null })
+        assertEquals(picks, hud.unassignedAllies.toList())
+        val last = Champion(id = "lux")
+        repeat(5) { hud.enemies[it] = Champion(id = "enemy$it") }
+        hud.applyConfirmedLastPick(result.copy(tenthPickIsAlly = true, tenthPickSlotIndex = 4,
+            lastPickChampion = last, isLastPickConfirmed = true))
+        assertEquals(last, hud.allies[2])
+        val remembered = mapOf(0 to LaneRole.SUPPORT, 1 to LaneRole.TOP, 2 to LaneRole.JUNGLE, 3 to LaneRole.ADC, 4 to LaneRole.MID)
+        hud.syncScannedAllies(result.copy(alliesBySlot = result.alliesBySlot + (4 to last), allyRolesBySlot = remembered))
+        assertEquals(listOf(picks[1], picks[2], last, picks[3], picks[0]), hud.allies.toList())
+        assertTrue(hud.unassignedAllies.isEmpty())
+        val report = com.example.service.screen.VisionCalibrationConfig().toFormattedCoordinatesString(result.allyRolesBySlot)
+        assertTrue(report.contains("Slot 5 (MID)"))
+        assertFalse(report.contains("Slot 1 (TOP)"))
     }
 
     @Test

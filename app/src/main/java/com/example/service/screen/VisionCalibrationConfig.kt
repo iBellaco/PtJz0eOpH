@@ -2,6 +2,7 @@ package com.example.service.screen
 
 import android.content.Context
 import android.content.SharedPreferences
+import com.example.model.LaneRole
 
 private fun List<Float>.averageOr(fallback: Float): Float =
     if (isEmpty()) fallback else average().toFloat()
@@ -253,7 +254,7 @@ data class VisionCalibrationConfig(
         return measuredBanGeometry
     }
 
-    fun toFormattedCoordinatesString(): String {
+    fun toFormattedCoordinatesString(allyRolesBySlot: Map<Int, LaneRole> = emptyMap()): String {
         val sb = StringBuilder()
         sb.append("=== COORDENADAS DE CALIBRACIÓN VISION DRAFT ===\n")
         sb.append("• Diámetro Avatar Global (⌀): ${(avatarDiameterRatio * 100).format(2)}% (${avatarDiameterRatio}f)\n")
@@ -270,21 +271,19 @@ data class VisionCalibrationConfig(
         sb.append("  - Aliados: X=$allyBanXRatios | Y=$allyBanYRatios | ⌀=$allyBanDiameterRatios | Manual=$manualAllyBans\n")
         sb.append("  - Rivales: X=$enemyBanXRatios | Y=$enemyBanYRatios | ⌀=$enemyBanDiameterRatios | Manual=$manualEnemyBans\n\n")
         sb.append("• Slots Aliados (Posición X, Y y Diámetro):\n")
-        val roles = listOf("TOP", "JUNGLE", "MID", "ADC", "SUPPORT")
         for (i in 0..4) {
-            val roleName = roles.getOrElse(i) { "Slot $i" }
+            val roleLabel = allyRolesBySlot[i]?.let { " (${it.name})" }.orEmpty()
             val x = getAllySlotX(i)
             val y = allySlotYRatios.getOrElse(i) { 0.188f }
             val d = getSlotDiameter(true, i)
-            sb.append("  - Slot ${i + 1} ($roleName): X=${(x * 100).format(2)}% (${x}f) | Y=${(y * 100).format(2)}% (${y}f) | ⌀=${(d * 100).format(2)}% (${d}f)\n")
+            sb.append("  - Slot ${i + 1}$roleLabel: X=${(x * 100).format(2)}% (${x}f) | Y=${(y * 100).format(2)}% (${y}f) | ⌀=${(d * 100).format(2)}% (${d}f)\n")
         }
         sb.append("\n• Slots Rivales (Posición X, Y y Diámetro):\n")
         for (i in 0..4) {
-            val roleName = roles.getOrElse(i) { "Slot $i" }
             val x = getEnemySlotX(i)
             val y = enemySlotYRatios.getOrElse(i) { 0.188f }
             val d = getSlotDiameter(false, i)
-            sb.append("  - Slot ${i + 1} ($roleName): X=${(x * 100).format(2)}% (${x}f) | Y=${(y * 100).format(2)}% (${y}f) | ⌀=${(d * 100).format(2)}% (${d}f)\n")
+            sb.append("  - Slot ${i + 1}: X=${(x * 100).format(2)}% (${x}f) | Y=${(y * 100).format(2)}% (${y}f) | ⌀=${(d * 100).format(2)}% (${d}f)\n")
         }
         sb.append("===============================================")
         return sb.toString()
