@@ -36,6 +36,12 @@ class DraftReferenceFrameTest {
             val measured = scanner.calibrationConfig
             assertEquals(.11662696f, measured.getAllySlotX(0), .0001f)
             assertEquals(measured.banRegions(true), aligned.banRegions(true))
+            val bansEdited = measured.adjustBanSlot(true, 2, deltaY = .005f)
+            scanner.updateCalibration(context, bansEdited)
+            scanner.initCalibration(context)
+            val reopened = scanner.configForFrame(frame)
+            assertEquals(92f, reopened.getAllySlotX(0) * frame.width, 6f)
+            assertEquals(bansEdited.banRegions(true), reopened.banRegions(true))
             val edited = measured.adjustDraftSlot(true, 0, deltaX = .01f)
             scanner.updateCalibration(context, edited)
             assertEquals(edited.getAllySlotX(0), scanner.configForFrame(frame).getAllySlotX(0), .0001f)

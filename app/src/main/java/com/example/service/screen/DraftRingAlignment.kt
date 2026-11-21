@@ -29,6 +29,39 @@ internal object DraftRingAlignment {
         return ys.map { ((it*height*scale+shift)/height).coerceIn(0f,1f) }
     }
 
+    // With the visor active the game can dim or recolor its rings. Use the
+    // direction of the strongest RGB edge instead of requiring a team color.
+    private fun prepareRingGradients(pixels: IntArray, width: Int, height: Int) {
+        if (height < 3) {
+            pixels.fill(0)
+            return
+        }
+        val rows = Array(2) { IntArray(width) }
+        for (y in 1 until height - 1) {
+            val row = rows[y % 2]
+            val offset = y * width
+            for (x in 1 until width - 1) {
+                val i = offset + x
+                var best = 24 * 24
+                var packed = 0
+                for (shift in 0..16 step 8) {
+                    val dx = ((pixels[i + 1] ushr shift) and 255) - ((pixels[i - 1] ushr shift) and 255)
+                    val dy = ((pixels[i + width] ushr shift) and 255) - ((pixels[i - width] ushr shift) and 255)
+                    val strength = dx * dx + dy * dy
+                    if (strength > best) {
+                        best = strength
+                        packed = (dx shl 16) or (dy and 0xffff)
+                    }
+                }
+                row[x] = packed
+            }
+            // The following derivative still needs this source row.
+            rows[(y - 1) % 2].copyInto(pixels, offset - width)
+        }
+        rows[(height - 2) % 2].copyInto(pixels, (height - 2) * width)
+        pixels.fill(0, (height - 1) * width, pixels.size)
+    }
+
     fun align(bitmap: Bitmap, base: VisionCalibrationConfig, excluded: Rect?, ignoreDebugRings: Boolean = false,
               previous: VisionCalibrationConfig = base, onEnemyMeasured: (() -> Unit)? = null,
               bounds: Rect = DraftFrameGeometry.contentBounds(bitmap)): VisionCalibrationConfig {
@@ -73,6 +106,7 @@ internal object DraftRingAlignment {
         val w = bitmap.width; val h = bitmap.height
         val pixels = IntArray(w * h)
         bitmap.getPixels(pixels, 0, w, 0, 0, w, h)
+        if (ignoreDebugRings) prepareRingGradients(pixels, w, h)
         data class ColumnFit(val xs: List<Float>, val ys: List<Float>, val diameterScale: Float,
                              val measuredSlots: Set<Int> = (0..4).toSet(), val coverage: Int = 0)
         fun fit(ally: Boolean, diameterScale: Float = 1f): ColumnFit? {
@@ -98,30 +132,59 @@ internal object DraftRingAlignment {
                 val debugX = w * (if (ally) previous.getAllySlotX(slot) else previous.getEnemySlotX(slot))
                 val debugY = h * (if (ally) previous.allySlotYRatios else previous.enemySlotYRatios)[slot]
                 val debugRadius = h * previous.getSlotDiameter(ally, slot) / 2f
+                val debugInnerSquared = (debugRadius - 3f).coerceAtLeast(0f).let { it * it }
+                val debugOuterSquared = (debugRadius + 3f).let { it * it }
                 val minX = (w * if (ally) .035 else .76).toInt()
                 val maxX = (w * if (ally) .24 else .975).toInt()
                 val minY = max(radius, nominalY - h / 25)
                 val maxY = min(h - radius - 1, nominalY + h / 25)
-                val minimumHits = if (ally) 20 else 16
+                val minimumHits = when {
+                    ignoreDebugRings -> 28
+                    ally -> 20
+                    else -> 16
+                }
                 fun evidence(cx: Int, cy: Int): Int {
                         if (excluded?.intersects(cx-radius, cy-radius, cx+radius, cy+radius) == true) return 0
-                        // A debug outline around empty background is not a portrait ring.
-                        var low=255; var high=0
-                        for ((dx,dy) in interiorOffsets) {
-                            val color=pixels[(cy+dy).coerceIn(0,h-1)*w+(cx+dx).coerceIn(0,w-1)]
-                            val brightness=(((color shr 16) and 255)+((color shr 8) and 255)+(color and 255))/3
-                            low=min(low,brightness); high=max(high,brightness)
+                        // Color-only matches also need contrast inside the portrait.
+                        if (!ignoreDebugRings) {
+                            var low=255; var high=0
+                            for ((dx,dy) in interiorOffsets) {
+                                val color=pixels[(cy+dy).coerceIn(0,h-1)*w+(cx+dx).coerceIn(0,w-1)]
+                                val brightness=(((color shr 16) and 255)+((color shr 8) and 255)+(color and 255))/3
+                                low=min(low,brightness); high=max(high,brightness)
+                            }
+                            if(high-low<55) return 0
                         }
-                        if(high-low<55) return 0
                         var hits = 0
                         var quality = 0
-                        for ((dx, dy) in samples) {
+                        // Near the visor outline, demand an almost complete independent rim:
+                        // short arcs on the portrait can otherwise displace a correct crop.
+                        val overlapsOutline = ignoreDebugRings &&
+                            hypot(cx - debugX, cy - debugY) < debugRadius * .5f
+                        val requiredHits = if (overlapsOutline) 38 else minimumHits
+                        for (index in samples.indices) {
+                            if (hits + samples.size - index < requiredHits) return 0
+                            val (dx, dy) = samples[index]
                             var bestRadialQuality = 0
                             for (dr in -radialRange..radialRange) {
                                 val x = (cx + dx + dx * dr / radius).coerceIn(0,w-1)
                                 val y = (cy + dy + dy * dr / radius).coerceIn(0,h-1)
                                 // Do not use our own diagnostic outline as evidence of a game ring.
-                                if(ignoreDebugRings && abs(hypot(x-debugX,y-debugY)-debugRadius)<3f) continue
+                                if (ignoreDebugRings) {
+                                    val rx = x - debugX
+                                    val ry = y - debugY
+                                    val distanceSquared = rx * rx + ry * ry
+                                    if (distanceSquared >= debugInnerSquared && distanceSquared <= debugOuterSquared) continue
+                                    val gradient = pixels[y * w + x]
+                                    val gx = gradient shr 16
+                                    val gy = gradient.toShort().toInt()
+                                    val radial = abs(gx * dx + gy * dy)
+                                    val tangent = abs(gx * dy - gy * dx)
+                                    if (radial > tangent * 3) {
+                                        bestRadialQuality = max(bestRadialQuality, radialRange + 1 - abs(dr))
+                                    }
+                                    continue
+                                }
                                 val color = pixels[y*w+x]
                                 val r = (color shr 16) and 255; val g = (color shr 8) and 255; val b = color and 255
                                 val team = if (ally) b > 85 && g > 65 && b > r * 1.25 && g > r * 1.15
@@ -150,7 +213,7 @@ internal object DraftRingAlignment {
                             quality += bestRadialQuality
                         }
                         // Keep coverage as a tie-breaker and as evidence for grid recovery.
-                        return if (hits >= minimumHits) quality * 64 + hits else 0
+                        return if (hits >= requiredHits) quality * 64 + hits else 0
                 }
                 var best = 0
                 var center: Pair<Int, Int>? = null

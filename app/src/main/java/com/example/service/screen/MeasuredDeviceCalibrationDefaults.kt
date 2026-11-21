@@ -70,8 +70,10 @@ internal object MeasuredDeviceCalibrationDefaults {
         enemySlotXRatios = List(5) { .9165625f },
         enemySlotYRatios = listOf(.18861003f, .32380405f, .4560159f, .58822775f, .71944547f),
         enemySlotDiameterRatios = List(5) { .107f },
-        allyBanXRatios = listOf(.06875f, .087500006f, .13f, .1725f, .21499999f),
-        allyBanYRatios = listOf(.05277778f, .06388889f, .05138889f, .043055557f, .05138889f),
+        // The first and fifth guides coincide with the game portraits. Space
+        // all five along that visible row (approximately x=88..275 at 1280).
+        allyBanXRatios = List(5) { .06875f + it * (.21499999f - .06875f) / 4f },
+        allyBanYRatios = List(5) { 30f / 576f },
         allyBanDiameterRatios = List(5) { .061111107f },
         manualAllyBans = true,
         measuredBanGeometry = true,
@@ -170,6 +172,16 @@ internal object MeasuredDeviceCalibrationDefaults {
         Profile("Samsung", "SM-S938B", 1920, 886, samsungSmS938bReference),
         Profile("Samsung", "SM-S938B", 1280, 590, samsungSmS938bReference)
     )
+
+    /** Repair only the known shipped row on a matching Xiaomi capture. */
+    fun restoreBanRow(saved: VisionCalibrationConfig, measured: VisionCalibrationConfig?): VisionCalibrationConfig {
+        if (measured !== xiaomi24122rkc7gReference || !saved.manualAllyBans ||
+            saved.allyBanXRatios != listOf(.06875f, .087500006f, .13f, .1725f, .21499999f) ||
+            saved.allyBanYRatios != listOf(.05277778f, .06388889f, .05138889f, .043055557f, .05138889f) ||
+            saved.allyBanDiameterRatios != xiaomi24122rkc7gReference.allyBanDiameterRatios) return saved
+        return saved.copy(allyBanXRatios = xiaomi24122rkc7gReference.allyBanXRatios,
+            allyBanYRatios = xiaomi24122rkc7gReference.allyBanYRatios)
+    }
 
     fun forCapture(
         manufacturer: String,
