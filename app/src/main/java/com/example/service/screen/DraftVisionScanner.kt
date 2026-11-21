@@ -572,11 +572,12 @@ object DraftVisionScanner {
                 android.os.Build.MANUFACTURER, android.os.Build.MODEL, bitmap.width, bitmap.height)
             val customizedGlobal = globalCalibrationConfig != generic
             val keepCustomizedGlobal = activeCaptureProfile == null && !hasProfiles && customizedGlobal
-            val selected = profileConfig ?: if (keepCustomizedGlobal) globalCalibrationConfig
+            val baseline = profileConfig ?: if (keepCustomizedGlobal) globalCalibrationConfig
                 else measured ?: if (activeCaptureProfile == null && !hasProfiles) globalCalibrationConfig else generic
+            val selected = MeasuredDeviceCalibrationDefaults.restoreBanRow(baseline, measured)
             // Older reports also saved untouched factory coordinates. Those still need ring alignment.
-            activeFrameRelativeProfile = measured != null && selected == measured
-            alignMeasuredSlots = activeFrameRelativeProfile && profileConfig == null && !keepCustomizedGlobal
+            activeFrameRelativeProfile = measured != null && selected.samePickGeometry(measured)
+            alignMeasuredSlots = activeFrameRelativeProfile
             calibrationSourceFlow.value = when {
                 profileConfig != null -> "perfil guardado (${profile})"
                 activeFrameRelativeProfile -> "perfil medido por dispositivo (${profile})"
@@ -653,8 +654,8 @@ object DraftVisionScanner {
 
     @Synchronized
     fun updateCalibration(context: android.content.Context, newConfig: VisionCalibrationConfig) {
-        alignMeasuredSlots = false
         val old = calibrationConfig
+        if (!old.samePickGeometry(newConfig)) alignMeasuredSlots = false
         if (old.allyBanXRatios != newConfig.allyBanXRatios || old.enemyBanXRatios != newConfig.enemyBanXRatios ||
             old.allyBanYRatios != newConfig.allyBanYRatios || old.enemyBanYRatios != newConfig.enemyBanYRatios ||
             old.allyBanDiameterRatios != newConfig.allyBanDiameterRatios ||

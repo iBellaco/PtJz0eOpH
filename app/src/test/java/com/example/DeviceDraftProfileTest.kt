@@ -141,9 +141,17 @@ class DeviceDraftProfileTest {
 
         assertEquals(physical, aligned)
         assertEquals(physical, literal)
-        assertEquals(listOf(.06875f, .087500006f, .13f, .1725f, .21499999f), physical.allyBanXRatios)
+        val xs = physical.allyBanXRatios.map { it * 1280 }
+        assertEquals(88f, xs.first(), 1f)
+        assertEquals(275f, xs.last(), 1f)
+        assertTrue(xs.zipWithNext().all { (a, b) -> b - a in 46f..48f })
         assertEquals(listOf(.785f, .82125f, .856875f, .8925f, .93f), physical.enemyBanXRatios)
-        assertEquals(listOf(.05277778f, .06388889f, .05138889f, .043055557f, .05138889f), physical.allyBanYRatios)
+        physical.allyBanYRatios.forEach { assertEquals(30f, it * 576, .01f) }
+        val legacy = physical.copy(allyBanXRatios = listOf(.06875f, .087500006f, .13f, .1725f, .21499999f),
+            allyBanYRatios = listOf(.05277778f, .06388889f, .05138889f, .043055557f, .05138889f))
+        assertEquals(physical, com.example.service.screen.MeasuredDeviceCalibrationDefaults.restoreBanRow(legacy, literal))
+        val custom = legacy.adjustBanSlot(true, 1, deltaX = .005f)
+        assertEquals(custom, com.example.service.screen.MeasuredDeviceCalibrationDefaults.restoreBanRow(custom, literal))
         assertEquals(listOf(.05138889f, .05138889f, .05138889f, .047222223f, .05277778f), physical.enemyBanYRatios)
         assertTrue(physical.manualAllyBans)
         assertTrue(physical.manualEnemyBans)
