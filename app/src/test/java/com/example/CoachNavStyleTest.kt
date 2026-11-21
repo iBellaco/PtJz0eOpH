@@ -28,7 +28,19 @@ class CoachNavStyleTest {
             CoachNavStyle.PURPLE_MESSAGES,
             CoachNavStyle.MENISCUS,
             CoachNavStyle.DARK_NEON_LINES,
-            CoachNavStyle.SPOTLIGHT
+            CoachNavStyle.SPOTLIGHT,
+            CoachNavStyle.VIDEO_LIQUID_GLASS,
+            CoachNavStyle.VIDEO_DARK_NEON_LENS,
+            CoachNavStyle.VIDEO_BOUNCE,
+            CoachNavStyle.VIDEO_NEON_WAVE,
+            CoachNavStyle.VIDEO_SPOTLIGHT,
+            CoachNavStyle.VIDEO_FLOATING_BUTTON,
+            CoachNavStyle.GLASS_WAVE,
+            CoachNavStyle.GLASS_CONE,
+            CoachNavStyle.GLASS_BEAD,
+            CoachNavStyle.WARM_TABS,
+            CoachNavStyle.RIBBON_MATRIX,
+            CoachNavStyle.PRISM_LATTICE
         ).forEach { style ->
             assertEquals(style, CoachNavStyle.fromId(style.id))
         }
