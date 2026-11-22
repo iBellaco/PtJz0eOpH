@@ -357,6 +357,9 @@ fun AdminUserMessagesViewerDialog(
     onOpenSendNewMessage: () -> Unit
 ) {
     val context = LocalContext.current
+    val messageDateFormatter = remember {
+        java.text.SimpleDateFormat("dd/MM/yyyy HH:mm", java.util.Locale.getDefault())
+    }
     var messages by remember { mutableStateOf<List<UserDirectMessageItem>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
@@ -466,7 +469,7 @@ fun AdminUserMessagesViewerDialog(
                 .fillMaxWidth(0.95f)
                 .fillMaxHeight(0.80f)
         ) {
-            Column(modifier = Modifier.padding(16.dp)) {
+            Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
                 // Header
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -545,15 +548,15 @@ fun AdminUserMessagesViewerDialog(
                 Spacer(modifier = Modifier.height(10.dp))
 
                 if (isLoading) {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Box(modifier = Modifier.fillMaxWidth().weight(1f), contentAlignment = Alignment.Center) {
                         CircularProgressIndicator(color = Color(0xFFF59E0B))
                     }
                 } else if (errorMessage != null) {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Box(modifier = Modifier.fillMaxWidth().weight(1f), contentAlignment = Alignment.Center) {
                         Text(com.example.util.tr(errorMessage ?: ""), color = Color(0xFFEF4444), fontSize = 12.sp)
                     }
                 } else if (messages.isEmpty()) {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Box(modifier = Modifier.fillMaxWidth().weight(1f), contentAlignment = Alignment.Center) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Text(tr("No hay mensajes enviados a este usuario"), color = Color.Gray, fontSize = 12.sp)
                             Spacer(modifier = Modifier.height(8.dp))
@@ -571,7 +574,10 @@ fun AdminUserMessagesViewerDialog(
                     }
                 } else {
                     LazyColumn(
-                        modifier = Modifier.fillMaxSize(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f)
+                            .testTag("admin_private_messages_scroll"),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         items(
@@ -580,7 +586,7 @@ fun AdminUserMessagesViewerDialog(
                         ) { msg ->
                             val msgTag = MessageTag.fromId(msg.tag)
                             val dateStr = if (msg.timestamp > 0) {
-                                java.text.SimpleDateFormat("dd/MM/yyyy HH:mm", java.util.Locale.getDefault()).format(java.util.Date(msg.timestamp))
+                                messageDateFormatter.format(java.util.Date(msg.timestamp))
                             } else "Fecha desc."
 
                             Card(
