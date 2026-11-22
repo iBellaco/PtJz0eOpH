@@ -6,8 +6,6 @@ import com.example.ui.components.CoachIconButton as IconButton
 import com.example.util.tr
 
 import android.content.Context
-import androidx.compose.animation.core.*
-
 import com.example.ui.theme.*
 import com.example.util.SubscriptionManager
 import androidx.compose.ui.graphics.asImageBitmap
@@ -219,6 +217,10 @@ fun UserInboxDialog(
         })
     }
 
+    val inboxDateFormatter = remember {
+        SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
+    }
+
     val readingIds = remember { mutableStateListOf<String>() }
     fun markMessageAsRead(id: String): kotlinx.coroutines.Job? {
         val target = messages.find { it["id"] == id } ?: return null
@@ -377,7 +379,7 @@ fun UserInboxDialog(
                     color = activeTheme.textSecondary, fontSize = 11.sp, modifier = Modifier.padding(vertical = 8.dp))
                     Spacer(modifier = Modifier.height(12.dp))
 
-                    Box(modifier = Modifier.fillMaxSize()) {
+                    Box(modifier = Modifier.fillMaxWidth().weight(1f)) {
                         Column(
                             modifier = Modifier
                                 .fillMaxSize()
@@ -489,11 +491,11 @@ fun UserInboxDialog(
                 Spacer(modifier = Modifier.height(8.dp))
 
                 if (isLoading) {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Box(modifier = Modifier.fillMaxWidth().weight(1f), contentAlignment = Alignment.Center) {
                         CircularProgressIndicator(color = activeTheme.primary)
                     }
                 } else if (messages.isEmpty()) {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Box(modifier = Modifier.fillMaxWidth().weight(1f), contentAlignment = Alignment.Center) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Icon(Icons.Default.Message, contentDescription = null, tint = activeTheme.textMuted, modifier = Modifier.size(48.dp))
                             Spacer(modifier = Modifier.height(8.dp))
@@ -501,19 +503,11 @@ fun UserInboxDialog(
                         }
                     }
                 } else {
-                    val infiniteTransition = rememberInfiniteTransition(label = "inboxPulse")
-                    val pulseAlpha by infiniteTransition.animateFloat(
-                        initialValue = 0.4f,
-                        targetValue = 1f,
-                        animationSpec = infiniteRepeatable(
-                            animation = tween(900, easing = FastOutSlowInEasing),
-                            repeatMode = RepeatMode.Reverse
-                        ),
-                        label = "pulseAlpha"
-                    )
-
                     LazyColumn(
-                        modifier = Modifier.fillMaxSize(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f)
+                            .testTag("user_inbox_scroll"),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         items(messages, key = { it["id"] as String }) { msg ->
@@ -524,9 +518,8 @@ fun UserInboxDialog(
                             val messageTag = MessageTag.fromId(rawTag)
                             val timestamp = msg["timestamp"] as? Long ?: 0L
                             val isRead = msg["isRead"] as? Boolean ?: false
-                            val sdf = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
                             val activityAt = com.example.data.InboxMessageOrder.latestMessageAt(msg)
-                            val dateStr = if (activityAt > 0) sdf.format(Date(activityAt)) else "Fecha no disponible"
+                            val dateStr = if (activityAt > 0) inboxDateFormatter.format(Date(activityAt)) else "Fecha no disponible"
 
                             val isSupportReply = messageTag in setOf(MessageTag.SUPPORT, MessageTag.PAGO) && !isRead
 
@@ -534,7 +527,7 @@ fun UserInboxDialog(
                                 colors = CardDefaults.cardColors(containerColor = HextechSurfaceVariant),
                                 shape = RoundedCornerShape(8.dp),
                                 border = if (isSupportReply) {
-                                    BorderStroke(1.5.dp, HextechCyan.copy(alpha = pulseAlpha))
+                                    BorderStroke(1.5.dp, HextechCyan)
                                 } else if (!isRead) {
                                     BorderStroke(1.dp, HextechCyan)
                                 } else {
@@ -724,8 +717,8 @@ fun UserInboxDialog(
                                                 horizontalArrangement = Arrangement.SpaceBetween,
                                                 verticalAlignment = Alignment.CenterVertically
                                             ) {
-                                                Text(tr("Toca para abrir pop-up de soporte"), color = HextechCyan.copy(alpha = pulseAlpha), fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
-                                                Icon(Icons.Default.OpenInNew, contentDescription = null, tint = HextechCyan.copy(alpha = pulseAlpha), modifier = Modifier.size(14.dp))
+                                                Text(tr("Toca para abrir pop-up de soporte"), color = HextechCyan, fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
+                                                Icon(Icons.Default.OpenInNew, contentDescription = null, tint = HextechCyan, modifier = Modifier.size(14.dp))
                                             }
                                         }
 
@@ -1008,8 +1001,14 @@ fun UserSupportThreadCard(
     val isOnlyGreeting = remember(conversation) { SupportReplyManager.isOnlyGreeting(conversation) }
     val isClosed = com.example.data.SupportConversationPolicy.isClosed(liveStatus)
     val timeFormatter = remember { SimpleDateFormat("HH:mm - dd/MM", Locale.getDefault()) }
+    val threadScrollState = rememberScrollState()
 
-    Column(modifier = Modifier.fillMaxWidth().verticalScroll(rememberScrollState())) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(threadScrollState)
+            .testTag("support_thread_scroll")
+    ) {
         // Etiqueta de soporte y estado
         Row(
             modifier = Modifier.fillMaxWidth(),

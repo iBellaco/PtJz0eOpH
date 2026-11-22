@@ -318,18 +318,6 @@ fun AdminSupportReportsDialog(
         visibleReports.count { it.status == FeedbackRepository.STATUS_SOLVED || it.status.equals("SOLUCIONADO", ignoreCase = true) || it.status.equals("RESUELTO", ignoreCase = true) || it.status.equals("ACCEPTED", ignoreCase = true) }
     }
 
-    // Animación de pulso para nuevos mensajes de soporte
-    val infiniteTransition = androidx.compose.animation.core.rememberInfiniteTransition(label = "support_pulse")
-    val pulseScale by infiniteTransition.animateFloat(
-        initialValue = 1f,
-        targetValue = 1.22f,
-        animationSpec = androidx.compose.animation.core.infiniteRepeatable(
-            animation = androidx.compose.animation.core.tween(700, easing = androidx.compose.animation.core.FastOutSlowInEasing),
-            repeatMode = androidx.compose.animation.core.RepeatMode.Reverse
-        ),
-        label = "pulse_scale"
-    )
-
     fun updateReportStatus(report: UnifiedSupportReport, newStatus: String) {
         coroutineScope.launch {
             val ok = SupportReplyManager.updateReportStatus(context, report.firestoreDocId ?: report.id, newStatus)
@@ -384,25 +372,7 @@ fun AdminSupportReportsDialog(
                                 )
                             }
                             Spacer(modifier = Modifier.width(4.dp))
-                            Box(
-                                modifier = Modifier
-                                    .size(36.dp)
-                                    .graphicsLayer(
-                                        scaleX = if (pendingCount > 0) pulseScale else 1f,
-                                        scaleY = if (pendingCount > 0) pulseScale else 1f
-                                    )
-                                    .clip(CircleShape)
-                                    .background(HextechGold.copy(alpha = if (pendingCount > 0) 0.35f else 0.15f))
-                                    .border(1.2.dp, if (pendingCount > 0) DangerRed else HextechGold, CircleShape),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.HeadsetMic,
-                                    contentDescription = null,
-                                    tint = HextechGold,
-                                    modifier = Modifier.size(20.dp)
-                                )
-                            }
+                            PendingSupportIndicator(pendingCount = pendingCount)
                             Spacer(modifier = Modifier.width(10.dp))
                             Column {
                                 Text(
@@ -936,6 +906,38 @@ fun AdminSupportReportsDialog(
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun PendingSupportIndicator(pendingCount: Int) {
+    val infiniteTransition = rememberInfiniteTransition(label = "support_pulse")
+    val pulseScale by infiniteTransition.animateFloat(
+        initialValue = 1f,
+        targetValue = 1.22f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(700, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "pulse_scale"
+    )
+    val effectiveScale = if (pendingCount > 0) pulseScale else 1f
+
+    Box(
+        modifier = Modifier
+            .size(36.dp)
+            .graphicsLayer(scaleX = effectiveScale, scaleY = effectiveScale)
+            .clip(CircleShape)
+            .background(HextechGold.copy(alpha = if (pendingCount > 0) 0.35f else 0.15f))
+            .border(1.2.dp, if (pendingCount > 0) DangerRed else HextechGold, CircleShape),
+        contentAlignment = Alignment.Center
+    ) {
+        Icon(
+            imageVector = Icons.Default.HeadsetMic,
+            contentDescription = null,
+            tint = HextechGold,
+            modifier = Modifier.size(20.dp)
+        )
     }
 }
 
