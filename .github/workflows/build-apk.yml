@@ -470,8 +470,10 @@ jobs:
     runs-on: ubuntu-latest
     # Compile, focused regressions and the complete capture matrix share this
     # budget. The full matrix exceeded the old 30-minute job limit; keep every
-    # case and retain a bounded 60-minute budget for the scanner matrix.
-    timeout-minutes: 60
+    # case and retain a bounded 90-minute budget for the scanner matrix. The
+    # previous 60-minute budget cancelled the final capture-profile audit on a
+    # slow runner after the other scanner checks had already passed.
+    timeout-minutes: 90
     steps:
     - *id001
     - *id002
