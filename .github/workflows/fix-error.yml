@@ -234,10 +234,13 @@ jobs:
           if-no-files-found: warn
           retention-days: 14
 
-      - name: Reproducir centros desplazados y baneo en captura reducida
+      - name: Reproducir el draft en teléfonos y tablets con pantallas documentadas
         run: |
           ./gradlew :app:testDebugUnitTest \
             --tests 'com.example.DraftMultiDeviceAuditTest.smallCapturePreservesJhinWhenPortraitsAndBansChange' \
+            --tests 'com.example.DraftMultiDeviceAuditTest.reportedDevicesRecognizeAllPicksAndBans' \
+            --tests 'com.example.DraftRingAlignmentTest.s26VisibleRivalRingsReplaceAnotherPhonesCoordinates' \
+            --tests 'com.example.DraftReferenceFrameTest.viewportAndMaskMappingRemainConsistentAcrossDenseSizeMatrix' \
             --tests 'com.example.DeviceDraftProfileTest' \
             --tests 'com.example.DraftNativePanelTest' \
             --tests 'com.example.DraftReferenceFrameTest.measuredStartingColumnFollowsVisibleRingsAndExplicitSlotEditsTakePriority' \
@@ -253,6 +256,8 @@ jobs:
             --tests 'com.example.DraftAutoStopTest' \
             --tests 'com.example.DraftSessionLifecycleTest' \
             --stacktrace --no-daemon --max-workers=1
+          python3 tools/scanner-audit-summary.py app/build/reports/scanner-multidevice
+          python3 tools/scanner-sequence-plan.py app/build/reports/scanner-multidevice/audit-summary.json "$RUNNER_TEMP/scanner-sequence-plan.json"
 
       - name: Conservar la regresión de la captura reducida
         if: always()
@@ -328,12 +333,10 @@ jobs:
               'configuration_version': '1'
           }) + '\n')
           PY
-      - &fix-release-gradle
-        uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: 9.3.1
-      - &fix-release-sign
-        name: Crear firma efímera solo para pruebas
+      - name: Crear firma efímera solo para pruebas
         env:
           COACH_ALLOW_EPHEMERAL_TEST_SIGNING: 'true'
         run: python3 .github/scripts/restore-private-signing.py
@@ -342,8 +345,7 @@ jobs:
           mkdir -p app/build/generated/scanner-sequence-assets
           cp app/src/test/resources/scanner/targeted-sequence-plan.json \
             app/build/generated/scanner-sequence-assets/scanner-sequence-plan.json
-      - &fix-release-build
-        name: Compilar los dos APK release con R8
+      - name: Compilar los dos APK release con R8
         env:
           COACH_ALLOW_EPHEMERAL_TEST_SIGNING: 'true'
           COACH_SIGNING_KEY_ALIAS: androiddebugkey
@@ -379,13 +381,13 @@ jobs:
         include:
           - suite: titulos-cortos
             preflight: 'true'
-            targets: 'sequence-49-enemy-first,sequence-56-ally-first,sequence-63-enemy-first'
+            targets: 'sequence-galaxy-tab-s6-lite-2020-enemy-first,sequence-poco-x7-pro-ally-first,sequence-red-magic-nx809j-reference-enemy-first'
           - suite: redmagic-secuencia-completa
             preflight: 'false'
-            targets: 'sequence-0-enemy-first'
+            targets: 'sequence-red-magic-reference-enemy-first'
           - suite: xiaomi-secuencia-completa
             preflight: 'false'
-            targets: 'sequence-42-ally-first'
+            targets: 'sequence-xiaomi-pad-6-ally-first'
           - suite: espanol-instalado
             preflight: 'false'
             targets: ''
@@ -518,7 +520,7 @@ jobs:
         uses: reactivecircus/android-emulator-runner@v2
         env:
           COACH_SEQUENCE_SHARD: '0'
-          COACH_SEQUENCE_TARGETS: 'sequence-52-ally-first'
+          COACH_SEQUENCE_TARGETS: 'sequence-poco-x7-pro-ally-first'
           COACH_SEQUENCE_PREFLIGHT: 'false'
         with:
           api-level: 34

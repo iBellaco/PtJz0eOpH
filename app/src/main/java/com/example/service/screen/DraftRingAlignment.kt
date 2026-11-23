@@ -253,8 +253,6 @@ internal object DraftRingAlignment {
                         val displacement = abs(center.first - nominalX)
                         displacement > radius * 1.25f || coverage >= 28 && displacement > radius * .5f
                     } >= 2
-                    val alignedYs = alignRows(ys, h, radius,
-                        consistent.map { it.first to it.second.second }, foreignColumn)
                     // Agreement among visible rows does not locate hidden rows.
                     // Route both cases through the same per-slot fallback, and
                     // only mark observed slots as eligible for diameter updates.
@@ -263,6 +261,11 @@ internal object DraftRingAlignment {
                         abs(center.first - medianX) <= radius / 3 || coverage >= 32 ||
                             previous.getAllySlotX(slot) == base.getAllySlotX(slot)
                     }.associateBy { it.first }
+                    // A preselection moves horizontally. Use all reliable rims to fit row spacing,
+                    // including visible allies at a different X, and retain occluded rows.
+                    val verticalEvidence = measured.values.filter { it in consistent || it.third >= 32 }
+                    val alignedYs = alignRows(ys, h, radius,
+                        verticalEvidence.map { it.first to it.second.second }, foreignColumn)
                     return ColumnFit(
                         List(5) { slot ->
                             val row = measured[slot]
@@ -273,20 +276,19 @@ internal object DraftRingAlignment {
                             }
                         },
                         List(5) { slot ->
-                            val row = measured[slot]
-                            when {
-                                row == null -> previous.allySlotYRatios[slot]
-                                !coherentColumn && row.third >= 32 -> row.second.second.toFloat() / h
-                                else -> alignedYs[slot]
-                            }
+                            if (slot in measured) alignedYs[slot] else previous.allySlotYRatios[slot]
                         }, diameterScale, measured.keys, coverage = measured.values.sumOf { it.third })
                 }
                 val measured = fits.associateBy { it.first }
+                val verticalEvidence = fits.filter { it.third >= 32 }
+                val alignedYs = if (verticalEvidence.size >= 2)
+                    alignRows(ys, h, radius, verticalEvidence.map { it.first to it.second.second })
+                else previous.allySlotYRatios
                 return ColumnFit(
                     List(5) { slot -> measured[slot]?.second?.first?.toFloat()?.div(w)
                         ?: previous.getAllySlotX(slot) },
-                    List(5) { slot -> measured[slot]?.second?.second?.toFloat()?.div(h)
-                        ?: previous.allySlotYRatios[slot] }, diameterScale, measured.keys,
+                    List(5) { slot -> if (slot in measured) alignedYs[slot] else previous.allySlotYRatios[slot] },
+                    diameterScale, measured.keys,
                     fits.sumOf { it.third })
             }
             if (fits.size < 2) return null

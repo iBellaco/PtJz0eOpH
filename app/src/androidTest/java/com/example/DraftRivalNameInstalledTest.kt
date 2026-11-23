@@ -33,10 +33,10 @@ class DraftRivalNameInstalledTest {
         val enemyNames = listOf("ZYRA", "VAYNE", "SENNA", "POPPY", "Jugador 5")
         try {
             scanner.warmUpTextRecognizer()
-            // Synthetic surfaces exercise geometry and native OCR, not actual
-            // Wild Rift/overlay compatibility on these devices.
-            for ((w, h) in listOf(1280 to 720, 1560 to 720, 1600 to 720,
-                1680 to 720, 1600 to 1000, 1024 to 768)) {
+            // Actual shared draft sizes, then bounded MediaProjection sizes for the
+            // two phone formats and the Xiaomi Pad 6 and Galaxy Tab S6 Lite.
+            for ((w, h) in listOf(1280 to 579, 1280 to 591, 1920 to 869,
+                1920 to 864, 1728 to 1080, 1800 to 1080)) {
                 scanner.resetSlotMemory()
                 scanner.updateCalibration(context, com.example.service.screen.VisionCalibrationConfig())
                 val frame = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)

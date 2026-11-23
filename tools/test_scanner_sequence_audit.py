@@ -15,22 +15,24 @@ reporter = module('scanner-sequence-summary')
 
 
 class SequenceAuditTest(unittest.TestCase):
-    def test_known_full_release_failures_are_in_the_isolated_plan(self):
+    def test_isolated_release_targets_use_the_recorded_phone_and_tablet_captures(self):
         import json
         root = Path(__file__).resolve().parents[1]
         plan = json.loads((root / 'app/src/test/resources/scanner/targeted-sequence-plan.json').read_text())
         cases = {case['id']: case for case in plan['cases']}
-        for name, dimensions in [('sequence-0-enemy-first', [1920, 869]),
-                                 ('sequence-42-ally-first', [1920, 863])]:
+        for name, dimensions in [('sequence-red-magic-reference-enemy-first', [1920, 869]),
+                                 ('sequence-xiaomi-pad-6-ally-first', [1728, 1080]),
+                                 ('sequence-galaxy-tab-s6-lite-2020-enemy-first', [1800, 1080])]:
             self.assertEqual(dimensions, cases[name]['capture'])
             self.assertEqual(0, cases[name]['shard'])
         workflow = (root / '.github/workflows/fix-error.yml').read_text()
-        for name in ['sequence-0-enemy-first', 'sequence-42-ally-first']:
+        for name in ['sequence-red-magic-reference-enemy-first', 'sequence-xiaomi-pad-6-ally-first']:
             self.assertIn("preflight: 'false'\n            targets: '" + name + "'", workflow)
 
     def fixture(self):
         profiles = [dict(profile=name, model=name, manufacturer='Xiaomi', display=[2400, 1080], capture=[1920, 864],
-                         layout='uniform-fit-reference', calibration={'nameBandScale': 1}, specification=None, variant='original')
+                         layout='uniform-fit-reference', calibration={'nameBandScale': 1}, specification=None,
+                         gameplayEvidence='docs/device-compatibility.md', variant='original')
                     for name in ['red-magic-reference', 'poco-x7-pro', 'redmi', 'xiaomi']]
         return dict(status='PASS', sourceSha256=planner.SOURCE_SHA256, profiles=profiles, resolutionProfiles=4)
 
@@ -71,20 +73,22 @@ class SequenceAuditTest(unittest.TestCase):
                                             for row in case['profiles']})
         self.assertEqual('PASS', reporter.summarize(fixture, self.reports(fixture))['status'])
 
-    def test_non_android_and_tablet_profiles_do_not_gate_the_overlay_release(self):
+    def test_documented_android_tablet_runs_both_orders_and_unverified_displays_do_not_gate_release(self):
         fixture = self.fixture()
         template = fixture['profiles'][2]
         fixture['profiles'] += [
             dict(template, profile='iphone-14', manufacturer='Apple', model='iPhone 14'),
             dict(template, profile='xiaomi-pad-6', manufacturer='Xiaomi', model='Xiaomi Pad 6'),
-            dict(template, profile='android-tablet', manufacturer='Samsung', model='Android Tablet'),
+            dict(template, profile='android-tablet', manufacturer='Samsung', model='Android Tablet', gameplayEvidence=None),
         ]
         fixture['resolutionProfiles'] += 3
         plan = planner.make_plan(fixture)
         selected = {row['profile'] for case in plan['cases'] for row in case['profiles']}
-        self.assertEqual({'red-magic-reference', 'poco-x7-pro', 'redmi', 'xiaomi'}, selected)
-        self.assertEqual(4, plan['modelProfiles'])
-        self.assertEqual(3, plan['geometryOnlyProfiles'])
+        self.assertEqual({'red-magic-reference', 'poco-x7-pro', 'redmi', 'xiaomi', 'xiaomi-pad-6'}, selected)
+        self.assertEqual({True, False}, {case['firstPick'] for case in plan['cases']
+                         if any(p['profile'] == 'xiaomi-pad-6' for p in case['profiles'])})
+        self.assertEqual(5, plan['modelProfiles'])
+        self.assertEqual(2, plan['geometryOnlyProfiles'])
 
     def test_native_phone_matrix_is_split_into_bounded_shards(self):
         fixture = self.fixture()
@@ -96,7 +100,7 @@ class SequenceAuditTest(unittest.TestCase):
         plan = planner.make_plan(fixture)
         self.assertEqual(set(range(planner.SHARD_COUNT)), {case['shard'] for case in plan['cases']})
         self.assertLessEqual(max(sum(case['shard'] == shard for case in plan['cases'])
-                                 for shard in range(planner.SHARD_COUNT)), 2)
+                                 for shard in range(planner.SHARD_COUNT)), 4)
 
     def test_missing_ocr_steps_wrong_names_tenth_duplicates_and_changes_cannot_pass(self):
         for mutation in ['missing', 'step', 'name', 'forged_expected', 'tenth', 'duplicate', 'geometry', 'source', 'roles', 'wrong_role', 'transport','preflight']:
@@ -162,11 +166,11 @@ class SequenceAuditTest(unittest.TestCase):
         fixture['profiles'][2]['safeInsets'] = [.05,0,0,.03]
         fixture['profiles'][3]['safeInsets'] = [0,0,.05,.03]
         plan = planner.make_plan(fixture)
-        self.assertEqual(6,len(plan['cases']))
+        self.assertEqual(8,len(plan['cases']))
         self.assertEqual({(0,0,0,0),(.05,0,0,.03),(0,0,.05,.03)},
                          {tuple(case['safeInsets']) for case in plan['cases']})
 
-    def test_new_documented_dimensions_also_get_the_non_release_preflight(self):
+    def test_preflight_uses_opposite_orders_on_widest_and_narrowest_documented_screens(self):
         fixture=self.fixture()
         dimensions=[(1560,720),(1544,720),(1570,720),(1640,720),(2270,1080),(2244,1080),
                     (2240,1080),(2388,1080),(2400,1176),(2616,1212),(2720,1260)]
@@ -174,5 +178,7 @@ class SequenceAuditTest(unittest.TestCase):
         fixture['profiles']=[dict(template,profile=f'new-{w}-{h}',display=[w,h],capture=[w,h]) for w,h in dimensions]
         fixture['resolutionProfiles']=len(dimensions)
         plan=planner.make_plan(fixture)
-        self.assertEqual(len(dimensions),len(plan['cases']))
-        self.assertTrue(all(case['preflight'] for case in plan['cases']))
+        self.assertEqual(2 * len(dimensions),len(plan['cases']))
+        preflight = {case['firstPick']: tuple(case['capture']) for case in plan['cases'] if case['preflight']}
+        self.assertEqual({True: min(dimensions, key=lambda size: size[0]/size[1]),
+                         False: max(dimensions, key=lambda size: size[0]/size[1])}, preflight)

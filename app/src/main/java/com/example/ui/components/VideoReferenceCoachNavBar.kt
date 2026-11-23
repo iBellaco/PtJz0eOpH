@@ -101,7 +101,7 @@ fun VideoReferenceCoachNavBar(
                     CoachNavStyle.GLASS_WAVE -> drawGlassWave(x, slot, top, size.height, background, accent, active)
                     CoachNavStyle.GLASS_CONE -> drawGlassCone(x, top, iconCenter, accent, active)
                     CoachNavStyle.GLASS_BEAD -> drawGlassBead(x, top, size.width, size.height, accent, active)
-                    CoachNavStyle.WARM_TABS -> drawWarmTabs(x, slot, top, size.width, size.height, accent, active)
+                    CoachNavStyle.WARM_TABS -> drawWarmTabs(x, slot, top, size.width, size.height, background, accent, active)
                     CoachNavStyle.RIBBON_MATRIX -> drawRibbonMatrix(items.size, slot, x, top, size.height, background, accent, active)
                     CoachNavStyle.PRISM_LATTICE -> drawPrismLattice(items.size, slot, x, top, size.height, background, accent, active)
                     else -> Unit
@@ -123,9 +123,7 @@ fun VideoReferenceCoachNavBar(
                         label = "reference_video_lift_$itemIndex"
                     )
                     val tint = if (selected) active else inactive
-                    val labelTint = if (style == CoachNavStyle.WARM_TABS) {
-                        if (selected) active else Color.White.copy(alpha = .76f)
-                    } else tint
+                    val labelTint = tint
                     Column(
                         Modifier.weight(1f).fillMaxHeight().clip(RoundedCornerShape(20.dp))
                             .selectable(selected = selected, role = Role.Tab, onClick = { onSelected(itemIndex) })
@@ -166,7 +164,7 @@ private fun DrawScope.drawReferenceBase(
     round: Float
 ) {
     val body = when (style) {
-        CoachNavStyle.WARM_TABS -> Color(0xFF4D3930).copy(alpha = .98f)
+        CoachNavStyle.WARM_TABS -> background.copy(alpha = .94f)
         CoachNavStyle.RIBBON_MATRIX -> background.copy(alpha = .24f)
         CoachNavStyle.PRISM_LATTICE -> background.copy(alpha = .98f)
         else -> background.copy(alpha = .94f)
@@ -345,14 +343,15 @@ private fun DrawScope.drawGlassBead(x: Float, top: Float, width: Float, height: 
 }
 
 private fun DrawScope.drawWarmTabs(
-    x: Float, slot: Float, top: Float, width: Float, height: Float, accent: Color, active: Color
+    x: Float, slot: Float, top: Float, width: Float, height: Float,
+    background: Color, accent: Color, active: Color
 ) {
     val selectedWidth = min(slot - 8.dp.toPx(), 70.dp.toPx())
-    drawRoundRect(Brush.verticalGradient(listOf(Color(0xFF8B6752), Color(0xFF342722))),
+    drawRoundRect(Brush.verticalGradient(listOf(active.copy(alpha = .46f), background.copy(alpha = .94f))),
         Offset(x - selectedWidth / 2f, top + 5.dp.toPx()), Size(selectedWidth, 42.dp.toPx()), CornerRadius(21.dp.toPx()))
-    drawRoundRect(Color(0xFFFFD7A8).copy(alpha = .55f), Offset(x - selectedWidth / 2f, top + 5.dp.toPx()),
+    drawRoundRect(accent.copy(alpha = .72f), Offset(x - selectedWidth / 2f, top + 5.dp.toPx()),
         Size(selectedWidth, 42.dp.toPx()), CornerRadius(21.dp.toPx()), style = Stroke(1.dp.toPx()))
-    drawLine(Color(0xFFFFE4C2).copy(alpha = .35f), Offset(12.dp.toPx(), top + 7.dp.toPx()),
+    drawLine(accent.copy(alpha = .36f), Offset(12.dp.toPx(), top + 7.dp.toPx()),
         Offset(width - 12.dp.toPx(), top + 7.dp.toPx()), 1.dp.toPx(), StrokeCap.Round)
     drawRoundRect(active.copy(alpha = .76f), Offset(x - min(slot * .28f, 22.dp.toPx()), height - 10.dp.toPx()),
         Size(min(slot * .56f, 44.dp.toPx()), 3.dp.toPx()), CornerRadius(2.dp.toPx()))

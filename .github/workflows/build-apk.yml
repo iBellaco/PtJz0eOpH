@@ -120,6 +120,8 @@ jobs:
         python3 tools/update-champion-builds.py --check
         bash tools/audit-portuguese.sh
   build-apk:
+    outputs:
+      sequence_shards: ${{ steps.sequence-plan.outputs.sequence_shards }}
     # Build on a separate runner while the full regression suite continues.
     # Publication below still requires the suite and every installed APK audit.
     needs: [find-validated-apk, catalog-validation, security-auth-tests, scanner-tests]
@@ -209,6 +211,7 @@ jobs:
         name: scanner-multidevice-audit
         path: app/build/
     - name: Prepare the complete native OCR sequence plan
+      id: sequence-plan
       run: python3 tools/scanner-sequence-plan.py app/build/reports/scanner-multidevice/audit-summary.json app/build/generated/scanner-sequence-assets/scanner-sequence-plan.json
     - name: Build obfuscated release APK
       env:
@@ -495,7 +498,7 @@ jobs:
     - name: Audit real reference slots and bans across capture profiles
       env:
         CI: 'true'
-      run: ./gradlew :app:testDebugUnitTest --rerun --tests com.example.DraftMultiDeviceAuditTest --tests com.example.DraftReferenceFrameTest --tests com.example.DraftRingAlignmentTest --tests com.example.CaptureCoordinateSpaceTest --tests com.example.BannedPortraitScannerTest --max-workers=1 --stacktrace --no-daemon
+      run: ./gradlew :app:testDebugUnitTest --rerun --tests com.example.DraftMultiDeviceAuditTest --tests com.example.DraftReferenceFrameTest --tests com.example.DraftRingAlignmentTest --tests com.example.DraftNativePanelTest --tests com.example.DraftGeometryStabilityTest --tests com.example.CaptureCoordinateSpaceTest --tests com.example.service.FloatingWindowLifecycleTest.resizingTheCapturedGameSwapsTheReaderAndReusesTheDisplayEvenWhileIdle --tests com.example.BannedPortraitScannerTest --max-workers=1 --stacktrace --no-daemon
     - name: Distinguish simulated scanner results from physical device verification
       run: |
         python3 tools/scanner-audit-summary.py app/build/reports/scanner-multidevice
@@ -507,6 +510,7 @@ jobs:
         name: scanner-multidevice-audit
         path: |
           app/build/reports/scanner-multidevice/
+          app/build/reports/scanner-native/paneles.csv
           app/build/test-results/testDebugUnitTest/TEST-*.xml
         if-no-files-found: error
         retention-days: 14
@@ -623,13 +627,12 @@ jobs:
         sudo udevadm trigger --name-match=kvm
         sudo chmod 666 /dev/kvm || true
     - uses: ./.github/actions/prepare-emulator
-    - name: Run the fast gate for the previously failing native cases
+    - name: Verify both draft orders on the widest and narrowest documented displays
       timeout-minutes: 35
       uses: reactivecircus/android-emulator-runner@v2
       env:
         COACH_SEQUENCE_SHARD: '0'
         COACH_SEQUENCE_PREFLIGHT: 'true'
-        COACH_SEQUENCE_TARGETS: 'sequence-56-ally-first,sequence-61-enemy-first'
       with:
         api-level: 34
         arch: x86_64
@@ -659,7 +662,7 @@ jobs:
         # Native ML Kit OCR is intentionally real and can take 6-16 minutes per
         # geometry on a cold emulator. Keep at most three phone geometries in a
         # runner so no valid sequence is truncated by the job deadline.
-        shard: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+        shard: ${{ fromJSON(needs.build-apk.outputs.sequence_shards || '[0]') }}
     steps:
     - *id001
     - *id002

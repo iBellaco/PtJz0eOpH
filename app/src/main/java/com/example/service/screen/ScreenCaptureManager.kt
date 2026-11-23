@@ -172,6 +172,12 @@ class ScreenCaptureManager(private val context: Context) {
 
                 try {
                     mediaProjection?.registerCallback(object : MediaProjection.Callback() {
+                        override fun onCapturedContentResize(width: Int, height: Int) {
+                            synchronized(projectionLock) {
+                                if (mediaProjection === projection) resizeCapture(width, height)
+                            }
+                        }
+
                         override fun onCapturedContentVisibilityChanged(isVisible: Boolean) {
                             synchronized(projectionLock) {
                                 if (mediaProjection !== projection) return
@@ -199,13 +205,7 @@ class ScreenCaptureManager(private val context: Context) {
 
                 updateScreenDimensions()
 
-                // Wild Rift corre exclusivamente en formato horizontal (apaisado: maxDim x minDim).
-                // Al inicializar el VirtualDisplay e ImageReader en la resolución apaisada nativa
-                // con VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR garantizamos:
-                // 1. Captura 1:1 sin distorsión ni artefactos cuando el juego está en pantalla.
-                // 2. El compositor de Android adapta de forma nativa y segura cualquier orientación (vertical/horizontal)
-                //    sin necesidad de destruir el VirtualDisplay ni el ImageReader.
-                // 3. Se previene de raíz la SecurityException de Android 14+ generada al reutilizar el token de MediaProjection.
+                // Start with the landscape display until Android reports the bounds of the shared content.
                 val rawW = maxOf(screenWidth, screenHeight)
                 val rawH = minOf(screenWidth, screenHeight)
                 // En pantallas QHD+ (como Samsung Galaxy S24/S25/S26 Ultra 3120x1440), limitar la resolución de captura
@@ -261,22 +261,41 @@ class ScreenCaptureManager(private val context: Context) {
         }
     }
 
-    private var lastRefreshTimestamp = 0L
-
-    /**
-     * Notifica y actualiza dimensiones de pantalla tras rotación sin destruir la proyección virtual.
-     */
-    fun refreshProjection() {
-        val now = System.currentTimeMillis()
-        if (now - lastRefreshTimestamp < 350L) return
-        lastRefreshTimestamp = now
-
-        try {
-            updateScreenDimensions()
-            AppLogger.d(TAG, "Rotación de pantalla registrada de forma segura (${screenWidth}x${screenHeight}).")
-        } catch (e: Throwable) {
-            AppLogger.w(TAG, "Error actualizando dimensiones en rotación: ${e.message}")
+    /** Called under projectionLock. Replace the buffer queue without requesting a second projection. */
+    private fun resizeCapture(width: Int, height: Int) {
+        if (width <= 0 || height <= 0) return
+        val display = virtualDisplay ?: return
+        val previous = imageReader ?: return
+        val (w, h) = CaptureFrameDecoder.captureSize(width, height)
+        if (previous.width == w && previous.height == h) return
+        synchronized(frameLock) {
+            var next: ImageReader? = null
+            try {
+                next = ImageReader.newInstance(w, h, PixelFormat.RGBA_8888, 2)
+                display.resize(w, h, screenDensity)
+                if (surfaceAttached) display.surface = next.surface
+                imageReader = next
+            } catch (e: Exception) {
+                next?.close()
+                if (next != null) try {
+                    display.resize(previous.width, previous.height, screenDensity)
+                    if (surfaceAttached) display.surface = previous.surface
+                } catch (_: Exception) {
+                    lastProjectionFailure = ProjectionFailure.INITIALIZATION_ERROR
+                    clearProjection(stop = true)
+                }
+                AppLogger.w(TAG, "No se pudo ajustar la captura a ${w}x${h}: ${e.message}")
+                return
+            }
+            previous.close()
+            packingBuffer.clear()
         }
+    }
+
+    fun refreshProjection() = synchronized(projectionLock) {
+        updateScreenDimensions()
+        // Android 14+ reports the actual shared content, which can be smaller than the display.
+        if (android.os.Build.VERSION.SDK_INT < 34) resizeCapture(screenWidth, screenHeight)
     }
 
     /**

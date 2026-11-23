@@ -62,7 +62,7 @@ fun CoachNavStyleRenderer(style: CoachNavStyle, items: List<CoachNavItem>, selec
             CoachNavStyle.LIQUID -> LiquidNavBar(items, selectedIndex, background, selected, unselected, onSelected, safeModifier)
             CoachNavStyle.NEON_WAVE -> NeonWaveNavBar(items, selectedIndex, background, selected, unselected, onSelected, safeModifier)
             CoachNavStyle.GLASS_PILL, CoachNavStyle.TABS_V2, CoachNavStyle.PURPLE_MESSAGES,
-            CoachNavStyle.MENISCUS, CoachNavStyle.DARK_NEON_LINES, CoachNavStyle.SPOTLIGHT ->
+            CoachNavStyle.MENISCUS ->
                 VideoCoachNavBar(items, selectedIndex, style, onSelected, safeModifier)
             CoachNavStyle.VIDEO_LIQUID_GLASS, CoachNavStyle.VIDEO_DARK_NEON_LENS,
             CoachNavStyle.VIDEO_BOUNCE, CoachNavStyle.VIDEO_NEON_WAVE,

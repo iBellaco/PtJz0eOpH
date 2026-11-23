@@ -791,8 +791,6 @@ enum class CoachNavStyle(val id: String, val title: String) {
     TABS_V2("tabs_v2", "Pestañas compactas"),
     PURPLE_MESSAGES("purple_messages", "Mensajes violeta"),
     MENISCUS("meniscus", "Menisco luminoso"),
-    DARK_NEON_LINES("dark_neon_lines", "Líneas neón"),
-    SPOTLIGHT("spotlight", "Foco radial"),
     VIDEO_LIQUID_GLASS("video_liquid_glass", "Vidrio líquido"),
     VIDEO_DARK_NEON_LENS("video_dark_neon_lens", "Lente neón oscuro"),
     VIDEO_BOUNCE("video_bounce", "Rebote activo"),

@@ -52,6 +52,42 @@ internal object MeasuredDeviceCalibrationDefaults {
     )
 
     /**
+     * Vision Draft calibration supplied from the nubia NX809J capture.
+     *
+     * This is a separate model from NX789J even though the physical capture
+     * dimensions match. The measured ban rows and slot positions are kept
+     * independently so a resolution match cannot select the wrong device.
+     * The 1920x869 entry is the aligned MediaProjection surface reported for
+     * the same phone.
+     */
+    private val nubiaNx809jReference = VisionCalibrationConfig().copy(
+        allyAvatarCenterX = .07296875f,
+        enemyAvatarCenterX = .9589764f,
+        avatarDiameterRatio = .11f,
+        allySlotXRatios = List(5) { .07296875f },
+        allySlotYRatios = listOf(.191541f, .32586777f, .45821923f, .589583f, .7219344f),
+        allySlotDiameterRatios = listOf(.11f, .11f, .11f, .11f, .105f),
+        enemySlotXRatios = List(5) { .9589764f },
+        enemySlotYRatios = listOf(.188f, .324f, .457f, .590f, .722f),
+        enemySlotDiameterRatios = List(5) { .11f },
+        allyBanXRatios = listOf(.028930817f, .062893085f, .09937107f, .13710693f, .17358491f),
+        allyBanYRatios = listOf(.05138889f, .05f, .05138889f, .048611112f, .05f),
+        allyBanDiameterRatios = List(5) { .058333334f },
+        manualAllyBans = false,
+        measuredBanGeometry = true,
+        enemyBanXRatios = listOf(.82589984f, .8629211f, .8999424f, .9369637f, .973985f),
+        enemyBanYRatios = List(5) { .052f },
+        enemyBanDiameterRatios = List(5) { .06f },
+        manualEnemyBans = false,
+        topAvatarYRatio = .045f,
+        topAvatarDiameterRatio = .072f,
+        topAlly5XRatio = .1680967f,
+        topEnemy5XRatio = .973985f,
+        topAllyXRatios = listOf(.028930817f, .063722288f, .09851376f, .13330523f, .1680967f),
+        topEnemyXRatios = listOf(.833985f, .868985f, .903985f, .938985f, .973985f)
+    )
+
+    /**
      * Vision Draft calibration supplied from the Xiaomi 24122RKC7G capture.
      *
      * The ban circles are intentionally manual: the source evidence places
@@ -162,6 +198,8 @@ internal object MeasuredDeviceCalibrationDefaults {
     private val profiles: List<Profile> = listOf(
         Profile("nubia", "NX789J", 2688, 1216, nubiaNx789jReference),
         Profile("nubia", "NX789J", 1920, 869, nubiaNx789jReference),
+        Profile("nubia", "NX809J", 2688, 1216, nubiaNx809jReference),
+        Profile("nubia", "NX809J", 1920, 869, nubiaNx809jReference),
         Profile("Xiaomi", "24122RKC7G", 2400, 1080, xiaomi24122rkc7gReference),
         Profile("Xiaomi", "24122RKC7G", 1920, 864, xiaomi24122rkc7gReference),
         Profile("Xiaomi", "24122RKC7G", 1280, 576, xiaomi24122rkc7gReference),
