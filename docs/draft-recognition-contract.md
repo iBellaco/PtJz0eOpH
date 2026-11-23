@@ -43,6 +43,14 @@ Desde 1.1.10.570, el visor y el adjunto muestran los retratos originales del
 juego. Sobre la cabecera se dibuja una sola fila de contornos por equipo, usando
 las posiciones de los baneos. Las calibraciones manuales tienen prioridad.
 
+Actualización del propietario, 23 de noviembre de 2026: se registra además la
+referencia exacta de `nubia NX809J`, Android 16/API 36, pantalla 2688×1216 y
+captura alineada 1920×869. Sus ratios de slots, baneos y barra superior son
+independientes de NX789J aunque compartan dimensiones físicas. La captura
+recibida muestra la columna rival cubierta parcialmente por el Hub; el informe
+de diagnóstico debe conservar y enumerar los cinco slots de cada lado aunque
+no exista identidad confirmada en alguno de ellos.
+
 ## Información que se observa
 
 Regla confirmada el 2 de noviembre de 2026: el escáner automático debe ser

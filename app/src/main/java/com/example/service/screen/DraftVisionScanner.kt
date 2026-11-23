@@ -156,20 +156,45 @@ internal data class CalibrationReportSnapshot(
             if (text != null) add("texto=${text.name}")
             if (image != null) add(if (pt) "imagem=${image.name}" else "imagen=${image.name}")
         }.joinToString("; ").ifBlank { if (pt) "fonte=N/D" else "fuente=N/D" }
-        for (slot in picks) {
-            val side = if (slot.isAlly) "Aliado" else "Rival"
-            val position = if (pt) "posição" else "slot"
-            lines += "$side $position ${slot.index + 1}: ${source(slot.title, slot.image)}; confirmado=${slot.champion.name}"
+        val picksBySlot = picks.associateBy { it.isAlly to it.index }
+        for (isAlly in listOf(true, false)) {
+            for (index in 0..4) {
+                val slot = picksBySlot[isAlly to index]
+                val side = if (isAlly) "Aliado" else "Rival"
+                val position = if (pt) "posição" else "slot"
+                lines += if (slot == null) {
+                    if (pt) "$side $position ${index + 1}: fonte=N/D; confirmado=N/D"
+                    else "$side $position ${index + 1}: fuente=N/D; confirmado=N/D"
+                } else {
+                    "$side $position ${index + 1}: ${source(slot.title, slot.image)}; confirmado=${slot.champion.name}"
+                }
+            }
         }
         val knownChampions = WildRiftRepository.championSnapshot()
-        bans.filter { it.state == BanState.CONFIRMED }.forEach { ban ->
-            val name = knownChampions.firstOrNull { it.id.equals(ban.championId, ignoreCase = true) }?.name
-                ?: ban.championId.orEmpty()
-            val side = if (ban.side == BanSide.ALLY) "Aliado" else "Rival"
-            lines += if (pt) {
-                "Banimento $side posição ${ban.index + 1}: imagem=$name; estado=${ban.state.name}; similaridade=${"%.2f".format(Locale.US, ban.similarity)}"
-            } else {
-                "Baneo $side slot ${ban.index + 1}: imagen=$name; estado=${ban.state.name}; similitud=${"%.2f".format(Locale.US, ban.similarity)}"
+        val bansBySlot = bans.associateBy { it.side to it.index }
+        for (side in BanSide.entries) {
+            for (index in 0..4) {
+                val ban = bansBySlot[side to index]
+                val sideName = if (side == BanSide.ALLY) "Aliado" else "Rival"
+                val label = if (pt) "Banimento" else "Baneo"
+                lines += if (ban == null) {
+                    "$label $sideName ${if (pt) "posição" else "slot"} ${index + 1}: estado=N/D; ${if (pt) "imagem" else "imagen"}=N/D"
+                } else {
+                    val name = knownChampions.firstOrNull { it.id.equals(ban.championId, ignoreCase = true) }?.name
+                        ?: ban.championId.orEmpty()
+                    val identity = if (ban.state == BanState.CONFIRMED && name.isNotBlank()) {
+                        if (pt) "imagem=$name" else "imagen=$name"
+                    } else if (name.isNotBlank()) {
+                        if (pt) "candidato=$name" else "candidato=$name"
+                    } else {
+                        if (pt) "imagem=N/D" else "imagen=N/D"
+                    }
+                    if (pt) {
+                        "$label $sideName posição ${index + 1}: $identity; estado=${ban.state.name}; similaridade=${"%.2f".format(Locale.US, ban.similarity)}"
+                    } else {
+                        "$label $sideName slot ${index + 1}: $identity; estado=${ban.state.name}; similitud=${"%.2f".format(Locale.US, ban.similarity)}"
+                    }
+                }
             }
         }
         if (lines.isEmpty()) {

@@ -135,6 +135,20 @@ class CalibrationEvidenceImageTest {
         } finally { DraftVisionScanner.resetSlotMemory() }
     }
 
+    @Test fun evidenceReportKeepsBothSidesWhenTheHubHidesTheRivalText() {
+        DraftVisionScanner.resetSlotMemory()
+        try {
+            DraftVisionScanner.allySlotConfirmedChampions[0] = Champion(name = "Volibear")
+            val report = DraftVisionScanner.calibrationReportSnapshot().detectionEvidenceReport("es")
+            assertTrue(report.contains("Aliado slot 1: fuente=N/D") || report.contains("Aliado slot 1: confirmado=Volibear"))
+            assertTrue(report.contains("Aliado slot 2: fuente=N/D; confirmado=N/D"))
+            assertTrue(report.contains("Rival slot 1: fuente=N/D; confirmado=N/D"))
+            assertTrue(report.contains("Rival slot 5: fuente=N/D; confirmado=N/D"))
+            assertTrue(report.contains("Baneo Rival slot 1:"))
+            assertTrue(report.contains("Baneo Rival slot 5:"))
+        } finally { DraftVisionScanner.resetSlotMemory() }
+    }
+
     @Test fun cleanAndAuditedEvidenceBothEncodeSuccessfully() {
         val source = Bitmap.createBitmap(640, 360, Bitmap.Config.ARGB_8888).apply {
             eraseColor(Color.rgb(8, 20, 32))
