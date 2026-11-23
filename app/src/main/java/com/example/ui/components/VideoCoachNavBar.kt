@@ -77,7 +77,6 @@ fun VideoCoachNavBar(items: List<CoachNavItem>, selectedIndex: Int, style: Coach
             val round = 26.dp.toPx()
             val bodyColor = when (style) {
                 CoachNavStyle.PURPLE_MESSAGES -> androidx.compose.ui.graphics.lerp(background, accent, .18f)
-                CoachNavStyle.DARK_NEON_LINES -> background.copy(alpha = .98f)
                 else -> background
             }
             if (style == CoachNavStyle.MENISCUS) {
@@ -105,10 +104,8 @@ fun VideoCoachNavBar(items: List<CoachNavItem>, selectedIndex: Int, style: Coach
                 drawCircle(accent, radius * .78f, bead)
             } else {
                 drawRoundRect(bodyColor, Offset(0f, top), Size(size.width, size.height - top), CornerRadius(round))
-                if (style != CoachNavStyle.DARK_NEON_LINES) {
-                    drawRoundRect(active.copy(alpha = .22f), Offset(0f, top), Size(size.width, size.height - top),
-                        CornerRadius(round), style = Stroke(1.dp.toPx()))
-                }
+                drawRoundRect(active.copy(alpha = .22f), Offset(0f, top), Size(size.width, size.height - top),
+                    CornerRadius(round), style = Stroke(1.dp.toPx()))
                 when (style) {
                     CoachNavStyle.GLASS_PILL -> {
                         val w = min(slot - 6.dp.toPx(), 78.dp.toPx())
@@ -132,35 +129,6 @@ fun VideoCoachNavBar(items: List<CoachNavItem>, selectedIndex: Int, style: Coach
                         drawCircle(accent.copy(alpha = .16f), radius, center)
                         drawPath(crest, accent)
                     }
-                    CoachNavStyle.DARK_NEON_LINES -> {
-                        val railTop = top + 9.dp.toPx()
-                        val railBottom = size.height - 9.dp.toPx()
-                        drawLine(active.copy(alpha = .25f), Offset(0f, railTop), Offset(size.width, railTop), 1.dp.toPx())
-                        drawLine(active.copy(alpha = .18f), Offset(0f, railBottom), Offset(size.width, railBottom), 1.dp.toPx())
-                        val half = min(slot * .30f, 22.dp.toPx())
-                        val gap = 6.dp.toPx()
-                        drawLine(active, Offset(x - half, railTop), Offset(x - gap, railTop), 2.dp.toPx(), StrokeCap.Round)
-                        drawLine(active, Offset(x + gap, railTop), Offset(x + half, railTop), 2.dp.toPx(), StrokeCap.Round)
-                        drawLine(active.copy(alpha = .72f), Offset(x - half, railBottom), Offset(x - gap, railBottom), 1.5.dp.toPx(), StrokeCap.Round)
-                        drawLine(active.copy(alpha = .72f), Offset(x + gap, railBottom), Offset(x + half, railBottom), 1.5.dp.toPx(), StrokeCap.Round)
-                    }
-                    CoachNavStyle.SPOTLIGHT -> {
-                        val beamTop = top + 2.dp.toPx()
-                        val beamBottom = top + 57.dp.toPx()
-                        val beamHalfTop = min(slot * .14f, 12.dp.toPx())
-                        val beamHalfBottom = min(slot * .42f, 32.dp.toPx())
-                        val beam = Path().apply {
-                            moveTo(x - beamHalfTop, beamTop)
-                            lineTo(x + beamHalfTop, beamTop)
-                            lineTo(x + beamHalfBottom, beamBottom)
-                            lineTo(x - beamHalfBottom, beamBottom)
-                            close()
-                        }
-                        drawPath(beam, Brush.verticalGradient(listOf(accent.copy(alpha = .42f), accent.copy(alpha = .04f))))
-                        drawLine(accent.copy(alpha = .8f), Offset(x - beamHalfTop, beamTop), Offset(x - beamHalfBottom, beamBottom), 1.dp.toPx(), StrokeCap.Round)
-                        drawLine(accent.copy(alpha = .8f), Offset(x + beamHalfTop, beamTop), Offset(x + beamHalfBottom, beamBottom), 1.dp.toPx(), StrokeCap.Round)
-                        drawLine(active, Offset(x - beamHalfBottom, beamBottom), Offset(x + beamHalfBottom, beamBottom), 2.dp.toPx(), StrokeCap.Round)
-                    }
                     else -> Unit
                 }
             }
@@ -171,7 +139,6 @@ fun VideoCoachNavBar(items: List<CoachNavItem>, selectedIndex: Int, style: Coach
                 val lift = when (style) {
                     CoachNavStyle.TABS_V2 -> -19f
                     CoachNavStyle.MENISCUS -> -22f
-                    CoachNavStyle.SPOTLIGHT -> -3f
                     else -> 0f
                 }
                 val offset by animateFloatAsState(if (selected) lift else 0f, spring(.75f, 380f), label = "video_nav_lift_$i")
