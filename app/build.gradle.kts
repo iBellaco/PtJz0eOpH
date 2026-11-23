@@ -24,8 +24,8 @@ android {
     applicationId = "com.Coach"
     minSdk = 24
     targetSdk = 36
-    versionCode = 1304
-    versionName = "1.1.10.588"
+    versionCode = 1305
+    versionName = "1.1.10.589"
     ndk {
       abiFilters.addAll(listOf("armeabi-v7a", "arm64-v8a", "x86_64"))
     }
@@ -122,6 +122,8 @@ android {
       isIncludeAndroidResources = true
       all {
         it.systemProperty("robolectric.sqliteMode", "LEGACY")
+        // El alias repo1 puede responder 429 durante las descargas runtime de Robolectric.
+        it.systemProperty("robolectric.dependency.repo.url", "https://repo.maven.apache.org/maven2")
         // Robolectric's Compose idler can retain a pending frame between test classes.
         it.forkEvery = 1L
         it.testLogging {
