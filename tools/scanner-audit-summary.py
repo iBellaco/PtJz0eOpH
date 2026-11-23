@@ -4,7 +4,7 @@ import csv
 import json
 from pathlib import Path
 
-GROUPS = {'device-profiles': 6, 'phone-resolutions': 20, 'tablet-resolutions': 4,
+GROUPS = {'device-profiles': 7, 'phone-resolutions': 20, 'tablet-resolutions': 4,
           'foldable-resolutions': 4, 'edge-anchored-resolutions': 10, 'documented-android-displays': 10,
           'xiaomi-redmi-poco-displays': 9, 'requested-brand-displays': 93, 'cutout-safe-area-scenarios': 8}
 VARIANTS = {'original', 'changed-background', 'changed-portraits-and-bans'}
