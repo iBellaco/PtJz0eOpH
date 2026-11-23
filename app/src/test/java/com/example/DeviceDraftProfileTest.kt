@@ -128,6 +128,31 @@ class DeviceDraftProfileTest {
         assertNull(VisionCalibrationConfig.measuredDefaultForCapture("Xiaomi", "NX789J", 2688, 1216))
     }
 
+    @Test fun nx809jReferenceKeepsItsOwnMeasuredBanAndSlotGeometry() {
+        val physical = requireNotNull(VisionCalibrationConfig.measuredDefaultForCapture(
+            "nubia", "NX809J", 2688, 1216
+        ))
+        val aligned = requireNotNull(VisionCalibrationConfig.measuredDefaultForCapture(
+            "NUBIA", "nx809j", 1920, 869
+        ))
+
+        assertEquals(physical, aligned)
+        assertEquals(.07296875f, physical.allyAvatarCenterX, .000001f)
+        assertEquals(.9589764f, physical.enemyAvatarCenterX, .000001f)
+        assertEquals(listOf(.028930817f, .062893085f, .09937107f, .13710693f, .17358491f), physical.allyBanXRatios)
+        assertEquals(listOf(.82589984f, .8629211f, .8999424f, .9369637f, .973985f), physical.enemyBanXRatios)
+        assertEquals(listOf(.191541f, .32586777f, .45821923f, .589583f, .7219344f), physical.allySlotYRatios)
+        assertEquals(listOf(.188f, .324f, .457f, .590f, .722f), physical.enemySlotYRatios)
+        assertEquals(.1680967f, physical.topAlly5XRatio, .000001f)
+        assertEquals(.973985f, physical.topEnemy5XRatio, .000001f)
+        assertFalse(physical.manualAllyBans)
+        assertFalse(physical.manualEnemyBans)
+        assertTrue(physical.measuredBanGeometry)
+        assertNull(VisionCalibrationConfig.measuredDefaultForCapture("nubia", "NX809J", 2688, 1217))
+        val nx789j = requireNotNull(VisionCalibrationConfig.measuredDefaultForCapture("nubia", "NX789J", 2688, 1216))
+        assertNotEquals(physical, nx789j)
+    }
+
     @Test fun xiaomi24122rkc7gReferenceKeepsSuppliedBanAndSlotGeometry() {
         val physical = requireNotNull(VisionCalibrationConfig.measuredDefaultForCapture(
             "Xiaomi", "24122RKC7G", 2400, 1080
@@ -226,7 +251,7 @@ class DeviceDraftProfileTest {
         for ((manufacturer, model, width, height) in listOf(
             ProfileKey("samsung", "SM-S948B", 3120, 1440),
             ProfileKey("Xiaomi", "25062RN2DL", 2340, 1080),
-            ProfileKey("nubia", "NX809J", 2688, 1216)
+            ProfileKey("nubia", "NX809J", 2688, 1217)
         )) {
             assertNull(VisionCalibrationConfig.measuredDefaultForCapture(manufacturer, model, width, height))
         }

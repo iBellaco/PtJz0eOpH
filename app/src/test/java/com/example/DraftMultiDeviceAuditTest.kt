@@ -33,6 +33,7 @@ class DraftMultiDeviceAuditTest {
     private val variants = listOf("original", "changed-background", "changed-portraits-and-bans")
     private val profiles = listOf(
         Profile("red-magic-reference", "nubia", "NX789J", 2688, 1216),
+        Profile("red-magic-nx809j-reference", "nubia", "NX809J", 2688, 1216),
         Profile("poco-x7-pro", "Xiaomi", "2412DPC0AG", 2712, 1220),
         // Resolution scenarios only. These do not assert the native panel or OS settings of an unconnected S26.
         Profile("s26-fhd-scenario", "samsung", "S26-simulated", 2340, 1080),
@@ -54,7 +55,7 @@ class DraftMultiDeviceAuditTest {
     private val banCenters = listOf(35f, 82f, 129f, 175f, 221f, 1059f, 1105f, 1151f, 1197f, 1244f)
     private val output = File("build/reports/scanner-multidevice").apply { mkdirs() }
 
-    @Test fun referenceDevicesAndS26CaptureScenarios() = audit(profiles.take(6), "device-profiles")
+    @Test fun referenceDevicesAndS26CaptureScenarios() = audit(profiles.take(7), "device-profiles")
     @Test fun phoneResolutionMatrix() = audit(profiles.drop(6).take(20), "phone-resolutions")
     @Test fun tabletResolutionMatrix() = audit(profiles.takeLast(4), "tablet-resolutions")
     @Test fun formerlyFailingCentersStayAlignedWhenPortraitsChange() = audit(listOf(

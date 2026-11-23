@@ -6,10 +6,11 @@ exactos que el propietario vuelve a autorizar y documentar.
 
 ## Estado vigente
 
-- `MeasuredDeviceCalibrationDefaults` contiene la referencia exacta de `nubia
-  NX789J` para 2688×1216 y su captura 1920×869.
-- `docs/scanner-calibration-backup.json` conserva esa referencia y marca el
-  alias de captura; no contiene perfiles de otros modelos.
+- `MeasuredDeviceCalibrationDefaults` contiene referencias exactas separadas de
+  `nubia NX789J` y `nubia NX809J` para 2688×1216 y sus capturas alineadas
+  1920×869.
+- `docs/scanner-calibration-backup.json` conserva ambas referencias y marca sus
+  alias de captura; no se comparte geometría entre modelos por resolución.
 - La aplicación comienza con la geometría genérica y la adapta al fotograma
   capturado, al viewport visible y a los aros detectados en tiempo de ejecución.
 - Una calibración creada manualmente se guarda solo cuando el usuario la
@@ -41,8 +42,8 @@ exactos que el propietario vuelve a autorizar y documentar.
 - `DraftVisionScanner.kt`: selección de configuración efectiva.
 - `MeasuredDeviceCalibrationDefaults.kt`: catálogo medido limitado al modelo y
   dimensiones exactas autorizadas.
-- `docs/scanner-calibration-backup.json`: respaldo de la referencia NX789J y
-  su alias 1920×869.
+- `docs/scanner-calibration-backup.json`: respaldo de las referencias NX789J y
+  NX809J y sus alias 1920×869.
 
 Las imágenes y fixtures de pruebas son evidencia de regresión; no son perfiles
 de producción ni se cargan como coordenadas por defecto.

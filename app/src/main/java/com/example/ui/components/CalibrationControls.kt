@@ -203,6 +203,8 @@ internal data class CalibrationAttachment(
         val viewport = snapshot.viewport
         val geometry = "${snapshot.width}x${snapshot.height}, viewport=${viewport.left},${viewport.top}-${viewport.right},${viewport.bottom}"
         val bans = snapshot.bans.count { it.state == BanState.CONFIRMED }
+        val allyPicks = snapshot.picks.count { it.isAlly }
+        val enemyPicks = snapshot.picks.count { !it.isAlly }
         return buildString {
             if (image != null) {
                 val source = if (fromScanner) {
@@ -215,8 +217,8 @@ internal data class CalibrationAttachment(
                 appendLine(if (pt) "Nenhum fotograma disponível." else "No había un fotograma disponible.")
             }
             appendLine("Perfil: ${snapshot.source} · $geometry")
-            append(if (pt) "Posições com identidade=${snapshot.picks.size} · banimentos confirmados=$bans"
-                else "Posiciones con identidad=${snapshot.picks.size} · baneos confirmados=$bans")
+            append(if (pt) "Posições com identidade=${snapshot.picks.size} (Aliado=$allyPicks, Rival=$enemyPicks) · banimentos confirmados=$bans"
+                else "Posiciones con identidad=${snapshot.picks.size} (Aliado=$allyPicks, Rival=$enemyPicks) · baneos confirmados=$bans")
         }
     }
 }

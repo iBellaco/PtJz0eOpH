@@ -27,8 +27,6 @@ class CoachNavStyleTest {
             CoachNavStyle.TABS_V2,
             CoachNavStyle.PURPLE_MESSAGES,
             CoachNavStyle.MENISCUS,
-            CoachNavStyle.DARK_NEON_LINES,
-            CoachNavStyle.SPOTLIGHT,
             CoachNavStyle.VIDEO_LIQUID_GLASS,
             CoachNavStyle.VIDEO_DARK_NEON_LENS,
             CoachNavStyle.VIDEO_BOUNCE,
@@ -48,6 +46,12 @@ class CoachNavStyleTest {
 
     @Test fun retiredNavigationStyleFallsBackWithoutRemovingRegionalThemes() {
         assertEquals(CoachNavStyle.ORIGINAL, CoachNavStyle.fromId("premium_menu"))
+        assertEquals(CoachNavStyle.ORIGINAL, CoachNavStyle.fromId("dark_neon_lines"))
+        assertEquals(CoachNavStyle.ORIGINAL, CoachNavStyle.fromId("spotlight"))
         assertEquals(com.example.ui.theme.AppTheme.ZAUN, com.example.ui.theme.AppTheme.fromId("ZAUN"))
+    }
+
+    @Test fun navigationCatalogHasTwentySixStylesAfterRetiringTwoEntries() {
+        assertEquals(26, CoachNavStyle.entries.size)
     }
 }

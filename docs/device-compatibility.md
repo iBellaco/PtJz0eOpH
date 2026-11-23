@@ -11,6 +11,7 @@ prueba de imagen no certifica todos los modelos de esa marca.
 | Fabricante y modelo | Android físico registrado | Aplicación | Overlay y escáner | Evidencia |
 |---|---:|---|---|---|
 | ZTE / nubia RedMagic 10 (NX789J) | Android 16/API 36 | Confirmada por el propietario | Confirmados por el propietario | Perfil exacto registrado para 2688×1216 y captura 1920×869; la prueba física de esta build sigue siendo responsabilidad del propietario |
+| nubia NX809J | Android 16/API 36 | Reportada por el propietario | Evidencia de captura recibida; repetir la secuencia completa con esta build | Perfil exacto registrado para 2688×1216 y captura alineada 1920×869; no se comparte con NX789J por resolución |
 | POCO (perfil reportado como POCO X7 Pro) | No registrado en el informe | Confirmada por el propietario | Confirmados por el propietario | Prueba física reportada; la nueva geometría requiere repetir la prueba con la build actual |
 | Samsung Galaxy S26 | No disponible | No comprobada físicamente | No comprobado físicamente | Solo imágenes/emulador; no equivale a un teléfono real |
 | Honor V2 | No registrado | Instalación observada | Overlay bloqueado por “Controlado por ajustes restringidos” | Pendiente de permitir ajustes restringidos desde Android; Coach no puede concederlo automáticamente |

@@ -67,6 +67,68 @@
         "captureHeight": 869
       },
       "aliasOf": "nubia-nx789j-2688x1216"
+    },
+    {
+      "profileId": "nubia-nx809j-2688x1216",
+      "device": {
+        "manufacturer": "nubia",
+        "model": "NX809J",
+        "androidApi": 36,
+        "width": 2688,
+        "height": 1216,
+        "captureWidth": 2688,
+        "captureHeight": 1216
+      },
+      "calibration": {
+        "avatarDiameterRatio": 0.11,
+        "allyAvatarCenterX": 0.07296875,
+        "enemyAvatarCenterX": 0.9589764,
+        "top": {
+          "avatarYRatio": 0.045,
+          "avatarDiameterRatio": 0.072,
+          "ally5XRatio": 0.1680967,
+          "enemy5XRatio": 0.973985,
+          "allyXRatios": [0.028930817, 0.063722288, 0.09851376, 0.13330523, 0.1680967],
+          "enemyXRatios": [0.833985, 0.868985, 0.903985, 0.938985, 0.973985]
+        },
+        "bans": {
+          "ally": {
+            "x": [0.028930817, 0.062893085, 0.09937107, 0.13710693, 0.17358491],
+            "y": [0.05138889, 0.05, 0.05138889, 0.048611112, 0.05],
+            "diameter": [0.058333334, 0.058333334, 0.058333334, 0.058333334, 0.058333334],
+            "manual": false
+          },
+          "enemy": {
+            "x": [0.82589984, 0.8629211, 0.8999424, 0.9369637, 0.973985],
+            "y": [0.052, 0.052, 0.052, 0.052, 0.052],
+            "diameter": [0.06, 0.06, 0.06, 0.06, 0.06],
+            "manual": false
+          }
+        },
+        "allySlots": {
+          "x": [0.07296875, 0.07296875, 0.07296875, 0.07296875, 0.07296875],
+          "y": [0.191541, 0.32586777, 0.45821923, 0.589583, 0.7219344],
+          "diameter": [0.11, 0.11, 0.11, 0.11, 0.105]
+        },
+        "enemySlots": {
+          "x": [0.9589764, 0.9589764, 0.9589764, 0.9589764, 0.9589764],
+          "y": [0.188, 0.324, 0.457, 0.59, 0.722],
+          "diameter": [0.11, 0.11, 0.11, 0.11, 0.11]
+        }
+      }
+    },
+    {
+      "profileId": "nubia-nx809j-1920x869-capture",
+      "device": {
+        "manufacturer": "nubia",
+        "model": "NX809J",
+        "androidApi": 36,
+        "width": 2688,
+        "height": 1216,
+        "captureWidth": 1920,
+        "captureHeight": 869
+      },
+      "aliasOf": "nubia-nx809j-2688x1216"
     }
   ]
 }
