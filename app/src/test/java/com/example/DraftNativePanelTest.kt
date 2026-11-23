@@ -54,13 +54,16 @@ class DraftNativePanelTest {
                     var enemyMeasured = false
                     val aligned = DraftRingAlignment.align(bitmap, base, mask, fixture.getBoolean("debugOverlay"),
                         onEnemyMeasured = { enemyMeasured = true }, bounds = viewport)
-                    val config = DraftGeometryStability().update(aligned, enemyMeasured)
+                    val config = DraftGeometryStability().update(aligned, enemyMeasured, base, height)
                     for (side in listOf("ally", "enemy")) {
                         val centers = fixture.getJSONArray(side)
                         assertEquals("$path $side", 5, centers.length())
+                        var previousBottom = 0
                         for (slot in 0 until centers.length()) {
                             val prefix = "$path,$width,$height,$side,${slot + 1}"
                             val rect = AdaptiveScreenLayoutEngine.calculateSlotCropRect(width, height, side == "ally", slot, config)
+                            assertTrue("$path $side row $slot overlaps its neighbor", previousBottom <= rect.top)
+                            previousBottom = rect.bottom
                             val x = rect.exactCenterX()
                             val y = rect.exactCenterY()
                             if (centers.isNull(slot)) {

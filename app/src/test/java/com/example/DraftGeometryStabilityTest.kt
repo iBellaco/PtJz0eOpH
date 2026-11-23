@@ -6,6 +6,36 @@ import org.junit.Assert.*
 import org.junit.Test
 
 class DraftGeometryStabilityTest {
+    @Test fun overlappingRimsCannotMoveEitherGridOrPreventAnIndependentHorizontalPreselection() {
+        val base = VisionCalibrationConfig()
+        val filter = DraftGeometryStability()
+        val collided = base.copy(
+            allySlotXRatios = base.allySlotXRatios.toMutableList().apply { this[2] += .045f },
+            allySlotYRatios = base.allySlotYRatios.toMutableList().apply { this[2] = this[1] + .065f },
+            enemySlotDiameterRatios = base.enemySlotDiameterRatios.toMutableList().apply { this[1] = .24f })
+        repeat(3) {
+            val result = filter.update(collided, baseline = base, frameHeight = 869)
+            assertEquals(collided.allySlotXRatios, result.allySlotXRatios)
+            assertEquals(base.allySlotYRatios, result.allySlotYRatios)
+            assertEquals(base.enemySlotDiameterRatios, result.enemySlotDiameterRatios)
+        }
+        val shifted = base.copy(enemySlotYRatios = base.enemySlotYRatios.map { it + .025f })
+        assertEquals(shifted.enemySlotYRatios, filter.update(shifted).enemySlotYRatios)
+    }
+
+    @Test fun changingRowsAtDifferentTimesNeverPublishesAMixedVerticalGrid() {
+        val base = VisionCalibrationConfig()
+        val filter = DraftGeometryStability()
+        filter.update(base)
+        val first = base.copy(allySlotYRatios = base.allySlotYRatios.map { it + .035f })
+        val second = first.copy(allySlotYRatios = first.allySlotYRatios.mapIndexed { slot, y ->
+            if (slot == 3) y + .009f else y
+        })
+        assertEquals(base.allySlotYRatios, filter.update(first).allySlotYRatios)
+        assertEquals(base.allySlotYRatios, filter.update(second).allySlotYRatios)
+        assertEquals(second.allySlotYRatios, filter.update(second).allySlotYRatios)
+    }
+
     @Test fun framesWithoutRivalRingEvidenceCannotLockDefaultCoordinates() {
         val filter = DraftGeometryStability()
         val base = VisionCalibrationConfig()

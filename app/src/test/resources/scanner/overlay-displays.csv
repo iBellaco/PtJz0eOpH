@@ -1,0 +1,6 @@
+profile,manufacturer,model,width,height,evidence
+red-magic-reference,nubia,NX789J,2688,1216,docs/device-compatibility.md
+red-magic-nx809j-reference,nubia,NX809J,2688,1216,docs/device-compatibility.md
+poco-x7-pro,Xiaomi,2412DPC0AG,2712,1220,docs/device-compatibility.md
+xiaomi-pad-6,Xiaomi,Xiaomi Pad 6,2880,1800,docs/device-compatibility.md
+galaxy-tab-s6-lite-2020,samsung,SM-P610,2000,1200,docs/device-compatibility.md

@@ -16,6 +16,13 @@ prueba de imagen no certifica todos los modelos de esa marca.
 | Samsung Galaxy S26 | No disponible | No comprobada físicamente | No comprobado físicamente | Solo imágenes/emulador; no equivale a un teléfono real |
 | Honor V2 | No registrado | Instalación observada | Overlay bloqueado por “Controlado por ajustes restringidos” | Pendiente de permitir ajustes restringidos desde Android; Coach no puede concederlo automáticamente |
 
+### Tablets Android en las pruebas del escáner
+
+El propietario informó que Coach funciona en algunas tablets y que en otras el visor pierde la alineación. Los reportes no identifican los modelos afectados. Estas dos pantallas corresponden a tablets Android con partidas públicas de Wild Rift. Coach reproduce el draft a esas dimensiones para comprobar retratos, baneos y secuencias. La confirmación física de Coach en cada modelo sigue pendiente.
+
+- Xiaomi Pad 6 tiene una pantalla de 2880 × 1800. [Especificaciones de Xiaomi](https://www.mi.com/uk/product/xiaomi-pad-6/specs/) · [Partida en Xiaomi Pad 6](https://ictfix.net/gaming/xiaomi-pad-6-wild-rift-gaming-test-league-of-legends-lol-mobile/)
+- Samsung Galaxy Tab S6 Lite de 2020 tiene una pantalla de 2000 × 1200. [Ficha del SM-P610](https://image-us.samsung.com/SamsungUS/samsungbusiness/pdfs/datasheet/Galaxy_Tab_S6_LiteDatasheet.pdf) · [Partida en Galaxy Tab S6 Lite](https://www.youtube.com/watch?v=PCPPzPyqvvo)
+
 Las pruebas Android instaladas del flujo son emulador y las pruebas de tamaños
 son imágenes sintéticas. No cuentan como pruebas físicas de Samsung, Xiaomi,
 Redmi, POCO, Honor ni de cualquier otra marca.

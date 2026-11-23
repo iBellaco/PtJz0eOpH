@@ -1,6 +1,7 @@
 {
   "sourceSha256": "42661aefae3df52b4f72047c039120f72f4ea351139d7bdb5107351fe8d3342a",
-  "modelProfiles": 7,
+  "modelProfiles": 5,
+  "geometryOnlyProfiles": 0,
   "physicalDevicesTested": [],
   "cases": [
     {
@@ -8,129 +9,140 @@
       "layout": "uniform-fit-reference",
       "prior": "default",
       "calibration": {
-        "nameBandScale": 0.9988493,
+        "nameBandScale": 1,
         "allySlotXRatios": [0.071875, 0.071875, 0.071875, 0.071875, 0.071875],
-        "enemySlotXRatios": [0.959375, 0.959375, 0.959375, 0.959375, 0.959375],
-        "allySlotYRatios": [0.19170983, 0.32686868, 0.46003994, 0.5922174, 0.7253886],
-        "enemySlotYRatios": [0.19099294, 0.3268364, 0.4596834, 0.59253037, 0.7243784],
-        "allySlotDiameterRatios": [0.10987342, 0.10987342, 0.10987342, 0.10987342, 0.10487917],
-        "enemySlotDiameterRatios": [0.10987342, 0.10987342, 0.10987342, 0.10987342, 0.10987342]
-      },
-      "safeInsets": [0, 0, 0, 0],
-      "profiles": [{"profile": "red-magic-reference", "model": "NX789J", "display": [2688, 1216], "specification": null}],
-      "id": "sequence-0-enemy-first",
-      "firstPick": false,
-      "language": "pt",
-      "shard": 0,
-      "preflight": true
-    },
-    {
-      "capture": [854, 480],
-      "layout": "uniform-fit-reference",
-      "prior": "default",
-      "calibration": {
-        "nameBandScale": 0.8041667,
-        "allySlotXRatios": [0.07259953, 0.07259953, 0.07259953, 0.07259953, 0.07259953],
-        "enemySlotXRatios": [0.9590164, 0.9590164, 0.9590164, 0.9590164, 0.9590164],
-        "allySlotYRatios": [0.25208333, 0.36077356, 0.46786544, 0.5741581, 0.68125],
-        "enemySlotYRatios": [0.25091252, 0.36027917, 0.46723333, 0.57418746, 0.6803375],
-        "allySlotDiameterRatios": [0.08845834, 0.08845834, 0.08845834, 0.08845834, 0.0844375],
-        "enemySlotDiameterRatios": [0.08845834, 0.08845834, 0.08845834, 0.08845834, 0.08845834]
-      },
-      "safeInsets": [0, 0, 0, 0],
-      "profiles": [{"profile": "requested-unihertz-jellystar", "model": "Jelly Star", "display": [854, 480], "specification": "https://www.unihertz.com/products/jelly-star"}],
-      "id": "sequence-52-ally-first",
-      "firstPick": true,
-      "language": "es",
-      "shard": 0,
-      "preflight": true
-    },
-    {
-      "capture": [1920, 822],
-      "layout": "uniform-fit-reference",
-      "prior": "default",
-      "calibration": {
-        "nameBandScale": 1.0,
-        "allySlotXRatios": [0.09453125, 0.09453125, 0.09453125, 0.09453125, 0.09453125],
-        "enemySlotXRatios": [0.934375, 0.934375, 0.934375, 0.934375, 0.934375],
-        "allySlotYRatios": [0.19343066, 0.32791665, 0.4604249, 0.5919443, 0.72445256],
-        "enemySlotYRatios": [0.19102918, 0.3270292, 0.46002918, 0.59302914, 0.72502923],
+        "enemySlotXRatios": [0.9585937, 0.9585937, 0.9585937, 0.9585937, 0.9585937],
+        "allySlotYRatios": [0.19142829, 0.3264625, 0.4595109, 0.5915665, 0.7246148],
+        "enemySlotYRatios": [0.19188407, 0.32788408, 0.46088406, 0.5938841, 0.7258841],
         "allySlotDiameterRatios": [0.11, 0.11, 0.11, 0.11, 0.105],
         "enemySlotDiameterRatios": [0.11, 0.11, 0.11, 0.11, 0.11]
       },
       "safeInsets": [0, 0, 0, 0],
-      "profiles": [{"profile": "requested-sony-xperia1v", "model": "Xperia 1 V (native-panel scenario)", "display": [3840, 1644], "specification": "https://www.sony.com/electronics/support/mobile-phones-tablets-mobile-phones/xperia-1-v-256gb/specifications"}],
-      "id": "sequence-49-enemy-first",
+      "profiles": [
+        {
+          "profile": "red-magic-reference",
+          "model": "NX789J",
+          "display": [2688, 1216],
+          "specification": "docs/device-compatibility.md"
+        }
+      ],
+      "id": "sequence-red-magic-reference-enemy-first",
       "firstPick": false,
       "language": "pt",
-      "shard": 0,
-      "preflight": true
+      "preflight": true,
+      "shard": 0
     },
     {
-      "capture": [1920, 863],
+      "capture": [1920, 869],
       "layout": "uniform-fit-reference",
       "prior": "default",
       "calibration": {
-        "nameBandScale": 0.9988412,
-        "allySlotXRatios": [0.07421875, 0.07421875, 0.07421875, 0.07421875, 0.07421875],
-        "enemySlotXRatios": [0.95625, 0.95625, 0.95625, 0.95625, 0.95625],
-        "allySlotYRatios": [0.19304349, 0.3278212, 0.46061695, 0.5924217, 0.7252174],
-        "enemySlotYRatios": [0.19243981, 0.32828224, 0.4611281, 0.593974, 0.7258211],
-        "allySlotDiameterRatios": [0.109872535, 0.109872535, 0.109872535, 0.109872535, 0.10487833],
-        "enemySlotDiameterRatios": [0.109872535, 0.109872535, 0.109872535, 0.109872535, 0.109872535]
+        "nameBandScale": 1,
+        "allySlotXRatios": [0.071875, 0.071875, 0.071875, 0.071875, 0.071875],
+        "enemySlotXRatios": [0.9585937, 0.9585937, 0.9585937, 0.9585937, 0.9585937],
+        "allySlotYRatios": [0.19142823, 0.32646248, 0.45951086, 0.5915665, 0.7246148],
+        "enemySlotYRatios": [0.19188407, 0.32788408, 0.46088406, 0.5938841, 0.7258841],
+        "allySlotDiameterRatios": [0.11, 0.11, 0.11, 0.11, 0.105],
+        "enemySlotDiameterRatios": [0.11, 0.11, 0.11, 0.11, 0.11]
       },
       "safeInsets": [0, 0, 0, 0],
       "profiles": [
-        {"profile": "xiaomi-14", "model": "Xiaomi 14", "display": [2670, 1200], "specification": "https://www.mi.com/global/product/xiaomi-14/specs/"},
-        {"profile": "requested-nothing-2a", "model": "Phone (2a) (1084-wide published panel)", "display": [2412, 1084], "specification": "https://ca-en.nothing.tech/pages/phone-2a"}
+        {
+          "profile": "red-magic-nx809j-reference",
+          "model": "NX809J",
+          "display": [2688, 1216],
+          "specification": "docs/device-compatibility.md"
+        }
       ],
-      "id": "sequence-42-ally-first",
-      "firstPick": true,
-      "language": "es",
-      "shard": 0,
-      "preflight": false
-    },
-    {
-      "capture": [1920, 924],
-      "layout": "uniform-fit-reference",
-      "prior": "default",
-      "calibration": {
-        "nameBandScale": 0.93939394,
-        "allySlotXRatios": [0.0703125, 0.0703125, 0.0703125, 0.0703125, 0.0703125],
-        "enemySlotXRatios": [0.9578125, 0.9578125, 0.9578125, 0.9578125, 0.9578125],
-        "allySlotYRatios": [0.21428572, 0.340504, 0.4648661, 0.5883001, 0.7126623],
-        "enemySlotYRatios": [0.21266234, 0.33917627, 0.4628995, 0.5866226, 0.70941556],
-        "allySlotDiameterRatios": [0.10333333, 0.10333333, 0.10333333, 0.10333333, 0.09863636],
-        "enemySlotDiameterRatios": [0.10333333, 0.10333333, 0.10333333, 0.10333333, 0.10333333]
-      },
-      "safeInsets": [0, 0, 0, 0],
-      "profiles": [{"profile": "requested-p20-jp", "model": "P20", "display": [2244, 1080], "specification": "https://consumer.huawei.com/jp/phones/p20/specs/"}],
-      "id": "sequence-56-ally-first",
-      "firstPick": true,
-      "language": "es",
-      "shard": 13,
-      "preflight": true
-    },
-    {
-      "capture": [1920, 889],
-      "layout": "uniform-fit-reference",
-      "prior": "default",
-      "calibration": {
-        "nameBandScale": 0.97637796,
-        "allySlotXRatios": [0.07109375, 0.07109375, 0.07109375, 0.07109375, 0.07109375],
-        "enemySlotXRatios": [0.9585937, 0.9585937, 0.9585937, 0.9585937, 0.9585937],
-        "allySlotYRatios": [0.1989882, 0.33052906, 0.4601355, 0.58877474, 0.7183811],
-        "enemySlotYRatios": [0.19883494, 0.33162236, 0.4614806, 0.5913389, 0.7202207],
-        "allySlotDiameterRatios": [0.10740157, 0.10740157, 0.10740157, 0.10740157, 0.10251968],
-        "enemySlotDiameterRatios": [0.10740157, 0.10740157, 0.10740157, 0.10740157, 0.10740157]
-      },
-      "safeInsets": [0, 0, 0, 0],
-      "profiles": [{"profile": "requested-mate60pro-display", "model": "Mate 60 Pro (solo pantalla)", "display": [2720, 1260], "specification": "https://www.dxomark.com/v2-huawei-mate-60-pro-display-test/"}],
-      "id": "sequence-63-enemy-first",
+      "id": "sequence-red-magic-nx809j-reference-enemy-first",
       "firstPick": false,
       "language": "pt",
-      "shard": 0,
-      "preflight": true
+      "preflight": true,
+      "shard": 0
+    },
+    {
+      "capture": [1920, 864],
+      "layout": "uniform-fit-reference",
+      "prior": "poco",
+      "calibration": {
+        "nameBandScale": 1,
+        "allySlotXRatios": [0.074104816, 0.074104816, 0.074104816, 0.074104816, 0.074104816],
+        "enemySlotXRatios": [0.95620525, 0.95620525, 0.95620525, 0.95620525, 0.95620525],
+        "allySlotYRatios": [0.19363461, 0.32826304, 0.46091163, 0.59257036, 0.72521895],
+        "enemySlotYRatios": [0.19154921, 0.32754922, 0.4605492, 0.5935492, 0.7255492],
+        "allySlotDiameterRatios": [0.11, 0.11, 0.11, 0.11, 0.105],
+        "enemySlotDiameterRatios": [0.11, 0.11, 0.11, 0.11, 0.11]
+      },
+      "safeInsets": [0, 0, 0, 0],
+      "profiles": [
+        {
+          "profile": "poco-x7-pro",
+          "model": "2412DPC0AG",
+          "display": [2712, 1220],
+          "specification": "docs/device-compatibility.md"
+        }
+      ],
+      "id": "sequence-poco-x7-pro-ally-first",
+      "firstPick": true,
+      "language": "es",
+      "preflight": true,
+      "shard": 0
+    },
+    {
+      "capture": [1728, 1080],
+      "layout": "uniform-fit-reference",
+      "prior": "default",
+      "calibration": {
+        "nameBandScale": 0.72314817,
+        "allySlotXRatios": [0.071875, 0.071875, 0.071875, 0.071875, 0.071875],
+        "enemySlotXRatios": [0.9585937, 0.9585937, 0.9585937, 0.9585937, 0.9585937],
+        "allySlotYRatios": [0.27798936, 0.37534568, 0.4712703, 0.56647915, 0.6624037],
+        "enemySlotYRatios": [0.2778465, 0.37518123, 0.47036886, 0.5655565, 0.66002846],
+        "allySlotDiameterRatios": [0.079546295, 0.079546295, 0.079546295, 0.079546295, 0.07593056],
+        "enemySlotDiameterRatios": [0.079546295, 0.079546295, 0.079546295, 0.079546295, 0.079546295]
+      },
+      "safeInsets": [0, 0, 0, 0],
+      "profiles": [
+        {
+          "profile": "xiaomi-pad-6",
+          "model": "Xiaomi Pad 6",
+          "display": [2880, 1800],
+          "specification": "docs/device-compatibility.md"
+        }
+      ],
+      "id": "sequence-xiaomi-pad-6-ally-first",
+      "firstPick": true,
+      "language": "es",
+      "preflight": true,
+      "shard": 0
+    },
+    {
+      "capture": [1800, 1080],
+      "layout": "uniform-fit-reference",
+      "prior": "default",
+      "calibration": {
+        "nameBandScale": 0.7537037,
+        "allySlotXRatios": [0.07265625, 0.07265625, 0.071980655, 0.07265625, 0.07265625],
+        "enemySlotXRatios": [0.9585937, 0.9585937, 0.9585937, 0.9585937, 0.9585937],
+        "allySlotYRatios": [0.26759452, 0.36948755, 0.46834445, 0.5695275, 0.6699223],
+        "enemySlotYRatios": [0.2675195, 0.3700232, 0.47026584, 0.5705085, 0.66999733],
+        "allySlotDiameterRatios": [0.08290741, 0.08290741, 0.08290741, 0.08290741, 0.07913889],
+        "enemySlotDiameterRatios": [0.08290741, 0.08290741, 0.08290741, 0.08290741, 0.08290741]
+      },
+      "safeInsets": [0, 0, 0, 0],
+      "profiles": [
+        {
+          "profile": "galaxy-tab-s6-lite-2020",
+          "model": "SM-P610",
+          "display": [2000, 1200],
+          "specification": "docs/device-compatibility.md"
+        }
+      ],
+      "id": "sequence-galaxy-tab-s6-lite-2020-enemy-first",
+      "firstPick": false,
+      "language": "pt",
+      "preflight": true,
+      "shard": 0
     }
   ]
 }

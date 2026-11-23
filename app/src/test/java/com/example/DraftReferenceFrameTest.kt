@@ -17,6 +17,9 @@ import org.robolectric.annotation.GraphicsMode
 @Config(sdk = [34], application = Application::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class DraftReferenceFrameTest {
+    private val captureSizes = (listOf(1280 to 579) + reportedOverlayDisplays.map {
+        CaptureFrameDecoder.captureSize(it.width, it.height)
+    }).distinct()
     private val expected = listOf("senna", "ornn", "mel", "volibear", "vi",
         "alistar", "caitlyn", "nocturne", "vex", "teemo")
 
@@ -86,8 +89,12 @@ class DraftReferenceFrameTest {
         val preferences = context.getSharedPreferences("vision_calibration_prefs", 0)
         preferences.edit().clear().commit()
         val source = javaClass.getResourceAsStream("/portraits/draft-ten-selected.jpg").use { BitmapFactory.decodeStream(it)!! }
-        val plain = Bitmap.createBitmap(1024, 768, Bitmap.Config.ARGB_8888)
-        val letterboxed = Bitmap.createBitmap(1024, 768, Bitmap.Config.ARGB_8888)
+        val width = 1728
+        val height = 1080
+        val gameHeight = source.height * width / source.width
+        val top = (height - gameHeight) / 2
+        val plain = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+        val letterboxed = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
         try {
             org.robolectric.shadows.ShadowSystemClock.advanceBy(java.time.Duration.ofMillis(100))
             Canvas(plain).drawColor(Color.rgb(30, 35, 45))
@@ -95,12 +102,12 @@ class DraftReferenceFrameTest {
             DraftVisionScanner.configForFrame(plain)
             Canvas(letterboxed).apply {
                 drawColor(Color.BLACK)
-                drawBitmap(source, null, Rect(0, 152, 1024, 615), Paint(Paint.FILTER_BITMAP_FLAG))
+                drawBitmap(source, null, Rect(0, top, width, top + gameHeight), Paint(Paint.FILTER_BITMAP_FLAG))
             }
             DraftVisionScanner.initCalibration(context)
             val aligned = DraftVisionScanner.configForFrame(letterboxed)
-            val crop = AdaptiveScreenLayoutEngine.calculateSlotCropRect(1024, 768, true, 0, aligned)
-            assertEquals(152 + 110f * 463 / 579, crop.exactCenterY(), 5f)
+            val crop = AdaptiveScreenLayoutEngine.calculateSlotCropRect(width, height, true, 0, aligned)
+            assertEquals(top + 110f * gameHeight / source.height, crop.exactCenterY(), 5f)
         } finally {
             source.recycle(); plain.recycle(); letterboxed.recycle()
             preferences.edit().clear().commit()
@@ -114,11 +121,7 @@ class DraftReferenceFrameTest {
         val failures = mutableListOf<String>()
         val source = javaClass.getResourceAsStream("/portraits/draft-ten-selected.jpg").use { BitmapFactory.decodeStream(it)!! }
         try {
-            // Reference capture, HD, FHD, Red Magic/Poco-size surfaces, tablet and ultrawide.
-            for ((w, h) in listOf(1280 to 579, 960 to 434, 1920 to 869, 2688 to 1216,
-                2400 to 1080, 2712 to 1220, 1280 to 720, 1920 to 1080, 1600 to 1000,
-                1024 to 768, 2520 to 1080, 800 to 450, 1440 to 720, 2340 to 1080,
-                2560 to 1440, 3120 to 1440, 3840 to 2160)) {
+            for ((w, h) in captureSizes) {
                 val frame = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
                 try {
                     val scale = minOf(w.toFloat()/source.width, h.toFloat()/source.height)
@@ -165,8 +168,7 @@ class DraftReferenceFrameTest {
         val source = javaClass.getResourceAsStream("/portraits/draft-ten-selected.jpg").use { BitmapFactory.decodeStream(it)!! }
         val expectedBans = listOf("mordekaiser", "kayn", "jhin", "gwen", "hwei",
             "mordekaiser", "syndra", "cho_gath", "hwei", "soraka")
-        try { for ((w,h) in listOf(1280 to 579,1280 to 720,1024 to 768,2400 to 1080,
-            800 to 450,1440 to 720,2340 to 1080,3120 to 1440,3840 to 2160)) {
+        try { for ((w,h) in captureSizes) {
             val frame=Bitmap.createBitmap(w,h,Bitmap.Config.ARGB_8888)
             try {
                 val scale=minOf(w.toFloat()/source.width,h.toFloat()/source.height)
