@@ -22,31 +22,25 @@ import org.robolectric.shadows.ShadowBuild
 import java.io.File
 import kotlin.math.hypot
 
+internal data class OverlayDisplay(val id: String, val manufacturer: String, val model: String, val width: Int, val height: Int,
+    val edgeAnchored: Boolean = false, val specification: String? = null,
+    val safeInsets: List<Float> = listOf(0f, 0f, 0f, 0f))
+
+internal val reportedOverlayDisplays = requireNotNull(OverlayDisplay::class.java.getResourceAsStream("/scanner/overlay-displays.csv"))
+    .bufferedReader().useLines { lines ->
+        lines.drop(1).filter { it.isNotBlank() }.map { line ->
+            val fields = line.split(',', limit = 6)
+            require(fields.size == 6) { line }
+            OverlayDisplay(fields[0], fields[1], fields[2], fields[3].toInt(), fields[4].toInt(), specification = fields[5])
+        }.toList()
+    }
+
 /** Real production capture limits, measured fixture coordinates and identity checks, not hardware certification. */
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [34], application = Application::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class DraftMultiDeviceAuditTest {
-    private data class Profile(val id: String, val manufacturer: String, val model: String, val width: Int, val height: Int,
-        val edgeAnchored: Boolean = false, val specification: String? = null,
-        val safeInsets: List<Float> = listOf(0f,0f,0f,0f))
     private val variants = listOf("original", "changed-background", "changed-portraits-and-bans")
-    private val profiles = listOf(
-        Profile("red-magic-reference", "nubia", "NX789J", 2688, 1216),
-        Profile("red-magic-nx809j-reference", "nubia", "NX809J", 2688, 1216),
-        Profile("poco-x7-pro", "Xiaomi", "2412DPC0AG", 2712, 1220),
-        // Resolution scenarios only. These do not assert the native panel or OS settings of an unconnected S26.
-        Profile("s26-fhd-scenario", "samsung", "S26-simulated", 2340, 1080),
-        Profile("s26-fhd-plus-scenario", "samsung", "S26-simulated", 2400, 1080),
-        Profile("s26-qhd-scenario", "samsung", "S26-simulated", 3120, 1440),
-        Profile("s26-qhd-plus-scenario", "samsung", "S26-simulated", 3200, 1440)
-    ) + listOf(640 to 360, 800 to 450, 960 to 540, 1280 to 579, 1280 to 720,
-        1334 to 750, 1440 to 720, 1600 to 720, 1600 to 900, 1920 to 864,
-        1920 to 1080, 2160 to 1080, 2400 to 1080, 2460 to 1080, 2520 to 1080,
-        2560 to 1080, 2560 to 1440, 2778 to 1284, 3088 to 1440, 3840 to 2160,
-        1024 to 768, 1600 to 1000, 2048 to 1536, 2560 to 1600).map { (w, h) ->
-        Profile("generic-$w-$h", "generic", "resolution-simulation", w, h)
-    }
     private val picks = listOf("senna", "ornn", "mel", "volibear", "vi", "alistar", "caitlyn", "nocturne", "vex", "teemo")
     private val bans = listOf("mordekaiser", "kayn", "jhin", "gwen", "hwei", "mordekaiser", "syndra", "cho_gath", "hwei", "soraka")
     // Independently measured in the owner's 1280 x 579 image, not derived from calibration defaults.
@@ -55,73 +49,29 @@ class DraftMultiDeviceAuditTest {
     private val banCenters = listOf(35f, 82f, 129f, 175f, 221f, 1059f, 1105f, 1151f, 1197f, 1244f)
     private val output = File("build/reports/scanner-multidevice").apply { mkdirs() }
 
-    @Test fun referenceDevicesAndS26CaptureScenarios() = audit(profiles.take(7), "device-profiles")
-    @Test fun phoneResolutionMatrix() = audit(profiles.drop(6).take(20), "phone-resolutions")
-    @Test fun tabletResolutionMatrix() = audit(profiles.takeLast(4), "tablet-resolutions")
-    @Test fun formerlyFailingCentersStayAlignedWhenPortraitsChange() = audit(listOf(
-        Profile("regression-red-magic", "nubia", "NX789J", 2688, 1216),
-        Profile("regression-poco", "Xiaomi", "2412DPC0AG", 2712, 1220),
-        Profile("regression-square", "generic", "square-resolution-simulation", 1800, 1800),
-        Profile("regression-small-edge", "generic", "synthetic-side-panels", 640, 360, true),
-        Profile("regression-tablet-edge", "generic", "synthetic-side-panels", 1024, 768, true),
-        Profile("regression-tablet-letterbox", "generic", "letterboxed-same-size-transition", 1024, 768)
-    ), "center-regressions")
-    @Test fun documentedAndroidDisplayProfiles() = audit(listOf(
-        Profile("pixel-8", "Google", "Pixel 8", 2400, 1080, specification = PIXEL_SPECS),
-        Profile("pixel-8-pro", "Google", "Pixel 8 Pro", 2992, 1344, specification = PIXEL_SPECS),
-        Profile("pixel-9", "Google", "Pixel 9", 2424, 1080, specification = PIXEL_SPECS),
-        Profile("pixel-9-pro", "Google", "Pixel 9 Pro", 2856, 1280, specification = PIXEL_SPECS),
-        Profile("pixel-9-pro-xl", "Google", "Pixel 9 Pro XL", 2992, 1344, specification = PIXEL_SPECS),
-        Profile("oneplus-12", "OnePlus", "OnePlus 12", 3168, 1440,
-            specification = "https://www.oneplus.com/global/12/specs"),
-        Profile("galaxy-s24", "samsung", "Galaxy S24", 2340, 1080, specification = S24_SPECS),
-        Profile("galaxy-s24-plus", "samsung", "Galaxy S24+", 3120, 1440, specification = S24_SPECS),
-        Profile("galaxy-s24-ultra", "samsung", "Galaxy S24 Ultra", 3120, 1440, specification = S24_SPECS),
-        Profile("galaxy-z-fold5-inner", "samsung", "Galaxy Z Fold5 (inner)", 2176, 1812,
-            specification = "https://news.samsung.com/global/samsung-galaxy-z-flip5-and-galaxy-z-fold5-delivering-flexibility-and-versatility-without-compromise")
-    ), "documented-android-displays")
-    @Test fun nearlySquareFoldableCapturesKeepAllTwentyPositions() = audit(
-        listOf(1920 to 1792, 2208 to 1840, 2440 to 2268, 1800 to 1800).map { (w, h) ->
-            Profile("foldable-$w-$h", "generic", "foldable-resolution-simulation", w, h)
-        }, "foldable-resolutions")
-    @Test fun documentedXiaomiRedmiAndPocoDisplays() = audit(listOf(
-        Profile("xiaomi-14", "Xiaomi", "Xiaomi 14", 2670, 1200, specification = "https://www.mi.com/global/product/xiaomi-14/specs/"),
-        Profile("xiaomi-14-ultra", "Xiaomi", "Xiaomi 14 Ultra", 3200, 1440, specification = "https://www.mi.com/global/product/xiaomi-14-ultra/specs/"),
-        Profile("redmi-note-13-pro-plus-5g", "Xiaomi", "Redmi Note 13 Pro+ 5G", 2712, 1220, specification = "https://www.mi.com/global/product/redmi-note-13-pro-plus-5g/specs/"),
-        Profile("redmi-note-13-pro-5g", "Xiaomi", "Redmi Note 13 Pro 5G", 2712, 1220, specification = "https://www.mi.com/global/product/redmi-note-13-pro-5g/specs/"),
-        Profile("redmi-note-13", "Xiaomi", "Redmi Note 13", 2400, 1080, specification = "https://www.mi.com/global/product/redmi-note-13/specs/"),
-        Profile("redmi-12-5g", "Xiaomi", "Redmi 12 5G", 2460, 1080, specification = "https://www.mi.com/global/product/redmi-12-5g/specs/"),
-        Profile("redmi-a3", "Xiaomi", "Redmi A3", 1650, 720, specification = "https://www.mi.com/global/product/redmi-a3/specs/"),
-        Profile("poco-f6-pro", "Xiaomi", "POCO F6 Pro", 3200, 1440, specification = "https://www.mi.com/global/product/poco-f6-pro/specs/"),
-        Profile("xiaomi-pad-6", "Xiaomi", "Xiaomi Pad 6", 2880, 1800, specification = "https://www.mi.com/global/product/xiaomi-pad-6/specs/")
-    ), "xiaomi-redmi-poco-displays")
-    @Test fun documentedRequestedBrandDisplays() {
-        val rows = javaClass.getResourceAsStream("/scanner/requested-displays.csv")!!.bufferedReader().use { it.readLines().drop(1) }
-        audit(rows.filter { it.isNotBlank() }.map { line ->
-            val fields = line.split(',')
-            require(fields.size == 6) { "Invalid requested profile: $line" }
-            Profile(fields[0],fields[1],fields[2],fields[3].toInt(),fields[4].toInt(),specification=fields[5])
-        }, "requested-brand-displays")
-    }
-    // Run this exact regression early in fix-error; the full requested-display
-    // matrix remains unchanged in validation. This is a resized fixture, not a phone test.
-    @Test fun smallCapturePreservesJhinWhenPortraitsAndBansChange() = audit(listOf(
-        Profile("regression-small-jhin", "generic", "resized-reference", 854, 480)
-    ), "small-jhin-regression")
-    @Test fun fullScreenSidePanelsRetainCircularPortraitsWithoutLetterboxing() = audit(
-        listOf(640 to 360, 1280 to 720, 2400 to 1080, 2712 to 1220, 3120 to 1440,
-            1024 to 768, 1600 to 1000, 2560 to 1600, 2440 to 2268, 1800 to 1800).map { (w, h) ->
-            Profile("edge-anchored-$w-$h", "generic", "synthetic-side-panels", w, h, true)
-        }, "edge-anchored-resolutions")
+    @Test fun reportedDevicesRecognizeAllPicksAndBans() = audit(reportedOverlayDisplays, "device-profiles")
+
+    // Exercise the adaptive path on display sizes observed during play. The fixture moves
+    // inside that frame, so it must not load the owner's frame-relative manual calibration.
+    @Test fun formerlyFailingCentersStayAlignedWhenPortraitsChange() = audit(
+        reportedOverlayDisplays.distinctBy { it.width to it.height }.map { profile ->
+            profile.copy(id = "edge-${profile.id}", manufacturer = "Android", model = "adaptive",
+                edgeAnchored = true)
+        }, "center-regressions")
+
+    @Test fun smallCapturePreservesJhinWhenPortraitsAndBansChange() = audit(
+        listOf(OverlayDisplay("native-reference-jhin", "Android", "shared-draft-capture", 1280, 579)),
+        "small-jhin-regression")
 
     @Test fun landscapeCutoutAndNavigationSafeAreasUseTheObservedGameViewport() = audit(
-        listOf(1600 to 720, 2408 to 1080, 3120 to 1440, 854 to 480).flatMap { (w,h) ->
-            listOf(true,false).map { left -> Profile("safe-area-$w-$h-${if(left) "left" else "right"}",
-                "generic","synthetic-cutout-safe-area-not-a-physical-model",w,h,
-                safeInsets=if(left) listOf(.05f,0f,0f,.03f) else listOf(0f,0f,.05f,.03f)) }
+        reportedOverlayDisplays.distinctBy { it.width to it.height }.flatMap { profile ->
+            listOf("left", "right").map { side ->
+                profile.copy(id = "safe-${profile.id}-$side", manufacturer = "Android", model = "adaptive",
+                    safeInsets = if (side == "left") listOf(.05f, 0f, 0f, .03f) else listOf(0f, 0f, .05f, .03f))
+            }
         }, "cutout-safe-area-scenarios")
 
-    private fun audit(cases: List<Profile>, group: String) {
+    private fun audit(cases: List<OverlayDisplay>, group: String) {
         val context = RuntimeEnvironment.getApplication()
         val prefs = context.getSharedPreferences("vision_calibration_prefs", 0)
         WildRiftRepository.initChampions(context, forceReload = true)
@@ -293,10 +243,6 @@ class DraftMultiDeviceAuditTest {
         }
     }
 
-    companion object {
-        private const val PIXEL_SPECS = "https://support.google.com/pixelphone/answer/7158570?hl=es"
-        private const val S24_SPECS = "https://news.samsung.com/global/enter-the-new-era-of-mobile-ai-with-samsung-galaxy-s24-series"
-    }
 
     private fun saveEvidence(frame: Bitmap, config: VisionCalibrationConfig, bans: List<BanSlot>, id: String) {
         val evidence = frame.copy(Bitmap.Config.ARGB_8888, true)

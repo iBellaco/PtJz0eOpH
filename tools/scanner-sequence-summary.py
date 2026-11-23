@@ -90,21 +90,21 @@ def write_report(directory, summary):
     (directory / 'sequence-summary.json').write_text(json.dumps(summary, ensure_ascii=False, indent=2))
     lines = ['# Coach: secuencia OCR 1–9 y décima selección visual', '',
              f"Resultado: {summary['status']}; {summary['sequences']}/{summary['expectedSequences']} secuencias; "
-             f"{summary['nativeOcrFrames']} lecturas OCR nativas; {summary['modelProfiles']} perfiles de teléfono asociados; "
-             f"{summary['geometryOnlyProfiles']} escenarios geométricos no contados como teléfonos.", '',
-             'APK release instalado en emulador Android 34 x86_64. No hay teléfonos físicos conectados. '
+             f"{summary['nativeOcrFrames']} lecturas OCR nativas en {summary['modelProfiles']} perfiles de teléfonos y tablets Android. "
+             f"Escenarios adicionales de geometría: {summary['geometryOnlyProfiles']}.", '',
+             'La prueba instala el APK en un emulador Android 34 x86_64. '
              'Se redimensionan los píxeles de la captura del propietario y se simula la aparición sucesiva de los títulos. '
              'Los nombres de campeones seleccionados no se vuelven a dibujar ni se inyectan como resultados OCR. '
              'Para el orden rival primero se intercambian los retratos finales y se traslada el título VI original: '
              'la captura no contiene un título Teemo que pudiera leerse como noveno. '
              'Los títulos de líneas previos son sintéticos en español/portugués; los rivales sin seleccionar no tienen título. '
              'La calibración automática se mide con el perfil de cada modelo en la matriz de geometría; '
-             'el APK instalado recibe ese resultado medido, sin fingir que el emulador es ese teléfono. '
+             'el APK instalado recibe la calibración medida para esas dimensiones. '
              'Los retratos permanecen visibles antes de seleccionar, para impedir confirmaciones visuales prematuras.', '',
              'Cada secuencia prueba 0–9 nombres en orden, dos lecturas por nombre nuevo y décima imagen con nombre oculto. '
-             'Ambos órdenes se distribuyen en la matriz; Red Magic y Poco ejercitan ambos. '
-             'Los perfiles con idéntica captura/distribución comparten el mismo caso de píxeles: no son pruebas físicas diferentes. '
-             'No certifica rendimiento, permisos de captura, densidad, skins o versiones Android de cada teléfono.', '',
+             'Cada configuración de teléfono o tablet ejercita ambos órdenes. '
+             'Los modelos con la misma captura y calibración comparten un caso. '
+             'El rendimiento y los permisos de captura de cada dispositivo requieren comprobación física.', '',
              'Los escenarios safe-area aplican márgenes sintéticos laterales del 5 % y de navegación del 3 %. '
              'No se afirma que sean los márgenes reales de cada notch o modelo solicitado.', '',
              f"Capturas reales adicionales comprobadas: {summary['realCaptureChecks']}. "

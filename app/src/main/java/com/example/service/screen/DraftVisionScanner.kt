@@ -638,7 +638,7 @@ object DraftVisionScanner {
             val measured = DraftRingAlignment.align(bitmap, base,
                 overlayForFrame(bitmap.width, bitmap.height), showCalibrationBoxes.value,
                 previous = alignedConfigFlow.value, onEnemyMeasured = { enemyMeasured = true }, bounds = activeViewport)
-            alignedConfigFlow.value = geometryStability.update(measured, enemyMeasured)
+            alignedConfigFlow.value = geometryStability.update(measured, enemyMeasured, base, bitmap.height)
         }
         if (refresh) lastAlignmentAt = android.os.SystemClock.elapsedRealtime()
         alignedFrameSizeFlow.value = bitmap.width to bitmap.height
