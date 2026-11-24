@@ -1,3 +1,5 @@
+@file:OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
+
 package com.example.ui.components
 
 import androidx.compose.animation.AnimatedVisibility
@@ -6,12 +8,15 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import com.example.ui.components.coachClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.relocation.BringIntoViewRequester
+import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.horizontalScroll
@@ -29,6 +34,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -39,6 +45,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.example.ui.theme.*
 import com.example.util.tr
+import kotlinx.coroutines.launch
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -62,6 +69,12 @@ fun ThemeCustomizationBottomSheet(
     var customSecondary by remember { mutableStateOf(AppThemeManager.customThemeColors?.secondary) }
     var customGlow by remember { mutableStateOf(AppThemeManager.customThemeColors?.glow) }
     var customAlternate by remember { mutableStateOf(AppThemeManager.customThemeColors?.alternate) }
+    val themeScrollState = rememberScrollState()
+    val customPaletteScope = rememberCoroutineScope()
+    val primaryPaletteRequester = remember { BringIntoViewRequester() }
+    val secondaryPaletteRequester = remember { BringIntoViewRequester() }
+    val glowPaletteRequester = remember { BringIntoViewRequester() }
+    val alternatePaletteRequester = remember { BringIntoViewRequester() }
 
     val hasCompleteCustomPalette = customPrimary != null && customSecondary != null &&
         customGlow != null && customAlternate != null
@@ -93,7 +106,7 @@ fun ThemeCustomizationBottomSheet(
             modifier = Modifier
                 .fillMaxWidth()
                 .fillMaxHeight(0.92f)
-                .verticalScroll(rememberScrollState())
+                .verticalScroll(themeScrollState)
                 .testTag("theme_scroll")
                 .padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -373,6 +386,18 @@ fun ThemeCustomizationBottomSheet(
                 isApplied = previewIsApplied,
                 isPremium = isPremium,
                 canApply = previewTheme != AppTheme.CUSTOM || hasCompleteCustomPalette,
+                onPrimaryColorClick = if (previewTheme == AppTheme.CUSTOM) {
+                    { customPaletteScope.launch { primaryPaletteRequester.bringIntoView() } }
+                } else null,
+                onSecondaryColorClick = if (previewTheme == AppTheme.CUSTOM) {
+                    { customPaletteScope.launch { secondaryPaletteRequester.bringIntoView() } }
+                } else null,
+                onGlowColorClick = if (previewTheme == AppTheme.CUSTOM) {
+                    { customPaletteScope.launch { glowPaletteRequester.bringIntoView() } }
+                } else null,
+                onAlternateColorClick = if (previewTheme == AppTheme.CUSTOM) {
+                    { customPaletteScope.launch { alternatePaletteRequester.bringIntoView() } }
+                } else null,
                 onShowPremiumAlert = { showPremiumRequiredDialog = true },
                 onApply = {
                     if (previewTheme == AppTheme.CUSTOM) {
@@ -524,6 +549,10 @@ fun ThemeCustomizationBottomSheet(
                     secondary = customSecondary,
                     glow = customGlow,
                     alternate = customAlternate,
+                    primaryRequester = primaryPaletteRequester,
+                    secondaryRequester = secondaryPaletteRequester,
+                    glowRequester = glowPaletteRequester,
+                    alternateRequester = alternatePaletteRequester,
                     onPrimarySelected = { customPrimary = it },
                     onSecondarySelected = { customSecondary = it },
                     onGlowSelected = { customGlow = it },
@@ -631,6 +660,10 @@ private fun RegionVisualPreviewGridCard(
     isApplied: Boolean,
     isPremium: Boolean,
     canApply: Boolean = true,
+    onPrimaryColorClick: (() -> Unit)? = null,
+    onSecondaryColorClick: (() -> Unit)? = null,
+    onGlowColorClick: (() -> Unit)? = null,
+    onAlternateColorClick: (() -> Unit)? = null,
     onShowPremiumAlert: () -> Unit = {},
     onApply: () -> Unit
 ) {
@@ -761,7 +794,9 @@ private fun RegionVisualPreviewGridCard(
                     title = "Primario",
                     subtitle = "Acciones / Draft",
                     textColor = inspectedTheme.textPrimary,
-                    isFeatured = true
+                    isFeatured = true,
+                    onClick = onPrimaryColorClick,
+                    testTag = if (onPrimaryColorClick != null) "custom_preview_primary" else null
                 )
                 ColorSwatchGridItem(
                     modifier = Modifier.weight(1f),
@@ -770,7 +805,9 @@ private fun RegionVisualPreviewGridCard(
                     title = "Secundario",
                     subtitle = "Acentos / Oro",
                     textColor = inspectedTheme.textPrimary,
-                    isFeatured = true
+                    isFeatured = true,
+                    onClick = onSecondaryColorClick,
+                    testTag = if (onSecondaryColorClick != null) "custom_preview_secondary" else null
                 )
                 ColorSwatchGridItem(
                     modifier = Modifier.weight(1f),
@@ -779,7 +816,9 @@ private fun RegionVisualPreviewGridCard(
                     title = "Resplandor",
                     subtitle = "Aura Rúnica",
                     textColor = inspectedTheme.textPrimary,
-                    isFeatured = false
+                    isFeatured = false,
+                    onClick = onGlowColorClick,
+                    testTag = if (onGlowColorClick != null) "custom_preview_glow" else null
                 )
                 ColorSwatchGridItem(
                     modifier = Modifier.weight(1f),
@@ -788,7 +827,9 @@ private fun RegionVisualPreviewGridCard(
                     title = "Suplente",
                     subtitle = "Estados / soporte",
                     textColor = inspectedTheme.textPrimary,
-                    isFeatured = false
+                    isFeatured = false,
+                    onClick = onAlternateColorClick,
+                    testTag = if (onAlternateColorClick != null) "custom_preview_alternate" else null
                 )
             }
 
@@ -1101,6 +1142,10 @@ private fun CustomThemeEditor(
     secondary: Color?,
     glow: Color?,
     alternate: Color?,
+    primaryRequester: BringIntoViewRequester,
+    secondaryRequester: BringIntoViewRequester,
+    glowRequester: BringIntoViewRequester,
+    alternateRequester: BringIntoViewRequester,
     onPrimarySelected: (Color) -> Unit,
     onSecondarySelected: (Color) -> Unit,
     onGlowSelected: (Color) -> Unit,
@@ -1134,24 +1179,28 @@ private fun CustomThemeEditor(
                 title = "Primario",
                 paletteTag = "custom_palette_primary",
                 selected = primary,
+                bringIntoViewRequester = primaryRequester,
                 onSelected = onPrimarySelected
             )
             CustomColorPalette(
                 title = "Secundario",
                 paletteTag = "custom_palette_secondary",
                 selected = secondary,
+                bringIntoViewRequester = secondaryRequester,
                 onSelected = onSecondarySelected
             )
             CustomColorPalette(
                 title = "Resplandor",
                 paletteTag = "custom_palette_glow",
                 selected = glow,
+                bringIntoViewRequester = glowRequester,
                 onSelected = onGlowSelected
             )
             CustomColorPalette(
                 title = "Suplente",
                 paletteTag = "custom_palette_alternate",
                 selected = alternate,
+                bringIntoViewRequester = alternateRequester,
                 onSelected = onAlternateSelected
             )
         }
@@ -1163,9 +1212,13 @@ private fun CustomColorPalette(
     title: String,
     paletteTag: String,
     selected: Color?,
+    bringIntoViewRequester: BringIntoViewRequester,
     onSelected: (Color) -> Unit
 ) {
-    Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
+    Column(
+        modifier = Modifier.bringIntoViewRequester(bringIntoViewRequester),
+        verticalArrangement = Arrangement.spacedBy(5.dp)
+    ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -1193,27 +1246,32 @@ private fun CustomColorPalette(
         ) {
             customColorPalette.forEachIndexed { index, color ->
                 val isSelected = selected == color
-                Box(
+                Surface(
+                    onClick = { onSelected(color) },
                     modifier = Modifier
                         .size(48.dp)
-                        .clip(CircleShape)
-                        .background(color)
-                        .border(
-                            width = if (isSelected) 2.5.dp else 1.dp,
-                            color = if (isSelected) HextechGold else Color.White.copy(alpha = 0.42f),
-                            shape = CircleShape
-                        )
-                        .coachClickable { onSelected(color) }
                         .testTag("custom_color_${paletteTag.removePrefix("custom_palette_")}_$index"),
-                    contentAlignment = Alignment.Center
+                    shape = CircleShape,
+                    color = color,
+                    border = BorderStroke(
+                        width = if (isSelected) 2.5.dp else 1.dp,
+                        color = if (isSelected) HextechGold else Color.White.copy(alpha = 0.42f)
+                    ),
+                    tonalElevation = 0.dp,
+                    shadowElevation = 0.dp
                 ) {
-                    if (isSelected) {
-                        Icon(
-                            imageVector = Icons.Default.Check,
-                            contentDescription = null,
-                            tint = if (color.luminance() > 0.55f) Color.Black else Color.White,
-                            modifier = Modifier.size(16.dp)
-                        )
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        if (isSelected) {
+                            Icon(
+                                imageVector = Icons.Default.Check,
+                                contentDescription = null,
+                                tint = if (color.luminance() > 0.55f) Color.Black else Color.White,
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
                     }
                 }
             }
@@ -1271,7 +1329,9 @@ private fun ColorSwatchGridItem(
     title: String,
     subtitle: String,
     textColor: Color,
-    isFeatured: Boolean
+    isFeatured: Boolean,
+    onClick: (() -> Unit)? = null,
+    testTag: String? = null
 ) {
     Column(
         modifier = modifier
@@ -1282,7 +1342,13 @@ private fun ColorSwatchGridItem(
                 if (isFeatured) color.copy(alpha = 0.8f) else HextechCardBorder.copy(alpha = 0.5f),
                 RoundedCornerShape(8.dp)
             )
-            .padding(6.dp),
+            .padding(6.dp)
+            .then(
+                onClick?.let { click ->
+                    Modifier.clickable(role = Role.Button, onClick = click)
+                } ?: Modifier
+            )
+            .then(testTag?.let { Modifier.testTag(it) } ?: Modifier),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         // Swatch Pill with Glow

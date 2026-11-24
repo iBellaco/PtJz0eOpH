@@ -215,7 +215,18 @@ class NavigationCustomizationRenderedTest {
         compose.onNodeWithTag("theme_apply_button").performScrollTo().assertIsNotEnabled()
 
         listOf("primary", "secondary", "glow", "alternate").forEach { section ->
-            compose.onNodeWithTag("custom_color_${section}_0").performClick()
+            compose.onNodeWithTag("custom_preview_$section")
+                .assertHasClickAction()
+                .performClick()
+        }
+
+        listOf("primary", "secondary", "glow", "alternate").forEach { section ->
+            compose.onNodeWithTag("custom_color_${section}_0")
+                .performScrollTo()
+                .assertHasClickAction()
+                .performClick()
+            compose.onNodeWithTag("custom_palette_${section}_status")
+                .assertTextContains("Seleccionado")
         }
 
         compose.onNodeWithTag("theme_apply_button").assertIsEnabled().performClick()
