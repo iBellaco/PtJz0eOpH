@@ -6,10 +6,12 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.material.icons.filled.Home
 import com.github.takahirom.roborazzi.captureRoboImage
 import com.example.ui.components.AnimatedLogoutButton
 import com.example.ui.components.ThemeCustomizationBottomSheet
+import com.example.ui.theme.AppTheme
 import com.example.ui.theme.AppThemeManager
 import com.example.ui.theme.CoachNavStyle
 import com.example.ui.theme.MyApplicationTheme
@@ -197,6 +199,28 @@ class NavigationCustomizationRenderedTest {
         compose.onNodeWithTag("theme_nav_apply").assertDoesNotExist()
         compose.onNodeWithTag("theme_nav_catalog").performScrollTo().performClick()
         assertEquals(CoachNavStyle.ORIGINAL, AppThemeManager.currentNavStyle)
+    }
+
+    @Test fun customThemeRequiresAllFourColorsBeforeApplying() {
+        AppThemeManager.setTheme(AppTheme.PILTOVER)
+        compose.setContent { MyApplicationTheme {
+            ThemeCustomizationBottomSheet(isPremium = true, onDismiss = {})
+        } }
+        compose.onNodeWithTag("theme_scroll")
+            .performSemanticsAction(SemanticsActions.ScrollBy) { it(0f, 10_000f) }
+        compose.onNodeWithTag("theme_application_carousel")
+            .performScrollToNode(hasTestTag("theme_application_custom"))
+        compose.onNodeWithTag("theme_application_custom").performClick()
+        compose.onNodeWithTag("custom_theme_editor").performScrollTo().assertIsDisplayed()
+        compose.onNodeWithTag("theme_apply_button").performScrollTo().assertIsNotEnabled()
+
+        listOf("primary", "secondary", "glow", "alternate").forEach { section ->
+            compose.onNodeWithTag("custom_color_${section}_0").performClick()
+        }
+
+        compose.onNodeWithTag("theme_apply_button").assertIsEnabled().performClick()
+        assertEquals(AppTheme.CUSTOM, AppThemeManager.currentTheme)
+        AppThemeManager.setTheme(AppTheme.PILTOVER)
     }
 
     @Test fun realLogoutButtonRequestsConfirmationBeforeAnimationOrSignOut() {

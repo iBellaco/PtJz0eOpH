@@ -5,6 +5,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
+import java.util.Locale
 
 /**
  * Temas de Coach inspirados en las regiones del Universo de Runaterra.
@@ -18,21 +20,21 @@ enum class AppTheme(
     val titleKey: String,
     val regionTag: String,
     val descKey: String,
-    val background: Color,
-    val surface: Color,
-    val surfaceVariant: Color,
-    val cardBorder: Color,
-    val primary: Color,
-    val primaryLight: Color,
-    val primaryDark: Color,
-    val primaryGlow: Color,
-    val secondary: Color,
-    val secondaryLight: Color,
-    val secondaryDark: Color,
-    val secondaryGlow: Color,
-    val textPrimary: Color,
-    val textSecondary: Color,
-    val textMuted: Color,
+    var background: Color,
+    var surface: Color,
+    var surfaceVariant: Color,
+    var cardBorder: Color,
+    var primary: Color,
+    var primaryLight: Color,
+    var primaryDark: Color,
+    var primaryGlow: Color,
+    var secondary: Color,
+    var secondaryLight: Color,
+    var secondaryDark: Color,
+    var secondaryGlow: Color,
+    var textPrimary: Color,
+    var textSecondary: Color,
+    var textMuted: Color,
     val isDark: Boolean,
     /** True for themes that are independent from Runeterra's region catalogue. */
     val isApplicationTheme: Boolean = false
@@ -617,6 +619,31 @@ enum class AppTheme(
         textMuted = Color(0xFF8D9BAC),
         isDark = true,
         isApplicationTheme = true
+    ),
+    CUSTOM(
+        id = "CUSTOM",
+        titleKey = "Custom",
+        regionTag = "Tema de aplicación",
+        descKey = "Elige cuatro colores para crear tu propia paleta de aplicación.",
+        // These neutral values only render the empty preview. They are never
+        // considered a valid custom palette until the four user selections exist.
+        background = Color(0xFF0D1117),
+        surface = Color(0xFF18202A),
+        surfaceVariant = Color(0xFF263241),
+        cardBorder = Color(0xFF46576B),
+        primary = Color(0xFF64748B),
+        primaryLight = Color(0xFF94A3B8),
+        primaryDark = Color(0xFF475569),
+        primaryGlow = Color(0xFF7DD3FC),
+        secondary = Color(0xFF94A3B8),
+        secondaryLight = Color(0xFFCBD5E1),
+        secondaryDark = Color(0xFF64748B),
+        secondaryGlow = Color(0xFFBAE6FD),
+        textPrimary = Color(0xFFF8FAFC),
+        textSecondary = Color(0xFFCBD5E1),
+        textMuted = Color(0xFF94A3B8),
+        isDark = true,
+        isApplicationTheme = true
     );
 
     companion object {
@@ -628,6 +655,13 @@ enum class AppTheme(
         }
     }
 }
+
+data class CustomThemeColors(
+    val primary: Color,
+    val secondary: Color,
+    val glow: Color,
+    val alternate: Color
+)
 
 enum class NavBarColorOption(
     val id: String,
@@ -814,8 +848,15 @@ object AppThemeManager {
     private const val PREFS_KEY_NAV_BAR = "selected_app_navbar_id"
     private const val PREFS_KEY_NAV_STYLE = "selected_coach_nav_style"
     private const val PREFS_KEY_OLED_MODE = "selected_app_oled_mode"
+    private const val PREFS_KEY_CUSTOM_PRIMARY = "custom_theme_primary"
+    private const val PREFS_KEY_CUSTOM_SECONDARY = "custom_theme_secondary"
+    private const val PREFS_KEY_CUSTOM_GLOW = "custom_theme_glow"
+    private const val PREFS_KEY_CUSTOM_ALTERNATE = "custom_theme_alternate"
 
     var currentTheme by mutableStateOf(AppTheme.PILTOVER)
+        private set
+
+    var customThemeColors by mutableStateOf<CustomThemeColors?>(null)
         private set
 
     var currentNavBarOption by mutableStateOf(NavBarColorOption.THEME_AUTO)
@@ -838,14 +879,26 @@ object AppThemeManager {
                 .putString(PREFS_KEY_NAV_BAR, previous.getString(PREFS_KEY_NAV_BAR, NavBarColorOption.THEME_AUTO.id))
                 .putString(PREFS_KEY_NAV_STYLE, previous.getString(PREFS_KEY_NAV_STYLE, CoachNavStyle.ORIGINAL.id))
                 .putBoolean(PREFS_KEY_OLED_MODE, previous.getBoolean(PREFS_KEY_OLED_MODE, false))
-                .putBoolean("particles_enabled", previous.getBoolean("particles_enabled", false)).apply()
+                .putBoolean("particles_enabled", previous.getBoolean("particles_enabled", false))
+                .putString(PREFS_KEY_CUSTOM_PRIMARY, previous.getString(PREFS_KEY_CUSTOM_PRIMARY, null))
+                .putString(PREFS_KEY_CUSTOM_SECONDARY, previous.getString(PREFS_KEY_CUSTOM_SECONDARY, null))
+                .putString(PREFS_KEY_CUSTOM_GLOW, previous.getString(PREFS_KEY_CUSTOM_GLOW, null))
+                .putString(PREFS_KEY_CUSTOM_ALTERNATE, previous.getString(PREFS_KEY_CUSTOM_ALTERNATE, null))
+                .apply()
         }
         val savedThemeId = prefs.getString(PREFS_KEY_THEME, AppTheme.PILTOVER.id) ?: AppTheme.PILTOVER.id
         val savedNavId = prefs.getString(PREFS_KEY_NAV_BAR, NavBarColorOption.THEME_AUTO.id) ?: NavBarColorOption.THEME_AUTO.id
         val savedOled = prefs.getBoolean(PREFS_KEY_OLED_MODE, false)
         val savedParticles = prefs.getBoolean("particles_enabled", false)
 
-        currentTheme = AppTheme.fromId(savedThemeId)
+        val savedCustomColors = readCustomThemeColors(prefs)
+        customThemeColors = savedCustomColors
+        savedCustomColors?.let(::applyCustomThemeColors)
+        currentTheme = if (savedThemeId.equals(AppTheme.CUSTOM.id, ignoreCase = true) && savedCustomColors == null) {
+            AppTheme.PILTOVER
+        } else {
+            AppTheme.fromId(savedThemeId)
+        }
         currentNavBarOption = NavBarColorOption.entries.find { it.id == savedNavId } ?: NavBarColorOption.THEME_AUTO
         currentNavStyle = CoachNavStyle.fromId(prefs.getString(PREFS_KEY_NAV_STYLE, CoachNavStyle.ORIGINAL.id))
         isOledMode = savedOled
@@ -869,11 +922,69 @@ object AppThemeManager {
     }
 
     fun setTheme(theme: AppTheme, context: Context? = null) {
+        if (theme == AppTheme.CUSTOM && customThemeColors == null) return
         currentTheme = theme
         context?.let {
             val prefs = it.getSharedPreferences("coach_visual_preferences", Context.MODE_PRIVATE)
             prefs.edit().putString(PREFS_KEY_THEME, theme.id).apply()
         }
+    }
+
+    fun hasCompleteCustomTheme(): Boolean = customThemeColors != null
+
+    fun setCustomThemeColors(
+        primary: Color,
+        secondary: Color,
+        glow: Color,
+        alternate: Color,
+        context: Context? = null
+    ) {
+        val palette = CustomThemeColors(primary, secondary, glow, alternate)
+        applyCustomThemeColors(palette)
+        customThemeColors = palette
+        context?.getSharedPreferences("coach_visual_preferences", Context.MODE_PRIVATE)?.edit()
+            ?.putString(PREFS_KEY_CUSTOM_PRIMARY, colorPreferenceValue(primary))
+            ?.putString(PREFS_KEY_CUSTOM_SECONDARY, colorPreferenceValue(secondary))
+            ?.putString(PREFS_KEY_CUSTOM_GLOW, colorPreferenceValue(glow))
+            ?.putString(PREFS_KEY_CUSTOM_ALTERNATE, colorPreferenceValue(alternate))
+            ?.apply()
+    }
+
+    private fun readCustomThemeColors(prefs: android.content.SharedPreferences): CustomThemeColors? {
+        val colors = listOf(
+            parsePreferenceColor(prefs.getString(PREFS_KEY_CUSTOM_PRIMARY, null)),
+            parsePreferenceColor(prefs.getString(PREFS_KEY_CUSTOM_SECONDARY, null)),
+            parsePreferenceColor(prefs.getString(PREFS_KEY_CUSTOM_GLOW, null)),
+            parsePreferenceColor(prefs.getString(PREFS_KEY_CUSTOM_ALTERNATE, null))
+        )
+        if (colors.any { it == null }) return null
+        return CustomThemeColors(
+            primary = colors[0]!!,
+            secondary = colors[1]!!,
+            glow = colors[2]!!,
+            alternate = colors[3]!!
+        )
+    }
+
+    private fun parsePreferenceColor(value: String?): Color? = value?.let {
+        runCatching { Color(android.graphics.Color.parseColor(it)) }.getOrNull()
+    }
+
+    private fun colorPreferenceValue(color: Color): String =
+        String.format(Locale.US, "#%08X", color.toArgb())
+
+    private fun applyCustomThemeColors(colors: CustomThemeColors) {
+        val custom = AppTheme.CUSTOM
+        custom.primary = colors.primary
+        custom.primaryLight = colors.primary
+        custom.primaryDark = colors.primary
+        custom.primaryGlow = colors.glow
+        custom.secondary = colors.secondary
+        custom.secondaryLight = colors.alternate
+        custom.secondaryDark = colors.secondary
+        custom.secondaryGlow = colors.glow
+        custom.surfaceVariant = colors.alternate
+        custom.cardBorder = colors.alternate
     }
 
     fun setNavBarOption(option: NavBarColorOption, context: Context? = null) {
