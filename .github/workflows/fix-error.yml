@@ -4,8 +4,6 @@ run-name: Validación unificada de fix-error · ${{ github.sha }}
 on:
   push:
     branches: [fix-error]
-  pull_request:
-    branches: [fix-error]
   workflow_dispatch:
     inputs:
       validation_scope:
