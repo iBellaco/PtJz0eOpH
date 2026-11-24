@@ -1303,6 +1303,7 @@ private fun CustomColorPickerDialog(
         Surface(
             modifier = Modifier
                 .fillMaxWidth(0.94f)
+                .fillMaxHeight(0.82f)
                 .testTag("custom_color_picker_dialog"),
             shape = RoundedCornerShape(18.dp),
             color = HextechSurface,
