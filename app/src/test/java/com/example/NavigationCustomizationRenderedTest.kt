@@ -218,15 +218,23 @@ class NavigationCustomizationRenderedTest {
             compose.onNodeWithTag("custom_preview_$section")
                 .assertHasClickAction()
                 .performClick()
+            compose.onNodeWithTag("custom_color_picker_dialog").assertIsDisplayed()
+            compose.onNodeWithTag("custom_color_${section}_19").assertIsDisplayed()
+            compose.onNodeWithTag("custom_color_picker_done").performClick()
         }
 
         listOf("primary", "secondary", "glow", "alternate").forEach { section ->
-            compose.onNodeWithTag("custom_color_${section}_0")
+            compose.onNodeWithTag("custom_section_$section")
                 .performScrollTo()
+                .assertHasClickAction()
+                .performClick()
+            compose.onNodeWithTag("custom_color_picker_dialog").assertIsDisplayed()
+            compose.onNodeWithTag("custom_color_${section}_0")
                 .assertHasClickAction()
                 .performClick()
             compose.onNodeWithTag("custom_palette_${section}_status")
                 .assertTextContains("Seleccionado")
+            compose.onNodeWithTag("custom_color_picker_done").performClick()
         }
 
         compose.onNodeWithTag("theme_apply_button").assertIsEnabled().performClick()

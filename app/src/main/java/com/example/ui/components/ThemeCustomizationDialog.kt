@@ -1,5 +1,3 @@
-@file:OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
-
 package com.example.ui.components
 
 import androidx.compose.animation.AnimatedVisibility
@@ -11,15 +9,11 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import com.example.ui.components.coachClickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.relocation.BringIntoViewRequester
-import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -45,7 +39,6 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.example.ui.theme.*
 import com.example.util.tr
-import kotlinx.coroutines.launch
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -69,12 +62,15 @@ fun ThemeCustomizationBottomSheet(
     var customSecondary by remember { mutableStateOf(AppThemeManager.customThemeColors?.secondary) }
     var customGlow by remember { mutableStateOf(AppThemeManager.customThemeColors?.glow) }
     var customAlternate by remember { mutableStateOf(AppThemeManager.customThemeColors?.alternate) }
+    var activeCustomPalette by remember { mutableStateOf<CustomPaletteSection?>(null) }
     val themeScrollState = rememberScrollState()
-    val customPaletteScope = rememberCoroutineScope()
-    val primaryPaletteRequester = remember { BringIntoViewRequester() }
-    val secondaryPaletteRequester = remember { BringIntoViewRequester() }
-    val glowPaletteRequester = remember { BringIntoViewRequester() }
-    val alternatePaletteRequester = remember { BringIntoViewRequester() }
+
+    val customPreviewColors = CustomThemeColors(
+        primary = customPrimary ?: AppTheme.CUSTOM.primary,
+        secondary = customSecondary ?: AppTheme.CUSTOM.secondary,
+        glow = customGlow ?: AppTheme.CUSTOM.primaryGlow,
+        alternate = customAlternate ?: AppTheme.CUSTOM.surfaceVariant
+    )
 
     val hasCompleteCustomPalette = customPrimary != null && customSecondary != null &&
         customGlow != null && customAlternate != null
@@ -386,17 +382,18 @@ fun ThemeCustomizationBottomSheet(
                 isApplied = previewIsApplied,
                 isPremium = isPremium,
                 canApply = previewTheme != AppTheme.CUSTOM || hasCompleteCustomPalette,
+                customColors = if (previewTheme == AppTheme.CUSTOM) customPreviewColors else null,
                 onPrimaryColorClick = if (previewTheme == AppTheme.CUSTOM) {
-                    { customPaletteScope.launch { primaryPaletteRequester.bringIntoView() } }
+                    { activeCustomPalette = CustomPaletteSection.PRIMARY }
                 } else null,
                 onSecondaryColorClick = if (previewTheme == AppTheme.CUSTOM) {
-                    { customPaletteScope.launch { secondaryPaletteRequester.bringIntoView() } }
+                    { activeCustomPalette = CustomPaletteSection.SECONDARY }
                 } else null,
                 onGlowColorClick = if (previewTheme == AppTheme.CUSTOM) {
-                    { customPaletteScope.launch { glowPaletteRequester.bringIntoView() } }
+                    { activeCustomPalette = CustomPaletteSection.GLOW }
                 } else null,
                 onAlternateColorClick = if (previewTheme == AppTheme.CUSTOM) {
-                    { customPaletteScope.launch { alternatePaletteRequester.bringIntoView() } }
+                    { activeCustomPalette = CustomPaletteSection.ALTERNATE }
                 } else null,
                 onShowPremiumAlert = { showPremiumRequiredDialog = true },
                 onApply = {
@@ -549,17 +546,32 @@ fun ThemeCustomizationBottomSheet(
                     secondary = customSecondary,
                     glow = customGlow,
                     alternate = customAlternate,
-                    primaryRequester = primaryPaletteRequester,
-                    secondaryRequester = secondaryPaletteRequester,
-                    glowRequester = glowPaletteRequester,
-                    alternateRequester = alternatePaletteRequester,
-                    onPrimarySelected = { customPrimary = it },
-                    onSecondarySelected = { customSecondary = it },
-                    onGlowSelected = { customGlow = it },
-                    onAlternateSelected = { customAlternate = it }
+                    onSectionSelected = { activeCustomPalette = it }
                 )
             }
         }
+    }
+
+    activeCustomPalette?.let { section ->
+        val selected = when (section) {
+            CustomPaletteSection.PRIMARY -> customPrimary
+            CustomPaletteSection.SECONDARY -> customSecondary
+            CustomPaletteSection.GLOW -> customGlow
+            CustomPaletteSection.ALTERNATE -> customAlternate
+        }
+        CustomColorPickerDialog(
+            section = section,
+            selected = selected,
+            onSelected = { color ->
+                when (section) {
+                    CustomPaletteSection.PRIMARY -> customPrimary = color
+                    CustomPaletteSection.SECONDARY -> customSecondary = color
+                    CustomPaletteSection.GLOW -> customGlow = color
+                    CustomPaletteSection.ALTERNATE -> customAlternate = color
+                }
+            },
+            onDismiss = { activeCustomPalette = null }
+        )
     }
 
     if (showPremiumRequiredDialog) {
@@ -660,6 +672,7 @@ private fun RegionVisualPreviewGridCard(
     isApplied: Boolean,
     isPremium: Boolean,
     canApply: Boolean = true,
+    customColors: CustomThemeColors? = null,
     onPrimaryColorClick: (() -> Unit)? = null,
     onSecondaryColorClick: (() -> Unit)? = null,
     onGlowColorClick: (() -> Unit)? = null,
@@ -667,6 +680,15 @@ private fun RegionVisualPreviewGridCard(
     onShowPremiumAlert: () -> Unit = {},
     onApply: () -> Unit
 ) {
+    val previewPrimary = customColors?.primary ?: inspectedTheme.primary
+    val previewSecondary = customColors?.secondary ?: inspectedTheme.secondary
+    val previewGlow = customColors?.glow ?: inspectedTheme.primaryGlow
+    val previewAlternate = customColors?.alternate ?: inspectedTheme.surfaceVariant
+    val previewPrimaryLight = customColors?.primary?.copy(alpha = 0.82f) ?: inspectedTheme.primaryLight
+    val previewPrimaryDark = customColors?.primary?.copy(alpha = 0.68f) ?: inspectedTheme.primaryDark
+    val previewSecondaryGlow = customColors?.glow ?: inspectedTheme.secondaryGlow
+    val previewCardBorder = customColors?.alternate ?: inspectedTheme.cardBorder
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(14.dp),
@@ -675,9 +697,9 @@ private fun RegionVisualPreviewGridCard(
             1.5.dp,
             Brush.horizontalGradient(
                 listOf(
-                    inspectedTheme.primary,
-                    inspectedTheme.secondary,
-                    inspectedTheme.primaryGlow
+                    previewPrimary,
+                    previewSecondary,
+                    previewGlow
                 )
             )
         )
@@ -708,10 +730,10 @@ private fun RegionVisualPreviewGridCard(
                             .clip(CircleShape)
                             .background(
                                 Brush.radialGradient(
-                                    listOf(inspectedTheme.primary, inspectedTheme.primaryDark)
+                                    listOf(previewPrimary, previewPrimaryDark)
                                 )
                             )
-                            .border(1.5.dp, inspectedTheme.secondary, CircleShape),
+                            .border(1.5.dp, previewSecondary, CircleShape),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
@@ -735,13 +757,13 @@ private fun RegionVisualPreviewGridCard(
                             Box(
                                 modifier = Modifier
                                     .clip(RoundedCornerShape(4.dp))
-                                    .background(inspectedTheme.primary.copy(alpha = 0.2f))
-                                    .border(0.8.dp, inspectedTheme.primary.copy(alpha = 0.6f), RoundedCornerShape(4.dp))
+                                    .background(previewPrimary.copy(alpha = 0.2f))
+                                    .border(0.8.dp, previewPrimary.copy(alpha = 0.6f), RoundedCornerShape(4.dp))
                                     .padding(horizontal = 6.dp, vertical = 1.5.dp)
                             ) {
                                 Text(
                                     text = tr(inspectedTheme.regionTag),
-                                    color = inspectedTheme.primaryLight,
+                                    color = previewPrimaryLight,
                                     fontSize = 9.5.sp,
                                     fontWeight = FontWeight.Bold
                                 )
@@ -789,8 +811,8 @@ private fun RegionVisualPreviewGridCard(
             ) {
                 ColorSwatchGridItem(
                     modifier = Modifier.weight(1f),
-                    color = inspectedTheme.primary,
-                    glowColor = inspectedTheme.primaryGlow,
+                    color = previewPrimary,
+                    glowColor = previewGlow,
                     title = "Primario",
                     subtitle = "Acciones / Draft",
                     textColor = inspectedTheme.textPrimary,
@@ -800,8 +822,8 @@ private fun RegionVisualPreviewGridCard(
                 )
                 ColorSwatchGridItem(
                     modifier = Modifier.weight(1f),
-                    color = inspectedTheme.secondary,
-                    glowColor = inspectedTheme.secondaryGlow,
+                    color = previewSecondary,
+                    glowColor = previewSecondaryGlow,
                     title = "Secundario",
                     subtitle = "Acentos / Oro",
                     textColor = inspectedTheme.textPrimary,
@@ -811,8 +833,8 @@ private fun RegionVisualPreviewGridCard(
                 )
                 ColorSwatchGridItem(
                     modifier = Modifier.weight(1f),
-                    color = inspectedTheme.primaryGlow,
-                    glowColor = inspectedTheme.primaryLight,
+                    color = previewGlow,
+                    glowColor = previewPrimaryLight,
                     title = "Resplandor",
                     subtitle = "Aura Rúnica",
                     textColor = inspectedTheme.textPrimary,
@@ -822,8 +844,8 @@ private fun RegionVisualPreviewGridCard(
                 )
                 ColorSwatchGridItem(
                     modifier = Modifier.weight(1f),
-                    color = inspectedTheme.surfaceVariant,
-                    glowColor = inspectedTheme.cardBorder,
+                    color = previewAlternate,
+                    glowColor = previewCardBorder,
                     title = "Suplente",
                     subtitle = "Estados / soporte",
                     textColor = inspectedTheme.textPrimary,
@@ -841,7 +863,7 @@ private fun RegionVisualPreviewGridCard(
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(10.dp))
                     .background(inspectedTheme.background)
-                    .border(1.dp, inspectedTheme.cardBorder, RoundedCornerShape(10.dp))
+                    .border(1.dp, previewCardBorder, RoundedCornerShape(10.dp))
                     .padding(10.dp)
             ) {
                 Column(
@@ -854,13 +876,13 @@ private fun RegionVisualPreviewGridCard(
                             modifier = Modifier
                                 .size(28.dp)
                                 .clip(RoundedCornerShape(6.dp))
-                                .background(inspectedTheme.primary.copy(alpha = 0.25f))
-                                .border(1.dp, inspectedTheme.primary, RoundedCornerShape(6.dp)),
+                                .background(previewPrimary.copy(alpha = 0.25f))
+                                .border(1.dp, previewPrimary, RoundedCornerShape(6.dp)),
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
                                 text = com.example.util.tr("WR"),
-                                color = inspectedTheme.primary,
+                                color = previewPrimary,
                                 fontSize = 10.sp,
                                 fontWeight = FontWeight.ExtraBold
                             )
@@ -878,12 +900,12 @@ private fun RegionVisualPreviewGridCard(
                                     modifier = Modifier
                                         .size(6.dp)
                                         .clip(CircleShape)
-                                        .background(inspectedTheme.secondary)
+                                        .background(previewSecondary)
                                 )
                                 Spacer(modifier = Modifier.width(4.dp))
                                 Text(
                                     text = com.example.util.tr("Sinergia S+ / Nivel Soberano"),
-                                    color = inspectedTheme.secondary,
+                                    color = previewSecondary,
                                     fontSize = 9.5.sp,
                                     fontWeight = FontWeight.SemiBold
                                 )
@@ -930,9 +952,9 @@ private fun RegionVisualPreviewGridCard(
                                 if (!isPremium && !isApplied) onShowPremiumAlert() else onApply()
                             },
                             enabled = canApply,
-                            backgroundColor = if (isApplied) inspectedTheme.surfaceVariant else inspectedTheme.primary,
-                            borderColor = if (isApplied) inspectedTheme.secondary else inspectedTheme.primaryGlow,
-                            glowColor = if (isApplied) inspectedTheme.secondary else inspectedTheme.primary,
+                            backgroundColor = if (isApplied) previewAlternate else previewPrimary,
+                            borderColor = if (isApplied) previewSecondary else previewGlow,
+                            glowColor = if (isApplied) previewSecondary else previewPrimary,
                             shape = RoundedCornerShape(8.dp),
                             contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp),
                             modifier = Modifier.weight(1f).heightIn(min = 48.dp).testTag("theme_apply_button"),
@@ -943,14 +965,14 @@ private fun RegionVisualPreviewGridCard(
                                 Icon(
                                     Icons.Default.Check,
                                     contentDescription = null,
-                                    tint = inspectedTheme.secondary,
+                                    tint = previewSecondary,
                                     modifier = Modifier.size(14.dp)
                                 )
                                 Spacer(modifier = Modifier.width(4.dp))
                                 Text(
                                     text = tr("Aplicado"),
                                     maxLines = 1,
-                                    color = inspectedTheme.secondary,
+                                    color = previewSecondary,
                                     fontSize = 11.sp,
                                     fontWeight = FontWeight.Bold
                                 )
@@ -1136,20 +1158,20 @@ private val customColorPalette = listOf(
     Color(0xFF795548), Color(0xFF607D8B), Color(0xFFFFFFFF), Color(0xFF111827)
 )
 
+private enum class CustomPaletteSection(val id: String, val title: String) {
+    PRIMARY("primary", "Primario"),
+    SECONDARY("secondary", "Secundario"),
+    GLOW("glow", "Resplandor"),
+    ALTERNATE("alternate", "Suplente")
+}
+
 @Composable
 private fun CustomThemeEditor(
     primary: Color?,
     secondary: Color?,
     glow: Color?,
     alternate: Color?,
-    primaryRequester: BringIntoViewRequester,
-    secondaryRequester: BringIntoViewRequester,
-    glowRequester: BringIntoViewRequester,
-    alternateRequester: BringIntoViewRequester,
-    onPrimarySelected: (Color) -> Unit,
-    onSecondarySelected: (Color) -> Unit,
-    onGlowSelected: (Color) -> Unit,
-    onAlternateSelected: (Color) -> Unit
+    onSectionSelected: (CustomPaletteSection) -> Unit
 ) {
     Card(
         modifier = Modifier
@@ -1170,110 +1192,216 @@ private fun CustomThemeEditor(
                 fontSize = 13.sp
             )
             Text(
-                text = tr("Selecciona un color para cada sección. Puedes repetir colores."),
+                text = tr("Toca una sección para abrir su paleta de colores."),
                 color = TextSecondary,
                 fontSize = 10.5.sp,
                 lineHeight = 14.sp
             )
-            CustomColorPalette(
-                title = "Primario",
-                paletteTag = "custom_palette_primary",
-                selected = primary,
-                bringIntoViewRequester = primaryRequester,
-                onSelected = onPrimarySelected
-            )
-            CustomColorPalette(
-                title = "Secundario",
-                paletteTag = "custom_palette_secondary",
-                selected = secondary,
-                bringIntoViewRequester = secondaryRequester,
-                onSelected = onSecondarySelected
-            )
-            CustomColorPalette(
-                title = "Resplandor",
-                paletteTag = "custom_palette_glow",
-                selected = glow,
-                bringIntoViewRequester = glowRequester,
-                onSelected = onGlowSelected
-            )
-            CustomColorPalette(
-                title = "Suplente",
-                paletteTag = "custom_palette_alternate",
-                selected = alternate,
-                bringIntoViewRequester = alternateRequester,
-                onSelected = onAlternateSelected
+            CustomPaletteSectionButton(CustomPaletteSection.PRIMARY, primary) {
+                onSectionSelected(CustomPaletteSection.PRIMARY)
+            }
+            CustomPaletteSectionButton(CustomPaletteSection.SECONDARY, secondary) {
+                onSectionSelected(CustomPaletteSection.SECONDARY)
+            }
+            CustomPaletteSectionButton(CustomPaletteSection.GLOW, glow) {
+                onSectionSelected(CustomPaletteSection.GLOW)
+            }
+            CustomPaletteSectionButton(CustomPaletteSection.ALTERNATE, alternate) {
+                onSectionSelected(CustomPaletteSection.ALTERNATE)
+            }
+        }
+    }
+}
+
+@Composable
+private fun CustomPaletteSectionButton(
+    section: CustomPaletteSection,
+    selected: Color?,
+    onClick: () -> Unit
+) {
+    Surface(
+        onClick = onClick,
+        modifier = Modifier
+            .fillMaxWidth()
+            .heightIn(min = 56.dp)
+            .testTag("custom_section_${section.id}"),
+        shape = RoundedCornerShape(10.dp),
+        color = HextechDarkBg.copy(alpha = 0.55f),
+        border = BorderStroke(
+            if (selected == null) 1.dp else 1.5.dp,
+            if (selected == null) HextechCardBorder else HextechCyan
+        ),
+        tonalElevation = 0.dp,
+        shadowElevation = 0.dp
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 10.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(34.dp)
+                    .clip(CircleShape)
+                    .background(selected ?: HextechSurfaceVariant)
+                    .border(1.dp, if (selected == null) HextechCardBorder else HextechGold, CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                if (selected != null) {
+                    Icon(
+                        imageVector = Icons.Default.Check,
+                        contentDescription = null,
+                        tint = if (selected.luminance() > 0.55f) Color.Black else Color.White,
+                        modifier = Modifier.size(16.dp)
+                    )
+                } else {
+                    Icon(
+                        imageVector = Icons.Default.Palette,
+                        contentDescription = null,
+                        tint = TextMuted,
+                        modifier = Modifier.size(17.dp)
+                    )
+                }
+            }
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = tr(section.title),
+                    color = TextPrimary,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
+                Text(
+                    text = tr(if (selected == null) "Seleccionar color" else "Seleccionado"),
+                    color = if (selected == null) TextMuted else HextechCyan,
+                    fontSize = 9.5.sp,
+                    modifier = Modifier.testTag("custom_palette_${section.id}_status")
+                )
+            }
+            Icon(
+                imageVector = Icons.Default.ChevronRight,
+                contentDescription = tr("Elegir color"),
+                tint = HextechCyan,
+                modifier = Modifier.size(20.dp)
             )
         }
     }
 }
 
 @Composable
-private fun CustomColorPalette(
-    title: String,
-    paletteTag: String,
+private fun CustomColorPickerDialog(
+    section: CustomPaletteSection,
     selected: Color?,
-    bringIntoViewRequester: BringIntoViewRequester,
-    onSelected: (Color) -> Unit
+    onSelected: (Color) -> Unit,
+    onDismiss: () -> Unit
 ) {
-    Column(
-        modifier = Modifier.bringIntoViewRequester(bringIntoViewRequester),
-        verticalArrangement = Arrangement.spacedBy(5.dp)
+    Dialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(usePlatformDefaultWidth = false)
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = tr(title),
-                color = TextPrimary,
-                fontSize = 11.5.sp,
-                fontWeight = FontWeight.SemiBold
-            )
-            Text(
-                text = tr(if (selected == null) "Sin seleccionar" else "Seleccionado"),
-                color = if (selected == null) TextMuted else HextechCyan,
-                fontSize = 9.5.sp,
-                modifier = Modifier.testTag("${paletteTag}_status")
-            )
-        }
-        Row(
+        Surface(
             modifier = Modifier
-                .fillMaxWidth()
-                .horizontalScroll(rememberScrollState())
-                .testTag(paletteTag),
-            horizontalArrangement = Arrangement.spacedBy(7.dp)
+                .fillMaxWidth(0.94f)
+                .testTag("custom_color_picker_dialog"),
+            shape = RoundedCornerShape(18.dp),
+            color = HextechSurface,
+            border = BorderStroke(1.2.dp, HextechGold.copy(alpha = 0.65f)),
+            tonalElevation = 4.dp
         ) {
-            customColorPalette.forEachIndexed { index, color ->
-                val isSelected = selected == color
-                Surface(
-                    onClick = { onSelected(color) },
-                    modifier = Modifier
-                        .size(48.dp)
-                        .testTag("custom_color_${paletteTag.removePrefix("custom_palette_")}_$index"),
-                    shape = CircleShape,
-                    color = color,
-                    border = BorderStroke(
-                        width = if (isSelected) 2.5.dp else 1.dp,
-                        color = if (isSelected) HextechGold else Color.White.copy(alpha = 0.42f)
-                    ),
-                    tonalElevation = 0.dp,
-                    shadowElevation = 0.dp
+            Column(
+                modifier = Modifier
+                    .padding(16.dp)
+                    .verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = "${tr("Elegir color")}: ${tr(section.title)}",
+                            color = HextechGold,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 16.sp,
+                            modifier = Modifier.testTag("custom_color_picker_title")
+                        )
+                        Text(
+                            text = tr("La vista previa cambia antes de aplicar."),
+                            color = TextSecondary,
+                            fontSize = 10.5.sp
+                        )
+                    }
+                    IconButton(
+                        onClick = onDismiss,
+                        modifier = Modifier.size(48.dp).testTag("custom_color_picker_close")
                     ) {
-                        if (isSelected) {
-                            Icon(
-                                imageVector = Icons.Default.Check,
-                                contentDescription = null,
-                                tint = if (color.luminance() > 0.55f) Color.Black else Color.White,
-                                modifier = Modifier.size(16.dp)
+                        Icon(Icons.Default.Close, contentDescription = tr("Cerrar"), tint = TextMuted)
+                    }
+                }
+
+                customColorPalette.chunked(4).forEachIndexed { rowIndex, rowColors ->
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        rowColors.forEachIndexed { columnIndex, color ->
+                            CustomColorSwatch(
+                                color = color,
+                                isSelected = selected == color,
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .height(52.dp)
+                                    .testTag("custom_color_${section.id}_${rowIndex * 4 + columnIndex}"),
+                                onClick = { onSelected(color) }
                             )
+                        }
+                        repeat(4 - rowColors.size) {
+                            Spacer(modifier = Modifier.weight(1f))
                         }
                     }
                 }
+
+                TextButton(
+                    onClick = onDismiss,
+                    modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp).testTag("custom_color_picker_done")
+                ) {
+                    Text(tr("Listo"), color = HextechCyan)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun CustomColorSwatch(
+    color: Color,
+    isSelected: Boolean,
+    modifier: Modifier,
+    onClick: () -> Unit
+) {
+    Surface(
+        onClick = onClick,
+        modifier = modifier,
+        shape = RoundedCornerShape(10.dp),
+        color = color,
+        border = BorderStroke(
+            if (isSelected) 3.dp else 1.dp,
+            if (isSelected) HextechGold else Color.White.copy(alpha = 0.42f)
+        ),
+        tonalElevation = 0.dp,
+        shadowElevation = 0.dp
+    ) {
+        Box(contentAlignment = Alignment.Center) {
+            if (isSelected) {
+                Icon(
+                    imageVector = Icons.Default.Check,
+                    contentDescription = null,
+                    tint = if (color.luminance() > 0.55f) Color.Black else Color.White,
+                    modifier = Modifier.size(20.dp)
+                )
             }
         }
     }
