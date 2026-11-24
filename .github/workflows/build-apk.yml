@@ -900,7 +900,6 @@ jobs:
   push:
     branches:
     - main
-    - coach-validacion
   pull_request:
     branches:
     - main
