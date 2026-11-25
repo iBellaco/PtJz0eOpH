@@ -214,19 +214,46 @@ class NavigationCustomizationRenderedTest {
         compose.onNodeWithTag("custom_theme_editor").performScrollTo().assertIsDisplayed()
         compose.onNodeWithTag("theme_apply_button").performScrollTo().assertIsNotEnabled()
 
-        listOf("primary", "secondary", "glow", "alternate").forEach { section ->
-            compose.onNodeWithTag("custom_preview_$section")
-                .assertHasClickAction()
-                .performClick()
+        fun waitForCustomColorPicker() {
+            compose.waitUntil(timeoutMillis = 5_000) {
+                compose.onAllNodesWithTag("custom_color_picker_dialog")
+                    .fetchSemanticsNodes()
+                    .any { node ->
+                        node.layoutInfo.isPlaced &&
+                            node.boundsInRoot.width > 0f &&
+                            node.boundsInRoot.height > 0f
+                    }
+            }
+            compose.onNodeWithTag("custom_color_picker_dialog").assertExists()
+            compose.onNodeWithTag("custom_color_picker_title", useUnmergedTree = true).assertExists()
         }
 
         listOf("primary", "secondary", "glow", "alternate").forEach { section ->
-            compose.onNodeWithTag("custom_color_${section}_0")
+            var clickConsumed = false
+            compose.onNodeWithTag("custom_preview_$section")
+                .assertHasClickAction()
+                .performSemanticsAction(SemanticsActions.OnClick) { action ->
+                    clickConsumed = action()
+                }
+            assertTrue("El selector de $section debe recibir el toque", clickConsumed)
+            waitForCustomColorPicker()
+            compose.onNodeWithTag("custom_color_${section}_19", useUnmergedTree = true)
+                .assertExists()
+            compose.onNodeWithTag("custom_color_picker_done").performClick()
+        }
+
+        listOf("primary", "secondary", "glow", "alternate").forEach { section ->
+            compose.onNodeWithTag("custom_section_$section")
                 .performScrollTo()
                 .assertHasClickAction()
                 .performClick()
-            compose.onNodeWithTag("custom_palette_${section}_status")
+            waitForCustomColorPicker()
+            compose.onNodeWithTag("custom_color_${section}_0", useUnmergedTree = true)
+                .assertHasClickAction()
+                .performClick()
+            compose.onNodeWithTag("custom_palette_${section}_status", useUnmergedTree = true)
                 .assertTextContains("Seleccionado")
+            compose.onNodeWithTag("custom_color_picker_done").performClick()
         }
 
         compose.onNodeWithTag("theme_apply_button").assertIsEnabled().performClick()
