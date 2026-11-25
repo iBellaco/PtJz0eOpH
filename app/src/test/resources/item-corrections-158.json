@@ -132,8 +132,8 @@
   "guinsoo_s_rageblade": {
     "passive": "Ira: Los ataques infligen 30 de daño mágico adicional al impactar.\nGolpe furioso: Los ataques otorgan un 8% de velocidad de ataque, que se acumula hasta 4 veces, hasta un máximo de 32% de velocidad de ataque. Con el máximo de acumulaciones, cada 3 ataques aplica dos veces los efectos de impacto 1 vez.",
     "passivePt": "Ira: Os ataques causam 30 de dano mágico adicional ao contato.\nGolpe Furioso: Os ataques concedem 8% de velocidade de ataque, acumulando até 4 vezes, no máximo 32% de velocidade de ataque. Com o máximo de acúmulos, a cada 3 ataques os efeitos de contato são aplicados duas vezes em um ataque.",
-    "stats": "+30% Velocidad de ataque • +35 Daño de ataque • +30 Poder de habilidad",
-    "statsPt": "+30% Velocidade de ataque • +35 Dano de ataque • +30 Poder de habilidade"
+    "stats": "+25% Velocidad de ataque • +35 Daño de ataque • +30 Poder de habilidad",
+    "statsPt": "+25% Velocidade de ataque • +35 Dano de ataque • +30 Poder de habilidade"
   },
   "dusk_and_dawn": {
     "passive": "Hoja encantada: Tras usar una habilidad, tu siguiente ataque inflige 75% daño básico más 10% poder de habilidad de daño mágico adicional y te restaura 3% vida adicional más 10% poder de habilidad de vida. Tras un breve lapso, aplica efectos de impacto al objetivo 1 vez más, enfriamiento de 1,5 s. Inflige daño reducido a las estructuras.",
@@ -181,8 +181,8 @@
     "statsPt": "+45 Dano de ataque • +35% Velocidade de ataque • +4% Velocidade de movimento"
   },
   "immortal_shieldbow": {
-    "passive": "Salvavidas: Al recibir daño que te haga bajar del 35% de vida, recibes un escudo durante 3 s. El escudo absorbe 350-650 de daño con campeones cuerpo a cuerpo y 300-550 de daño con campeones a distancia, enfriamiento de 70 s.",
-    "passivePt": "Salva-Vidas: Ao receber dano que deixe sua vida abaixo de 35%, você recebe um escudo por 3 s. O escudo absorve 350-650 de dano para campeões corpo a corpo e 300-550 de dano para campeões de ataque à distância, tempo de recarga de 70 s.",
+    "passive": "Salvavidas: Al recibir daño que te haga bajar del 35% de vida, recibes un escudo durante 3 s. El escudo absorbe 380-700 de daño con campeones cuerpo a cuerpo y 320-550 de daño con campeones a distancia, enfriamiento de 70 s.",
+    "passivePt": "Salva-Vidas: Ao receber dano que deixe sua vida abaixo de 35%, você recebe um escudo por 3 s. O escudo absorve 380-700 de dano para campeões corpo a corpo e 320-550 de dano para campeões de ataque à distância, tempo de recarga de 70 s.",
     "stats": "+55 Daño de ataque • +25% Probabilidad de crítico",
     "goldCost": 3000,
     "statsPt": "+55 Dano de ataque • +25% Chance de acerto crítico"

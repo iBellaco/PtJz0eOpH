@@ -200,7 +200,7 @@ class ChampionBuildsCatalogValidationTest {
         assertTrue("Serylda advice must explicitly clarify anti-heal", serylda.coachTip.contains("No aplica Heridas Graves", ignoreCase = true))
 
         val berserkers = WildRiftItemsData.list.first { it.name == "Grebas de berserker" }
-        assertTrue("Berserker passive is flat on-hit healing", berserkers.passive.contains("restauran 10 de vida", ignoreCase = true))
+        assertTrue("Berserker passive is flat on-hit healing", berserkers.passive.contains("restauran 5 de vida", ignoreCase = true))
         assertFalse("Berserker advice must not describe the passive as life steal", berserkers.coachTip.contains("robo de vida al golpear", ignoreCase = true))
     }
 
