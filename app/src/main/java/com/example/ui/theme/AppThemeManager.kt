@@ -5,6 +5,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.toArgb
 import java.util.Locale
 
@@ -975,9 +976,24 @@ object AppThemeManager {
 
     private fun applyCustomThemeColors(colors: CustomThemeColors) {
         val custom = AppTheme.CUSTOM
+        // Derive the application surfaces from the user's alternate color so
+        // Custom changes the whole UI, not only the accent swatches.
+        val alternate = colors.alternate
+        custom.background = Color(
+            alternate.red * 0.10f,
+            alternate.green * 0.10f,
+            alternate.blue * 0.14f,
+            1f
+        )
+        custom.surface = Color(
+            alternate.red * 0.22f,
+            alternate.green * 0.22f,
+            alternate.blue * 0.28f,
+            1f
+        )
         custom.primary = colors.primary
-        custom.primaryLight = colors.primary
-        custom.primaryDark = colors.primary
+        custom.primaryLight = colors.primary.copy(alpha = 0.82f)
+        custom.primaryDark = colors.primary.copy(alpha = 0.68f)
         custom.primaryGlow = colors.glow
         custom.secondary = colors.secondary
         custom.secondaryLight = colors.alternate
@@ -985,6 +1001,10 @@ object AppThemeManager {
         custom.secondaryGlow = colors.glow
         custom.surfaceVariant = colors.alternate
         custom.cardBorder = colors.alternate
+        val lightText = colors.primary.luminance() > 0.55f
+        custom.textPrimary = if (lightText) Color(0xFF0B1220) else Color(0xFFF8FAFC)
+        custom.textSecondary = if (lightText) Color(0xFF334155) else Color(0xFFCBD5E1)
+        custom.textMuted = if (lightText) Color(0xFF475569) else Color(0xFF94A3B8)
     }
 
     fun setNavBarOption(option: NavBarColorOption, context: Context? = null) {

@@ -239,7 +239,8 @@ class NavigationCustomizationRenderedTest {
             waitForCustomColorPicker()
             compose.onNodeWithTag("custom_color_${section}_19", useUnmergedTree = true)
                 .assertExists()
-            compose.onNodeWithTag("custom_color_picker_done").performClick()
+                .performClick()
+            compose.onNodeWithTag("custom_color_picker_dialog").assertDoesNotExist()
         }
 
         listOf("primary", "secondary", "glow", "alternate").forEach { section ->
@@ -253,7 +254,7 @@ class NavigationCustomizationRenderedTest {
                 .performClick()
             compose.onNodeWithTag("custom_palette_${section}_status", useUnmergedTree = true)
                 .assertTextContains("Seleccionado")
-            compose.onNodeWithTag("custom_color_picker_done").performClick()
+            compose.onNodeWithTag("custom_color_picker_dialog").assertDoesNotExist()
         }
 
         compose.onNodeWithTag("theme_apply_button").assertIsEnabled().performClick()

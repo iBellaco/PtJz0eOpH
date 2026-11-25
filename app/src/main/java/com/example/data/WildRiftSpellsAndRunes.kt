@@ -624,7 +624,7 @@ object WildRiftSpellsAndRunes {
             name = "Concentración Absoluta",
             category = "Brujería",
             iconUrl = "file:///android_asset/runes/absolute_focus.webp",
-            description = "Con más del 65% de la vida, obtienes 2-20 de daño de ataque o 4-40 de poder de habilidad adicional (adaptable)."
+            description = "Con más del 70% de la vida, obtienes 2-18 de daño de ataque o 3,3-30 de poder de habilidad adicional (adaptable)."
         ),
         RuneItem(
             id = "nimbus_cloak",

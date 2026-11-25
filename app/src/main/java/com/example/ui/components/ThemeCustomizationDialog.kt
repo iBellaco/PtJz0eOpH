@@ -570,6 +570,7 @@ fun ThemeCustomizationBottomSheet(
                             CustomPaletteSection.GLOW -> customGlow = color
                             CustomPaletteSection.ALTERNATE -> customAlternate = color
                         }
+                        activeCustomPalette = null
                     },
                     onDismiss = { activeCustomPalette = null }
                 )
@@ -691,11 +692,23 @@ private fun RegionVisualPreviewGridCard(
     val previewPrimaryDark = customColors?.primary?.copy(alpha = 0.68f) ?: inspectedTheme.primaryDark
     val previewSecondaryGlow = customColors?.glow ?: inspectedTheme.secondaryGlow
     val previewCardBorder = customColors?.alternate ?: inspectedTheme.cardBorder
+    val previewBackground = customColors?.alternate?.let {
+        Color(it.red * 0.10f, it.green * 0.10f, it.blue * 0.14f, 1f)
+    } ?: inspectedTheme.background
+    val previewSurface = customColors?.alternate?.let {
+        Color(it.red * 0.22f, it.green * 0.22f, it.blue * 0.28f, 1f)
+    } ?: inspectedTheme.surface
+    val previewTextPrimary = customColors?.primary?.let {
+        if (it.luminance() > 0.55f) Color(0xFF0B1220) else Color(0xFFF8FAFC)
+    } ?: inspectedTheme.textPrimary
+    val previewTextSecondary = customColors?.primary?.let {
+        if (it.luminance() > 0.55f) Color(0xFF334155) else Color(0xFFCBD5E1)
+    } ?: inspectedTheme.textSecondary
 
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(14.dp),
-        colors = CardDefaults.cardColors(containerColor = inspectedTheme.surface),
+        colors = CardDefaults.cardColors(containerColor = previewSurface),
         border = BorderStroke(
             1.5.dp,
             Brush.horizontalGradient(
@@ -713,8 +726,8 @@ private fun RegionVisualPreviewGridCard(
                 .background(
                     Brush.verticalGradient(
                         listOf(
-                            inspectedTheme.background.copy(alpha = 0.85f),
-                            inspectedTheme.surface.copy(alpha = 0.95f)
+                            previewBackground.copy(alpha = 0.85f),
+                            previewSurface.copy(alpha = 0.95f)
                         )
                     )
                 )
@@ -742,7 +755,7 @@ private fun RegionVisualPreviewGridCard(
                         Icon(
                             imageVector = Icons.Default.AutoAwesome,
                             contentDescription = null,
-                            tint = inspectedTheme.textPrimary,
+                            tint = previewTextPrimary,
                             modifier = Modifier.size(18.dp)
                         )
                     }
@@ -751,7 +764,7 @@ private fun RegionVisualPreviewGridCard(
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text(
                                 text = tr(inspectedTheme.titleKey),
-                                color = inspectedTheme.textPrimary,
+                                color = previewTextPrimary,
                                 fontWeight = FontWeight.ExtraBold,
                                 fontSize = 16.sp,
                                 letterSpacing = 0.3.sp
@@ -778,7 +791,7 @@ private fun RegionVisualPreviewGridCard(
                         }
                         Text(
                             text = tr("Vista previa en tiempo real de paleta y elementos"),
-                            color = inspectedTheme.textSecondary,
+                            color = previewTextSecondary,
                             fontSize = 11.sp
                         )
                     }
@@ -790,7 +803,7 @@ private fun RegionVisualPreviewGridCard(
             // Lore Snippet
             Text(
                 text = tr(inspectedTheme.descKey),
-                color = inspectedTheme.textSecondary,
+                color = previewTextSecondary,
                 fontSize = 12.sp,
                 lineHeight = 16.sp
             )
@@ -800,7 +813,7 @@ private fun RegionVisualPreviewGridCard(
             // Section: Visual Swatch Grid (Primary & Secondary Focus)
             Text(
                 text = tr("Paleta de colores del tema:"),
-                color = inspectedTheme.textPrimary,
+                color = previewTextPrimary,
                 fontSize = 11.5.sp,
                 fontWeight = FontWeight.Bold
             )
@@ -818,7 +831,7 @@ private fun RegionVisualPreviewGridCard(
                     glowColor = previewGlow,
                     title = "Primario",
                     subtitle = "Acciones / Draft",
-                    textColor = inspectedTheme.textPrimary,
+                    textColor = previewTextPrimary,
                     isFeatured = true,
                     onClick = onPrimaryColorClick,
                     testTag = if (onPrimaryColorClick != null) "custom_preview_primary" else null
@@ -829,7 +842,7 @@ private fun RegionVisualPreviewGridCard(
                     glowColor = previewSecondaryGlow,
                     title = "Secundario",
                     subtitle = "Acentos / Oro",
-                    textColor = inspectedTheme.textPrimary,
+                    textColor = previewTextPrimary,
                     isFeatured = true,
                     onClick = onSecondaryColorClick,
                     testTag = if (onSecondaryColorClick != null) "custom_preview_secondary" else null
@@ -840,7 +853,7 @@ private fun RegionVisualPreviewGridCard(
                     glowColor = previewPrimaryLight,
                     title = "Resplandor",
                     subtitle = "Aura Rúnica",
-                    textColor = inspectedTheme.textPrimary,
+                    textColor = previewTextPrimary,
                     isFeatured = false,
                     onClick = onGlowColorClick,
                     testTag = if (onGlowColorClick != null) "custom_preview_glow" else null
@@ -851,7 +864,7 @@ private fun RegionVisualPreviewGridCard(
                     glowColor = previewCardBorder,
                     title = "Suplente",
                     subtitle = "Estados / soporte",
-                    textColor = inspectedTheme.textPrimary,
+                    textColor = previewTextPrimary,
                     isFeatured = false,
                     onClick = onAlternateColorClick,
                     testTag = if (onAlternateColorClick != null) "custom_preview_alternate" else null
@@ -865,7 +878,7 @@ private fun RegionVisualPreviewGridCard(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(10.dp))
-                    .background(inspectedTheme.background)
+                    .background(previewBackground)
                     .border(1.dp, previewCardBorder, RoundedCornerShape(10.dp))
                     .padding(10.dp)
             ) {
@@ -894,7 +907,7 @@ private fun RegionVisualPreviewGridCard(
                         Column {
                             Text(
                                 text = com.example.util.tr("Coach Live UI"),
-                                color = inspectedTheme.textPrimary,
+                                color = previewTextPrimary,
                                 fontSize = 11.5.sp,
                                 fontWeight = FontWeight.Bold
                             )
@@ -1154,11 +1167,21 @@ private fun ApplicationThemeSection(
 }
 
 private val customColorPalette = listOf(
-    Color(0xFFF44336), Color(0xFFE91E63), Color(0xFF9C27B0), Color(0xFF673AB7),
-    Color(0xFF3F51B5), Color(0xFF2196F3), Color(0xFF03A9F4), Color(0xFF00BCD4),
-    Color(0xFF009688), Color(0xFF4CAF50), Color(0xFF8BC34A), Color(0xFFCDDC39),
-    Color(0xFFFFEB3B), Color(0xFFFFC107), Color(0xFFFF9800), Color(0xFFFF5722),
-    Color(0xFF795548), Color(0xFF607D8B), Color(0xFFFFFFFF), Color(0xFF111827)
+    Color(0xFFF44336), Color(0xFFFF5252), Color(0xFFE91E63), Color(0xFFFF4081),
+    Color(0xFF9C27B0), Color(0xFFE040FB), Color(0xFF673AB7), Color(0xFF7C4DFF),
+    Color(0xFF3F51B5), Color(0xFF536DFE), Color(0xFF2196F3), Color(0xFF448AFF),
+    Color(0xFF03A9F4), Color(0xFF40C4FF), Color(0xFF00BCD4), Color(0xFF18FFFF),
+    Color(0xFF009688), Color(0xFF64FFDA), Color(0xFF4CAF50), Color(0xFF69F0AE),
+    Color(0xFF8BC34A), Color(0xFFB2FF59), Color(0xFFCDDC39), Color(0xFFEEFF41),
+    Color(0xFFFFEB3B), Color(0xFFFFFF00), Color(0xFFFFC107), Color(0xFFFFD740),
+    Color(0xFFFF9800), Color(0xFFFFAB40), Color(0xFFFF5722), Color(0xFFFF6E40),
+    Color(0xFF795548), Color(0xFFA1887F), Color(0xFF607D8B), Color(0xFF90A4AE),
+    Color(0xFFFFFFFF), Color(0xFFF8FAFC), Color(0xFFE2E8F0), Color(0xFFCBD5E1),
+    Color(0xFF94A3B8), Color(0xFF64748B), Color(0xFF475569), Color(0xFF334155),
+    Color(0xFF1E293B), Color(0xFF0F172A), Color(0xFF111827), Color(0xFF030712),
+    Color(0xFF0AC8B9), Color(0xFF00F2FE), Color(0xFFC8AA6E), Color(0xFFFFD700),
+    Color(0xFFEF4444), Color(0xFF22C55E), Color(0xFF14B8A6), Color(0xFF8B5CF6),
+    Color(0xFFF97316), Color(0xFF06B6D4), Color(0xFFEC4899), Color(0xFFA855F7)
 )
 
 private enum class CustomPaletteSection(val id: String, val title: String) {
