@@ -4,6 +4,7 @@ import subprocess
 import xml.etree.ElementTree as ET
 import re
 import os
+import time
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -44,7 +45,16 @@ def verify(suites):
         report.unlink(missing_ok=True)
         command.extend(['--tests', suite])
     command.extend(['--stacktrace', '--no-daemon', '--max-workers=1'])
+    # Robolectric downloads android-all-instrumented at test runtime. Maven
+    # Central can transiently reset or time out that request on hosted
+    # runners, leaving the whole catalog shard red before any assertion runs.
+    # Retry the same directed suite once; a real test failure is still
+    # reported after the second attempt.
     result = subprocess.run(command, cwd=ROOT)
+    if result.returncode:
+        print('Gradle regression attempt failed; retrying once for transient dependency downloads', flush=True)
+        time.sleep(5)
+        result = subprocess.run(command, cwd=ROOT)
     if result.returncode:
         report_failures(suites)
         result.check_returncode()

@@ -5,7 +5,10 @@ set -euo pipefail
 project_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 audit_dir="${COACH_AUDIT_DIR:-${TMPDIR:-/tmp}/coach-portuguese-audit}"
 mkdir -p "$audit_dir/deps"
-maven_root="https://repo.maven.apache.org/maven2"
+maven_roots=(
+  "https://repo.maven.apache.org/maven2"
+  "https://maven-central.storage-download.googleapis.com/maven2"
+)
 dependencies=(
   org/jetbrains/kotlin/kotlin-compiler-embeddable/2.2.10/kotlin-compiler-embeddable-2.2.10.jar
   org/jetbrains/kotlin/kotlin-stdlib/2.2.10/kotlin-stdlib-2.2.10.jar
@@ -16,11 +19,27 @@ dependencies=(
   org/jetbrains/annotations/13.0/annotations-13.0.jar
   org/json/json/20240303/json-20240303.jar
 )
+download_dependency() {
+  local dependency="$1"
+  local destination="$2"
+  local root
+  for root in "${maven_roots[@]}"; do
+    if curl --fail --silent --show-error --location \
+      --retry 3 --retry-all-errors --retry-delay 2 \
+      "$root/$dependency" -o "$destination.part"; then
+      mv "$destination.part" "$destination"
+      return 0
+    fi
+    rm -f "$destination.part"
+  done
+  echo "No se pudo descargar la dependencia de auditoría: $dependency" >&2
+  return 1
+}
+
 for dependency in "${dependencies[@]}"; do
   destination="$audit_dir/deps/${dependency##*/}"
   if [ ! -s "$destination" ]; then
-    curl --fail --silent --show-error --location --retry 3 "$maven_root/$dependency" -o "$destination.part"
-    mv "$destination.part" "$destination"
+    download_dependency "$dependency" "$destination"
   fi
 done
 compile_classpath="$audit_dir/deps/kotlin-stdlib-2.2.10.jar:$audit_dir/deps/json-20240303.jar:$audit_dir/deps/kotlin-compiler-embeddable-2.2.10.jar"
