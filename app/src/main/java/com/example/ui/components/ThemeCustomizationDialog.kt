@@ -35,8 +35,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
 import com.example.ui.theme.*
 import com.example.util.tr
 
@@ -98,10 +96,14 @@ fun ThemeCustomizationBottomSheet(
             )
         }
     ) {
-        Column(
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .fillMaxHeight(0.92f)
+        ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
                 .verticalScroll(themeScrollState)
                 .testTag("theme_scroll")
                 .padding(horizontal = 16.dp),
@@ -549,29 +551,30 @@ fun ThemeCustomizationBottomSheet(
                     onSectionSelected = { activeCustomPalette = it }
                 )
             }
-        }
-    }
+            }
 
-    activeCustomPalette?.let { section ->
-        val selected = when (section) {
-            CustomPaletteSection.PRIMARY -> customPrimary
-            CustomPaletteSection.SECONDARY -> customSecondary
-            CustomPaletteSection.GLOW -> customGlow
-            CustomPaletteSection.ALTERNATE -> customAlternate
-        }
-        CustomColorPickerDialog(
-            section = section,
-            selected = selected,
-            onSelected = { color ->
-                when (section) {
-                    CustomPaletteSection.PRIMARY -> customPrimary = color
-                    CustomPaletteSection.SECONDARY -> customSecondary = color
-                    CustomPaletteSection.GLOW -> customGlow = color
-                    CustomPaletteSection.ALTERNATE -> customAlternate = color
+            activeCustomPalette?.let { section ->
+                val selected = when (section) {
+                    CustomPaletteSection.PRIMARY -> customPrimary
+                    CustomPaletteSection.SECONDARY -> customSecondary
+                    CustomPaletteSection.GLOW -> customGlow
+                    CustomPaletteSection.ALTERNATE -> customAlternate
                 }
-            },
-            onDismiss = { activeCustomPalette = null }
-        )
+                CustomColorPickerOverlay(
+                    section = section,
+                    selected = selected,
+                    onSelected = { color ->
+                        when (section) {
+                            CustomPaletteSection.PRIMARY -> customPrimary = color
+                            CustomPaletteSection.SECONDARY -> customSecondary = color
+                            CustomPaletteSection.GLOW -> customGlow = color
+                            CustomPaletteSection.ALTERNATE -> customAlternate = color
+                        }
+                    },
+                    onDismiss = { activeCustomPalette = null }
+                )
+            }
+        }
     }
 
     if (showPremiumRequiredDialog) {
@@ -1290,20 +1293,25 @@ private fun CustomPaletteSectionButton(
 }
 
 @Composable
-private fun CustomColorPickerDialog(
+private fun CustomColorPickerOverlay(
     section: CustomPaletteSection,
     selected: Color?,
     onSelected: (Color) -> Unit,
     onDismiss: () -> Unit
 ) {
-    Dialog(
-        onDismissRequest = onDismiss,
-        properties = DialogProperties(usePlatformDefaultWidth = false)
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black.copy(alpha = 0.68f))
+            .clickable { onDismiss() }
+            .testTag("custom_color_picker_overlay"),
+        contentAlignment = Alignment.Center
     ) {
         Surface(
             modifier = Modifier
                 .fillMaxWidth(0.94f)
-                .fillMaxHeight(0.82f)
+                .fillMaxHeight(0.88f)
+                .clickable { }
                 .testTag("custom_color_picker_dialog"),
             shape = RoundedCornerShape(18.dp),
             color = HextechSurface,
@@ -1312,6 +1320,7 @@ private fun CustomColorPickerDialog(
         ) {
             Column(
                 modifier = Modifier
+                    .fillMaxSize()
                     .padding(16.dp)
                     .verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
