@@ -10,8 +10,8 @@ import org.junit.Test
 import java.io.File
 
 class Patch73fCatalogTest {
-    @Test fun officialBalanceMatchesPatch73f() {
-        assertEquals("7.3f", GamePatch.VERSION)
+    @Test fun officialBalanceMatchesPatch73g() {
+        assertEquals("7.3g", GamePatch.VERSION)
         fun item(id: String) = WildRiftItemsData.getItemById(id)!!
         assertTrue(item("eclipse").stats.contains("+60 Daño"))
         assertEquals(2550, item("morellonomicon").goldCost)
@@ -26,6 +26,16 @@ class Patch73fCatalogTest {
         assertTrue(item("black_mist_scythe").passive.contains("60 de oro"))
         assertTrue(WildRiftSpellsAndRunes.summonerSpells.single { it.id == "smite" }
             .description.contains("18-158"))
+        assertTrue(item("immortal_shieldbow").passive.contains("380-700"))
+        assertTrue(item("immortal_shieldbow").passive.contains("320-550"))
+        assertTrue(item("berserker_s_greaves").passive.contains("5 de vida"))
+        assertTrue(item("berserker_s_greaves").stats.contains("30%"))
+        assertTrue(item("guinsoo_s_rageblade").stats.contains("25%"))
+        assertTrue(item("harmonic_echo").stats.contains("+25 Poder"))
+        assertTrue(item("heartsteel").passive.contains("5%"))
+        assertTrue(item("warmog_s_armor").stats.contains("+1200"))
+        assertTrue(WildRiftSpellsAndRunes.runes.single { it.id == "absolute_focus" }
+            .description.contains("70%"))
     }
 
     @Test fun sylasHasTranslatedAbilitiesAndCatalogBuildsWithoutInventedStats() {
