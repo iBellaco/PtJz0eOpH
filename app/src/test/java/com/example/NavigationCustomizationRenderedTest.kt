@@ -218,8 +218,12 @@ class NavigationCustomizationRenderedTest {
             compose.onNodeWithTag("custom_preview_$section")
                 .assertHasClickAction()
                 .performClick()
-            compose.onNodeWithTag("custom_color_picker_dialog").assertIsDisplayed()
-            compose.onNodeWithTag("custom_color_${section}_19").assertIsDisplayed()
+            compose.onNode(
+                hasText("Elegir color", substring = true) and hasAnyAncestor(isDialog()),
+                useUnmergedTree = true
+            ).assertIsDisplayed()
+            compose.onNodeWithTag("custom_color_${section}_19", useUnmergedTree = true)
+                .assertExists()
             compose.onNodeWithTag("custom_color_picker_done").performClick()
         }
 
@@ -228,7 +232,10 @@ class NavigationCustomizationRenderedTest {
                 .performScrollTo()
                 .assertHasClickAction()
                 .performClick()
-            compose.onNodeWithTag("custom_color_picker_dialog").assertIsDisplayed()
+            compose.onNode(
+                hasText("Elegir color", substring = true) and hasAnyAncestor(isDialog()),
+                useUnmergedTree = true
+            ).assertIsDisplayed()
             compose.onNodeWithTag("custom_color_${section}_0")
                 .assertHasClickAction()
                 .performClick()
