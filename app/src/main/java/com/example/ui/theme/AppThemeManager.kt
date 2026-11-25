@@ -5,9 +5,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.luminance
-import androidx.compose.ui.graphics.toArgb
-import java.util.Locale
 
 /**
  * Temas de Coach inspirados en las regiones del Universo de Runaterra.
@@ -349,22 +346,22 @@ enum class AppTheme(
         id = "WHITE",
         titleKey = "White",
         regionTag = "Tema de aplicación",
-        descKey = "Fondo luminoso con texto carbón y acentos cian para leer sin esfuerzo.",
-        background = Color(0xFFF4F6FA),
+        descKey = "Interfaz clara acromática con contraste carbón para leer sin esfuerzo.",
+        background = Color(0xFFF4F4F4),
         surface = Color(0xFFFFFFFF),
-        surfaceVariant = Color(0xFFE9EFF7),
-        cardBorder = Color(0xFFC7D2E1),
-        primary = Color(0xFF087FAE),
-        primaryLight = Color(0xFF0B5E7A),
-        primaryDark = Color(0xFF05506E),
-        primaryGlow = Color(0xFF34B5D5),
-        secondary = Color(0xFFA97609),
-        secondaryLight = Color(0xFFC8941F),
-        secondaryDark = Color(0xFF7A5500),
-        secondaryGlow = Color(0xFFDAB55E),
-        textPrimary = Color(0xFF152033),
-        textSecondary = Color(0xFF4E5E74),
-        textMuted = Color(0xFF6B7B91),
+        surfaceVariant = Color(0xFFE8E8E8),
+        cardBorder = Color(0xFFB8B8B8),
+        primary = Color(0xFF2B2B2B),
+        primaryLight = Color(0xFF555555),
+        primaryDark = Color(0xFF111111),
+        primaryGlow = Color(0xFF7A7A7A),
+        secondary = Color(0xFF606060),
+        secondaryLight = Color(0xFF8A8A8A),
+        secondaryDark = Color(0xFF3A3A3A),
+        secondaryGlow = Color(0xFFA8A8A8),
+        textPrimary = Color(0xFF151515),
+        textSecondary = Color(0xFF4A4A4A),
+        textMuted = Color(0xFF707070),
         isDark = false,
         isApplicationTheme = true
     ),
@@ -395,22 +392,22 @@ enum class AppTheme(
         id = "AURORA",
         titleKey = "Aurora",
         regionTag = "Tema de aplicación",
-        descKey = "Violeta eléctrico y menta suave para distinguir estados sin saturar la pantalla.",
-        background = Color(0xFF110D20),
-        surface = Color(0xFF21183A),
-        surfaceVariant = Color(0xFF302650),
-        cardBorder = Color(0xFF624A87),
-        primary = Color(0xFFF07CFF),
-        primaryLight = Color(0xFFF7B7FF),
-        primaryDark = Color(0xFF9B3AAE),
-        primaryGlow = Color(0xFFFF9CFF),
-        secondary = Color(0xFF53E6BA),
-        secondaryLight = Color(0xFFA1F4D8),
-        secondaryDark = Color(0xFF268D73),
-        secondaryGlow = Color(0xFF85F2CE),
-        textPrimary = Color(0xFFFFF5FF),
-        textSecondary = Color(0xFFD8C8E8),
-        textMuted = Color(0xFFA793BE),
+        descKey = "Pizarra de alto contraste con una escala plateada y fría, sin acentos regionales.",
+        background = Color(0xFF111111),
+        surface = Color(0xFF1E1E1E),
+        surfaceVariant = Color(0xFF2D2D2D),
+        cardBorder = Color(0xFF505050),
+        primary = Color(0xFFD0D0D0),
+        primaryLight = Color(0xFFF0F0F0),
+        primaryDark = Color(0xFF8C8C8C),
+        primaryGlow = Color(0xFFE0E0E0),
+        secondary = Color(0xFF9A9A9A),
+        secondaryLight = Color(0xFFC4C4C4),
+        secondaryDark = Color(0xFF666666),
+        secondaryGlow = Color(0xFFB0B0B0),
+        textPrimary = Color(0xFFF4F4F4),
+        textSecondary = Color(0xFFD0D0D0),
+        textMuted = Color(0xFF979797),
         isDark = true,
         isApplicationTheme = true
     ),
@@ -418,22 +415,22 @@ enum class AppTheme(
         id = "EMBER",
         titleKey = "Ember",
         regionTag = "Tema de aplicación",
-        descKey = "Carbón granate con coral y azul hielo para un contraste cálido-frío.",
-        background = Color(0xFF161114),
-        surface = Color(0xFF292027),
-        surfaceVariant = Color(0xFF3B2D35),
-        cardBorder = Color(0xFF694B59),
-        primary = Color(0xFFFF6B6B),
-        primaryLight = Color(0xFFFFA0A0),
-        primaryDark = Color(0xFFB83E4A),
-        primaryGlow = Color(0xFFFF8F8F),
-        secondary = Color(0xFF8ED1FC),
-        secondaryLight = Color(0xFFC8EAFF),
-        secondaryDark = Color(0xFF477B9D),
-        secondaryGlow = Color(0xFFB0E2FF),
-        textPrimary = Color(0xFFFFF7F7),
-        textSecondary = Color(0xFFE5C9D0),
-        textMuted = Color(0xFFB48E9A),
+        descKey = "Carbón monocromático con jerarquía luminosa para una lectura intensa.",
+        background = Color(0xFF171717),
+        surface = Color(0xFF242424),
+        surfaceVariant = Color(0xFF333333),
+        cardBorder = Color(0xFF595959),
+        primary = Color(0xFFE0E0E0),
+        primaryLight = Color(0xFFF5F5F5),
+        primaryDark = Color(0xFFA0A0A0),
+        primaryGlow = Color(0xFFECECEC),
+        secondary = Color(0xFF9C9C9C),
+        secondaryLight = Color(0xFFC8C8C8),
+        secondaryDark = Color(0xFF626262),
+        secondaryGlow = Color(0xFFB5B5B5),
+        textPrimary = Color(0xFFF7F7F7),
+        textSecondary = Color(0xFFD0D0D0),
+        textMuted = Color(0xFF999999),
         isDark = true,
         isApplicationTheme = true
     ),
@@ -441,22 +438,22 @@ enum class AppTheme(
         id = "SAKURA",
         titleKey = "Sakura",
         regionTag = "Tema de aplicación",
-        descKey = "Ciruela profunda con lavanda y jade pálido para una lectura suave.",
-        background = Color(0xFF17131B),
-        surface = Color(0xFF29222F),
-        surfaceVariant = Color(0xFF3A3043),
-        cardBorder = Color(0xFF695878),
-        primary = Color(0xFFE6B0FF),
-        primaryLight = Color(0xFFF2D5FF),
-        primaryDark = Color(0xFF996FBA),
-        primaryGlow = Color(0xFFF0C8FF),
-        secondary = Color(0xFF8FF3E1),
-        secondaryLight = Color(0xFFC4FFF5),
-        secondaryDark = Color(0xFF4BA898),
-        secondaryGlow = Color(0xFFB6FAEE),
-        textPrimary = Color(0xFFFFF8FF),
-        textSecondary = Color(0xFFD9CDE2),
-        textMuted = Color(0xFFA694B0),
+        descKey = "Gris grafito suave con una escala plateada de bajo resplandor.",
+        background = Color(0xFF151515),
+        surface = Color(0xFF252525),
+        surfaceVariant = Color(0xFF363636),
+        cardBorder = Color(0xFF5C5C5C),
+        primary = Color(0xFFD2D2D2),
+        primaryLight = Color(0xFFF0F0F0),
+        primaryDark = Color(0xFF929292),
+        primaryGlow = Color(0xFFE2E2E2),
+        secondary = Color(0xFFA8A8A8),
+        secondaryLight = Color(0xFFD0D0D0),
+        secondaryDark = Color(0xFF6C6C6C),
+        secondaryGlow = Color(0xFFBCBCBC),
+        textPrimary = Color(0xFFF8F8F8),
+        textSecondary = Color(0xFFD4D4D4),
+        textMuted = Color(0xFF9D9D9D),
         isDark = true,
         isApplicationTheme = true
     ),
@@ -464,22 +461,22 @@ enum class AppTheme(
         id = "FOREST",
         titleKey = "Forest",
         regionTag = "Tema de aplicación",
-        descKey = "Verde pino, lima apagada y arcilla para una interfaz serena y orgánica.",
-        background = Color(0xFF10140F),
-        surface = Color(0xFF1E2519),
-        surfaceVariant = Color(0xFF303922),
-        cardBorder = Color(0xFF596443),
-        primary = Color(0xFFC5E478),
-        primaryLight = Color(0xFFE2F4AD),
-        primaryDark = Color(0xFF7E9C3D),
-        primaryGlow = Color(0xFFD8F29A),
-        secondary = Color(0xFFD9A48F),
-        secondaryLight = Color(0xFFF0C5B5),
-        secondaryDark = Color(0xFF98624F),
-        secondaryGlow = Color(0xFFE8B6A1),
-        textPrimary = Color(0xFFF5FAEE),
-        textSecondary = Color(0xFFD0D8C1),
-        textMuted = Color(0xFF9BA78A),
+        descKey = "Gris humo y plata mate para una interfaz serena y sin referencias regionales.",
+        background = Color(0xFF101010),
+        surface = Color(0xFF1E1E1E),
+        surfaceVariant = Color(0xFF2E2E2E),
+        cardBorder = Color(0xFF515151),
+        primary = Color(0xFFC8C8C8),
+        primaryLight = Color(0xFFEAEAEA),
+        primaryDark = Color(0xFF888888),
+        primaryGlow = Color(0xFFDCDCDC),
+        secondary = Color(0xFF969696),
+        secondaryLight = Color(0xFFBDBDBD),
+        secondaryDark = Color(0xFF606060),
+        secondaryGlow = Color(0xFFACACAC),
+        textPrimary = Color(0xFFF4F4F4),
+        textSecondary = Color(0xFFCCCCCC),
+        textMuted = Color(0xFF929292),
         isDark = true,
         isApplicationTheme = true
     ),
@@ -487,22 +484,22 @@ enum class AppTheme(
         id = "COBALT",
         titleKey = "Cobalt",
         regionTag = "Tema de aplicación",
-        descKey = "Pizarra azulada con ámbar y perla para separar datos sin usar oro regional.",
-        background = Color(0xFF0D1116),
-        surface = Color(0xFF1A232E),
-        surfaceVariant = Color(0xFF293744),
-        cardBorder = Color(0xFF4E6478),
-        primary = Color(0xFFFFB86B),
-        primaryLight = Color(0xFFFFD09B),
-        primaryDark = Color(0xFFB97835),
-        primaryGlow = Color(0xFFFFC98A),
-        secondary = Color(0xFFA7B5FF),
-        secondaryLight = Color(0xFFD1D8FF),
-        secondaryDark = Color(0xFF6573C2),
-        secondaryGlow = Color(0xFFBCC7FF),
-        textPrimary = Color(0xFFF6F8FB),
-        textSecondary = Color(0xFFC1CCD7),
-        textMuted = Color(0xFF8B9AA8),
+        descKey = "Pizarra neutra con plata de alto contraste para separar datos sin usar colores regionales.",
+        background = Color(0xFF0D0D0D),
+        surface = Color(0xFF1A1A1A),
+        surfaceVariant = Color(0xFF292929),
+        cardBorder = Color(0xFF4E4E4E),
+        primary = Color(0xFFF0F0F0),
+        primaryLight = Color(0xFFFFFFFF),
+        primaryDark = Color(0xFFAAAAAA),
+        primaryGlow = Color(0xFFF8F8F8),
+        secondary = Color(0xFFAEAEAE),
+        secondaryLight = Color(0xFFD2D2D2),
+        secondaryDark = Color(0xFF707070),
+        secondaryGlow = Color(0xFFC0C0C0),
+        textPrimary = Color(0xFFF6F6F6),
+        textSecondary = Color(0xFFC8C8C8),
+        textMuted = Color(0xFF8E8E8E),
         isDark = true,
         isApplicationTheme = true
     ),
@@ -510,22 +507,22 @@ enum class AppTheme(
         id = "GRAPHITE",
         titleKey = "Graphite",
         regionTag = "Tema de aplicación",
-        descKey = "Pizarra neutra con cobre suave para una interfaz sobria y precisa.",
-        background = Color(0xFF121416),
-        surface = Color(0xFF252A2E),
-        surfaceVariant = Color(0xFF343B40),
-        cardBorder = Color(0xFF59636A),
-        primary = Color(0xFFD7E0E5),
-        primaryLight = Color(0xFFF3F7F9),
-        primaryDark = Color(0xFF89969D),
-        primaryGlow = Color(0xFFE8F0F3),
-        secondary = Color(0xFFD68C63),
-        secondaryLight = Color(0xFFF0B394),
-        secondaryDark = Color(0xFF915638),
-        secondaryGlow = Color(0xFFE8A47D),
-        textPrimary = Color(0xFFF4F6F7),
-        textSecondary = Color(0xFFC5CDD1),
-        textMuted = Color(0xFF939DA2),
+        descKey = "Grafito de contraste medio para una interfaz sobria y precisa.",
+        background = Color(0xFF121212),
+        surface = Color(0xFF252525),
+        surfaceVariant = Color(0xFF343434),
+        cardBorder = Color(0xFF5C5C5C),
+        primary = Color(0xFFD8D8D8),
+        primaryLight = Color(0xFFF3F3F3),
+        primaryDark = Color(0xFF929292),
+        primaryGlow = Color(0xFFE8E8E8),
+        secondary = Color(0xFFA0A0A0),
+        secondaryLight = Color(0xFFC8C8C8),
+        secondaryDark = Color(0xFF686868),
+        secondaryGlow = Color(0xFFB8B8B8),
+        textPrimary = Color(0xFFF4F4F4),
+        textSecondary = Color(0xFFC5C5C5),
+        textMuted = Color(0xFF939393),
         isDark = true,
         isApplicationTheme = true
     ),
@@ -533,22 +530,22 @@ enum class AppTheme(
         id = "MINT",
         titleKey = "Mint",
         regionTag = "Tema de aplicación",
-        descKey = "Menta mineral y lavanda para una lectura fresca con señales suaves.",
-        background = Color(0xFF081716),
-        surface = Color(0xFF112B29),
-        surfaceVariant = Color(0xFF1D403D),
-        cardBorder = Color(0xFF39706A),
-        primary = Color(0xFF8AF0D0),
-        primaryLight = Color(0xFFC0FFE9),
-        primaryDark = Color(0xFF4BA58D),
-        primaryGlow = Color(0xFFA8F8DE),
-        secondary = Color(0xFFD1A6FF),
-        secondaryLight = Color(0xFFE8D4FF),
-        secondaryDark = Color(0xFF8662B3),
-        secondaryGlow = Color(0xFFDEBDFF),
-        textPrimary = Color(0xFFF2FFFC),
-        textSecondary = Color(0xFFC5E4DE),
-        textMuted = Color(0xFF8BB8B0),
+        descKey = "Gris carbón con superficies plateadas para una lectura fresca y estable.",
+        background = Color(0xFF0B0B0B),
+        surface = Color(0xFF181818),
+        surfaceVariant = Color(0xFF292929),
+        cardBorder = Color(0xFF4C4C4C),
+        primary = Color(0xFFC6C6C6),
+        primaryLight = Color(0xFFECECEC),
+        primaryDark = Color(0xFF858585),
+        primaryGlow = Color(0xFFDADADA),
+        secondary = Color(0xFF8F8F8F),
+        secondaryLight = Color(0xFFBDBDBD),
+        secondaryDark = Color(0xFF5F5F5F),
+        secondaryGlow = Color(0xFFA8A8A8),
+        textPrimary = Color(0xFFF2F2F2),
+        textSecondary = Color(0xFFC5C5C5),
+        textMuted = Color(0xFF8B8B8B),
         isDark = true,
         isApplicationTheme = true
     ),
@@ -556,22 +553,22 @@ enum class AppTheme(
         id = "VOLT",
         titleKey = "Volt",
         regionTag = "Tema de aplicación",
-        descKey = "Lima ácida y coral sobre carbón para detectar cambios al instante.",
-        background = Color(0xFF13120A),
-        surface = Color(0xFF272314),
-        surfaceVariant = Color(0xFF3C351D),
-        cardBorder = Color(0xFF6C5C2C),
-        primary = Color(0xFFD8FF62),
-        primaryLight = Color(0xFFEBFFAE),
-        primaryDark = Color(0xFF8FAF2D),
-        primaryGlow = Color(0xFFE4FF87),
-        secondary = Color(0xFFFF9F68),
-        secondaryLight = Color(0xFFFFC29B),
-        secondaryDark = Color(0xFFB45D35),
-        secondaryGlow = Color(0xFFFFB685),
-        textPrimary = Color(0xFFFFFDEB),
-        textSecondary = Color(0xFFE0D9B9),
-        textMuted = Color(0xFFAAA06F),
+        descKey = "Escala blanca y gris con estados marcados por contraste, no por colores regionales.",
+        background = Color(0xFF131313),
+        surface = Color(0xFF232323),
+        surfaceVariant = Color(0xFF353535),
+        cardBorder = Color(0xFF5D5D5D),
+        primary = Color(0xFFF5F5F5),
+        primaryLight = Color(0xFFFFFFFF),
+        primaryDark = Color(0xFFB0B0B0),
+        primaryGlow = Color(0xFFFAFAFA),
+        secondary = Color(0xFFB3B3B3),
+        secondaryLight = Color(0xFFD6D6D6),
+        secondaryDark = Color(0xFF747474),
+        secondaryGlow = Color(0xFFC4C4C4),
+        textPrimary = Color(0xFFFFFEFE),
+        textSecondary = Color(0xFFD0D0D0),
+        textMuted = Color(0xFF969696),
         isDark = true,
         isApplicationTheme = true
     ),
@@ -579,22 +576,22 @@ enum class AppTheme(
         id = "CANDY",
         titleKey = "Candy",
         regionTag = "Tema de aplicación",
-        descKey = "Rosa frambuesa y azul glacial para una interfaz ligera y expresiva.",
-        background = Color(0xFF160D1A),
-        surface = Color(0xFF29152E),
-        surfaceVariant = Color(0xFF402044),
-        cardBorder = Color(0xFF754C79),
-        primary = Color(0xFFFF8AB4),
-        primaryLight = Color(0xFFFFC0D7),
-        primaryDark = Color(0xFFB75379),
-        primaryGlow = Color(0xFFFFA9C9),
-        secondary = Color(0xFF7BE7FF),
-        secondaryLight = Color(0xFFBCEFFF),
-        secondaryDark = Color(0xFF438DA0),
-        secondaryGlow = Color(0xFFA4EDFF),
-        textPrimary = Color(0xFFFFF6FC),
-        textSecondary = Color(0xFFE2C9DE),
-        textMuted = Color(0xFFB18BAE),
+        descKey = "Carbón suave con una escala blanca y gris para una interfaz ligera y expresiva.",
+        background = Color(0xFF151515),
+        surface = Color(0xFF252525),
+        surfaceVariant = Color(0xFF373737),
+        cardBorder = Color(0xFF5E5E5E),
+        primary = Color(0xFFE8E8E8),
+        primaryLight = Color(0xFFFFFFFF),
+        primaryDark = Color(0xFFA6A6A6),
+        primaryGlow = Color(0xFFF2F2F2),
+        secondary = Color(0xFFB8B8B8),
+        secondaryLight = Color(0xFFD7D7D7),
+        secondaryDark = Color(0xFF787878),
+        secondaryGlow = Color(0xFFC8C8C8),
+        textPrimary = Color(0xFFF8F8F8),
+        textSecondary = Color(0xFFD0D0D0),
+        textMuted = Color(0xFF969696),
         isDark = true,
         isApplicationTheme = true
     ),
@@ -602,47 +599,22 @@ enum class AppTheme(
         id = "SLATE",
         titleKey = "Slate",
         regionTag = "Tema de aplicación",
-        descKey = "Gris pizarra, plata azulada y rosa tenue para una lectura equilibrada.",
-        background = Color(0xFF101319),
-        surface = Color(0xFF1D2634),
-        surfaceVariant = Color(0xFF2C394A),
-        cardBorder = Color(0xFF52647A),
-        primary = Color(0xFFC1D0E0),
-        primaryLight = Color(0xFFE2EBF4),
-        primaryDark = Color(0xFF74869B),
-        primaryGlow = Color(0xFFD5E2EF),
-        secondary = Color(0xFFF1A7C6),
-        secondaryLight = Color(0xFFFFD1E1),
-        secondaryDark = Color(0xFFB06A87),
-        secondaryGlow = Color(0xFFFFBBD4),
-        textPrimary = Color(0xFFF5F8FC),
-        textSecondary = Color(0xFFC4CEDA),
-        textMuted = Color(0xFF8D9BAC),
-        isDark = true,
-        isApplicationTheme = true
-    ),
-    CUSTOM(
-        id = "CUSTOM",
-        titleKey = "Custom",
-        regionTag = "Tema de aplicación",
-        descKey = "Elige cuatro colores para crear tu propia paleta de aplicación.",
-        // These neutral values only render the empty preview. They are never
-        // considered a valid custom palette until the four user selections exist.
-        background = Color(0xFF0D1117),
-        surface = Color(0xFF18202A),
-        surfaceVariant = Color(0xFF263241),
-        cardBorder = Color(0xFF46576B),
-        primary = Color(0xFF64748B),
-        primaryLight = Color(0xFF94A3B8),
-        primaryDark = Color(0xFF475569),
-        primaryGlow = Color(0xFF7DD3FC),
-        secondary = Color(0xFF94A3B8),
-        secondaryLight = Color(0xFFCBD5E1),
-        secondaryDark = Color(0xFF64748B),
-        secondaryGlow = Color(0xFFBAE6FD),
-        textPrimary = Color(0xFFF8FAFC),
-        textSecondary = Color(0xFFCBD5E1),
-        textMuted = Color(0xFF94A3B8),
+        descKey = "Pizarra neutra con plata escalonada para una lectura equilibrada.",
+        background = Color(0xFF111111),
+        surface = Color(0xFF1E1E1E),
+        surfaceVariant = Color(0xFF303030),
+        cardBorder = Color(0xFF555555),
+        primary = Color(0xFFDADADA),
+        primaryLight = Color(0xFFF2F2F2),
+        primaryDark = Color(0xFF929292),
+        primaryGlow = Color(0xFFE6E6E6),
+        secondary = Color(0xFFA7A7A7),
+        secondaryLight = Color(0xFFCFCFCF),
+        secondaryDark = Color(0xFF6E6E6E),
+        secondaryGlow = Color(0xFFBDBDBD),
+        textPrimary = Color(0xFFF5F5F5),
+        textSecondary = Color(0xFFC4C4C4),
+        textMuted = Color(0xFF8D8D8D),
         isDark = true,
         isApplicationTheme = true
     );
@@ -656,13 +628,6 @@ enum class AppTheme(
         }
     }
 }
-
-data class CustomThemeColors(
-    val primary: Color,
-    val secondary: Color,
-    val glow: Color,
-    val alternate: Color
-)
 
 enum class NavBarColorOption(
     val id: String,
@@ -849,15 +814,8 @@ object AppThemeManager {
     private const val PREFS_KEY_NAV_BAR = "selected_app_navbar_id"
     private const val PREFS_KEY_NAV_STYLE = "selected_coach_nav_style"
     private const val PREFS_KEY_OLED_MODE = "selected_app_oled_mode"
-    private const val PREFS_KEY_CUSTOM_PRIMARY = "custom_theme_primary"
-    private const val PREFS_KEY_CUSTOM_SECONDARY = "custom_theme_secondary"
-    private const val PREFS_KEY_CUSTOM_GLOW = "custom_theme_glow"
-    private const val PREFS_KEY_CUSTOM_ALTERNATE = "custom_theme_alternate"
 
     var currentTheme by mutableStateOf(AppTheme.PILTOVER)
-        private set
-
-    var customThemeColors by mutableStateOf<CustomThemeColors?>(null)
         private set
 
     var currentNavBarOption by mutableStateOf(NavBarColorOption.THEME_AUTO)
@@ -881,10 +839,6 @@ object AppThemeManager {
                 .putString(PREFS_KEY_NAV_STYLE, previous.getString(PREFS_KEY_NAV_STYLE, CoachNavStyle.ORIGINAL.id))
                 .putBoolean(PREFS_KEY_OLED_MODE, previous.getBoolean(PREFS_KEY_OLED_MODE, false))
                 .putBoolean("particles_enabled", previous.getBoolean("particles_enabled", false))
-                .putString(PREFS_KEY_CUSTOM_PRIMARY, previous.getString(PREFS_KEY_CUSTOM_PRIMARY, null))
-                .putString(PREFS_KEY_CUSTOM_SECONDARY, previous.getString(PREFS_KEY_CUSTOM_SECONDARY, null))
-                .putString(PREFS_KEY_CUSTOM_GLOW, previous.getString(PREFS_KEY_CUSTOM_GLOW, null))
-                .putString(PREFS_KEY_CUSTOM_ALTERNATE, previous.getString(PREFS_KEY_CUSTOM_ALTERNATE, null))
                 .apply()
         }
         val savedThemeId = prefs.getString(PREFS_KEY_THEME, AppTheme.PILTOVER.id) ?: AppTheme.PILTOVER.id
@@ -892,13 +846,10 @@ object AppThemeManager {
         val savedOled = prefs.getBoolean(PREFS_KEY_OLED_MODE, false)
         val savedParticles = prefs.getBoolean("particles_enabled", false)
 
-        val savedCustomColors = readCustomThemeColors(prefs)
-        customThemeColors = savedCustomColors
-        savedCustomColors?.let(::applyCustomThemeColors)
-        currentTheme = if (savedThemeId.equals(AppTheme.CUSTOM.id, ignoreCase = true) && savedCustomColors == null) {
-            AppTheme.PILTOVER
-        } else {
-            AppTheme.fromId(savedThemeId)
+        val removedCustomTheme = savedThemeId.equals("CUSTOM", ignoreCase = true)
+        currentTheme = AppTheme.fromId(savedThemeId)
+        if (removedCustomTheme) {
+            prefs.edit().putString(PREFS_KEY_THEME, AppTheme.PILTOVER.id).apply()
         }
         currentNavBarOption = NavBarColorOption.entries.find { it.id == savedNavId } ?: NavBarColorOption.THEME_AUTO
         currentNavStyle = CoachNavStyle.fromId(prefs.getString(PREFS_KEY_NAV_STYLE, CoachNavStyle.ORIGINAL.id))
@@ -923,88 +874,11 @@ object AppThemeManager {
     }
 
     fun setTheme(theme: AppTheme, context: Context? = null) {
-        if (theme == AppTheme.CUSTOM && customThemeColors == null) return
         currentTheme = theme
         context?.let {
             val prefs = it.getSharedPreferences("coach_visual_preferences", Context.MODE_PRIVATE)
             prefs.edit().putString(PREFS_KEY_THEME, theme.id).apply()
         }
-    }
-
-    fun hasCompleteCustomTheme(): Boolean = customThemeColors != null
-
-    fun setCustomThemeColors(
-        primary: Color,
-        secondary: Color,
-        glow: Color,
-        alternate: Color,
-        context: Context? = null
-    ) {
-        val palette = CustomThemeColors(primary, secondary, glow, alternate)
-        applyCustomThemeColors(palette)
-        customThemeColors = palette
-        context?.getSharedPreferences("coach_visual_preferences", Context.MODE_PRIVATE)?.edit()
-            ?.putString(PREFS_KEY_CUSTOM_PRIMARY, colorPreferenceValue(primary))
-            ?.putString(PREFS_KEY_CUSTOM_SECONDARY, colorPreferenceValue(secondary))
-            ?.putString(PREFS_KEY_CUSTOM_GLOW, colorPreferenceValue(glow))
-            ?.putString(PREFS_KEY_CUSTOM_ALTERNATE, colorPreferenceValue(alternate))
-            ?.apply()
-    }
-
-    private fun readCustomThemeColors(prefs: android.content.SharedPreferences): CustomThemeColors? {
-        val colors = listOf(
-            parsePreferenceColor(prefs.getString(PREFS_KEY_CUSTOM_PRIMARY, null)),
-            parsePreferenceColor(prefs.getString(PREFS_KEY_CUSTOM_SECONDARY, null)),
-            parsePreferenceColor(prefs.getString(PREFS_KEY_CUSTOM_GLOW, null)),
-            parsePreferenceColor(prefs.getString(PREFS_KEY_CUSTOM_ALTERNATE, null))
-        )
-        if (colors.any { it == null }) return null
-        return CustomThemeColors(
-            primary = colors[0]!!,
-            secondary = colors[1]!!,
-            glow = colors[2]!!,
-            alternate = colors[3]!!
-        )
-    }
-
-    private fun parsePreferenceColor(value: String?): Color? = value?.let {
-        runCatching { Color(android.graphics.Color.parseColor(it)) }.getOrNull()
-    }
-
-    private fun colorPreferenceValue(color: Color): String =
-        String.format(Locale.US, "#%08X", color.toArgb())
-
-    private fun applyCustomThemeColors(colors: CustomThemeColors) {
-        val custom = AppTheme.CUSTOM
-        // Derive the application surfaces from the user's alternate color so
-        // Custom changes the whole UI, not only the accent swatches.
-        val alternate = colors.alternate
-        custom.background = Color(
-            alternate.red * 0.10f,
-            alternate.green * 0.10f,
-            alternate.blue * 0.14f,
-            1f
-        )
-        custom.surface = Color(
-            alternate.red * 0.22f,
-            alternate.green * 0.22f,
-            alternate.blue * 0.28f,
-            1f
-        )
-        custom.primary = colors.primary
-        custom.primaryLight = colors.primary.copy(alpha = 0.82f)
-        custom.primaryDark = colors.primary.copy(alpha = 0.68f)
-        custom.primaryGlow = colors.glow
-        custom.secondary = colors.secondary
-        custom.secondaryLight = colors.alternate
-        custom.secondaryDark = colors.secondary
-        custom.secondaryGlow = colors.glow
-        custom.surfaceVariant = colors.alternate
-        custom.cardBorder = colors.alternate
-        val lightText = colors.primary.luminance() > 0.55f
-        custom.textPrimary = if (lightText) Color(0xFF0B1220) else Color(0xFFF8FAFC)
-        custom.textSecondary = if (lightText) Color(0xFF334155) else Color(0xFFCBD5E1)
-        custom.textMuted = if (lightText) Color(0xFF475569) else Color(0xFF94A3B8)
     }
 
     fun setNavBarOption(option: NavBarColorOption, context: Context? = null) {

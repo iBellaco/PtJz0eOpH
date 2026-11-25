@@ -36,6 +36,32 @@ class ChampionRoleAdapterBuildRulesTest {
     }
 
     @Test
+    fun `jungle normalization restores smite when an imported build omits it`() {
+        val option = ChampionRoleAdapter.normalizeBuildOption(
+            ChampionBuildOption(
+                optionNumber = 1,
+                title = "Jungla heredada",
+                subtitle = "",
+                source = "",
+                badge = "",
+                tacticalReason = "",
+                items = listOf("Fuerza de trinidad", "Danza de la muerte"),
+                bootBase = "Botas blindadas",
+                bootUpgrade = "Avance blindado",
+                runes = emptyList(),
+                spells = listOf("Destello", "Ignición"),
+                spellsIcons = emptyList()
+            ),
+            Champion(id = "lee-sin", name = "Lee Sin", primaryRole = LaneRole.JUNGLE),
+            LaneRole.JUNGLE
+        )
+        val canonicalSmite = requireNotNull(WildRiftSpellsAndRunes.getSpellByName("Castigo")).name
+
+        assertEquals(canonicalSmite, option.spells.first())
+        assertEquals(2, option.spells.size)
+    }
+
+    @Test
     fun `support normalization inserts one quest item and removes repeated core items`() {
         val option = ChampionRoleAdapter.normalizeBuildOption(
             ChampionBuildOption(

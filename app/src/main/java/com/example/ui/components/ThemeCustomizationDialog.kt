@@ -26,7 +26,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.platform.testTag
@@ -56,31 +55,8 @@ fun ThemeCustomizationBottomSheet(
     var showPremiumRequiredDialog by remember { mutableStateOf(false) }
     var previewNavStyle by remember { mutableStateOf(AppThemeManager.currentNavStyle) }
     var previewNavTab by remember { mutableIntStateOf(0) }
-    var customPrimary by remember { mutableStateOf(AppThemeManager.customThemeColors?.primary) }
-    var customSecondary by remember { mutableStateOf(AppThemeManager.customThemeColors?.secondary) }
-    var customGlow by remember { mutableStateOf(AppThemeManager.customThemeColors?.glow) }
-    var customAlternate by remember { mutableStateOf(AppThemeManager.customThemeColors?.alternate) }
-    var activeCustomPalette by remember { mutableStateOf<CustomPaletteSection?>(null) }
     val themeScrollState = rememberScrollState()
-
-    val customPreviewColors = CustomThemeColors(
-        primary = customPrimary ?: AppTheme.CUSTOM.primary,
-        secondary = customSecondary ?: AppTheme.CUSTOM.secondary,
-        glow = customGlow ?: AppTheme.CUSTOM.primaryGlow,
-        alternate = customAlternate ?: AppTheme.CUSTOM.surfaceVariant
-    )
-
-    val hasCompleteCustomPalette = customPrimary != null && customSecondary != null &&
-        customGlow != null && customAlternate != null
-    val customPaletteMatchesApplied = hasCompleteCustomPalette &&
-        AppThemeManager.customThemeColors == CustomThemeColors(
-            primary = customPrimary!!,
-            secondary = customSecondary!!,
-            glow = customGlow!!,
-            alternate = customAlternate!!
-        )
-    val previewIsApplied = currentTheme == previewTheme &&
-        (previewTheme != AppTheme.CUSTOM || customPaletteMatchesApplied)
+    val previewIsApplied = currentTheme == previewTheme
 
     LaunchedEffect(currentTheme) {
         previewTheme = currentTheme
@@ -383,37 +359,8 @@ fun ThemeCustomizationBottomSheet(
                 inspectedTheme = previewTheme,
                 isApplied = previewIsApplied,
                 isPremium = isPremium,
-                canApply = previewTheme != AppTheme.CUSTOM || hasCompleteCustomPalette,
-                customColors = if (previewTheme == AppTheme.CUSTOM) customPreviewColors else null,
-                onPrimaryColorClick = if (previewTheme == AppTheme.CUSTOM) {
-                    { activeCustomPalette = CustomPaletteSection.PRIMARY }
-                } else null,
-                onSecondaryColorClick = if (previewTheme == AppTheme.CUSTOM) {
-                    { activeCustomPalette = CustomPaletteSection.SECONDARY }
-                } else null,
-                onGlowColorClick = if (previewTheme == AppTheme.CUSTOM) {
-                    { activeCustomPalette = CustomPaletteSection.GLOW }
-                } else null,
-                onAlternateColorClick = if (previewTheme == AppTheme.CUSTOM) {
-                    { activeCustomPalette = CustomPaletteSection.ALTERNATE }
-                } else null,
                 onShowPremiumAlert = { showPremiumRequiredDialog = true },
-                onApply = {
-                    if (previewTheme == AppTheme.CUSTOM) {
-                        if (hasCompleteCustomPalette) {
-                            AppThemeManager.setCustomThemeColors(
-                                primary = customPrimary!!,
-                                secondary = customSecondary!!,
-                                glow = customGlow!!,
-                                alternate = customAlternate!!,
-                                context = context
-                            )
-                            AppThemeManager.setTheme(AppTheme.CUSTOM, context)
-                        }
-                    } else {
-                        AppThemeManager.setTheme(previewTheme, context)
-                    }
-                }
+                onApply = { AppThemeManager.setTheme(previewTheme, context) }
             )
 
             // Carrusel Horizontal de Regiones Estilo Póster
@@ -542,38 +489,6 @@ fun ThemeCustomizationBottomSheet(
                 onSelect = { previewTheme = it }
             )
 
-            if (previewTheme == AppTheme.CUSTOM) {
-                CustomThemeEditor(
-                    primary = customPrimary,
-                    secondary = customSecondary,
-                    glow = customGlow,
-                    alternate = customAlternate,
-                    onSectionSelected = { activeCustomPalette = it }
-                )
-            }
-            }
-
-            activeCustomPalette?.let { section ->
-                val selected = when (section) {
-                    CustomPaletteSection.PRIMARY -> customPrimary
-                    CustomPaletteSection.SECONDARY -> customSecondary
-                    CustomPaletteSection.GLOW -> customGlow
-                    CustomPaletteSection.ALTERNATE -> customAlternate
-                }
-                CustomColorPickerOverlay(
-                    section = section,
-                    selected = selected,
-                    onSelected = { color ->
-                        when (section) {
-                            CustomPaletteSection.PRIMARY -> customPrimary = color
-                            CustomPaletteSection.SECONDARY -> customSecondary = color
-                            CustomPaletteSection.GLOW -> customGlow = color
-                            CustomPaletteSection.ALTERNATE -> customAlternate = color
-                        }
-                        activeCustomPalette = null
-                    },
-                    onDismiss = { activeCustomPalette = null }
-                )
             }
         }
     }
@@ -676,34 +591,21 @@ private fun RegionVisualPreviewGridCard(
     isApplied: Boolean,
     isPremium: Boolean,
     canApply: Boolean = true,
-    customColors: CustomThemeColors? = null,
-    onPrimaryColorClick: (() -> Unit)? = null,
-    onSecondaryColorClick: (() -> Unit)? = null,
-    onGlowColorClick: (() -> Unit)? = null,
-    onAlternateColorClick: (() -> Unit)? = null,
     onShowPremiumAlert: () -> Unit = {},
     onApply: () -> Unit
 ) {
-    val previewPrimary = customColors?.primary ?: inspectedTheme.primary
-    val previewSecondary = customColors?.secondary ?: inspectedTheme.secondary
-    val previewGlow = customColors?.glow ?: inspectedTheme.primaryGlow
-    val previewAlternate = customColors?.alternate ?: inspectedTheme.surfaceVariant
-    val previewPrimaryLight = customColors?.primary?.copy(alpha = 0.82f) ?: inspectedTheme.primaryLight
-    val previewPrimaryDark = customColors?.primary?.copy(alpha = 0.68f) ?: inspectedTheme.primaryDark
-    val previewSecondaryGlow = customColors?.glow ?: inspectedTheme.secondaryGlow
-    val previewCardBorder = customColors?.alternate ?: inspectedTheme.cardBorder
-    val previewBackground = customColors?.alternate?.let {
-        Color(it.red * 0.10f, it.green * 0.10f, it.blue * 0.14f, 1f)
-    } ?: inspectedTheme.background
-    val previewSurface = customColors?.alternate?.let {
-        Color(it.red * 0.22f, it.green * 0.22f, it.blue * 0.28f, 1f)
-    } ?: inspectedTheme.surface
-    val previewTextPrimary = customColors?.primary?.let {
-        if (it.luminance() > 0.55f) Color(0xFF0B1220) else Color(0xFFF8FAFC)
-    } ?: inspectedTheme.textPrimary
-    val previewTextSecondary = customColors?.primary?.let {
-        if (it.luminance() > 0.55f) Color(0xFF334155) else Color(0xFFCBD5E1)
-    } ?: inspectedTheme.textSecondary
+    val previewPrimary = inspectedTheme.primary
+    val previewSecondary = inspectedTheme.secondary
+    val previewGlow = inspectedTheme.primaryGlow
+    val previewAlternate = inspectedTheme.surfaceVariant
+    val previewPrimaryLight = inspectedTheme.primaryLight
+    val previewPrimaryDark = inspectedTheme.primaryDark
+    val previewSecondaryGlow = inspectedTheme.secondaryGlow
+    val previewCardBorder = inspectedTheme.cardBorder
+    val previewBackground = inspectedTheme.background
+    val previewSurface = inspectedTheme.surface
+    val previewTextPrimary = inspectedTheme.textPrimary
+    val previewTextSecondary = inspectedTheme.textSecondary
 
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -832,9 +734,7 @@ private fun RegionVisualPreviewGridCard(
                     title = "Primario",
                     subtitle = "Acciones / Draft",
                     textColor = previewTextPrimary,
-                    isFeatured = true,
-                    onClick = onPrimaryColorClick,
-                    testTag = if (onPrimaryColorClick != null) "custom_preview_primary" else null
+                    isFeatured = true
                 )
                 ColorSwatchGridItem(
                     modifier = Modifier.weight(1f),
@@ -843,9 +743,7 @@ private fun RegionVisualPreviewGridCard(
                     title = "Secundario",
                     subtitle = "Acentos / Oro",
                     textColor = previewTextPrimary,
-                    isFeatured = true,
-                    onClick = onSecondaryColorClick,
-                    testTag = if (onSecondaryColorClick != null) "custom_preview_secondary" else null
+                    isFeatured = true
                 )
                 ColorSwatchGridItem(
                     modifier = Modifier.weight(1f),
@@ -854,9 +752,7 @@ private fun RegionVisualPreviewGridCard(
                     title = "Resplandor",
                     subtitle = "Aura Rúnica",
                     textColor = previewTextPrimary,
-                    isFeatured = false,
-                    onClick = onGlowColorClick,
-                    testTag = if (onGlowColorClick != null) "custom_preview_glow" else null
+                    isFeatured = false
                 )
                 ColorSwatchGridItem(
                     modifier = Modifier.weight(1f),
@@ -865,9 +761,7 @@ private fun RegionVisualPreviewGridCard(
                     title = "Suplente",
                     subtitle = "Estados / soporte",
                     textColor = previewTextPrimary,
-                    isFeatured = false,
-                    onClick = onAlternateColorClick,
-                    testTag = if (onAlternateColorClick != null) "custom_preview_alternate" else null
+                    isFeatured = false
                 )
             }
 
@@ -1024,7 +918,6 @@ private fun ApplicationThemeSection(
     onSelect: (AppTheme) -> Unit
 ) {
     val applicationThemes = AppTheme.entries.filter { it.isApplicationTheme }
-    val customThemeReady = AppThemeManager.customThemeColors != null
 
     Column(
         modifier = Modifier
@@ -1045,7 +938,7 @@ private fun ApplicationThemeSection(
                     fontSize = 12.sp
                 )
                 Text(
-                    text = tr("13 estilos Premium independientes de las regiones."),
+                    text = tr("12 estilos Premium independientes de las regiones."),
                     color = TextSecondary,
                     fontSize = 10.5.sp,
                     lineHeight = 14.sp
@@ -1104,23 +997,12 @@ private fun ApplicationThemeSection(
                                     )
                             )
                         }
-                        if (theme != AppTheme.CUSTOM || customThemeReady) {
-                            ThemeColorDots(
-                                theme = theme,
-                                modifier = Modifier
-                                    .align(Alignment.TopStart)
-                                    .padding(7.dp)
-                            )
-                        } else {
-                            Text(
-                                text = tr("Sin colores"),
-                                color = theme.textSecondary,
-                                fontSize = 8.5.sp,
-                                modifier = Modifier
-                                    .align(Alignment.TopStart)
-                                    .padding(7.dp)
-                            )
-                        }
+                        ThemeColorDots(
+                            theme = theme,
+                            modifier = Modifier
+                                .align(Alignment.TopStart)
+                                .padding(7.dp)
+                        )
                         Column(
                             modifier = Modifier
                                 .align(Alignment.BottomStart)
@@ -1161,280 +1043,6 @@ private fun ApplicationThemeSection(
                         }
                     }
                 }
-            }
-        }
-    }
-}
-
-private val customColorPalette = listOf(
-    Color(0xFFF44336), Color(0xFFFF5252), Color(0xFFE91E63), Color(0xFFFF4081),
-    Color(0xFF9C27B0), Color(0xFFE040FB), Color(0xFF673AB7), Color(0xFF7C4DFF),
-    Color(0xFF3F51B5), Color(0xFF536DFE), Color(0xFF2196F3), Color(0xFF448AFF),
-    Color(0xFF03A9F4), Color(0xFF40C4FF), Color(0xFF00BCD4), Color(0xFF18FFFF),
-    Color(0xFF009688), Color(0xFF64FFDA), Color(0xFF4CAF50), Color(0xFF69F0AE),
-    Color(0xFF8BC34A), Color(0xFFB2FF59), Color(0xFFCDDC39), Color(0xFFEEFF41),
-    Color(0xFFFFEB3B), Color(0xFFFFFF00), Color(0xFFFFC107), Color(0xFFFFD740),
-    Color(0xFFFF9800), Color(0xFFFFAB40), Color(0xFFFF5722), Color(0xFFFF6E40),
-    Color(0xFF795548), Color(0xFFA1887F), Color(0xFF607D8B), Color(0xFF90A4AE),
-    Color(0xFFFFFFFF), Color(0xFFF8FAFC), Color(0xFFE2E8F0), Color(0xFFCBD5E1),
-    Color(0xFF94A3B8), Color(0xFF64748B), Color(0xFF475569), Color(0xFF334155),
-    Color(0xFF1E293B), Color(0xFF0F172A), Color(0xFF111827), Color(0xFF030712),
-    Color(0xFF0AC8B9), Color(0xFF00F2FE), Color(0xFFC8AA6E), Color(0xFFFFD700),
-    Color(0xFFEF4444), Color(0xFF22C55E), Color(0xFF14B8A6), Color(0xFF8B5CF6),
-    Color(0xFFF97316), Color(0xFF06B6D4), Color(0xFFEC4899), Color(0xFFA855F7)
-)
-
-private enum class CustomPaletteSection(val id: String, val title: String) {
-    PRIMARY("primary", "Primario"),
-    SECONDARY("secondary", "Secundario"),
-    GLOW("glow", "Resplandor"),
-    ALTERNATE("alternate", "Suplente")
-}
-
-@Composable
-private fun CustomThemeEditor(
-    primary: Color?,
-    secondary: Color?,
-    glow: Color?,
-    alternate: Color?,
-    onSectionSelected: (CustomPaletteSection) -> Unit
-) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .testTag("custom_theme_editor"),
-        shape = RoundedCornerShape(14.dp),
-        colors = CardDefaults.cardColors(containerColor = HextechSurface),
-        border = BorderStroke(1.dp, HextechGold.copy(alpha = 0.55f))
-    ) {
-        Column(
-            modifier = Modifier.padding(12.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp)
-        ) {
-            Text(
-                text = tr("Personaliza tu tema"),
-                color = HextechGold,
-                fontWeight = FontWeight.Bold,
-                fontSize = 13.sp
-            )
-            Text(
-                text = tr("Toca una sección para abrir su paleta de colores."),
-                color = TextSecondary,
-                fontSize = 10.5.sp,
-                lineHeight = 14.sp
-            )
-            CustomPaletteSectionButton(CustomPaletteSection.PRIMARY, primary) {
-                onSectionSelected(CustomPaletteSection.PRIMARY)
-            }
-            CustomPaletteSectionButton(CustomPaletteSection.SECONDARY, secondary) {
-                onSectionSelected(CustomPaletteSection.SECONDARY)
-            }
-            CustomPaletteSectionButton(CustomPaletteSection.GLOW, glow) {
-                onSectionSelected(CustomPaletteSection.GLOW)
-            }
-            CustomPaletteSectionButton(CustomPaletteSection.ALTERNATE, alternate) {
-                onSectionSelected(CustomPaletteSection.ALTERNATE)
-            }
-        }
-    }
-}
-
-@Composable
-private fun CustomPaletteSectionButton(
-    section: CustomPaletteSection,
-    selected: Color?,
-    onClick: () -> Unit
-) {
-    Surface(
-        onClick = onClick,
-        modifier = Modifier
-            .fillMaxWidth()
-            .heightIn(min = 56.dp)
-            .testTag("custom_section_${section.id}"),
-        shape = RoundedCornerShape(10.dp),
-        color = HextechDarkBg.copy(alpha = 0.55f),
-        border = BorderStroke(
-            if (selected == null) 1.dp else 1.5.dp,
-            if (selected == null) HextechCardBorder else HextechCyan
-        ),
-        tonalElevation = 0.dp,
-        shadowElevation = 0.dp
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 10.dp, vertical = 8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(10.dp)
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(34.dp)
-                    .clip(CircleShape)
-                    .background(selected ?: HextechSurfaceVariant)
-                    .border(1.dp, if (selected == null) HextechCardBorder else HextechGold, CircleShape),
-                contentAlignment = Alignment.Center
-            ) {
-                if (selected != null) {
-                    Icon(
-                        imageVector = Icons.Default.Check,
-                        contentDescription = null,
-                        tint = if (selected.luminance() > 0.55f) Color.Black else Color.White,
-                        modifier = Modifier.size(16.dp)
-                    )
-                } else {
-                    Icon(
-                        imageVector = Icons.Default.Palette,
-                        contentDescription = null,
-                        tint = TextMuted,
-                        modifier = Modifier.size(17.dp)
-                    )
-                }
-            }
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = tr(section.title),
-                    color = TextPrimary,
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.SemiBold
-                )
-                Text(
-                    text = tr(if (selected == null) "Seleccionar color" else "Seleccionado"),
-                    color = if (selected == null) TextMuted else HextechCyan,
-                    fontSize = 9.5.sp,
-                    modifier = Modifier.testTag("custom_palette_${section.id}_status")
-                )
-            }
-            Icon(
-                imageVector = Icons.Default.ChevronRight,
-                contentDescription = tr("Elegir color"),
-                tint = HextechCyan,
-                modifier = Modifier.size(20.dp)
-            )
-        }
-    }
-}
-
-@Composable
-private fun CustomColorPickerOverlay(
-    section: CustomPaletteSection,
-    selected: Color?,
-    onSelected: (Color) -> Unit,
-    onDismiss: () -> Unit
-) {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.Black.copy(alpha = 0.68f))
-            .clickable { onDismiss() }
-            .testTag("custom_color_picker_overlay"),
-        contentAlignment = Alignment.Center
-    ) {
-        Surface(
-            modifier = Modifier
-                .fillMaxWidth(0.94f)
-                .fillMaxHeight(0.88f)
-                .clickable { }
-                .testTag("custom_color_picker_dialog"),
-            shape = RoundedCornerShape(18.dp),
-            color = HextechSurface,
-            border = BorderStroke(1.2.dp, HextechGold.copy(alpha = 0.65f)),
-            tonalElevation = 4.dp
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp)
-                    .verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = "${tr("Elegir color")}: ${tr(section.title)}",
-                            color = HextechGold,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 16.sp,
-                            modifier = Modifier.testTag("custom_color_picker_title")
-                        )
-                        Text(
-                            text = tr("La vista previa cambia antes de aplicar."),
-                            color = TextSecondary,
-                            fontSize = 10.5.sp
-                        )
-                    }
-                    IconButton(
-                        onClick = onDismiss,
-                        modifier = Modifier.size(48.dp).testTag("custom_color_picker_close")
-                    ) {
-                        Icon(Icons.Default.Close, contentDescription = tr("Cerrar"), tint = TextMuted)
-                    }
-                }
-
-                customColorPalette.chunked(4).forEachIndexed { rowIndex, rowColors ->
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        rowColors.forEachIndexed { columnIndex, color ->
-                            CustomColorSwatch(
-                                color = color,
-                                isSelected = selected == color,
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .height(52.dp)
-                                    .testTag("custom_color_${section.id}_${rowIndex * 4 + columnIndex}"),
-                                onClick = { onSelected(color) }
-                            )
-                        }
-                        repeat(4 - rowColors.size) {
-                            Spacer(modifier = Modifier.weight(1f))
-                        }
-                    }
-                }
-
-                TextButton(
-                    onClick = onDismiss,
-                    modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp).testTag("custom_color_picker_done")
-                ) {
-                    Text(tr("Listo"), color = HextechCyan)
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun CustomColorSwatch(
-    color: Color,
-    isSelected: Boolean,
-    modifier: Modifier,
-    onClick: () -> Unit
-) {
-    Surface(
-        onClick = onClick,
-        modifier = modifier,
-        shape = RoundedCornerShape(10.dp),
-        color = color,
-        border = BorderStroke(
-            if (isSelected) 3.dp else 1.dp,
-            if (isSelected) HextechGold else Color.White.copy(alpha = 0.42f)
-        ),
-        tonalElevation = 0.dp,
-        shadowElevation = 0.dp
-    ) {
-        Box(contentAlignment = Alignment.Center) {
-            if (isSelected) {
-                Icon(
-                    imageVector = Icons.Default.Check,
-                    contentDescription = null,
-                    tint = if (color.luminance() > 0.55f) Color.Black else Color.White,
-                    modifier = Modifier.size(20.dp)
-                )
             }
         }
     }

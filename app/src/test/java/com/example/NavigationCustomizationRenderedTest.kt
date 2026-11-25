@@ -6,7 +6,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.material.icons.filled.Home
 import com.github.takahirom.roborazzi.captureRoboImage
 import com.example.ui.components.AnimatedLogoutButton
@@ -201,65 +200,10 @@ class NavigationCustomizationRenderedTest {
         assertEquals(CoachNavStyle.ORIGINAL, AppThemeManager.currentNavStyle)
     }
 
-    @Test fun customThemeRequiresAllFourColorsBeforeApplying() {
-        AppThemeManager.setTheme(AppTheme.PILTOVER)
-        compose.setContent { MyApplicationTheme {
-            ThemeCustomizationBottomSheet(isPremium = true, onDismiss = {})
-        } }
-        compose.onNodeWithTag("theme_scroll")
-            .performSemanticsAction(SemanticsActions.ScrollBy) { it(0f, 10_000f) }
-        compose.onNodeWithTag("theme_application_carousel")
-            .performScrollToNode(hasTestTag("theme_application_custom"))
-        compose.onNodeWithTag("theme_application_custom").performClick()
-        compose.onNodeWithTag("custom_theme_editor").performScrollTo().assertIsDisplayed()
-        compose.onNodeWithTag("theme_apply_button").performScrollTo().assertIsNotEnabled()
-
-        fun waitForCustomColorPicker() {
-            compose.waitUntil(timeoutMillis = 5_000) {
-                compose.onAllNodesWithTag("custom_color_picker_dialog")
-                    .fetchSemanticsNodes()
-                    .any { node ->
-                        node.layoutInfo.isPlaced &&
-                            node.boundsInRoot.width > 0f &&
-                            node.boundsInRoot.height > 0f
-                    }
-            }
-            compose.onNodeWithTag("custom_color_picker_dialog").assertExists()
-            compose.onNodeWithTag("custom_color_picker_title", useUnmergedTree = true).assertExists()
-        }
-
-        listOf("primary", "secondary", "glow", "alternate").forEach { section ->
-            var clickConsumed = false
-            compose.onNodeWithTag("custom_preview_$section")
-                .assertHasClickAction()
-                .performSemanticsAction(SemanticsActions.OnClick) { action ->
-                    clickConsumed = action()
-                }
-            assertTrue("El selector de $section debe recibir el toque", clickConsumed)
-            waitForCustomColorPicker()
-            compose.onNodeWithTag("custom_color_${section}_19", useUnmergedTree = true)
-                .assertExists()
-                .performClick()
-            compose.onNodeWithTag("custom_color_picker_dialog").assertDoesNotExist()
-        }
-
-        listOf("primary", "secondary", "glow", "alternate").forEach { section ->
-            compose.onNodeWithTag("custom_section_$section")
-                .performScrollTo()
-                .assertHasClickAction()
-                .performClick()
-            waitForCustomColorPicker()
-            compose.onNodeWithTag("custom_color_${section}_0", useUnmergedTree = true)
-                .assertHasClickAction()
-                .performClick()
-            compose.onNodeWithTag("custom_palette_${section}_status", useUnmergedTree = true)
-                .assertTextContains("Seleccionado")
-            compose.onNodeWithTag("custom_color_picker_dialog").assertDoesNotExist()
-        }
-
-        compose.onNodeWithTag("theme_apply_button").assertIsEnabled().performClick()
-        assertEquals(AppTheme.CUSTOM, AppThemeManager.currentTheme)
-        AppThemeManager.setTheme(AppTheme.PILTOVER)
+    @Test fun applicationThemeCatalogExcludesRemovedCustomTheme() {
+        assertFalse(AppTheme.entries.any { it.id.equals("CUSTOM", ignoreCase = true) })
+        assertEquals(12, AppTheme.entries.count { it.isApplicationTheme })
+        assertFalse(AppTheme.entries.any { it.titleKey.equals("Custom", ignoreCase = true) })
     }
 
     @Test fun realLogoutButtonRequestsConfirmationBeforeAnimationOrSignOut() {

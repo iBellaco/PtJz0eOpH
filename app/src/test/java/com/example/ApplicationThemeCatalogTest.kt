@@ -10,20 +10,28 @@ import org.junit.Test
 
 class ApplicationThemeCatalogTest {
     @Test
-    fun `application catalog has thirteen premium styles with custom last`() {
+    fun `application catalog has twelve neutral premium styles`() {
         val themes = AppTheme.entries.filter { it.isApplicationTheme }
 
-        assertEquals(13, themes.size)
+        assertEquals(12, themes.size)
         assertEquals(
-            listOf("WHITE", "BLACK", "AURORA", "EMBER", "SAKURA", "FOREST", "COBALT", "GRAPHITE", "MINT", "VOLT", "CANDY", "SLATE", "CUSTOM"),
+            listOf("WHITE", "BLACK", "AURORA", "EMBER", "SAKURA", "FOREST", "COBALT", "GRAPHITE", "MINT", "VOLT", "CANDY", "SLATE"),
             themes.map { it.id }
         )
         assertTrue(themes.all { it.regionTag == "Tema de aplicación" })
         assertTrue(themes.map { it.descKey }.distinct().size == themes.size)
         assertEquals(themes.size, themes.map { listOf(it.background, it.surface, it.primary, it.secondary) }.distinct().size)
+        themes.forEach { theme ->
+            listOf(theme.background, theme.surface, theme.surfaceVariant, theme.cardBorder,
+                theme.primary, theme.primaryLight, theme.primaryDark, theme.primaryGlow,
+                theme.secondary, theme.secondaryLight, theme.secondaryDark, theme.secondaryGlow,
+                theme.textPrimary, theme.textSecondary, theme.textMuted).forEach { color ->
+                assertEquals("${theme.id} must use an achromatic application palette", color.red, color.green, 0.001f)
+                assertEquals("${theme.id} must use an achromatic application palette", color.green, color.blue, 0.001f)
+            }
+        }
         assertTrue(themes.first { it.id == "WHITE" }.isDark.not())
         assertTrue(themes.filter { it.id != "WHITE" }.all { it.isDark })
-        assertEquals("Custom", themes.last().titleKey)
     }
 
     @Test
