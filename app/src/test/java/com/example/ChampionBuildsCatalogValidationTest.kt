@@ -56,6 +56,7 @@ class ChampionBuildsCatalogValidationTest {
         }.map { it.name }.toSet()
         val supportStarterNames = setOf("Hoz espectral", "Escudo reliquia")
         val validSpellNames = WildRiftSpellsAndRunes.summonerSpells.map { it.name }.toSet()
+        val canonicalSmiteName = requireNotNull(WildRiftSpellsAndRunes.getSpellByName("Castigo")).name
         val validRunesMap = WildRiftSpellsAndRunes.runes.associateBy { it.name }
 
         val bootPairs = mapOf(
@@ -94,6 +95,9 @@ class ChampionBuildsCatalogValidationTest {
             if (build.role.contains("Soporte", ignoreCase = true)) {
                 val requiredSupportItems = build.coreItems.filter { it in supportStarterNames }
                 assertEquals("$prefix support must use exactly one required support item", 1, requiredSupportItems.size)
+            }
+            if (build.role.contains("Jungla", ignoreCase = true)) {
+                assertTrue("$prefix jungle must include the mandatory smite spell", build.spells.any { it == canonicalSmiteName })
             }
 
             val champion = champions.first { it.id == build.championId }

@@ -80,6 +80,9 @@ object ChampionRoleAdapter {
 
     private fun itemKey(name: String): String = name.trim().lowercase()
 
+    private val canonicalJungleSpell: String
+        get() = WildRiftSpellsAndRunes.getSpellByName("Castigo")?.name ?: "Aplastar"
+
     /** The support quest must occupy one core slot, never a situational slot. */
     fun isSupportStarter(name: String): Boolean = itemKey(name) in setOf(
         itemKey("Hoz espectral"),
@@ -471,7 +474,7 @@ object ChampionRoleAdapter {
 
         // 1. Spells for flex role (ensuring 2 distinct spells)
         val recommendedSpells = when (role) {
-            LaneRole.JUNGLE -> listOf("Castigo", "Destello")
+            LaneRole.JUNGLE -> listOf(canonicalJungleSpell, "Destello")
             LaneRole.SUPPORT -> listOf("Destello", "Ignición")
             LaneRole.ADC -> listOf("Destello", "Barrera")
             LaneRole.TOP -> listOf("Destello", "Ignición")
@@ -605,12 +608,12 @@ object ChampionRoleAdapter {
             WildRiftSpellsAndRunes.getSpellByName(raw)?.name ?: raw.trim().ifBlank { null }
         }.distinctBy { itemKey(it) }
         val defaults = when (role) {
-            LaneRole.JUNGLE -> listOf("Castigo", "Destello")
+            LaneRole.JUNGLE -> listOf(canonicalJungleSpell, "Destello")
             LaneRole.SUPPORT -> listOf("Destello", "Ignición")
             LaneRole.ADC -> listOf("Destello", "Barrera")
             LaneRole.TOP, LaneRole.MID -> listOf("Destello", "Ignición")
         }
-        val smiteKey = itemKey(WildRiftSpellsAndRunes.getSpellByName("Castigo")?.name ?: "Castigo")
+        val smiteKey = itemKey(canonicalJungleSpell)
         val sanitized = unique.filterNot { itemKey(it) == smiteKey }
         val ordered = if (role == LaneRole.JUNGLE) {
             listOf(defaults.first()) + sanitized
