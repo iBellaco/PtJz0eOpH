@@ -42,12 +42,14 @@ object AllyDraftReconciler {
         userSlot: Int?,
         userRole: LaneRole?
     ): Map<Int, LaneRole> {
-        if (userSlot !in 0..4 || userRole == null) return rolesBySlot
+        val slot = userSlot ?: return rolesBySlot
+        val role = userRole ?: return rolesBySlot
+        if (slot !in 0..4) return rolesBySlot
         return rolesBySlot
-            .filterKeys { it in 0..4 && it != userSlot }
-            .filterValues { it != userRole }
+            .filterKeys { it in 0..4 && it != slot }
+            .filterValues { it != role }
             .toMutableMap()
-            .apply { this[userSlot] = userRole }
+            .apply { this[slot] = role }
             .toMap()
     }
 
