@@ -21,14 +21,24 @@ class DraftSessionLifecycleTest {
         val hud = OverlayState()
         hud.autoScanEnabled = true
         val previous = hud.scanGeneration
+        val previousDraft = hud.draftSessionId
         hud.selectedChampionDetail = Champion(id="sona")
         hud.showChampionPickerForSlot = true to 0
+        hud.isLegendaryQueue = true
+        hud.isLoadingScreenMode = true
+        hud.showRoleChangeDialog = true
         hud.clearDraftAndCrops(ctx)
+        val nextDraft = hud.draftSessionId
+        assertNotEquals(previousDraft, nextDraft)
+        assertFalse(hud.isLegendaryQueue)
+        assertFalse(hud.isLoadingScreenMode)
+        assertFalse(hud.showRoleChangeDialog)
         assertNull(hud.selectedChampionDetail)
         assertNull(hud.showChampionPickerForSlot)
         assertFalse(hud.acceptsScanResult(previous))
         hud.startAutomaticScan()
         try {
+            assertEquals(nextDraft, hud.draftSessionId)
             assertFalse(hud.acceptsScanResult(previous))
             assertTrue(hud.acceptsScanResult(hud.scanGeneration))
         } finally { hud.autoScanEnabled = false }
