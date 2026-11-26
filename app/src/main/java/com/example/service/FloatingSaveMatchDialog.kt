@@ -96,8 +96,10 @@ internal fun FloatingSaveMatchDialog(
     val activeProfileId by com.example.data.AccountProfileManager.activeProfileId.collectAsState()
     var selectedProfileId by remember(activeProfileId) { mutableStateOf(activeProfileId) }
 
-    val myChampion = allies.find { it.assignedRole == activeRole }?.champion ?: allies.firstOrNull()?.champion
-    val enemyOpponent = enemies.find { it.assignedRole == activeRole }?.champion ?: enemies.firstOrNull()?.champion
+    // Missing role evidence is intentionally shown as pending. Falling back to
+    // the first row can label an unrelated champion as the player's own pick.
+    val myChampion = allies.find { it.assignedRole == activeRole }?.champion
+    val enemyOpponent = enemies.find { it.assignedRole == activeRole }?.champion
     val winrateDisplay = (analysis.bestOverallPick?.estimatedWinrate ?: analysis.recommendations.firstOrNull()?.estimatedWinrate ?: 50.0).toInt()
 
     Box(

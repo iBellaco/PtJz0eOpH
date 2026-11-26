@@ -36,6 +36,21 @@ object AllyDraftReconciler {
         return if (known.size == 4) known + ((0..4).single { it !in known } to roles.single { it !in known.values }) else known
     }
 
+    /** Pin the local player's lane to that same screen slot and remove a stale duplicate. */
+    fun pinUserSlotRole(
+        rolesBySlot: Map<Int, LaneRole>,
+        userSlot: Int?,
+        userRole: LaneRole?
+    ): Map<Int, LaneRole> {
+        if (userSlot !in 0..4 || userRole == null) return rolesBySlot
+        return rolesBySlot
+            .filterKeys { it in 0..4 && it != userSlot }
+            .filterValues { it != userRole }
+            .toMutableMap()
+            .apply { this[userSlot] = userRole }
+            .toMap()
+    }
+
     fun resolveRoles(
         champions: Map<Int, Champion>,
         remembered: Map<Int, LaneRole>,

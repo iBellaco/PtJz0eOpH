@@ -109,6 +109,15 @@ class AllyDraftReconcilerTest {
         assertEquals(mapOf(0 to LaneRole.ADC), AllyDraftReconciler.observedRoles(mapOf(0 to LaneRole.ADC), emptyMap()))
     }
 
+    @Test fun highlightedUserSlotWinsOverAStaleDuplicateLane() {
+        val roles = mapOf(0 to LaneRole.JUNGLE, 1 to LaneRole.MID, 2 to LaneRole.TOP,
+            3 to LaneRole.SUPPORT, 4 to LaneRole.ADC)
+        val pinned = AllyDraftReconciler.pinUserSlotRole(roles, userSlot = 3, userRole = LaneRole.JUNGLE)
+        assertEquals(LaneRole.JUNGLE, pinned[3])
+        assertFalse(pinned.values.count { it == LaneRole.JUNGLE } > 1)
+        assertFalse(pinned.containsKey(0))
+    }
+
     @Test fun partialObservationUpdatesKnownRoleWithoutErasingUnobservedHudRows() {
         val current = listOf(sett, null, null, smolder, senna)
         val result = AllyDraftReconciler.hudAllies(current, mapOf(LaneRole.ADC to senna), emptySet(), setOf(LaneRole.ADC))

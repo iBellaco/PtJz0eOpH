@@ -941,6 +941,7 @@ object DraftVisionScanner {
         var userDetectedLane: LaneRole? = null
         var userSlotIndex: Int? = null
         var userExplicitlyConfirmed = false
+        val userHighlightScores = mutableMapOf<Int, Float>()
         var detectedFirstPick: Boolean? = null
         val allySlotTexts = Array(5) { mutableListOf<Pair<String, Rect?>>() }
         val enemySlotTexts = Array(5) { mutableListOf<Pair<String, Rect?>>() }
@@ -1554,6 +1555,10 @@ object DraftVisionScanner {
 
                         val selfMarker = AllyDraftNameReader.identifiesUser(line, emptyList())
                         val isPlayerNameLine = box != null && box.centerY() > height * (calib.allySlotYRatios[i] + 0.005f * calib.nameBandScale)
+                        if (isPlayerNameLine && box != null) {
+                            val score = AllyPlayerSlotDetector.score(bitmap, box)
+                            if (score > (userHighlightScores[i] ?: 0f)) userHighlightScores[i] = score
+                        }
                         val isUserTag = !isLegendaryRanked && (selfMarker ||
                             (isPlayerNameLine && AllyDraftNameReader.identifiesUser(line, currentUserNameClean)))
 
@@ -1645,6 +1650,18 @@ object DraftVisionScanner {
                 }
             }
 
+            // The local player row is tinted warm yellow in Wild Rift. OCR can
+            // lose the username, especially after the row changes from its
+            // lane title to the selected champion, so use the color only as a
+            // slot identity signal and keep the role from that same slot.
+            AllyPlayerSlotDetector.choose(userHighlightScores)?.let { highlightedSlot ->
+                if (userSlotIndex == null || userSlotIndex != highlightedSlot) {
+                    AppLogger.d(TAG, "Slot del usuario confirmado por resaltado amarillo: $highlightedSlot")
+                }
+                userSlotIndex = highlightedSlot
+                userExplicitlyConfirmed = true
+            }
+
             // Un campeón confirmado por el lado aliado no puede quedar vivo en la memoria rival.
             val currentAllyIds = allySlotConfirmedChampions.mapNotNull { it?.id }.toSet()
             for (i in 0..4) {
@@ -1669,15 +1686,9 @@ object DraftVisionScanner {
                     }
                 }
             }
-            val resolvedRoles = AllyDraftReconciler.observedRoles(currentScanFrameOcrLanes, previousLanes)
-            allySlotOcrLaneCache.clear()
-            allySlotOcrLaneCache.putAll(resolvedRoles)
-            allySlotRolesCache.clear()
-            allySlotRolesCache.putAll(resolvedRoles)
-            for (slot in allySlots) slot.explicitRole = resolvedRoles[slot.slotIndex]
+            var resolvedRoles = AllyDraftReconciler.observedRoles(currentScanFrameOcrLanes, previousLanes)
 
             // Solo identidad observada y línea del mismo puesto pueden confirmar tu línea.
-            if (currentScanFrameOcrLanes.size == 5) cachedUserSlotIndex = null
             if (userSlotIndex != null) {
                 cachedUserSlotIndex = userSlotIndex
             } else if (cachedUserSlotIndex != null) {
@@ -1687,7 +1698,7 @@ object DraftVisionScanner {
 
             val uIdx = userSlotIndex
             if (uIdx != null && uIdx in 0..4) {
-                val explicitRole = allySlotOcrLaneCache[uIdx] ?: allySlotRolesCache[uIdx]
+                val explicitRole = resolvedRoles[uIdx]
                 if (explicitRole != null) {
                     userDetectedLane = explicitRole
                     AppLogger.d(TAG, "Rol de usuario confirmado explícitamente en Slot $uIdx -> ${userDetectedLane.shortName}")
@@ -1698,6 +1709,19 @@ object DraftVisionScanner {
             } else if (currentActiveRole != null) {
                 userDetectedLane = currentActiveRole
             }
+
+            // If the current frame has a reliable local-player marker but the
+            // lane title was already replaced, the active lane is still tied
+            // to that same slot. Remove a stale duplicate before publishing.
+            val roleToPin = if (uIdx != null && userExplicitlyConfirmed) {
+                resolvedRoles[uIdx] ?: currentActiveRole
+            } else null
+            resolvedRoles = AllyDraftReconciler.pinUserSlotRole(resolvedRoles, uIdx, roleToPin)
+            allySlotOcrLaneCache.clear()
+            allySlotOcrLaneCache.putAll(resolvedRoles)
+            allySlotRolesCache.clear()
+            allySlotRolesCache.putAll(resolvedRoles)
+            for (slot in allySlots) slot.explicitRole = resolvedRoles[slot.slotIndex]
 
             // Para el lado rival: Analizamos el texto de cada slot.
             // En Wild Rift, cuando un rival fija o selecciona un campeón, el nombre aparece en texto:
