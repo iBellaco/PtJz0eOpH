@@ -1,6 +1,5 @@
 package com.example
 
-import android.graphics.Color
 import com.example.service.screen.AllyPlayerSlotDetector
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -10,9 +9,9 @@ import org.junit.Test
 
 class AllyPlayerSlotDetectorTest {
     @Test fun warmHighlightIsDistinctFromNeutralAndTeamColors() {
-        assertTrue(AllyPlayerSlotDetector.isWarmHighlight(Color.rgb(238, 190, 62)))
-        assertFalse(AllyPlayerSlotDetector.isWarmHighlight(Color.rgb(240, 240, 240)))
-        assertFalse(AllyPlayerSlotDetector.isWarmHighlight(Color.rgb(30, 190, 220)))
+        assertTrue(AllyPlayerSlotDetector.isWarmHighlight(0xFFEEBE3E.toInt()))
+        assertFalse(AllyPlayerSlotDetector.isWarmHighlight(0xFFF0F0F0.toInt()))
+        assertFalse(AllyPlayerSlotDetector.isWarmHighlight(0xFF1EBEDC.toInt()))
     }
 
     @Test fun choosesOnlyAConfidentUniqueHighlightedRow() {
