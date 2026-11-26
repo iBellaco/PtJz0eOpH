@@ -49,6 +49,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AdminPanelSettings
@@ -91,7 +92,6 @@ import com.example.ui.components.SupportReplyDialog
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
@@ -132,6 +132,8 @@ import com.example.ui.theme.TextSecondary
 import com.example.util.tr
 import com.example.util.localizedString
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.util.Locale
 
 enum class FeedbackCategoryTab(val titleKey: String, val icon: ImageVector) {
@@ -206,7 +208,9 @@ fun AdminFeedbackBottomSheet(
     var searchQuery by remember { mutableStateOf("") }
 
     var reports by remember { mutableStateOf<List<FeedbackReport>>(emptyList()) }
-    val statusMap = remember { mutableStateMapOf<String, String>() }
+    var statusMap by remember { mutableStateOf<Map<String, String>>(emptyMap()) }
+    var loadGeneration by remember { mutableStateOf(0) }
+    val feedbackListState = rememberLazyListState()
 
     var isLoading by remember { mutableStateOf(true) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
@@ -220,16 +224,17 @@ fun AdminFeedbackBottomSheet(
     var verificationReview by remember { mutableStateOf<Pair<FeedbackReport, Boolean>?>(null) }
     var verificationBusy by remember { mutableStateOf(false) }
 
-    fun refreshStatusMap(list: List<FeedbackReport>) {
-        statusMap.clear()
-        for (item in list) {
-            val key = item.id ?: "${item.title}_${item.createdAt}"
-            val status = FeedbackRepository.getReportStatus(context, item)
-            statusMap[key] = status
+    fun reportKey(item: FeedbackReport): String = item.id ?: "${item.title}_${item.createdAt}"
+
+    suspend fun loadStatusMap(list: List<FeedbackReport>): Map<String, String> = withContext(Dispatchers.IO) {
+        list.associate { item ->
+            reportKey(item) to FeedbackRepository.getReportStatus(context, item)
         }
     }
 
     fun loadReports(silent: Boolean = false) {
+        val generation = loadGeneration + 1
+        loadGeneration = generation
         if (!silent) {
             isLoading = true
             errorMessage = null
@@ -243,12 +248,16 @@ fun AdminFeedbackBottomSheet(
             }
 
             val result = FeedbackRepository.getAllFeedbacks()
-            if (!silent) isLoading = false
+            if (generation != loadGeneration) return@launch
             if (result.isSuccess) {
                 val list = result.getOrDefault(emptyList())
                 reports = list
-                refreshStatusMap(list)
+                statusMap = emptyMap()
+                if (!silent) isLoading = false
+                val nextStatusMap = loadStatusMap(list)
+                if (generation == loadGeneration) statusMap = nextStatusMap
             } else if (!silent) {
+                isLoading = false
                 errorMessage = result.exceptionOrNull()?.message ?: "Error al cargar reportes"
             }
         }
@@ -260,13 +269,26 @@ fun AdminFeedbackBottomSheet(
             try {
                 com.example.data.SupportTicketAccess.migrateLegacyVisibility()
                 registration = com.example.data.SupportTicketAccess.staffQuery().addSnapshotListener { snapshot, error ->
-                    isLoading = false
+                    val generation = loadGeneration + 1
+                    loadGeneration = generation
                     if (error != null) {
+                        isLoading = false
                         errorMessage = com.example.util.appTr("No se pudieron cargar los mensajes. Comprueba los permisos y vuelve a intentarlo.")
                     } else if (snapshot != null) {
                         errorMessage = null
-                        reports = FeedbackRepository.feedbacksFromSnapshot(snapshot)
-                        refreshStatusMap(reports)
+                        scope.launch {
+                            val nextReports = withContext(Dispatchers.Default) {
+                                FeedbackRepository.feedbacksFromSnapshot(snapshot)
+                            }
+                            if (generation != loadGeneration) return@launch
+                            // Publish the list before resolving local statuses so the
+                            // first frame remains scrollable while status reads run off the UI thread.
+                            reports = nextReports
+                            statusMap = emptyMap()
+                            isLoading = false
+                            val nextStatusMap = loadStatusMap(nextReports)
+                            if (generation == loadGeneration) statusMap = nextStatusMap
+                        }
                     }
                 }
             } catch (error: Exception) {
@@ -315,46 +337,46 @@ fun AdminFeedbackBottomSheet(
         }
     }
 
-    val pendingCount = remember(currentCategoryItems, statusMap.toMap()) {
+    val pendingCount = remember(currentCategoryItems, statusMap) {
         currentCategoryItems.count {
-            val key = it.id ?: "${it.title}_${it.createdAt}"
+            val key = reportKey(it)
             (statusMap[key] ?: FeedbackRepository.STATUS_PENDING) == FeedbackRepository.STATUS_PENDING
         }
     }
 
-    val solvedCount = remember(currentCategoryItems, statusMap.toMap()) {
+    val solvedCount = remember(currentCategoryItems, statusMap) {
         currentCategoryItems.count {
-            val key = it.id ?: "${it.title}_${it.createdAt}"
+            val key = reportKey(it)
             val s = statusMap[key]
             s == FeedbackRepository.STATUS_SOLVED || s == FeedbackRepository.STATUS_COMPLETED
         }
     }
 
-    val readCount = remember(currentCategoryItems, statusMap.toMap()) {
+    val readCount = remember(currentCategoryItems, statusMap) {
         currentCategoryItems.count {
-            val key = it.id ?: "${it.title}_${it.createdAt}"
+            val key = reportKey(it)
             statusMap[key] == FeedbackRepository.STATUS_READ
         }
     }
 
-    val acceptedCount = remember(currentCategoryItems, statusMap.toMap()) {
+    val acceptedCount = remember(currentCategoryItems, statusMap) {
         currentCategoryItems.count {
-            val key = it.id ?: "${it.title}_${it.createdAt}"
+            val key = reportKey(it)
             statusMap[key] == FeedbackRepository.STATUS_ACCEPTED
         }
     }
 
-    val rejectedCount = remember(currentCategoryItems, statusMap.toMap()) {
+    val rejectedCount = remember(currentCategoryItems, statusMap) {
         currentCategoryItems.count {
-            val key = it.id ?: "${it.title}_${it.createdAt}"
+            val key = reportKey(it)
             statusMap[key] == FeedbackRepository.STATUS_REJECTED
         }
     }
 
     // Filtrado de reportes
-    val filteredReports = remember(visibleReports, currentCategoryTab, selectedSubFilter, searchQuery, statusMap.toMap()) {
+    val filteredReports = remember(visibleReports, currentCategoryTab, selectedSubFilter, searchQuery, statusMap) {
         visibleReports.filter { item ->
-            val key = item.id ?: "${item.title}_${item.createdAt}"
+            val key = reportKey(item)
             val currentStatus = statusMap[key] ?: FeedbackRepository.STATUS_PENDING
             val cat = getFeedbackCategory(item)
 
@@ -392,6 +414,10 @@ fun AdminFeedbackBottomSheet(
 
             matchCategory && matchSubFilter && matchSearch
         }
+    }
+
+    LaunchedEffect(currentCategoryTab, selectedSubFilter, searchQuery) {
+        feedbackListState.scrollToItem(0)
     }
 
     // This panel used to be a ModalBottomSheet nested inside the full-screen
@@ -833,12 +859,13 @@ fun AdminFeedbackBottomSheet(
                     }
                 } else {
                     LazyColumn(
+                        state = feedbackListState,
                         modifier = Modifier.fillMaxSize(),
                         contentPadding = PaddingValues(horizontal = 14.dp, vertical = 8.dp),
                         verticalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
-                        items(filteredReports, key = { it.id ?: "${it.title}_${it.createdAt}_${it.hashCode()}" }) { report ->
-                            val key = report.id ?: "${report.title}_${report.createdAt}"
+                        items(filteredReports, key = { reportKey(it) }) { report ->
+                            val key = reportKey(report)
                             val currentStatus = statusMap[key] ?: FeedbackRepository.STATUS_PENDING
 
                             ComprehensiveFeedbackCard(
@@ -847,7 +874,7 @@ fun AdminFeedbackBottomSheet(
                                 onSelectStatus = { newStatus ->
                                     scope.launch {
                                         val ok = SupportReplyManager.updateReportStatus(context, report.id ?: key, newStatus)
-                                        if (ok) statusMap[key] = newStatus
+                                        if (ok) statusMap = statusMap + (key to newStatus)
                                         Toast.makeText(context, com.example.util.appTr(if (ok) "Estado actualizado" else "No se pudo sincronizar el estado. Inténtalo de nuevo."), Toast.LENGTH_SHORT).show()
                                     }
                                 },
@@ -900,7 +927,7 @@ fun AdminFeedbackBottomSheet(
                             }
                             verificationBusy = false
                             result.onSuccess {
-                                statusMap[reportId] = if (approved) FeedbackRepository.STATUS_ACCEPTED else FeedbackRepository.STATUS_REJECTED
+                                statusMap = statusMap + (reportId to if (approved) FeedbackRepository.STATUS_ACCEPTED else FeedbackRepository.STATUS_REJECTED)
                                 verificationReview = null
                             }.onFailure { Toast.makeText(context, com.example.util.appTr(it.message ?: "No se pudo completar la revisión."), Toast.LENGTH_LONG).show() }
                         }
@@ -934,7 +961,7 @@ fun AdminFeedbackBottomSheet(
             onDismiss = { reportToReply = null },
             onReplySent = { newReply, markedAsRead ->
                 if (markedAsRead) {
-                    statusMap[repId] = FeedbackRepository.STATUS_READ
+                    statusMap = statusMap + (repId to FeedbackRepository.STATUS_READ)
                     // The committed conversation and live listener supply the shared status.
                 }
                 loadReports()

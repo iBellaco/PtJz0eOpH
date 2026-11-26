@@ -6,10 +6,14 @@ import com.example.service.screen.TenthPickHudPolicy
 
 internal fun OverlayState.syncScannedAllies(result: DraftScanResult): Int {
     val locked = manualLockedAllySlots.filterValues { it }.keys
-    val byRole = result.alliesByRole.toMutableMap()
+    // The slot-local mapping is the source of truth. The role map can contain
+    // a stale entry from an earlier frame when a player's lane title changed
+    // into a champion name; never let that stale entry hide the current slot.
+    val byRole = mutableMapOf<LaneRole, com.example.model.Champion>()
     for ((slot, role) in result.allyRolesBySlot) {
         result.alliesBySlot[slot]?.let { byRole.putIfAbsent(role, it) }
     }
+    for ((role, champion) in result.alliesByRole) byRole.putIfAbsent(role, champion)
     val pending = result.alliesBySlot.filterKeys { it !in result.allyRolesBySlot }
         .values.distinctBy { it.id }
     val pendingIds = pending.map { it.id }.toSet()
