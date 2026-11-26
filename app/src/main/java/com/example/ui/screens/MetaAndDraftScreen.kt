@@ -43,6 +43,7 @@ import androidx.compose.runtime.LaunchedEffect
 import com.example.util.tr
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -86,6 +87,8 @@ private data class MetaNavTabItem(val title: String, val count: Int? = null)
 // Gestor de sesión persistente y estable para el Draft (sin rotaciones aleatorias involuntarias)
 object DraftSessionManager {
     private var isInitialized = false
+    var sessionId by mutableIntStateOf(0)
+        private set
     val allySlots = mutableStateListOf<DraftSlot>()
     val enemySlots = mutableStateListOf<DraftSlot>()
 
@@ -113,10 +116,10 @@ object DraftSessionManager {
         enemySlots.clear()
         isInitialized = false
         initDefaults()
+        sessionId++
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun MetaAndDraftScreen(
     mode: MetaScreenMode = MetaScreenMode.CATALOG,
@@ -124,6 +127,21 @@ fun MetaAndDraftScreen(
     initialChampionId: String? = null,
     isOverlay: Boolean = false,
     onNavigateToRegister: () -> Unit = {},
+    onNavigateBack: () -> Unit
+) {
+    key(if (mode == MetaScreenMode.DRAFTING) DraftSessionManager.sessionId else 0) {
+        MetaAndDraftContent(mode, userMainRole, initialChampionId, isOverlay, onNavigateToRegister, onNavigateBack)
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
+@Composable
+private fun MetaAndDraftContent(
+    mode: MetaScreenMode,
+    userMainRole: LaneRole,
+    initialChampionId: String?,
+    isOverlay: Boolean,
+    onNavigateToRegister: () -> Unit,
     onNavigateBack: () -> Unit
 ) {
     val screenContext = LocalContext.current
@@ -219,17 +237,10 @@ fun MetaAndDraftScreen(
     }
 
     // Sincronización contextual automática: Mi campeón es el aliado en mi línea activa
-    val myChampion = if (activeRole != null) allySlots.find { it.assignedRole == activeRole }?.champion?.takeUnless { it.id == "empty" } else null
-    val roleIndex = when (activeRole) {
-        LaneRole.TOP -> 0
-        LaneRole.JUNGLE -> 1
-        LaneRole.MID -> 2
-        LaneRole.ADC -> 3
-        LaneRole.SUPPORT -> 4
-        null -> 0
-    }
-    val enemyLaneOpponent = if (activeRole != null) enemySlots.find { it.assignedRole == activeRole }?.champion ?: enemySlots.getOrNull(roleIndex)?.champion else null
-    val selectedLaneOpponent = enemyLaneOpponent?.takeUnless { it.id == "empty" }
+    val currentAllies = allySlots.toList()
+    val currentEnemies = enemySlots.toList()
+    val myChampion = currentAllies.find { it.assignedRole == activeRole }?.champion?.takeUnless { it.id == "empty" }
+    val selectedLaneOpponent = currentEnemies.find { it.assignedRole == activeRole }?.champion?.takeUnless { it.id == "empty" }
 
     val favoriteRecommendationCount = activeRole?.let {
         WildRiftRepository.favoriteChampionCountForRole(it, favoriteChampionIds)
@@ -243,8 +254,8 @@ fun MetaAndDraftScreen(
     }
     val analysis = com.example.ui.components.rememberDraftAnalysis(
         com.example.ui.components.DraftAnalysisRequest(
-            role = activeRole, allies = allySlots.map { it.champion },
-            enemies = enemySlots.map { it.champion }, opponent = selectedLaneOpponent,
+            role = activeRole, allies = currentAllies.map { it.champion },
+            enemies = currentEnemies.map { it.champion }, opponent = selectedLaneOpponent,
             firstPick = isFirstPick, language = lang, favorites = favoriteChampionIds.toSet(),
             favoritesOnly = favoriteOnlyRecommendations
         )
@@ -271,8 +282,8 @@ fun MetaAndDraftScreen(
                     DraftAnalysisTab(
                         myChampion = myChampion,
                         activeRole = activeRole,
-                        allySlots = allySlots,
-                        enemySlots = enemySlots,
+                        allySlots = currentAllies,
+                        enemySlots = currentEnemies,
                         analysis = analysis,
                         isFirstPick = isFirstPick,
                         enemyLaneOpponent = selectedLaneOpponent,
@@ -453,8 +464,8 @@ fun MetaAndDraftScreen(
                     DraftAnalysisTab(
                         myChampion = myChampion,
                         activeRole = activeRole,
-                        allySlots = allySlots,
-                        enemySlots = enemySlots,
+                        allySlots = currentAllies,
+                        enemySlots = currentEnemies,
                         analysis = analysis,
                         isFirstPick = isFirstPick,
                         enemyLaneOpponent = selectedLaneOpponent,

@@ -9,6 +9,7 @@ import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.util.tr
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.lerp
 
 @Composable
 fun MyApplicationTheme(
@@ -66,7 +67,20 @@ fun MyApplicationTheme(
     }
 
     MaterialTheme(
-        colorScheme = colorScheme,
+        colorScheme = if (theme.isApplicationTheme) colorScheme.copy(
+            surfaceTint = theme.primary,
+            surfaceDim = if (theme.isDark) theme.background else theme.surfaceVariant,
+            surfaceBright = if (theme.isDark) theme.surfaceVariant else theme.surface,
+            surfaceContainerLowest = if (theme.isDark) theme.background else theme.surface,
+            surfaceContainerLow = lerp(theme.background, theme.surface, 0.5f),
+            surfaceContainer = theme.surface,
+            surfaceContainerHigh = lerp(theme.surface, theme.surfaceVariant, 0.5f),
+            surfaceContainerHighest = theme.surfaceVariant,
+            outlineVariant = theme.cardBorder,
+            tertiary = if (theme.isDark) theme.primaryGlow else theme.primaryDark,
+            tertiaryContainer = theme.surfaceVariant,
+            onTertiaryContainer = theme.textPrimary
+        ) else colorScheme,
         typography = Typography,
         content = {
             androidx.compose.runtime.CompositionLocalProvider(com.example.ui.components.LocalCoachButtonAnimation provides animateButtons) {

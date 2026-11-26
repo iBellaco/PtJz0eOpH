@@ -1,5 +1,8 @@
 package com.example
 
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.colorspace.ColorSpaces
+import androidx.compose.ui.graphics.luminance
 import com.example.ui.theme.AppTheme
 import com.example.util.ChampionMatchupCoaching
 import com.example.model.Champion
@@ -7,10 +10,11 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import kotlin.math.sqrt
 
 class ApplicationThemeCatalogTest {
     @Test
-    fun `application catalog has twelve neutral premium styles`() {
+    fun `application catalog preserves the twelve saved theme identifiers`() {
         val themes = AppTheme.entries.filter { it.isApplicationTheme }
 
         assertEquals(12, themes.size)
@@ -21,17 +25,44 @@ class ApplicationThemeCatalogTest {
         assertTrue(themes.all { it.regionTag == "Tema de aplicación" })
         assertTrue(themes.map { it.descKey }.distinct().size == themes.size)
         assertEquals(themes.size, themes.map { listOf(it.background, it.surface, it.primary, it.secondary) }.distinct().size)
-        themes.forEach { theme ->
-            listOf(theme.background, theme.surface, theme.surfaceVariant, theme.cardBorder,
-                theme.primary, theme.primaryLight, theme.primaryDark, theme.primaryGlow,
-                theme.secondary, theme.secondaryLight, theme.secondaryDark, theme.secondaryGlow,
-                theme.textPrimary, theme.textSecondary, theme.textMuted).forEach { color ->
-                assertEquals("${theme.id} must use an achromatic application palette", color.red, color.green, 0.001f)
-                assertEquals("${theme.id} must use an achromatic application palette", color.green, color.blue, 0.001f)
-            }
-        }
+        themes.forEach { assertEquals(it, AppTheme.fromId(it.id)) }
         assertTrue(themes.first { it.id == "WHITE" }.isDark.not())
         assertTrue(themes.filter { it.id != "WHITE" }.all { it.isDark })
+    }
+
+    @Test
+    fun `application accents stay distinct from every other palette even when swapped`() {
+        for ((index, first) in AppTheme.entries.withIndex()) {
+            for (second in AppTheme.entries.drop(index + 1)) {
+                if (!first.isApplicationTheme && !second.isApplicationTheme) continue
+                val direct = (distance(first.primary, second.primary) + distance(first.secondary, second.secondary)) / 2
+                val swapped = (distance(first.primary, second.secondary) + distance(first.secondary, second.primary)) / 2
+                assertTrue("${first.id} and ${second.id} have similar accent pairs", minOf(direct, swapped) >= 0.11f)
+            }
+        }
+    }
+
+    private fun distance(first: Color, second: Color): Float {
+        val a = first.convert(ColorSpaces.Oklab)
+        val b = second.convert(ColorSpaces.Oklab)
+        val l = a.red - b.red
+        val u = a.green - b.green
+        val v = a.blue - b.blue
+        return sqrt(l * l + u * u + v * v)
+    }
+
+    @Test
+    fun `application text and accents are readable on each surface`() {
+        for (theme in AppTheme.entries.filter { it.isApplicationTheme }) {
+            for (background in listOf(theme.background, theme.surface, theme.surfaceVariant)) {
+                for (foreground in listOf(theme.primary, theme.secondary, theme.textPrimary, theme.textSecondary, theme.textMuted)) {
+                    val a = background.luminance()
+                    val b = foreground.luminance()
+                    val contrast = (maxOf(a, b) + 0.05f) / (minOf(a, b) + 0.05f)
+                    assertTrue("${theme.id} contrast ${contrast}", contrast >= 4.5f)
+                }
+            }
+        }
     }
 
     @Test
