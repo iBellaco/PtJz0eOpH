@@ -1,7 +1,6 @@
 package com.example.service.screen
 
 import android.graphics.Bitmap
-import android.graphics.Color
 import android.graphics.Rect
 
 /** Small, device-independent evidence helper for the highlighted local-player row. */
@@ -11,9 +10,11 @@ internal object AllyPlayerSlotDetector {
 
     /** Wild Rift uses a warm yellow/gold tint for the local player's name row. */
     internal fun isWarmHighlight(color: Int): Boolean {
-        val red = Color.red(color)
-        val green = Color.green(color)
-        val blue = Color.blue(color)
+        // Keep the classifier usable from the JVM regression suite too. The
+        // Android Color helpers are framework stubs in local unit tests.
+        val red = (color ushr 16) and 0xFF
+        val green = (color ushr 8) and 0xFF
+        val blue = color and 0xFF
         return red >= 135 && green >= 95 && blue <= 155 &&
             red >= blue + 45 && green >= blue + 15 && red >= green * 0.82f
     }
