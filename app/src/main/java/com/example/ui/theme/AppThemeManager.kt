@@ -566,7 +566,7 @@ enum class AppTheme(
         secondaryLight = Color(0xFFD6D6D6),
         secondaryDark = Color(0xFF747474),
         secondaryGlow = Color(0xFFC4C4C4),
-        textPrimary = Color(0xFFFFFEFE),
+        textPrimary = Color(0xFFFFFFFF),
         textSecondary = Color(0xFFD0D0D0),
         textMuted = Color(0xFF969696),
         isDark = true,
