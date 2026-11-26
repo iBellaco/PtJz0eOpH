@@ -974,35 +974,11 @@ private fun ApplicationThemeSection(
                     )
                 ) {
                     Box(modifier = Modifier.fillMaxSize()) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .background(
-                                    Brush.verticalGradient(
-                                        listOf(theme.primary.copy(alpha = 0.2f), theme.surface)
-                                    )
-                                )
-                        )
-                        if (isApplied || isInspected) {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .background(
-                                        Brush.radialGradient(
-                                            listOf(
-                                                theme.primary.copy(alpha = if (isApplied) 0.3f else 0.15f),
-                                                Color.Transparent
-                                            )
-                                        )
-                                    )
-                            )
+                        Row(Modifier.fillMaxWidth().height(25.dp)) {
+                            listOf(theme.primary, theme.secondary, theme.primaryGlow, theme.surfaceVariant).forEach { color ->
+                                Spacer(Modifier.weight(1f).fillMaxHeight().background(color))
+                            }
                         }
-                        ThemeColorDots(
-                            theme = theme,
-                            modifier = Modifier
-                                .align(Alignment.TopStart)
-                                .padding(7.dp)
-                        )
                         Column(
                             modifier = Modifier
                                 .align(Alignment.BottomStart)
@@ -1027,9 +1003,9 @@ private fun ApplicationThemeSection(
                             Icon(
                                 imageVector = Icons.Default.CheckCircle,
                                 contentDescription = null,
-                                tint = HextechGold,
+                                tint = theme.primary,
                                 modifier = Modifier
-                                    .align(Alignment.TopEnd)
+                                    .align(Alignment.BottomEnd)
                                     .padding(6.dp)
                                     .size(16.dp)
                             )

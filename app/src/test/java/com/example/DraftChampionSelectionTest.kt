@@ -124,6 +124,53 @@ class DraftChampionSelectionTest(private val language: String) {
         assertEquals("Darius", DraftSessionManager.enemySlots.single { it.assignedRole == LaneRole.TOP }.champion.name)
     }
 
+    @Test fun clearingThenRedraftingShowsOnlyTheNewTeamsAndPickOrder() {
+        compose.setContent { MyApplicationTheme {
+            MetaAndDraftScreen(mode = MetaScreenMode.DRAFTING, userMainRole = LaneRole.MID, onNavigateBack = {})
+        } }
+        openField("ally", LaneRole.MID)
+        choose("Ahri")
+        openField("enemy", LaneRole.MID)
+        choose("Yasuo")
+        waitForMatchup("Ahri vs Yasuo")
+        compose.onNodeWithTag("draft_first_pick_toggle").performScrollTo().performClick()
+        compose.onNodeWithText(com.example.util.trStr(language, "1er Pick"), useUnmergedTree = true).assertExists()
+        compose.onNodeWithTag("clear_draft_button").performScrollTo().performClick()
+        compose.onNode(hasText(com.example.util.trStr(language, "Limpiar")) and hasAnyAncestor(isDialog())).performClick()
+        compose.waitForIdle()
+        compose.onNodeWithTag("draft_matchup_missing_selection").assertExists()
+        compose.onAllNodes(hasText(com.example.util.trStr(language, "Counter Pick")) and
+            hasAnyAncestor(hasTestTag("draft_first_pick_toggle")), useUnmergedTree = true).assertCountEquals(1)
+        openField("enemy", LaneRole.MID)
+        choose("Lux")
+        compose.runOnIdle {
+            assertTrue(DraftSessionManager.allySlots.all { it.champion.id == "empty" })
+            assertEquals(listOf("Lux"), DraftSessionManager.enemySlots.filter { it.champion.id != "empty" }.map { it.champion.name })
+        }
+        compose.onNodeWithTag("draft_matchup_missing_selection").assertExists()
+        openField("ally", LaneRole.MID)
+        choose("Orianna")
+        compose.runOnIdle {
+            assertEquals(listOf("Orianna"), DraftSessionManager.allySlots.filter { it.champion.id != "empty" }.map { it.champion.name })
+            assertEquals(listOf("Lux"), DraftSessionManager.enemySlots.filter { it.champion.id != "empty" }.map { it.champion.name })
+        }
+        waitForMatchup("Orianna vs Lux")
+        compose.onNodeWithText("Ahri vs Yasuo", substring = true, useUnmergedTree = true).assertDoesNotExist()
+    }
+
+    private fun waitForMatchup(matchup: String) {
+        compose.waitUntil(5_000) {
+            compose.onAllNodesWithText(matchup, substring = true, useUnmergedTree = true)
+                .fetchSemanticsNodes().size == 1
+        }
+    }
+
+    private fun waitForSecondaryRecommendations(count: Int) {
+        compose.waitUntil(5_000) {
+            compose.onAllNodesWithTag("draft_secondary_recommendation").fetchSemanticsNodes().size == count
+        }
+    }
+
     @Test fun administratorCanFillEverySlotWithDistinctPrimaryLaneChampions() {
         compose.setContent { MyApplicationTheme(animateButtons = true) {
             MetaAndDraftScreen(mode = MetaScreenMode.DRAFTING, userMainRole = LaneRole.MID, onNavigateBack = {})
@@ -191,13 +238,13 @@ class DraftChampionSelectionTest(private val language: String) {
             Assert.assertEquals(names[index], slots.single { it.assignedRole == role }.champion.name)
             Assert.assertEquals(5, slots.size)
             if (team == "ally" && index == 0) {
-                compose.onAllNodesWithTag("draft_secondary_recommendation").assertCountEquals(4)
+                waitForSecondaryRecommendations(4)
                 compose.onNodeWithTag("draft_more_recommendations").performScrollTo().performClick()
                 compose.waitForIdle()
-                compose.onAllNodesWithTag("draft_secondary_recommendation").assertCountEquals(9)
+                waitForSecondaryRecommendations(9)
             } else if (team == "ally" && index == 1) {
                 // A changed draft starts with the best five again, keeping the first frame small.
-                compose.onAllNodesWithTag("draft_secondary_recommendation").assertCountEquals(4)
+                waitForSecondaryRecommendations(4)
             }
         }
         val originalEnemies = DraftSessionManager.enemySlots.toList()

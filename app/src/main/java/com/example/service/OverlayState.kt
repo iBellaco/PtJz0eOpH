@@ -36,6 +36,8 @@ class OverlayState {
     private var automaticScanState by androidx.compose.runtime.mutableStateOf(false)
     internal var scanGeneration by mutableStateOf(0L)
         private set
+    internal var draftSessionId by mutableStateOf(0L)
+        private set
     internal fun acceptsScanResult(generation: Long) = autoScanEnabled && scanGeneration == generation
     var autoScanEnabled: Boolean
         get() = automaticScanState
@@ -81,9 +83,13 @@ class OverlayState {
         return true
     }
     internal fun clearDraftAndCrops(context: android.content.Context) {
+        draftSessionId++
         scanGeneration++
         autoScanEnabled = false
         showSaveDraftDialog = false
+        showRoleChangeDialog = false
+        isLegendaryQueue = false
+        isLoadingScreenMode = false
         autoSavePendingRequested = false
         scanNoticeMessage = null
         isSavedRecently = false

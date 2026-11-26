@@ -70,6 +70,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -113,7 +114,9 @@ import com.example.util.DraftRecommendationText
 import com.example.util.tr
 import com.example.util.trStr
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.withContext
 import kotlin.math.roundToInt
 
@@ -169,7 +172,8 @@ internal fun FloatingOverlayContent(
     onCompactModeChange: (Boolean) -> Unit,
     loadViewerAccess: suspend (String?) -> Boolean = { com.example.data.OverlayAccessPolicy.load().hubButtonsVisibleFor(it) }
 ) {
-    val coroutineScope = rememberCoroutineScope()
+    val draftSessionId = state.draftSessionId
+    val coroutineScope = key(draftSessionId) { rememberCoroutineScope() }
     var isExpanded by state::isExpanded
     var overlayHubTab by state::overlayHubTab
     var showSaveDraftDialog by state::showSaveDraftDialog
@@ -330,7 +334,7 @@ internal fun FloatingOverlayContent(
     var showChampionPickerForSlot by state::showChampionPickerForSlot
     var isLoadingScreenMode by state::isLoadingScreenMode
     var isOverlayTabsMinimized by state::isOverlayTabsMinimized
-    var redirectedDraftKey by remember { mutableStateOf<String?>(null) }
+    var redirectedDraftKey by remember(draftSessionId) { mutableStateOf<String?>(null) }
 
     fun selectHubTab(tab: OverlayHubTab) {
         // Keep the opened champion build while switching between Hub tabs.
@@ -338,7 +342,7 @@ internal fun FloatingOverlayContent(
         overlayHubTab = tab
     }
 
-    LaunchedEffect(allies.toList(), enemies.toList(), activeRole) {
+    LaunchedEffect(allies.toList(), enemies.toList(), activeRole, draftSessionId) {
         val ownChampion = DraftCompletionNavigation.ownChampionWhenComplete(allies, enemies, activeRole)
         if (ownChampion == null) {
             redirectedDraftKey = null
@@ -373,14 +377,16 @@ internal fun FloatingOverlayContent(
         }
     }
 
-    val analysis = com.example.ui.components.rememberDraftAnalysis(
-        com.example.ui.components.DraftAnalysisRequest(
-            role = activeRole, allies = state.confirmedAllies, enemies = enemies.filterNotNull(),
-            opponent = explicitEnemyOpponent, firstPick = isFirstPick, language = currentLang,
-            bans = bannedIds.toSet(), favorites = favoriteChampionIds.toSet(),
-            favoritesOnly = favoriteOnlyRecommendations
+    val analysis = key(draftSessionId) {
+        com.example.ui.components.rememberDraftAnalysis(
+            com.example.ui.components.DraftAnalysisRequest(
+                role = activeRole, allies = state.confirmedAllies, enemies = enemies.filterNotNull(),
+                opponent = explicitEnemyOpponent, firstPick = isFirstPick, language = currentLang,
+                bans = bannedIds.toSet(), favorites = favoriteChampionIds.toSet(),
+                favoritesOnly = favoriteOnlyRecommendations
+            )
         )
-    )
+    }
 
     val diagnosticDraftDetails = remember(
         allies.toList(), enemies.toList(), activeRole, isFirstPick, isLegendaryQueue,
@@ -408,7 +414,7 @@ internal fun FloatingOverlayContent(
         }.trimEnd()
     }
 
-    LaunchedEffect(state.autoSavePendingRequested, analysis) {
+    LaunchedEffect(state.autoSavePendingRequested, analysis, draftSessionId) {
         if (!state.autoSavePendingRequested) return@LaunchedEffect
         if (com.example.ui.components.isDraftAnalysisPending(analysis)) return@LaunchedEffect
         val roles = listOf(LaneRole.TOP, LaneRole.JUNGLE, LaneRole.MID, LaneRole.ADC, LaneRole.SUPPORT)
@@ -425,7 +431,7 @@ internal fun FloatingOverlayContent(
             scanNoticeMessage = "No se pudo guardar: el draft no tiene 10 campeones únicos."
             return@LaunchedEffect
         }
-        runCatching {
+        val saveResult = runCatching {
             com.example.data.repository.DraftHistoryRepository.saveDraft(
                 context = context,
                 myRole = activeRole,
@@ -438,7 +444,10 @@ internal fun FloatingOverlayContent(
                 matchMode = if (isLegendaryQueue) "LEGENDARY" else "RANKED",
                 allowDuplicate = false
             )
-        }.onSuccess {
+        }
+        currentCoroutineContext().ensureActive()
+        if (state.draftSessionId != draftSessionId) return@LaunchedEffect
+        saveResult.onSuccess {
             isSavedRecently = true
             scanNoticeMessage = "Draft guardado automáticamente como pendiente"
         }.onFailure {
@@ -1650,9 +1659,11 @@ internal fun FloatingOverlayContent(
             analysis = analysis,
             onDismiss = { showSaveDraftDialog = false },
             onSaved = {
-                isSavedRecently = true
-                showSaveDraftDialog = false
-                selectHubTab(OverlayHubTab.DRAFT)
+                if (state.draftSessionId == draftSessionId) {
+                    isSavedRecently = true
+                    showSaveDraftDialog = false
+                    selectHubTab(OverlayHubTab.DRAFT)
+                }
             }
         )
     }
