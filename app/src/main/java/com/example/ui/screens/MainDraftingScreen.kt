@@ -517,8 +517,7 @@ fun MainDraftingScreen(
                 val activeNotices = notices.filter { notice ->
                     val isNotExpired = notice.expiresAtMillis == 0L || notice.expiresAtMillis > now
                     notice.isEnabled && notice.isApproved && isNotExpired &&
-                        (!com.example.data.SponsorReviewPolicy.isSponsorNotice(notice) ||
-                            com.example.data.SponsorReviewPolicy.matchesLanguage(notice.languageScope, currentLanguage)) &&
+                        com.example.data.SponsorReviewPolicy.matchesLanguage(notice.languageScope, currentLanguage) &&
                         (notice.content.isNotBlank() || notice.title.isNotBlank() || notice.horizontalMediaFor(currentLanguage).isNotBlank() ||
                             notice.videoUrlEs.isNotBlank() || notice.videoUrlPt.isNotBlank() || notice.verticalMediaFor(currentLanguage).isNotBlank())
                 }

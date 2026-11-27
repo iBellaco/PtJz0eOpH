@@ -20,13 +20,13 @@ val HextechSurfaceVariant: Color get() = if (AppThemeManager.isOledMode) {
 } else AppThemeManager.currentTheme.surfaceVariant.copy(alpha = if (AppThemeManager.currentTheme.isDark) 0.65f else 0.85f)
 val HextechCardBorder: Color get() = if (AppThemeManager.isOledMode) AppThemeManager.currentTheme.cardBorder.copy(alpha = 0.95f) else AppThemeManager.currentTheme.cardBorder
 
-val HextechGold: Color get() = AppThemeManager.currentTheme.secondary
-val HextechGoldLight: Color get() = AppThemeManager.currentTheme.secondaryLight
+val HextechGold: Color get() = AppThemeManager.readableAccent(AppThemeManager.currentTheme.secondary)
+val HextechGoldLight: Color get() = AppThemeManager.readableAccent(AppThemeManager.currentTheme.secondaryLight)
 val HextechGoldDark: Color get() = AppThemeManager.currentTheme.secondaryDark
 val HextechGoldGlow: Color get() = AppThemeManager.currentTheme.secondaryGlow
 
-val HextechCyan: Color get() = AppThemeManager.currentTheme.primary
-val HextechCyanLight: Color get() = AppThemeManager.currentTheme.primaryLight
+val HextechCyan: Color get() = AppThemeManager.readableAccent(AppThemeManager.currentTheme.primary)
+val HextechCyanLight: Color get() = AppThemeManager.readableAccent(AppThemeManager.currentTheme.primaryLight)
 val HextechBlue: Color get() = AppThemeManager.currentTheme.primaryDark
 val HextechBlueGlow: Color get() = AppThemeManager.currentTheme.primaryGlow
 
@@ -45,5 +45,5 @@ val AllyBlueSurface: Color get() = if (isLightAppTheme) Color(0xFFE3F9F9) else C
 val TextPrimary: Color get() = AppThemeManager.readablePrimary()
 val TextSecondary: Color get() = AppThemeManager.readableSecondary()
 val TextMuted: Color get() = AppThemeManager.readableMuted()
-val TextCyan: Color get() = AppThemeManager.currentTheme.primary
+val TextCyan: Color get() = AppThemeManager.readableAccent(AppThemeManager.currentTheme.primary)
 

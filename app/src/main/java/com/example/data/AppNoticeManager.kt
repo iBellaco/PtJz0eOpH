@@ -49,9 +49,9 @@ data class AppNotice(
     /** Esencias cobradas al enviar el patrocinio (1 USD = 10 EA). */
     val chargedEssence: Long = 0L,
     /**
-     * Audience language scope for sponsored notices. `ALL` is the default and
-     * keeps legacy notices visible. A single language is intentionally also a
-     * general publication; `BOTH` is the opt-in, language-targeted campaign.
+     * Audience language scope for sponsored notices. `ALL` is retained for
+     * legacy notices; new ES/PT/BOTH campaigns are filtered by the visitor's
+     * selected application language.
      */
     val languageScope: String = "ALL"
 ) {

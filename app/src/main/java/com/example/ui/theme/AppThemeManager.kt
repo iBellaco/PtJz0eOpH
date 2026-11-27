@@ -955,7 +955,25 @@ object AppThemeManager {
     )
 
     fun readableMuted(theme: AppTheme = currentTheme): Color = readableColor(
-        theme.textMuted, listOf(theme.background, theme.surface, theme.surfaceVariant), 3.0f
+        theme.textMuted, listOf(theme.background, theme.surface, theme.surfaceVariant), 4.5f
+    )
+
+    /** Returns a theme accent that remains visible on every surface it decorates. */
+    fun readableAccent(
+        candidate: Color,
+        theme: AppTheme = currentTheme,
+        minimum: Float = 4.5f
+    ): Color = readableColor(
+        candidate,
+        listOf(theme.background, theme.surface, theme.surfaceVariant),
+        minimum
+    )
+
+    /** Picks a stable foreground for a colored control, icon or badge. */
+    fun readableOn(background: Color, minimum: Float = 4.5f): Color = readableColor(
+        if (background.luminance() < 0.5f) Color.White else Color.Black,
+        listOf(background),
+        minimum
     )
 
     private fun readableColor(candidate: Color, backgrounds: List<Color>, minimum: Float): Color {

@@ -3,7 +3,6 @@ package com.example.util
 import android.annotation.SuppressLint
 import android.content.Context
 import android.provider.Settings
-import android.widget.Toast
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
 import java.util.UUID
@@ -56,7 +55,7 @@ object DeviceAndSessionManager {
         }
     }
 
-    /** Restoring the app never takes a session away from the other phone. */
+    /** The device that completes the current login becomes the active session. */
     fun resumeDeviceAndSession(context: Context, onError: (String) -> Unit = {}) {
         val user = AuthManager.getAuth()?.currentUser ?: return
         if (AuthManager.isGuestOrUnauthenticated(user)) return
@@ -76,8 +75,10 @@ object DeviceAndSessionManager {
                     // One-time migration keeps an existing installation's occupied slot.
                     registerDeviceAndSession(context, onError = onError)
                 } else {
-                    closeDisplacedSession(context)
-                    onError("Sesión cerrada: Tu cuenta se inició en otro dispositivo.")
+                    // The current login wins. Re-registering atomically replaces
+                    // the old session token, so the previous device is signed out
+                    // on its next presence check without interrupting this login.
+                    registerDeviceAndSession(context, onError = onError)
                 }
             }.addOnFailureListener {
                 registrationPending = false
@@ -161,6 +162,5 @@ object DeviceAndSessionManager {
     private fun closeDisplacedSession(context: Context) {
         AuthManager.getAuth()?.signOut()
         clearLocalSession(context)
-        Toast.makeText(context, appTr("Sesión cerrada: Tu cuenta se inició en otro dispositivo."), Toast.LENGTH_LONG).show()
     }
 }

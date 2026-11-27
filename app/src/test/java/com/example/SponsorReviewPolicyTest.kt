@@ -47,13 +47,16 @@ class SponsorReviewPolicyTest {
         assertTrue(SponsorReviewPolicy.visibleOnHome((published - "title") + ("videoUrl" to "https://example.test/banner.jpg"), 1000L))
     }
 
-    @Test fun sponsoredLanguageScopeKeepsSingleLanguageGeneralAndTargetsBoth() {
+    @Test fun sponsoredLanguageScopeTargetsTheSelectedAudience() {
         assertTrue(SponsorReviewPolicy.matchesLanguage("ALL", "es"))
-        assertTrue(SponsorReviewPolicy.matchesLanguage("ES", "pt"))
-        assertTrue(SponsorReviewPolicy.matchesLanguage("PT", "es"))
+        assertTrue(SponsorReviewPolicy.matchesLanguage("ES", "es"))
+        assertFalse(SponsorReviewPolicy.matchesLanguage("ES", "pt"))
+        assertTrue(SponsorReviewPolicy.matchesLanguage("PT", "pt"))
+        assertFalse(SponsorReviewPolicy.matchesLanguage("PT", "es"))
         assertTrue(SponsorReviewPolicy.matchesLanguage("BOTH", "pt"))
         assertTrue(SponsorReviewPolicy.matchesLanguage("BOTH", "es"))
         assertFalse(SponsorReviewPolicy.matchesLanguage("BOTH", "fr"))
+        assertTrue(SponsorReviewPolicy.matchesLanguage("ES", null))
     }
 
     @Test fun audiencePricingReflectsTheCurrentLanguageAudience() {
