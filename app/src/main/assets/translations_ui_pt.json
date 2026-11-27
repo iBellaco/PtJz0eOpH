@@ -692,5 +692,21 @@
   "Maestro+": "Mestre+",
   "Retador": "Desafiante",
   "China actualizada ({0}/{1} estadísticas completas)": "China atualizada ({0}/{1} estatísticas completas)",
-  "China compartida ({0}/{1} estadísticas completas)": "China compartilhada ({0}/{1} estatísticas completas)"
+  "China compartida ({0}/{1} estadísticas completas)": "China compartilhada ({0}/{1} estatísticas completas)",
+  "Idioma de segmentación": "Idioma de segmentação",
+  "Español y Português se muestran a usuarios de ambos idiomas, pero el precio se calcula con sus vistas y clics esperados. Español + Português combina las dos audiencias y permite cargar medios para cada una. Selecciona una opción.": "Espanhol e Português são exibidos para usuários dos dois idiomas, mas o preço é calculado com base nas visualizações e cliques esperados. Espanhol + Português combina as duas audiências e permite enviar mídias para cada uma. Selecione uma opção.",
+  "• Audiencia estimada para la selección: ~%,d vistas y ~%,d clics": "• Audiência estimada para a seleção: ~%,d visualizações e ~%,d cliques",
+  "Selecciona Español, Português o Español + Português antes de publicar": "Selecione Espanhol, Português ou Espanhol + Português antes de publicar",
+  "Consulta quién hizo cada cambio, a qué usuario afectó, cuándo ocurrió y qué resultado produjo.": "Consulte quem fez cada alteração, qual usuário foi afetado, quando ocorreu e qual resultado foi produzido.",
+  "Respuestas": "Respostas",
+  "Revisiones de perfil": "Revisões de perfil",
+  "Fecha y hora": "Data e hora",
+  "Usuario afectado": "Usuário afetado",
+  "Después": "Depois",
+  "Global se envía a Español y Português. Si eliges un idioma, el anuncio solo se publica para esa audiencia.": "Global é enviado para Espanhol e Português. Se você escolher um idioma, o anúncio será publicado apenas para esse público.",
+  "Idioma de publicación:": "Idioma de publicação:",
+  "Español o Português se mostrará a usuarios de ambos idiomas. Español + Português permite elegir una vista previa y multimedia específica para cada idioma. Selecciona una opción.": "Espanhol ou Português será exibido para usuários dos dois idiomas. Espanhol + Português permite escolher uma prévia e uma mídia específica para cada idioma. Selecione uma opção.",
+  "Selecciona Español, Português o Español + Português antes de guardar": "Selecione Espanhol, Português ou Espanhol + Português antes de salvar",
+  "Idioma de la vista previa": "Idioma da prévia",
+  "Fecha y hora del reporte": "Data e hora do relatório"
 }

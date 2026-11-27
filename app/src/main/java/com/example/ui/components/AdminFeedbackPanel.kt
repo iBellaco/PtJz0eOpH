@@ -860,7 +860,8 @@ fun AdminFeedbackBottomSheet(
                 } else {
                     LazyColumn(
                         state = feedbackListState,
-                        modifier = Modifier.fillMaxSize(),
+                        modifier = Modifier.fillMaxSize().testTag("feedback_messages_scroll"),
+                        userScrollEnabled = true,
                         contentPadding = PaddingValues(horizontal = 14.dp, vertical = 8.dp),
                         verticalArrangement = Arrangement.spacedBy(10.dp)
                     ) {

@@ -42,8 +42,8 @@ val HextechGreen = Color(0xFF22C55E)
 val AllyBlue = Color(0xFF00D2D3)
 val AllyBlueSurface: Color get() = if (isLightAppTheme) Color(0xFFE3F9F9) else Color(0xFF0D253A)
 
-val TextPrimary: Color get() = AppThemeManager.currentTheme.textPrimary
-val TextSecondary: Color get() = AppThemeManager.currentTheme.textSecondary
-val TextMuted: Color get() = AppThemeManager.currentTheme.textMuted
+val TextPrimary: Color get() = AppThemeManager.readablePrimary()
+val TextSecondary: Color get() = AppThemeManager.readableSecondary()
+val TextMuted: Color get() = AppThemeManager.readableMuted()
 val TextCyan: Color get() = AppThemeManager.currentTheme.primary
 

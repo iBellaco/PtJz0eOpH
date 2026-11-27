@@ -70,7 +70,7 @@ fun FAQScreen(
             ),
             Pair(
                 "¿Cómo puedo personalizar los temas visuales de la aplicación?",
-                "Abre Temas desde la página principal para elegir colores y probar la barra de navegación antes de aplicarla. La personalización de temas y barras requiere Premium."
+                "Abre Temas desde la página principal para elegir un tema de región o de aplicación, revisar su barra de cuatro tonos y probar la barra de navegación antes de aplicarlo. Si no ves una opción, revisa que tu cuenta tenga acceso a esa función."
             ),
             Pair(
                 "¿Cómo puedo cambiar mi avatar en la aplicación?",
@@ -110,7 +110,7 @@ fun FAQScreen(
             ),
             Pair(
                 "¿Se pueden tener dos cuentas en la misma aplicación?",
-                "No simultáneamente. Tendrás que cerrar sesión en tu cuenta actual desde el panel de usuario e iniciar con la otra."
+                "No simultáneamente. Cierra sesión desde el panel de usuario y espera a que vuelva a aparecer la pantalla de acceso antes de iniciar con la otra cuenta. La app limpia el marcador local de sesión para evitar que una sesión anterior se interprete como abierta en otro dispositivo."
             ),
             Pair(
                 "¿Por qué mi nombre de usuario aparece diferente al del juego?",
@@ -194,7 +194,7 @@ fun FAQScreen(
             ),
             Pair(
                 "¿La aplicación tiene modo oscuro o claro?",
-                "Actualmente la app tiene un esquema de color inspirado en tecnología 'Hextech' muy oscuro, ideado para cansar la vista lo menos posible. Así que sí, es modo oscuro siempre."
+                "La aplicación ofrece temas oscuros, OLED y claros dentro de los temas de aplicación, además de temas inspirados en regiones. Cada tarjeta muestra cuatro tonos y el texto se ajusta para conservar contraste."
             ),
             Pair(
                 "¿Se puede conectar a Discord para que mis amigos vean mis drafts?",

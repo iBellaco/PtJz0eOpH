@@ -48,6 +48,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Download
+import androidx.compose.material.icons.filled.Event
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.HourglassBottom
@@ -68,6 +69,7 @@ import androidx.compose.material.icons.filled.ZoomIn
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.Surface
 import androidx.compose.material.icons.filled.SportsEsports
 import androidx.compose.material.icons.filled.SupportAgent
 import androidx.compose.material3.Text
@@ -325,12 +327,26 @@ internal fun ComprehensiveFeedbackCard(
                 }
             }
 
-            Text(
-                text = com.example.util.tr(formattedDate),
-                color = TextMuted,
-                fontSize = 10.sp,
-                modifier = Modifier.padding(top = 3.dp)
-            )
+            Surface(
+                modifier = Modifier
+                    .padding(top = 6.dp)
+                    .testTag("feedback_timestamp"),
+                color = HextechDarkBg.copy(alpha = 0.55f),
+                shape = RoundedCornerShape(8.dp),
+                border = BorderStroke(0.8.dp, HextechCardBorder.copy(alpha = 0.85f))
+            ) {
+                Row(
+                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 5.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    Icon(Icons.Default.Event, contentDescription = null, tint = HextechCyan, modifier = Modifier.size(14.dp))
+                    Column(verticalArrangement = Arrangement.spacedBy(1.dp)) {
+                        Text(tr("Fecha y hora del reporte"), color = TextMuted, fontSize = 8.5.sp, fontWeight = FontWeight.SemiBold)
+                        Text(com.example.util.tr(formattedDate), color = TextPrimary, fontSize = 10.5.sp, fontWeight = FontWeight.Medium)
+                    }
+                }
+            }
 
             Spacer(modifier = Modifier.height(6.dp))
 

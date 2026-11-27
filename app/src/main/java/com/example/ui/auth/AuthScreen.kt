@@ -125,6 +125,7 @@ fun AuthFlowContainer(
             user = currentUser!!,
             onSignOut = {
                 SubscriptionManager.stopHeartbeat(currentUser?.uid)
+                com.example.util.DeviceAndSessionManager.clearLocalSession(context)
                 auth?.signOut()
                 currentUser = null
                 viewModel.resetSuccessState()

@@ -33,11 +33,11 @@ fun MyApplicationTheme(
             tertiary = TierSPlusColor,
             onTertiary = onPrimary,
             background = theme.background,
-            onBackground = theme.textPrimary,
+            onBackground = AppThemeManager.readablePrimary(theme),
             surface = theme.surface,
-            onSurface = theme.textPrimary,
+            onSurface = AppThemeManager.readablePrimary(theme),
             surfaceVariant = theme.surfaceVariant,
-            onSurfaceVariant = theme.textSecondary,
+            onSurfaceVariant = AppThemeManager.readableSecondary(theme),
             error = DangerRed,
             onError = Color.White,
             outline = theme.cardBorder
@@ -55,11 +55,11 @@ fun MyApplicationTheme(
             tertiary = TierSPlusColor,
             onTertiary = Color.White,
             background = theme.background,
-            onBackground = theme.textPrimary,
+            onBackground = AppThemeManager.readablePrimary(theme),
             surface = theme.surface,
-            onSurface = theme.textPrimary,
+            onSurface = AppThemeManager.readablePrimary(theme),
             surfaceVariant = theme.surfaceVariant,
-            onSurfaceVariant = theme.textSecondary,
+            onSurfaceVariant = AppThemeManager.readableSecondary(theme),
             error = DangerRed,
             onError = Color.White,
             outline = theme.cardBorder
@@ -79,7 +79,7 @@ fun MyApplicationTheme(
             outlineVariant = theme.cardBorder,
             tertiary = if (theme.isDark) theme.primaryGlow else theme.primaryDark,
             tertiaryContainer = theme.surfaceVariant,
-            onTertiaryContainer = theme.textPrimary
+            onTertiaryContainer = AppThemeManager.readablePrimary(theme)
         ) else colorScheme,
         typography = Typography,
         content = {
