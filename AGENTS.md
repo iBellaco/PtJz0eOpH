@@ -152,3 +152,37 @@ Al completar una tarea:
 2. **Pruebas Unitarias:** Si se modificó lógica de negocio, reglas o visibilidad, ejecutar las pruebas locales mediante `./gradlew :app:testDebugUnitTest`.
 
 ---
+## Reglas operativas del propietario para ramas, flujos y artefactos
+
+Esta sección complementa las reglas anteriores y debe aplicarse siempre al trabajar con el repositorio y GitHub Actions.
+
+### Ramas y flujos
+
+- `fix-error` es la rama exclusiva para corregir código y ejecutar `.github/workflows/fix-error.yml`.
+- `coach-validacion` es la rama exclusiva para la validación completa y debe usar `.github/workflows/build-apk.yml`.
+- `main` recibe únicamente la fusión aprobada desde `coach-validacion`; el agente no debe fusionar `main` automáticamente.
+- Nunca se debe ejecutar el flujo de `fix-error` sobre `coach-validacion`, ni el flujo de validación sobre `fix-error`.
+- Las ejecuciones deben quedar visibles en GitHub. No iniciar monitoreo continuo ni duplicar ejecuciones; debe existir una sola ejecución activa por objetivo.
+
+### Interpretación de las instrucciones del propietario
+
+- `marco rojo` significa que la ejecución terminó con error.
+- `marcó verde` y `continúa` significan que se debe revisar la última ejecución y continuar el procedimiento.
+- Si se indica un artefacto o trabajo fallido, comprobar primero ese trabajo y sus registros antes de tocar otros.
+
+### Procedimiento de corrección y reintentos
+
+1. Implementar la corrección en `fix-error`, ejecutar y publicar su flujo.
+2. Si `fix-error` marca verde, fusionar directamente `fix-error` en `coach-validacion` y hacer push. No entregar al propietario una solicitud de cambio para esa fusión.
+3. En `coach-validacion`, ejecutar la validación oficial de `.github/workflows/build-apk.yml`.
+4. Si la validación marca rojo, reintentar únicamente el artefacto o trabajo fallido dentro de la misma ejecución cuando GitHub lo permita, conservando los trabajos verdes. No relanzar los trabajos verdes.
+5. Si el reintento selectivo no es posible, vuelve a fallar o requiere modificar código, llevar la corrección a `fix-error`, ejecutar su flujo y repetir la fusión a `coach-validacion`.
+6. Cuando `coach-validacion` marque verde, crear y entregar siempre la solicitud de cambio `coach-validacion` → `main`, correspondiente a la ejecución oficial de validación.
+7. Si esa validación marca rojo, retirar o cerrar la solicitud de cambio pendiente hasta que exista una nueva fusión validada; no presentar una solicitud roja como finalizada.
+
+### Publicación y reporte
+
+- Toda corrección solicitada debe terminar publicada en la rama correspondiente; no dejarla solamente en el entorno local.
+- Antes de publicar, comprobar formato, pruebas o auditorías aplicables y revisar que el árbol de trabajo no contenga cambios ajenos.
+- Al informar el resultado, indicar la rama, la ejecución exacta y el enlace de la solicitud de cambio cuando corresponda, sin incluir datos sensibles.
+- En los resúmenes dirigidos al usuario no mencionar repositorio, base de datos, panel administrativo, credenciales ni roles internos; describir únicamente cambios de la aplicación y lo relativo a usuarios gratuitos o premium.
