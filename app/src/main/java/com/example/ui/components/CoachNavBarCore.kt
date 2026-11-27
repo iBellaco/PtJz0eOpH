@@ -46,7 +46,10 @@ internal fun CoachNavBarCore(
     if (items.isEmpty()) return
     val index = selectedIndex.coerceIn(items.indices)
     val position = animateFloatAsState(index.toFloat(), spring(dampingRatio = .72f, stiffness = 380f), label = "coach_nav_position")
-    val active = AppThemeManager.getNavBarSelectionContainerColor()
+    // The moving decoration keeps the item's accent; the icon itself uses a
+    // separate contrast-safe surface below.
+    val activeIndicator = items[index].accentColor
+    val selectionContainer = AppThemeManager.getNavBarSelectionContainerColor()
     val selectedLabelColor = AppThemeManager.getNavBarSelectedTextColor()
     val selectionBorder = AppThemeManager.getNavBarAccentColor().copy(alpha = .72f)
     val barShape = RoundedCornerShape(topStart = 22.dp, topEnd = 22.dp)
@@ -61,8 +64,8 @@ internal fun CoachNavBarCore(
             when (style) {
                 CoachNavStyle.ORIGINAL -> Unit
                 CoachNavStyle.ARC_GLOWING -> {
-                    drawCircle(active.copy(alpha = .12f), 22.dp.toPx(), Offset(centerX, centerY))
-                    drawCircle(active.copy(alpha = .48f), 17.dp.toPx(), Offset(centerX, centerY), style = Stroke(6.dp.toPx()))
+                    drawCircle(activeIndicator.copy(alpha = .12f), 22.dp.toPx(), Offset(centerX, centerY))
+                    drawCircle(activeIndicator.copy(alpha = .48f), 17.dp.toPx(), Offset(centerX, centerY), style = Stroke(6.dp.toPx()))
                     drawCircle(Color.White.copy(alpha = .9f), 13.dp.toPx(), Offset(centerX, centerY), style = Stroke(1.4.dp.toPx()))
                 }
                 CoachNavStyle.LIQUID -> {
@@ -73,7 +76,7 @@ internal fun CoachNavBarCore(
                         cubicTo(centerX + w / 2, centerY + h, centerX - w / 2, centerY + h, centerX - w / 2, centerY)
                         close()
                     }
-                    drawPath(path, active.copy(alpha = .2f)); drawPath(path, active.copy(alpha = .85f), style = Stroke(1.5.dp.toPx()))
+                    drawPath(path, activeIndicator.copy(alpha = .2f)); drawPath(path, activeIndicator.copy(alpha = .85f), style = Stroke(1.5.dp.toPx()))
                 }
                 CoachNavStyle.NEON_WAVE -> {
                     val path = Path().apply {
@@ -81,11 +84,11 @@ internal fun CoachNavBarCore(
                         cubicTo(centerX - slotWidth * .28f, size.height - 3.dp.toPx(), centerX - slotWidth * .22f, size.height - 28.dp.toPx(), centerX, size.height - 28.dp.toPx())
                         cubicTo(centerX + slotWidth * .22f, size.height - 28.dp.toPx(), centerX + slotWidth * .28f, size.height - 3.dp.toPx(), size.width, size.height - 3.dp.toPx())
                     }
-                    drawPath(path, active.copy(alpha = .25f), style = Stroke(8.dp.toPx(), cap = StrokeCap.Round))
-                    drawPath(path, active, style = Stroke(2.dp.toPx(), cap = StrokeCap.Round))
+                    drawPath(path, activeIndicator.copy(alpha = .25f), style = Stroke(8.dp.toPx(), cap = StrokeCap.Round))
+                    drawPath(path, activeIndicator, style = Stroke(2.dp.toPx(), cap = StrokeCap.Round))
                 }
                 else -> {
-                    drawCircle(active.copy(alpha = .15f), 22.dp.toPx(), Offset(centerX, centerY))
+                    drawCircle(activeIndicator.copy(alpha = .15f), 22.dp.toPx(), Offset(centerX, centerY))
                 }
             }
         }
@@ -108,7 +111,7 @@ internal fun CoachNavBarCore(
                             modifier = Modifier
                                 .size(42.dp)
                                 .clip(CircleShape)
-                                .background(if (selected) active else Color.Transparent)
+                                .background(if (selected) selectionContainer else Color.Transparent)
                                 .then(
                                     if (selected) Modifier.border(1.dp, selectionBorder, CircleShape)
                                     else Modifier
