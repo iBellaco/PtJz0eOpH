@@ -3,8 +3,10 @@ package com.example.ui.components
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.Text
@@ -48,7 +50,9 @@ fun VideoCoachNavBar(items: List<CoachNavItem>, selectedIndex: Int, style: Coach
     val position by animateFloatAsState(index.toFloat(), spring(.75f, 380f), label = "video_nav_position")
     val background = AppThemeManager.getNavBarBackgroundColor()
     val accent = AppThemeManager.getNavBarAccentColor()
+    val selectionContainer = AppThemeManager.getNavBarSelectionContainerColor()
     val active = AppThemeManager.getNavBarSelectedIconColor()
+    val selectedLabel = AppThemeManager.getNavBarSelectedTextColor()
     val inactive = AppThemeManager.getNavBarUnselectedColor()
     val density = LocalDensity.current
     val measurer = rememberTextMeasurer()
@@ -98,13 +102,13 @@ fun VideoCoachNavBar(items: List<CoachNavItem>, selectedIndex: Int, style: Coach
                     close()
                 }
                 drawPath(body, bodyColor)
-                drawPath(body, active.copy(alpha = .22f), style = Stroke(1.dp.toPx()))
+                drawPath(body, selectionContainer.copy(alpha = .78f), style = Stroke(1.dp.toPx()))
                 val bead = Offset(x, top + 2.dp.toPx())
                 drawCircle(Brush.radialGradient(listOf(accent.copy(alpha = .5f), Color.Transparent), bead, radius * 1.7f), radius * 1.7f, bead)
                 drawCircle(accent, radius * .78f, bead)
             } else {
                 drawRoundRect(bodyColor, Offset(0f, top), Size(size.width, size.height - top), CornerRadius(round))
-                drawRoundRect(active.copy(alpha = .22f), Offset(0f, top), Size(size.width, size.height - top),
+                drawRoundRect(selectionContainer.copy(alpha = .78f), Offset(0f, top), Size(size.width, size.height - top),
                     CornerRadius(round), style = Stroke(1.dp.toPx()))
                 when (style) {
                     CoachNavStyle.GLASS_PILL -> {
@@ -143,18 +147,30 @@ fun VideoCoachNavBar(items: List<CoachNavItem>, selectedIndex: Int, style: Coach
                 }
                 val offset by animateFloatAsState(if (selected) lift else 0f, spring(.75f, 380f), label = "video_nav_lift_$i")
                 val tint = if (selected) active else inactive
+                val labelTint = if (selected) selectedLabel else inactive
                 Column(Modifier.weight(1f).fillMaxHeight().clip(RoundedCornerShape(20.dp))
                     .selectable(selected = selected, role = Role.Tab, onClick = { onSelected(i) })
                     .testTag("coach_nav_item_$i"), horizontalAlignment = Alignment.CenterHorizontally) {
                     Spacer(Modifier.height(16.dp))
                     Box(Modifier.height(48.dp).fillMaxWidth().graphicsLayer { translationY = offset.dp.toPx() },
                         contentAlignment = Alignment.Center) {
-                        if (i == 4 && items.size == 5) UserNotificationIcon(item.notificationCount ?: userPanelNotificationCount(), tint)
-                        else Icon(item.icon, tr(item.title), Modifier.size(22.dp), tint = tint)
+                        Box(
+                            modifier = Modifier
+                                .size(42.dp)
+                                .clip(CircleShape)
+                                .background(if (selected) selectionContainer else Color.Transparent),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            if (i == 4 && items.size == 5) {
+                                UserNotificationIcon(item.notificationCount ?: userPanelNotificationCount(), tint)
+                            } else {
+                                Icon(item.icon, tr(item.title), Modifier.size(22.dp), tint = tint)
+                            }
+                        }
                     }
                     Text(tr(item.title), modifier = Modifier.fillMaxWidth().height(labelHeight)
                         .padding(horizontal = 1.dp).testTag("nav_label_$i"),
-                        color = tint, style = labelStyle,
+                        color = labelTint, style = labelStyle,
                         fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium)
                 }
             }

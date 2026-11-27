@@ -99,50 +99,76 @@ fun EssencePlanOptions(blue: Long, orange: Long, enabled: Boolean = true,
     Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         EssencePremiumPlan.entries.forEach { plan ->
             Surface(color = HextechSurface, border = BorderStroke(1.dp, if (plan != EssencePremiumPlan.MONTHLY) HextechGold else HextechCyan.copy(alpha = 0.6f)), shape = RoundedCornerShape(20.dp)) {
-                Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                        Icon(if (plan == EssencePremiumPlan.MONTHLY) Icons.Default.DateRange else Icons.Default.WorkspacePremium,
-                            contentDescription = null, tint = if (plan == EssencePremiumPlan.MONTHLY) HextechCyan else HextechGold)
-                        Text(
-                            tr(plan.labelKey),
-                            color = TextPrimary,
-                            style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.Bold,
-                            modifier = Modifier.weight(1f)
+                Box(Modifier.fillMaxWidth()) {
+                    if (plan == EssencePremiumPlan.TWO_YEARS) {
+                        BestOfferBadge(
+                            modifier = Modifier
+                                .align(Alignment.TopCenter)
+                                .padding(top = 8.dp)
+                                .testTag("premium_best_offer")
                         )
                     }
-                    if (plan == EssencePremiumPlan.TWO_YEARS) {
-                        Surface(
-                            color = HextechGreen.copy(alpha = 0.16f),
-                            shape = RoundedCornerShape(8.dp),
-                            border = BorderStroke(1.dp, HextechGreen.copy(alpha = 0.65f)),
-                            modifier = Modifier.testTag("premium_best_offer")
-                        ) {
-                            Row(
-                                modifier = Modifier.padding(horizontal = 9.dp, vertical = 4.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(4.dp)
-                            ) {
-                                Icon(Icons.Default.LocalOffer, contentDescription = null, tint = HextechGreen, modifier = Modifier.size(14.dp))
-                                Text(tr("Mejor oferta"), color = HextechGreen, fontSize = 11.sp, fontWeight = FontWeight.Bold)
-                            }
+                    Column(
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp)
+                            .padding(top = if (plan == EssencePremiumPlan.TWO_YEARS) 36.dp else 0.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                            Icon(if (plan == EssencePremiumPlan.MONTHLY) Icons.Default.DateRange else Icons.Default.WorkspacePremium,
+                                contentDescription = null, tint = if (plan == EssencePremiumPlan.MONTHLY) HextechCyan else HextechGold)
+                            Text(
+                                tr(plan.labelKey),
+                                color = TextPrimary,
+                                style = MaterialTheme.typography.titleLarge,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.weight(1f)
+                            )
                         }
+                        if (plan != EssencePremiumPlan.MONTHLY) Text(tr("Más tiempo, mejor valor"), color = HextechGold, style = MaterialTheme.typography.labelMedium)
+                        Text(tr("{0} días de Premium").replace("{0}", plan.days.toString()), color = TextSecondary)
+                        Button(onClick = { onChoose(plan, EssenceCurrency.BLUE) }, enabled = enabled && blue >= plan.blueCost,
+                            modifier = Modifier.fillMaxWidth().testTag("premium_${plan.name}_BLUE"),
+                            shape = RoundedCornerShape(12.dp), colors = ButtonDefaults.buttonColors(containerColor = HextechCyan, contentColor = HextechDarkBg)) { Text("${plan.blueCost} ${tr("Esencias Azules")}") }
+                        SavingsBadge(plan, EssenceCurrency.BLUE)
+                        if (orange > 0) {
+                            OutlinedButton(onClick = { onChoose(plan, EssenceCurrency.ORANGE) }, enabled = enabled && orange >= plan.orangeCost,
+                                modifier = Modifier.fillMaxWidth().testTag("premium_${plan.name}_ORANGE"), shape = RoundedCornerShape(12.dp),
+                                border = BorderStroke(1.dp, Color(0xFFFF9E1B)), colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFFFF9E1B))) { Text("${plan.orangeCost} ${tr("Esencias Naranjas")}") }
+                            SavingsBadge(plan, EssenceCurrency.ORANGE)
+                        }
+                        if (blue < plan.blueCost && orange < plan.orangeCost) Text(tr("Esencias insuficientes"), color = TextMuted)
                     }
-                    if (plan != EssencePremiumPlan.MONTHLY) Text(tr("Más tiempo, mejor valor"), color = HextechGold, style = MaterialTheme.typography.labelMedium)
-                    Text(tr("{0} días de Premium").replace("{0}", plan.days.toString()), color = TextSecondary)
-                    Button(onClick = { onChoose(plan, EssenceCurrency.BLUE) }, enabled = enabled && blue >= plan.blueCost,
-                        modifier = Modifier.fillMaxWidth().testTag("premium_${plan.name}_BLUE"),
-                        shape = RoundedCornerShape(12.dp), colors = ButtonDefaults.buttonColors(containerColor = HextechCyan, contentColor = HextechDarkBg)) { Text("${plan.blueCost} ${tr("Esencias Azules")}") }
-                    SavingsBadge(plan, EssenceCurrency.BLUE)
-                    if (orange > 0) {
-                        OutlinedButton(onClick = { onChoose(plan, EssenceCurrency.ORANGE) }, enabled = enabled && orange >= plan.orangeCost,
-                            modifier = Modifier.fillMaxWidth().testTag("premium_${plan.name}_ORANGE"), shape = RoundedCornerShape(12.dp),
-                            border = BorderStroke(1.dp, Color(0xFFFF9E1B)), colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFFFF9E1B))) { Text("${plan.orangeCost} ${tr("Esencias Naranjas")}") }
-                        SavingsBadge(plan, EssenceCurrency.ORANGE)
-                    }
-                    if (blue < plan.blueCost && orange < plan.orangeCost) Text(tr("Esencias insuficientes"), color = TextMuted)
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun BestOfferBadge(modifier: Modifier = Modifier) {
+    val pulse = rememberInfiniteTransition(label = "premium_best_offer_pulse").animateFloat(
+        initialValue = 0.96f,
+        targetValue = 1.06f,
+        animationSpec = infiniteRepeatable(animation = tween(850), repeatMode = RepeatMode.Reverse),
+        label = "premium_best_offer_scale"
+    )
+    val offerPurple = Color(0xFF5B21B6)
+    val offerGold = Color(0xFFFFD166)
+    Surface(
+        color = offerPurple,
+        shape = RoundedCornerShape(16.dp),
+        border = BorderStroke(1.5.dp, offerGold),
+        modifier = modifier.scale(pulse.value)
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(6.dp)
+        ) {
+            Icon(Icons.Default.AutoAwesome, contentDescription = null, tint = offerGold, modifier = Modifier.size(18.dp))
+            Text(tr("Mejor oferta"), color = Color.White, fontSize = 15.sp, fontWeight = FontWeight.Black)
         }
     }
 }

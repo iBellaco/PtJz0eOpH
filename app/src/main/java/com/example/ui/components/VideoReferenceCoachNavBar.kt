@@ -3,8 +3,10 @@ package com.example.ui.components
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalTextStyle
@@ -60,7 +62,9 @@ fun VideoReferenceCoachNavBar(
     val position by animateFloatAsState(index.toFloat(), spring(.75f, 380f), label = "reference_video_position")
     val background = AppThemeManager.getNavBarBackgroundColor()
     val accent = AppThemeManager.getNavBarAccentColor()
+    val selectionContainer = AppThemeManager.getNavBarSelectionContainerColor()
     val active = AppThemeManager.getNavBarSelectedIconColor()
+    val selectedLabel = AppThemeManager.getNavBarSelectedTextColor()
     val inactive = AppThemeManager.getNavBarUnselectedColor()
     val density = LocalDensity.current
     val measurer = rememberTextMeasurer()
@@ -92,18 +96,18 @@ fun VideoReferenceCoachNavBar(
                 val round = 26.dp.toPx()
                 drawReferenceBase(style, background, accent, top, round)
                 when (style) {
-                    CoachNavStyle.VIDEO_LIQUID_GLASS -> drawLiquidGlass(slot, x, top, iconCenter, background, accent, active)
-                    CoachNavStyle.VIDEO_DARK_NEON_LENS -> drawDarkNeonLens(x, iconCenter, size.width, size.height, top, background, accent, active)
-                    CoachNavStyle.VIDEO_BOUNCE -> drawBounce(x, iconCenter, top, accent, active)
-                    CoachNavStyle.VIDEO_NEON_WAVE -> drawNeonWave(x, top, size.width, size.height, round, accent, active)
-                    CoachNavStyle.VIDEO_SPOTLIGHT -> drawVideoSpotlight(x, slot, top, iconCenter, size.height, accent, active)
-                    CoachNavStyle.VIDEO_FLOATING_BUTTON -> drawFloatingButton(x, top, iconCenter, accent, active)
-                    CoachNavStyle.GLASS_WAVE -> drawGlassWave(x, slot, top, size.height, background, accent, active)
-                    CoachNavStyle.GLASS_CONE -> drawGlassCone(x, top, iconCenter, accent, active)
-                    CoachNavStyle.GLASS_BEAD -> drawGlassBead(x, top, size.width, size.height, accent, active)
-                    CoachNavStyle.WARM_TABS -> drawWarmTabs(x, slot, top, size.width, size.height, background, accent, active)
-                    CoachNavStyle.RIBBON_MATRIX -> drawRibbonMatrix(items.size, slot, x, top, size.height, background, accent, active)
-                    CoachNavStyle.PRISM_LATTICE -> drawPrismLattice(items.size, slot, x, top, size.height, background, accent, active)
+                    CoachNavStyle.VIDEO_LIQUID_GLASS -> drawLiquidGlass(slot, x, top, iconCenter, background, accent, selectionContainer)
+                    CoachNavStyle.VIDEO_DARK_NEON_LENS -> drawDarkNeonLens(x, iconCenter, size.width, size.height, top, background, accent, selectionContainer)
+                    CoachNavStyle.VIDEO_BOUNCE -> drawBounce(x, iconCenter, top, accent, selectionContainer)
+                    CoachNavStyle.VIDEO_NEON_WAVE -> drawNeonWave(x, top, size.width, size.height, round, accent, selectionContainer)
+                    CoachNavStyle.VIDEO_SPOTLIGHT -> drawVideoSpotlight(x, slot, top, iconCenter, size.height, accent, selectionContainer)
+                    CoachNavStyle.VIDEO_FLOATING_BUTTON -> drawFloatingButton(x, top, iconCenter, accent, selectionContainer)
+                    CoachNavStyle.GLASS_WAVE -> drawGlassWave(x, slot, top, size.height, background, accent, selectionContainer)
+                    CoachNavStyle.GLASS_CONE -> drawGlassCone(x, top, iconCenter, accent, selectionContainer)
+                    CoachNavStyle.GLASS_BEAD -> drawGlassBead(x, top, size.width, size.height, accent, selectionContainer)
+                    CoachNavStyle.WARM_TABS -> drawWarmTabs(x, slot, top, size.width, size.height, background, accent, selectionContainer)
+                    CoachNavStyle.RIBBON_MATRIX -> drawRibbonMatrix(items.size, slot, x, top, size.height, background, accent, selectionContainer)
+                    CoachNavStyle.PRISM_LATTICE -> drawPrismLattice(items.size, slot, x, top, size.height, background, accent, selectionContainer)
                     else -> Unit
                 }
             }
@@ -123,7 +127,7 @@ fun VideoReferenceCoachNavBar(
                         label = "reference_video_lift_$itemIndex"
                     )
                     val tint = if (selected) active else inactive
-                    val labelTint = tint
+                    val labelTint = if (selected) selectedLabel else inactive
                     Column(
                         Modifier.weight(1f).fillMaxHeight().clip(RoundedCornerShape(20.dp))
                             .selectable(selected = selected, role = Role.Tab, onClick = { onSelected(itemIndex) })
@@ -135,10 +139,18 @@ fun VideoReferenceCoachNavBar(
                             Modifier.height(48.dp).fillMaxWidth().graphicsLayer { translationY = offset.dp.toPx() },
                             contentAlignment = Alignment.Center
                         ) {
-                            if (itemIndex == 4 && items.size == 5) {
-                                UserNotificationIcon(item.notificationCount ?: userPanelNotificationCount(), tint)
-                            } else {
-                                Icon(item.icon, tr(item.title), Modifier.size(22.dp), tint = tint)
+                            Box(
+                                modifier = Modifier
+                                    .size(42.dp)
+                                    .clip(CircleShape)
+                                    .background(if (selected) selectionContainer else Color.Transparent),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                if (itemIndex == 4 && items.size == 5) {
+                                    UserNotificationIcon(item.notificationCount ?: userPanelNotificationCount(), tint)
+                                } else {
+                                    Icon(item.icon, tr(item.title), Modifier.size(22.dp), tint = tint)
+                                }
                             }
                         }
                         Text(

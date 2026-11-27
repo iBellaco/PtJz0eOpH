@@ -4,8 +4,10 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.MenuBook
@@ -29,6 +31,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.ui.theme.AppThemeManager
 import com.example.ui.theme.CoachNavStyle
 import com.example.util.tr
 
@@ -43,7 +46,12 @@ internal fun CoachNavBarCore(
     if (items.isEmpty()) return
     val index = selectedIndex.coerceIn(items.indices)
     val position = animateFloatAsState(index.toFloat(), spring(dampingRatio = .72f, stiffness = 380f), label = "coach_nav_position")
-    val active = items[index].accentColor
+    // The moving decoration keeps the item's accent; the icon itself uses a
+    // separate contrast-safe surface below.
+    val activeIndicator = items[index].accentColor
+    val selectionContainer = AppThemeManager.getNavBarSelectionContainerColor()
+    val selectedLabelColor = AppThemeManager.getNavBarSelectedTextColor()
+    val selectionBorder = AppThemeManager.getNavBarAccentColor().copy(alpha = .72f)
     val barShape = RoundedCornerShape(topStart = 22.dp, topEnd = 22.dp)
     BoxWithConstraints(modifier.fillMaxWidth().height(76.dp).clip(barShape).background(backgroundColor)) {
         val density = androidx.compose.ui.platform.LocalDensity.current
@@ -56,8 +64,8 @@ internal fun CoachNavBarCore(
             when (style) {
                 CoachNavStyle.ORIGINAL -> Unit
                 CoachNavStyle.ARC_GLOWING -> {
-                    drawCircle(active.copy(alpha = .12f), 22.dp.toPx(), Offset(centerX, centerY))
-                    drawCircle(active.copy(alpha = .48f), 17.dp.toPx(), Offset(centerX, centerY), style = Stroke(6.dp.toPx()))
+                    drawCircle(activeIndicator.copy(alpha = .12f), 22.dp.toPx(), Offset(centerX, centerY))
+                    drawCircle(activeIndicator.copy(alpha = .48f), 17.dp.toPx(), Offset(centerX, centerY), style = Stroke(6.dp.toPx()))
                     drawCircle(Color.White.copy(alpha = .9f), 13.dp.toPx(), Offset(centerX, centerY), style = Stroke(1.4.dp.toPx()))
                 }
                 CoachNavStyle.LIQUID -> {
@@ -68,7 +76,7 @@ internal fun CoachNavBarCore(
                         cubicTo(centerX + w / 2, centerY + h, centerX - w / 2, centerY + h, centerX - w / 2, centerY)
                         close()
                     }
-                    drawPath(path, active.copy(alpha = .2f)); drawPath(path, active.copy(alpha = .85f), style = Stroke(1.5.dp.toPx()))
+                    drawPath(path, activeIndicator.copy(alpha = .2f)); drawPath(path, activeIndicator.copy(alpha = .85f), style = Stroke(1.5.dp.toPx()))
                 }
                 CoachNavStyle.NEON_WAVE -> {
                     val path = Path().apply {
@@ -76,11 +84,11 @@ internal fun CoachNavBarCore(
                         cubicTo(centerX - slotWidth * .28f, size.height - 3.dp.toPx(), centerX - slotWidth * .22f, size.height - 28.dp.toPx(), centerX, size.height - 28.dp.toPx())
                         cubicTo(centerX + slotWidth * .22f, size.height - 28.dp.toPx(), centerX + slotWidth * .28f, size.height - 3.dp.toPx(), size.width, size.height - 3.dp.toPx())
                     }
-                    drawPath(path, active.copy(alpha = .25f), style = Stroke(8.dp.toPx(), cap = StrokeCap.Round))
-                    drawPath(path, active, style = Stroke(2.dp.toPx(), cap = StrokeCap.Round))
+                    drawPath(path, activeIndicator.copy(alpha = .25f), style = Stroke(8.dp.toPx(), cap = StrokeCap.Round))
+                    drawPath(path, activeIndicator, style = Stroke(2.dp.toPx(), cap = StrokeCap.Round))
                 }
                 else -> {
-                    drawCircle(active.copy(alpha = .15f), 22.dp.toPx(), Offset(centerX, centerY))
+                    drawCircle(activeIndicator.copy(alpha = .15f), 22.dp.toPx(), Offset(centerX, centerY))
                 }
             }
         }
@@ -99,12 +107,37 @@ internal fun CoachNavBarCore(
                         modifier = if (style == CoachNavStyle.LIQUID) Modifier.fillMaxSize() else Modifier.fillMaxWidth().height(48.dp),
                         contentAlignment = Alignment.Center
                     ) {
-                        if (itemIndex == 4 && items.size == 5) UserNotificationIcon(item.notificationCount ?: userPanelNotificationCount(), if (selected) selectedColor else unselectedColor)
-                        else Icon(item.icon, contentDescription = tr(item.title), tint = if (selected) selectedColor else unselectedColor,
-                            modifier = Modifier.size(21.dp).graphicsLayer { scaleX = iconScale; scaleY = iconScale })
+                        Box(
+                            modifier = Modifier
+                                .size(42.dp)
+                                .clip(CircleShape)
+                                .background(if (selected) selectionContainer else Color.Transparent)
+                                .then(
+                                    if (selected) Modifier.border(1.dp, selectionBorder, CircleShape)
+                                    else Modifier
+                                ),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            if (itemIndex == 4 && items.size == 5) {
+                                UserNotificationIcon(
+                                    item.notificationCount ?: userPanelNotificationCount(),
+                                    if (selected) selectedColor else unselectedColor
+                                )
+                            } else {
+                                Icon(
+                                    item.icon,
+                                    contentDescription = tr(item.title),
+                                    tint = if (selected) selectedColor else unselectedColor,
+                                    modifier = Modifier.size(21.dp).graphicsLayer {
+                                        scaleX = iconScale
+                                        scaleY = iconScale
+                                    }
+                                )
+                            }
+                        }
                     }
                     if (style != CoachNavStyle.LIQUID) {
-                        Text(tr(item.title), color = if (selected) selectedColor else unselectedColor, fontSize = 10.sp,
+                        Text(tr(item.title), color = if (selected) selectedLabelColor else unselectedColor, fontSize = 10.sp,
                             fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium, maxLines = 1)
                     }
                 }
