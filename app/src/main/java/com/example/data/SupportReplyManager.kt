@@ -281,6 +281,7 @@ object SupportReplyManager {
                     transaction.set(ModeratorActivityRepository.eventReference(db, auth.uid, auditId), mapOf(
                         "actorUid" to auth.uid, "targetUid" to owner, "reportId" to reportId,
                         "action" to "SUPPORT_REPLY", "value" to entry.id,
+                        "detail" to "Se envió una respuesta al ticket de soporte.",
                         "createdAt" to com.google.firebase.firestore.FieldValue.serverTimestamp()
                     ))
                 }
@@ -376,6 +377,7 @@ object SupportReplyManager {
                 val snapshot = transaction.get(ref)
                 check(snapshot.exists()) { "Ticket no disponible" }
                 val owner = snapshot.getString("userId").orEmpty()
+                val previousStatus = snapshot.getString("status").orEmpty().ifBlank { "PENDING" }
                 val data = mutableMapOf<String, Any>("status" to newStatus, "isCompleted" to SupportConversationPolicy.isClosed(newStatus),
                     "staffRead" to true, "updatedAt" to Timestamp.now())
                 if (auditId != null) {
@@ -383,6 +385,8 @@ object SupportReplyManager {
                     transaction.set(ModeratorActivityRepository.eventReference(db, auth.uid, auditId), mapOf(
                         "actorUid" to auth.uid, "targetUid" to owner, "reportId" to reportId,
                         "action" to "SUPPORT_STATUS", "value" to newStatus,
+                        "previousValue" to previousStatus,
+                        "detail" to "Se cambió el estado del ticket desde el panel de soporte.",
                         "createdAt" to com.google.firebase.firestore.FieldValue.serverTimestamp()
                     ))
                 }

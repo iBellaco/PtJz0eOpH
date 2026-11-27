@@ -13,6 +13,9 @@ object DeviceIdentityPolicy {
 
 /** Token ownership, rather than client clocks, decides which session remains active. */
 object DeviceSessionPolicy {
+    fun needsFreshRegistration(localToken: String?, remoteToken: String?): Boolean =
+        localToken.isNullOrBlank() || remoteToken.isNullOrBlank()
+
     fun owns(localToken: String?, localDevice: String, remoteToken: String?, remoteDevice: String?): Boolean =
         !localToken.isNullOrBlank() && localToken == remoteToken && localDevice == remoteDevice
 

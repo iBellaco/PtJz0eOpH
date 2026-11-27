@@ -39,7 +39,7 @@ fun AdminBroadcastAnnouncementDialog(
     var isUrgent by remember { mutableStateOf(false) }
     var sendNotification by remember { mutableStateOf(false) }
     var targetLanguage by remember {
-        mutableStateOf(com.example.util.AppLanguage.current.value)
+        mutableStateOf(com.example.data.GlobalAnnouncementPolicy.LANGUAGE_GLOBAL)
     }
     var isPublishing by remember { mutableStateOf(false) }
     var isDeactivating by remember { mutableStateOf(false) }
@@ -89,7 +89,7 @@ fun AdminBroadcastAnnouncementDialog(
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 Text(
-                    tr("El anuncio llegará únicamente a los usuarios que tengan seleccionado el idioma elegido."),
+                    tr("Global se envía a Español y Português. Si eliges un idioma, el anuncio solo se publica para esa audiencia."),
                     color = TextSecondary,
                     fontSize = 12.sp
                 )
@@ -99,7 +99,11 @@ fun AdminBroadcastAnnouncementDialog(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    listOf("es" to "Español", "pt" to "Portugués").forEach { (code, label) ->
+                    listOf(
+                        com.example.data.GlobalAnnouncementPolicy.LANGUAGE_GLOBAL to "Global",
+                        "es" to "Español",
+                        "pt" to "Portugués"
+                    ).forEach { (code, label) ->
                         FilterChip(
                             selected = targetLanguage == code,
                             onClick = { targetLanguage = code },
@@ -264,7 +268,11 @@ fun AdminBroadcastAnnouncementDialog(
                             Toast.makeText(
                                 context,
                                 com.example.util.appTr("Anuncio global publicado") + ": " + com.example.util.appTr(
-                                    if (targetLanguage == "pt") "Portugués" else "Español"
+                                    when (targetLanguage) {
+                                        "pt" -> "Portugués"
+                                        "es" -> "Español"
+                                        else -> "Global"
+                                    }
                                 ),
                                 Toast.LENGTH_SHORT
                             ).show()

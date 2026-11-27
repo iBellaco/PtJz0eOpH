@@ -32,6 +32,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
@@ -76,7 +77,7 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
     var expandedImageUrlPt by remember { mutableStateOf("") }
     var externalUrl by remember { mutableStateOf("") }
     var selectedTag by remember { mutableStateOf("Anuncios importantes") }
-    var languageScope by remember { mutableStateOf(com.example.data.SponsorReviewPolicy.LANGUAGE_ALL) }
+    var languageScope by remember { mutableStateOf("") }
     var titleColor by remember { mutableStateOf("#FFD700") }
     var contentColor by remember { mutableStateOf("#CCCCCC") }
     var isEnabled by remember { mutableStateOf(true) }
@@ -99,12 +100,22 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
     val isExpandedUrlValid = remember(expandedImageUrl) { NoticeMediaUtils.isValidNoticeMedia(expandedImageUrl) }
     val isExpandedUrlEsValid = remember(expandedImageUrlEs) { NoticeMediaUtils.isValidNoticeMedia(expandedImageUrlEs) }
     val isExpandedUrlPtValid = remember(expandedImageUrlPt) { NoticeMediaUtils.isValidNoticeMedia(expandedImageUrlPt) }
+    var previewLanguage by remember { mutableStateOf(com.example.data.SponsorReviewPolicy.LANGUAGE_ES) }
     val previewMediaUrl = when (languageScope) {
         com.example.data.SponsorReviewPolicy.LANGUAGE_ES -> videoUrlEs.ifBlank { videoUrl }
         com.example.data.SponsorReviewPolicy.LANGUAGE_PT -> videoUrlPt.ifBlank { videoUrl }
-        com.example.data.SponsorReviewPolicy.LANGUAGE_BOTH -> videoUrlEs.ifBlank { videoUrlPt }.ifBlank { videoUrl }
+        com.example.data.SponsorReviewPolicy.LANGUAGE_BOTH -> if (previewLanguage == com.example.data.SponsorReviewPolicy.LANGUAGE_PT) {
+            videoUrlPt.ifBlank { videoUrlEs }.ifBlank { videoUrl }
+        } else {
+            videoUrlEs.ifBlank { videoUrlPt }.ifBlank { videoUrl }
+        }
         else -> videoUrl
     }
+    val languageSelectionValid = languageScope in setOf(
+        com.example.data.SponsorReviewPolicy.LANGUAGE_ES,
+        com.example.data.SponsorReviewPolicy.LANGUAGE_PT,
+        com.example.data.SponsorReviewPolicy.LANGUAGE_BOTH
+    )
     val coroutineScope = rememberCoroutineScope()
     var isProcessingMedia by remember { mutableStateOf(false) }
     var deletingNoticeId by remember { mutableStateOf<String?>(null) }
@@ -185,7 +196,7 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                 expandedImageUrlEs = ""
                 expandedImageUrlPt = ""
                 externalUrl = ""
-                languageScope = com.example.data.SponsorReviewPolicy.LANGUAGE_ALL
+                languageScope = ""
                 showManualVideoUrlInput = false
                 showManualExpandedUrlInput = false
                 Toast.makeText(context, com.example.util.appTr("Edición cancelada."), Toast.LENGTH_SHORT).show()
@@ -285,7 +296,7 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                                     expandedImageUrlEs = ""
                                     expandedImageUrlPt = ""
                                     externalUrl = ""
-                                    languageScope = com.example.data.SponsorReviewPolicy.LANGUAGE_ALL
+                                    languageScope = ""
                                     showManualVideoUrlInput = false
                                     showManualExpandedUrlInput = false
                                     Toast.makeText(context, com.example.util.appTr("Campos limpiados. Salida desbloqueada."), Toast.LENGTH_SHORT).show()
@@ -610,6 +621,8 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                                             externalUrl = notice.externalUrl
                                             selectedTag = notice.tag
                                             languageScope = com.example.data.SponsorReviewPolicy.normalizeLanguageScope(notice.languageScope)
+                                                .takeIf { it != com.example.data.SponsorReviewPolicy.LANGUAGE_ALL } ?: ""
+                                            previewLanguage = com.example.data.SponsorReviewPolicy.LANGUAGE_ES
                                             titleColor = notice.titleColor
                                             contentColor = notice.contentColor
                                             isEnabled = notice.isEnabled
@@ -633,7 +646,7 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                                                 expandedImageUrlEs = ""
                                                 expandedImageUrlPt = ""
                                                 externalUrl = ""
-                                                languageScope = com.example.data.SponsorReviewPolicy.LANGUAGE_ALL
+                                                languageScope = ""
                                                 budgetText = ""
                                             }
                                             removeNoticeFromAdminList(notice)
@@ -724,7 +737,7 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                                 expandedImageUrlEs = ""
                                 expandedImageUrlPt = ""
                                 externalUrl = ""
-                                languageScope = com.example.data.SponsorReviewPolicy.LANGUAGE_ALL
+                                languageScope = ""
                             },
                             contentPadding = PaddingValues(horizontal = 6.dp, vertical = 2.dp)
                         ) {
@@ -761,7 +774,7 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                 }
 
                 Spacer(modifier = Modifier.height(8.dp))
-                Text(tr("Idioma de publicación (opcional):"), color = TextSecondary, fontSize = 11.sp)
+                Text(tr("Idioma de publicación:"), color = TextSecondary, fontSize = 11.sp)
                 Spacer(modifier = Modifier.height(4.dp))
                 Row(
                     modifier = Modifier
@@ -770,7 +783,6 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                     horizontalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
                     listOf(
-                        com.example.data.SponsorReviewPolicy.LANGUAGE_ALL to "General",
                         com.example.data.SponsorReviewPolicy.LANGUAGE_ES to "Español",
                         com.example.data.SponsorReviewPolicy.LANGUAGE_PT to "Português",
                         com.example.data.SponsorReviewPolicy.LANGUAGE_BOTH to "Español + Português"
@@ -794,7 +806,7 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                     }
                 }
                 Text(
-                    tr("General se muestra a todos. Español/Português permiten cargar un medio específico; los campos son opcionales."),
+                    tr("Español o Português se mostrará a usuarios de ambos idiomas. Español + Português permite elegir una vista previa y multimedia específica para cada idioma. Selecciona una opción."),
                     color = TextMuted,
                     fontSize = 9.5.sp,
                     lineHeight = 13.sp
@@ -1076,7 +1088,7 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                     }
                 }
 
-                if (languageScope != com.example.data.SponsorReviewPolicy.LANGUAGE_ALL) {
+                if (languageSelectionValid) {
                     Spacer(modifier = Modifier.height(10.dp))
                     Card(
                         modifier = Modifier.fillMaxWidth(),
@@ -1198,7 +1210,7 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                     processLanguageVerticalMedia(uri, { expandedImageUrlPt = it }, "Multimedia vertical en portugués configurada correctamente")
                 }
 
-                if (languageScope != com.example.data.SponsorReviewPolicy.LANGUAGE_ALL) {
+                if (languageSelectionValid) {
                     Card(
                         modifier = Modifier.fillMaxWidth(),
                         colors = CardDefaults.cardColors(containerColor = HextechSurfaceVariant),
@@ -1489,7 +1501,7 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                                 expandedImageUrlEs = ""
                                 expandedImageUrlPt = ""
                                 externalUrl = ""
-                                languageScope = com.example.data.SponsorReviewPolicy.LANGUAGE_ALL
+                                languageScope = ""
                                 budgetText = ""
                                 showManualVideoUrlInput = false
                                 showManualExpandedUrlInput = false
@@ -1507,6 +1519,10 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
 
                         Button(
                             onClick = {
+                                if (!languageSelectionValid) {
+                                    Toast.makeText(context, com.example.util.appTr("Selecciona Español, Português o Español + Português antes de guardar"), Toast.LENGTH_SHORT).show()
+                                    return@Button
+                                }
                                 if (title.isBlank() && content.isBlank() && videoUrl.isBlank() && videoUrlEs.isBlank() && videoUrlPt.isBlank() && expandedImageUrl.isBlank() && expandedImageUrlEs.isBlank() && expandedImageUrlPt.isBlank()) {
                                     Toast.makeText(context, com.example.util.appTr("Ingresa un título o contenido para el anuncio"), Toast.LENGTH_SHORT).show()
                                     return@Button
@@ -1558,7 +1574,7 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                                 expandedImageUrlEs = ""
                                 expandedImageUrlPt = ""
                                 externalUrl = ""
-                                languageScope = com.example.data.SponsorReviewPolicy.LANGUAGE_ALL
+                                languageScope = ""
                                 budgetText = ""
                                 showManualVideoUrlInput = false
                                 showManualExpandedUrlInput = false
@@ -1574,6 +1590,10 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                 } else {
                     Button(
                         onClick = {
+                            if (!languageSelectionValid) {
+                                Toast.makeText(context, com.example.util.appTr("Selecciona Español, Português o Español + Português antes de publicar"), Toast.LENGTH_SHORT).show()
+                                return@Button
+                            }
                             if (title.isBlank() && content.isBlank() && videoUrl.isBlank() && videoUrlEs.isBlank() && videoUrlPt.isBlank() && expandedImageUrl.isBlank() && expandedImageUrlEs.isBlank() && expandedImageUrlPt.isBlank()) {
                                 Toast.makeText(context, com.example.util.appTr("Ingresa un título o contenido para el anuncio"), Toast.LENGTH_SHORT).show()
                                 return@Button
@@ -1623,7 +1643,7 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                             expandedImageUrlEs = ""
                             expandedImageUrlPt = ""
                             externalUrl = ""
-                            languageScope = com.example.data.SponsorReviewPolicy.LANGUAGE_ALL
+                            languageScope = ""
                             budgetText = ""
                             editingNoticeId = null
                             showManualVideoUrlInput = false
@@ -1641,6 +1661,29 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                 Spacer(modifier = Modifier.height(14.dp))
                 Text(tr("👁️ Vista Previa del Anuncio:"), color = HextechCyan, fontWeight = FontWeight.Bold, fontSize = 12.sp)
                 Spacer(modifier = Modifier.height(6.dp))
+                if (languageScope == com.example.data.SponsorReviewPolicy.LANGUAGE_BOTH) {
+                    Text(tr("Idioma de la vista previa"), color = TextSecondary, fontSize = 10.sp)
+                    Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        listOf(
+                            com.example.data.SponsorReviewPolicy.LANGUAGE_ES to "Español",
+                            com.example.data.SponsorReviewPolicy.LANGUAGE_PT to "Português"
+                        ).forEach { (code, label) ->
+                            Button(
+                                onClick = { previewLanguage = code },
+                                contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp),
+                                shape = RoundedCornerShape(6.dp),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = if (previewLanguage == code) HextechGold else HextechSurfaceVariant,
+                                    contentColor = if (previewLanguage == code) HextechDarkBg else TextPrimary
+                                ),
+                                modifier = Modifier.testTag("admin_notice_preview_${code.lowercase()}")
+                            ) {
+                                Text(tr(label), fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                            }
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(4.dp))
+                }
 
                 // Live Preview Card
                 Card(

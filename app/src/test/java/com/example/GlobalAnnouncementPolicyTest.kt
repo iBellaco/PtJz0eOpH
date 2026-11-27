@@ -38,4 +38,10 @@ class GlobalAnnouncementPolicyTest {
         assertEquals("legacy", GlobalAnnouncementPolicy.payloadForLanguage(legacy, "es")?.get("id"))
         assertEquals("legacy", GlobalAnnouncementPolicy.payloadForLanguage(legacy, "pt")?.get("id"))
     }
+
+    @Test fun globalTargetWritesBothLanguageFields() {
+        assertEquals(GlobalAnnouncementPolicy.LANGUAGE_GLOBAL, GlobalAnnouncementPolicy.normalizeTargetLanguage("global"))
+        assertEquals(listOf("announcement_es", "announcement_pt"), GlobalAnnouncementPolicy.fieldsForTarget("global"))
+        assertEquals("announcement_es", GlobalAnnouncementPolicy.field("es"))
+    }
 }

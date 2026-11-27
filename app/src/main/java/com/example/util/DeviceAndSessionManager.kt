@@ -71,7 +71,7 @@ object DeviceAndSessionManager {
                 if (device != null && com.example.data.DeviceSessionPolicy.owns(token, device, account.getString("sessionToken"), account.getString("lastDeviceId"))) {
                     localSessionToken = token
                     updatePresence(user.uid, context, true)
-                } else if (account.getString("sessionToken").isNullOrBlank() ||
+                } else if (com.example.data.DeviceSessionPolicy.needsFreshRegistration(token, account.getString("sessionToken")) ||
                     (!device.isNullOrBlank() && account.getString("lastDeviceId") in legacyAliases && account.getString("sessionToken") == token)) {
                     // One-time migration keeps an existing installation's occupied slot.
                     registerDeviceAndSession(context, onError = onError)
@@ -152,10 +152,15 @@ object DeviceAndSessionManager {
         }
     }
 
-    private fun closeDisplacedSession(context: Context) {
-        AuthManager.getAuth()?.signOut()
+    /** Explicit logout removes the local ownership marker before the next login. */
+    fun clearLocalSession(context: Context) {
         localSessionToken = null
         context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).edit().remove(KEY_SESSION_TOKEN).apply()
+    }
+
+    private fun closeDisplacedSession(context: Context) {
+        AuthManager.getAuth()?.signOut()
+        clearLocalSession(context)
         Toast.makeText(context, appTr("Sesión cerrada: Tu cuenta se inició en otro dispositivo."), Toast.LENGTH_LONG).show()
     }
 }

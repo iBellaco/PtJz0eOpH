@@ -100,6 +100,37 @@ object SponsorReviewPolicy {
     }
 }
 
+data class SponsorAudienceForecast(
+    val expectedViews: Int,
+    val expectedClicks: Int
+)
+
+/** Conservative audience estimates used to keep Spanish and Portuguese prices distinct. */
+object SponsorAudiencePricing {
+    private const val SPANISH_VIEWS = 1_000
+    private const val PORTUGUESE_VIEWS = 120
+    private const val SPANISH_CTR = 0.045
+    private const val PORTUGUESE_CTR = 0.025
+
+    fun forecast(scope: String?): SponsorAudienceForecast = when (SponsorReviewPolicy.normalizeLanguageScope(scope)) {
+        SponsorReviewPolicy.LANGUAGE_ES -> SponsorAudienceForecast(SPANISH_VIEWS, (SPANISH_VIEWS * SPANISH_CTR).toInt())
+        SponsorReviewPolicy.LANGUAGE_PT -> SponsorAudienceForecast(PORTUGUESE_VIEWS, (PORTUGUESE_VIEWS * PORTUGUESE_CTR).toInt().coerceAtLeast(1))
+        SponsorReviewPolicy.LANGUAGE_BOTH -> SponsorAudienceForecast(
+            SPANISH_VIEWS + PORTUGUESE_VIEWS,
+            (SPANISH_VIEWS * SPANISH_CTR + PORTUGUESE_VIEWS * PORTUGUESE_CTR).toInt()
+        )
+        else -> SponsorAudienceForecast(0, 0)
+    }
+
+    fun dailyRate(scope: String?): Double {
+        val forecast = forecast(scope)
+        if (forecast.expectedViews == 0) return 0.0
+        val reachFactor = forecast.expectedViews / SPANISH_VIEWS.toDouble()
+        val clickFactor = forecast.expectedClicks / (SPANISH_VIEWS * SPANISH_CTR)
+        return 2.50 * (reachFactor * 0.7 + clickFactor * 0.3).coerceAtLeast(0.10)
+    }
+}
+
 /** Commits an existing moderation decision immediately; only pre-charge submissions use recovery queueing. */
 object SponsorReviewRepository {
     /** Include durable submissions even before the worker creates the charged advertisement. */

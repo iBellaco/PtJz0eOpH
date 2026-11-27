@@ -1,6 +1,7 @@
 package com.example
 
 import com.example.data.SponsorReviewPolicy
+import com.example.data.SponsorAudiencePricing
 import com.example.data.AppNotice
 import com.example.data.NotificationPanel
 import com.example.data.PanelNotificationPolicy
@@ -53,6 +54,17 @@ class SponsorReviewPolicyTest {
         assertTrue(SponsorReviewPolicy.matchesLanguage("BOTH", "pt"))
         assertTrue(SponsorReviewPolicy.matchesLanguage("BOTH", "es"))
         assertFalse(SponsorReviewPolicy.matchesLanguage("BOTH", "fr"))
+    }
+
+    @Test fun audiencePricingReflectsTheCurrentLanguageAudience() {
+        val spanish = SponsorAudiencePricing.forecast(SponsorReviewPolicy.LANGUAGE_ES)
+        val portuguese = SponsorAudiencePricing.forecast(SponsorReviewPolicy.LANGUAGE_PT)
+        val both = SponsorAudiencePricing.forecast(SponsorReviewPolicy.LANGUAGE_BOTH)
+        assertTrue(spanish.expectedViews > portuguese.expectedViews)
+        assertTrue(spanish.expectedClicks > portuguese.expectedClicks)
+        assertTrue(SponsorAudiencePricing.dailyRate(SponsorReviewPolicy.LANGUAGE_ES) >
+            SponsorAudiencePricing.dailyRate(SponsorReviewPolicy.LANGUAGE_PT))
+        assertTrue(both.expectedViews > spanish.expectedViews)
     }
 
     @Test fun languageScopedNoticeSelectsTheMatchingBanner() {
