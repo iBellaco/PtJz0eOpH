@@ -36,7 +36,9 @@ fun ReferenceCoachNavBar(items: List<CoachNavItem>, selectedIndex: Int, style: C
     val position = animateFloatAsState(index.toFloat(), spring(.72f, 380f), label = "reference_indicator")
     val background = AppThemeManager.getNavBarBackgroundColor()
     val accent = AppThemeManager.getNavBarAccentColor()
+    val selectionContainer = AppThemeManager.getNavBarSelectionContainerColor()
     val selectedColor = AppThemeManager.getNavBarSelectedIconColor()
+    val selectedLabelColor = AppThemeManager.getNavBarSelectedTextColor()
     val inactive = AppThemeManager.getNavBarUnselectedColor()
     val expanded = style == CoachNavStyle.CAPSULE || style == CoachNavStyle.ACTIVE_LABEL
     val weights = items.indices.map { if (expanded && it == index) 2f else 1f }
@@ -52,7 +54,7 @@ fun ReferenceCoachNavBar(items: List<CoachNavItem>, selectedIndex: Int, style: C
             val y = 28.dp.toPx()
             when (style) {
                 CoachNavStyle.RUNIC_TILE -> drawRoundRect(
-                    Brush.verticalGradient(listOf(accent.copy(alpha = .38f), selectedColor.copy(alpha = .2f))),
+                    Brush.verticalGradient(listOf(accent.copy(alpha = .38f), selectionContainer.copy(alpha = .88f))),
                     Offset(x - 23.dp.toPx(), 5.dp.toPx()), Size(46.dp.toPx(), 46.dp.toPx()), CornerRadius(12.dp.toPx()))
                 CoachNavStyle.TOP_BEACON -> drawRoundRect(accent, Offset(x - 15.dp.toPx(), 0f),
                     Size(30.dp.toPx(), 4.dp.toPx()), CornerRadius(3.dp.toPx()))
@@ -79,15 +81,15 @@ fun ReferenceCoachNavBar(items: List<CoachNavItem>, selectedIndex: Int, style: C
                     verticalArrangement = Arrangement.Center) {
                     Row(Modifier.height(48.dp).padding(horizontal = 4.dp)
                         .clip(RoundedCornerShape(24.dp))
-                        .background(if (style == CoachNavStyle.CAPSULE && selected) accent.copy(alpha = .25f) else Color.Transparent)
+                        .background(if (selected) selectionContainer else Color.Transparent)
                         .padding(horizontal = if (expanded && selected) 10.dp else 4.dp),
                         verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center) {
                         if (i == 4 && items.size == 5) UserNotificationIcon(item.notificationCount ?: userPanelNotificationCount(), tint)
                         else Icon(item.icon, tr(item.title), Modifier.size(24.dp), tint = tint)
                         if (expanded && selected) Text(tr(item.title), modifier = Modifier.padding(start = 6.dp),
-                            color = tint, fontSize = 10.sp, maxLines = 1, fontWeight = FontWeight.Bold)
+                            color = selectedColor, fontSize = 10.sp, maxLines = 1, fontWeight = FontWeight.Bold)
                     }
-                    if (!expanded) Text(tr(item.title), modifier = Modifier.height(20.dp), color = if (selected) AppThemeManager.getNavBarSelectedTextColor() else inactive,
+                    if (!expanded) Text(tr(item.title), modifier = Modifier.height(20.dp), color = if (selected) selectedLabelColor else inactive,
                         fontSize = 10.sp, fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium, maxLines = 1)
                 }
             }

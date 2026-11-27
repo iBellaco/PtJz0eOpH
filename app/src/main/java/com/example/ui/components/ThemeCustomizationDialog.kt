@@ -430,8 +430,8 @@ fun ThemeCustomizationBottomSheet(
                                 theme = theme,
                                 modifier = Modifier
                                     .align(Alignment.TopStart)
-                                    .padding(7.dp)
-                                    .height(10.dp)
+                                    .fillMaxWidth()
+                                    .height(25.dp)
                             )
 
                             Box(
@@ -1035,8 +1035,7 @@ private fun ApplicationThemeSection(
 private fun FourTonePaletteBar(theme: AppTheme, modifier: Modifier = Modifier) {
     Row(
         modifier = modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(4.dp)),
+            .fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(1.dp)
     ) {
         listOf(theme.primary, theme.secondary, theme.primaryGlow, theme.surfaceVariant).forEach { color ->

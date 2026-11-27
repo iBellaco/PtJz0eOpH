@@ -901,49 +901,57 @@ object AppThemeManager {
         // No-op ya que todos los temas son oscuros inmersivos
     }
 
-    fun getNavBarBackgroundColor(): Color {
-        return if (currentNavBarOption.isAutomatic) {
-            currentTheme.surface.copy(alpha = 0.85f)
-        } else {
-            currentNavBarOption.containerColor
+    private fun navBarBaseColor(): Color = if (currentNavBarOption.isAutomatic) {
+        currentTheme.surface
+    } else {
+        currentNavBarOption.containerColor
+    }
+
+    private fun navBarSelectionAccent(): Color = if (currentNavBarOption.isAutomatic) {
+        currentTheme.primary
+    } else {
+        currentNavBarOption.colorHex
+    }
+
+    private fun navBarTextAccent(): Color = if (currentNavBarOption.isAutomatic) {
+        currentTheme.secondary
+    } else {
+        currentNavBarOption.accentColor
+    }
+
+    /**
+     * Uses an opaque base so navigation text never inherits an unpredictable
+     * wallpaper or page color below the bar.
+     */
+    fun getNavBarBackgroundColor(): Color = navBarBaseColor()
+
+    /** Decorative stroke and particles, adjusted so they remain visible. */
+    fun getNavBarAccentColor(): Color = readableColor(
+        navBarTextAccent(), listOf(navBarBaseColor()), 3f
+    )
+
+    /** A solid, visibly distinct active surface shared by every navigation style. */
+    fun getNavBarSelectionContainerColor(): Color {
+        val base = navBarBaseColor()
+        val blended = lerp(base, navBarSelectionAccent(), 0.62f)
+        return if (contrastRatio(blended, base) >= 1.5f) blended else {
+            lerp(base, if (base.luminance() < 0.5f) Color.White else Color.Black, 0.32f)
         }
     }
 
-    fun getNavBarAccentColor(): Color {
-        return if (currentNavBarOption.isAutomatic) {
-            currentTheme.secondary
-        } else {
-            currentNavBarOption.accentColor
-        }
-    }
+    fun getNavBarIndicatorColor(): Color = getNavBarSelectionContainerColor()
 
-    fun getNavBarIndicatorColor(): Color {
-        return if (currentNavBarOption.isAutomatic) {
-            currentTheme.primary.copy(alpha = 0.22f)
-        } else {
-            currentNavBarOption.colorHex.copy(alpha = 0.22f)
-        }
-    }
+    /** Foreground is selected against the actual active surface, not the raw theme accent. */
+    fun getNavBarSelectedIconColor(): Color = readableOn(getNavBarSelectionContainerColor())
 
-    fun getNavBarSelectedIconColor(): Color {
-        return if (currentNavBarOption.isAutomatic) {
-            currentTheme.primary
-        } else {
-            currentNavBarOption.colorHex
-        }
-    }
+    /** Labels live on the bar itself and therefore use a separately readable foreground. */
+    fun getNavBarSelectedTextColor(): Color = readableColor(
+        navBarTextAccent(), listOf(navBarBaseColor()), 4.5f
+    )
 
-    fun getNavBarSelectedTextColor(): Color {
-        return if (currentNavBarOption.isAutomatic) {
-            currentTheme.secondary
-        } else {
-            currentNavBarOption.accentColor
-        }
-    }
-
-    fun getNavBarUnselectedColor(): Color {
-        return readableMuted(currentTheme).copy(alpha = 0.85f)
-    }
+    fun getNavBarUnselectedColor(): Color = readableColor(
+        currentTheme.textSecondary, listOf(navBarBaseColor()), 4.5f
+    )
 
     /** Keeps regional palettes expressive while guaranteeing readable interface text. */
     fun readablePrimary(theme: AppTheme = currentTheme): Color = readableColor(
@@ -970,26 +978,27 @@ object AppThemeManager {
     )
 
     /** Picks a stable foreground for a colored control, icon or badge. */
-    fun readableOn(background: Color, minimum: Float = 4.5f): Color = readableColor(
-        if (background.luminance() < 0.5f) Color.White else Color.Black,
-        listOf(background),
-        minimum
-    )
+    fun readableOn(background: Color, minimum: Float = 4.5f): Color {
+        val candidates = listOf(Color.White, Color.Black)
+        return candidates.firstOrNull { contrastRatio(it, background) >= minimum }
+            ?: candidates.maxBy { contrastRatio(it, background) }
+    }
+
+    private fun contrastRatio(foreground: Color, background: Color): Float {
+        val first = foreground.luminance()
+        val second = background.luminance()
+        val lighter = maxOf(first, second)
+        val darker = minOf(first, second)
+        return (lighter + 0.05f) / (darker + 0.05f)
+    }
 
     private fun readableColor(candidate: Color, backgrounds: List<Color>, minimum: Float): Color {
-        fun contrast(foreground: Color, background: Color): Float {
-            val first = foreground.luminance()
-            val second = background.luminance()
-            val lighter = maxOf(first, second)
-            val darker = minOf(first, second)
-            return (lighter + 0.05f) / (darker + 0.05f)
-        }
-        if (backgrounds.all { contrast(candidate, it) >= minimum }) return candidate
+        if (backgrounds.all { contrastRatio(candidate, it) >= minimum }) return candidate
         val averageBackground = backgrounds.map { it.luminance() }.average().toFloat()
         val target = if (averageBackground < 0.5f) Color.White else Color.Black
         for (step in 1..20) {
             val adjusted = lerp(candidate, target, step / 20f)
-            if (backgrounds.all { contrast(adjusted, it) >= minimum }) return adjusted
+            if (backgrounds.all { contrastRatio(adjusted, it) >= minimum }) return adjusted
         }
         return target
     }
