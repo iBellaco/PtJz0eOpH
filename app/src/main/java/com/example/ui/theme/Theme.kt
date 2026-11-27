@@ -19,17 +19,20 @@ fun MyApplicationTheme(
     content: @Composable () -> Unit
 ) {
     val theme = AppThemeManager.currentTheme
-    val onPrimary = if (theme.isDark) theme.background else Color.White
+    val readablePrimary = AppThemeManager.readableAccent(theme.primary, theme)
+    val readableSecondary = AppThemeManager.readableAccent(theme.secondary, theme)
+    val onPrimary = AppThemeManager.readableOn(readablePrimary)
+    val onSecondary = AppThemeManager.readableOn(readableSecondary)
     val colorScheme = if (theme.isDark) {
         darkColorScheme(
-            primary = theme.primary,
+            primary = readablePrimary,
             onPrimary = onPrimary,
             primaryContainer = theme.primaryDark,
-            onPrimaryContainer = theme.primaryLight,
-            secondary = theme.secondary,
-            onSecondary = onPrimary,
+            onPrimaryContainer = AppThemeManager.readableOn(theme.primaryDark),
+            secondary = readableSecondary,
+            onSecondary = onSecondary,
             secondaryContainer = theme.surfaceVariant,
-            onSecondaryContainer = theme.secondaryLight,
+            onSecondaryContainer = AppThemeManager.readableOn(theme.surfaceVariant),
             tertiary = TierSPlusColor,
             onTertiary = onPrimary,
             background = theme.background,
@@ -44,14 +47,14 @@ fun MyApplicationTheme(
         )
     } else {
         lightColorScheme(
-            primary = theme.primary,
+            primary = readablePrimary,
             onPrimary = onPrimary,
             primaryContainer = theme.surfaceVariant,
-            onPrimaryContainer = theme.primaryDark,
-            secondary = theme.secondary,
-            onSecondary = Color.White,
+            onPrimaryContainer = AppThemeManager.readableOn(theme.surfaceVariant),
+            secondary = readableSecondary,
+            onSecondary = onSecondary,
             secondaryContainer = theme.surfaceVariant,
-            onSecondaryContainer = theme.secondaryDark,
+            onSecondaryContainer = AppThemeManager.readableOn(theme.surfaceVariant),
             tertiary = TierSPlusColor,
             onTertiary = Color.White,
             background = theme.background,

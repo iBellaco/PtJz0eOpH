@@ -805,8 +805,14 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                         }
                     }
                 }
+                val publicationLanguageDescription = when (languageScope) {
+                    com.example.data.SponsorReviewPolicy.LANGUAGE_ES -> tr("Solo los usuarios en Español verán este anuncio. La vista previa y los medios corresponderán a Español.")
+                    com.example.data.SponsorReviewPolicy.LANGUAGE_PT -> tr("Solo los usuarios en Português verán este anuncio. La vista previa y los medios corresponderán a Português.")
+                    com.example.data.SponsorReviewPolicy.LANGUAGE_BOTH -> tr("Los usuarios en Español y Português verán este anuncio. Puedes revisar la vista previa y los medios de cada idioma.")
+                    else -> tr("Selecciona Español, Português o Español + Português para definir quién verá el anuncio.")
+                }
                 Text(
-                    tr("Español o Português se mostrará a usuarios de ambos idiomas. Español + Português permite elegir una vista previa y multimedia específica para cada idioma. Selecciona una opción."),
+                    publicationLanguageDescription,
                     color = TextMuted,
                     fontSize = 9.5.sp,
                     lineHeight = 13.sp

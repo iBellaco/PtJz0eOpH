@@ -25,18 +25,20 @@ object SponsorReviewPolicy {
     }
 
     /**
-     * A single-language purchase is a general publication for compatibility
-     * with the existing product. Only the explicit BOTH option is targeted by
-     * the visitor language; ALL and single-language choices are visible to all.
+     * A single-language campaign is visible only to that language. BOTH is
+     * the explicit two-language audience, while ALL remains only for legacy
+     * notices that predate language targeting.
      */
     fun matchesLanguage(scope: String?, language: String?): Boolean {
-        if (normalizeLanguageScope(scope) != LANGUAGE_BOTH) return true
+        val normalizedScope = normalizeLanguageScope(scope)
         val selected = language?.trim()?.lowercase(Locale.ROOT)
-        // A null language is used by the moderation/server confirmation path:
-        // it verifies that the publication is valid without hiding a valid
-        // two-language campaign before the Home screen applies its locale.
         if (selected.isNullOrBlank()) return true
-        return selected in setOf("es", "pt")
+        return when (normalizedScope) {
+            LANGUAGE_ES -> selected == "es"
+            LANGUAGE_PT -> selected == "pt"
+            LANGUAGE_BOTH -> selected in setOf("es", "pt")
+            else -> true
+        }
     }
     private val sponsorTags = setOf(
         "PATROCINADOR", "PATROCINIO", "SPONSOR", "PUBLICIDAD", "PUBLICIDADES",

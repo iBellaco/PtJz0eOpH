@@ -103,7 +103,30 @@ fun EssencePlanOptions(blue: Long, orange: Long, enabled: Boolean = true,
                     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                         Icon(if (plan == EssencePremiumPlan.MONTHLY) Icons.Default.DateRange else Icons.Default.WorkspacePremium,
                             contentDescription = null, tint = if (plan == EssencePremiumPlan.MONTHLY) HextechCyan else HextechGold)
-                        Text(tr(plan.labelKey), color = TextPrimary, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                        Text(
+                            tr(plan.labelKey),
+                            color = TextPrimary,
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
+                    if (plan == EssencePremiumPlan.TWO_YEARS) {
+                        Surface(
+                            color = HextechGreen.copy(alpha = 0.16f),
+                            shape = RoundedCornerShape(8.dp),
+                            border = BorderStroke(1.dp, HextechGreen.copy(alpha = 0.65f)),
+                            modifier = Modifier.testTag("premium_best_offer")
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 9.dp, vertical = 4.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                            ) {
+                                Icon(Icons.Default.LocalOffer, contentDescription = null, tint = HextechGreen, modifier = Modifier.size(14.dp))
+                                Text(tr("Mejor oferta"), color = HextechGreen, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                            }
+                        }
                     }
                     if (plan != EssencePremiumPlan.MONTHLY) Text(tr("Más tiempo, mejor valor"), color = HextechGold, style = MaterialTheme.typography.labelMedium)
                     Text(tr("{0} días de Premium").replace("{0}", plan.days.toString()), color = TextSecondary)
