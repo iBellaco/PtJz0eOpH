@@ -5,6 +5,7 @@ import androidx.compose.ui.graphics.colorspace.ColorSpaces
 import androidx.compose.ui.graphics.luminance
 import com.example.ui.theme.AppTheme
 import com.example.ui.theme.AppThemeManager
+import com.example.ui.theme.NavBarColorOption
 import com.example.util.ChampionMatchupCoaching
 import com.example.model.Champion
 import org.junit.Assert.assertEquals
@@ -78,6 +79,56 @@ class ApplicationThemeCatalogTest {
                 }
             }
         }
+    }
+
+    @Test
+    fun `navigation foregrounds remain readable for every theme and color option`() {
+        synchronized(AppThemeManager) {
+            val previousTheme = AppThemeManager.currentTheme
+            val previousOption = AppThemeManager.currentNavBarOption
+            try {
+                AppTheme.entries.forEach { theme ->
+                    AppThemeManager.setTheme(theme)
+                    NavBarColorOption.entries.forEach { option ->
+                        AppThemeManager.setNavBarOption(option)
+                        assertContrast(
+                            "${theme.id}/${option.id} selected icon",
+                            AppThemeManager.getNavBarSelectedIconColor(),
+                            AppThemeManager.getNavBarSelectionContainerColor(),
+                            4.5f
+                        )
+                        assertContrast(
+                            "${theme.id}/${option.id} active surface",
+                            AppThemeManager.getNavBarSelectionContainerColor(),
+                            AppThemeManager.getNavBarBackgroundColor(),
+                            1.5f
+                        )
+                        assertContrast(
+                            "${theme.id}/${option.id} selected label",
+                            AppThemeManager.getNavBarSelectedTextColor(),
+                            AppThemeManager.getNavBarBackgroundColor(),
+                            4.5f
+                        )
+                        assertContrast(
+                            "${theme.id}/${option.id} inactive icon",
+                            AppThemeManager.getNavBarUnselectedColor(),
+                            AppThemeManager.getNavBarBackgroundColor(),
+                            4.5f
+                        )
+                    }
+                }
+            } finally {
+                AppThemeManager.setTheme(previousTheme)
+                AppThemeManager.setNavBarOption(previousOption)
+            }
+        }
+    }
+
+    private fun assertContrast(label: String, foreground: Color, background: Color, minimum: Float) {
+        val a = background.luminance()
+        val b = foreground.luminance()
+        val contrast = (maxOf(a, b) + 0.05f) / (minOf(a, b) + 0.05f)
+        assertTrue("$label contrast $contrast", contrast >= minimum)
     }
 
     @Test
