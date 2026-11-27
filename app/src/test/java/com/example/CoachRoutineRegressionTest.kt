@@ -17,18 +17,20 @@ class CoachRoutineRegressionTest {
     }
     @Test fun `last selections never wait for metadata even when overdue`() {
         for (count in 8..10) assertFalse(DraftSyncCadence.metadataDue(60000, 0, count))
+        for (count in 0..2) assertFalse(DraftSyncCadence.metadataDue(60000, 0, count))
+        assertTrue(DraftSyncCadence.metadataDue(60000, 0, 3))
         assertTrue(DraftSyncCadence.metadataDue(60000, 0, 7))
     }
     @Test fun `metadata leaves time for fast title frames even after a slow scan`() {
-        assertFalse(DraftSyncCadence.metadataDue(1000,1000))
-        assertFalse(DraftSyncCadence.metadataDue(2499,1000))
-        assertFalse(DraftSyncCadence.metadataDue(2500,1000))
-        assertFalse(DraftSyncCadence.metadataDue(6999,1000))
-        assertTrue(DraftSyncCadence.metadataDue(7000,1000))
+        assertFalse(DraftSyncCadence.metadataDue(1000,1000, 3))
+        assertFalse(DraftSyncCadence.metadataDue(2499,1000, 3))
+        assertFalse(DraftSyncCadence.metadataDue(2500,1000, 3))
+        assertFalse(DraftSyncCadence.metadataDue(6999,1000, 3))
+        assertTrue(DraftSyncCadence.metadataDue(7000,1000, 3))
         // A slow scan finishes at 5000, so title frames have the next interval.
-        assertFalse(DraftSyncCadence.metadataDue(5001,5000))
-        assertFalse(DraftSyncCadence.metadataDue(6500,5000))
-        assertTrue(DraftSyncCadence.metadataDue(11000,5000))
+        assertFalse(DraftSyncCadence.metadataDue(5001,5000, 3))
+        assertFalse(DraftSyncCadence.metadataDue(6500,5000, 3))
+        assertTrue(DraftSyncCadence.metadataDue(11000,5000, 3))
     }
     @Test fun `scan cadence backs off when the draft is idle`() {
         assertEquals(100L, DraftSyncCadence.scanDelayMs(true, false, false))
@@ -37,10 +39,13 @@ class CoachRoutineRegressionTest {
     }
     @Test fun `title recovery stays fast before a pick and is less frequent after evidence`() {
         assertTrue(DraftSyncCadence.quickTitlePass(8, 0))
-        assertFalse(DraftSyncCadence.quickTitlePass(16, 1))
-        assertTrue(DraftSyncCadence.quickTitlePass(17, 1))
-        assertFalse(DraftSyncCadence.quickTitlePass(32, 2))
-        assertTrue(DraftSyncCadence.quickTitlePass(33, 2))
+        assertTrue(DraftSyncCadence.quickTitlePass(23, 1))
+        assertFalse(DraftSyncCadence.quickTitlePass(24, 1))
+        assertTrue(DraftSyncCadence.quickTitlePass(25, 1))
+        assertFalse(DraftSyncCadence.quickTitlePass(48, 2))
+        assertTrue(DraftSyncCadence.quickTitlePass(49, 2))
+        assertFalse(DraftSyncCadence.quickTitlePass(16, 3))
+        assertTrue(DraftSyncCadence.quickTitlePass(17, 3))
     }
     @Test fun `CPM respects thousands fractional rates and invalid inputs`() {
         assertEquals(3.75, CpmPolicy.revenue(1500, 2.50), 0.0001)
