@@ -937,8 +937,14 @@ fun SponsorCpmPanelDialog(
 
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(tr("Idioma de segmentación"), color = HextechCyan, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    val languageScopeDescription = when (selectedLanguageScope) {
+                        com.example.data.SponsorReviewPolicy.LANGUAGE_ES -> tr("Solo usuarios con idioma Español verán este anuncio. El precio usa la audiencia y los clics esperados en Español.")
+                        com.example.data.SponsorReviewPolicy.LANGUAGE_PT -> tr("Solo usuarios con idioma Português verán este anuncio. El precio usa la audiencia y los clics esperados en Português.")
+                        com.example.data.SponsorReviewPolicy.LANGUAGE_BOTH -> tr("Usuarios con Español o Português verán este anuncio. El precio combina ambas audiencias y sus vistas y clics esperados.")
+                        else -> tr("Selecciona Español, Português o Español + Português para definir quién verá el anuncio.")
+                    }
                     Text(
-                        tr("Español y Português se muestran a usuarios de ambos idiomas, pero el precio se calcula con sus vistas y clics esperados. Español + Português combina las dos audiencias y permite cargar medios para cada una. Selecciona una opción."),
+                        languageScopeDescription,
                         color = TextSecondary, fontSize = 10.sp
                     )
                     FlowRow(

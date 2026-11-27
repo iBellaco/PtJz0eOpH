@@ -6,7 +6,6 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import com.example.ui.components.coachClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
@@ -27,7 +26,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -433,27 +431,32 @@ fun ThemeCustomizationBottomSheet(
                                 modifier = Modifier
                                     .align(Alignment.TopStart)
                                     .padding(7.dp)
+                                    .height(10.dp)
                             )
 
-                            Column(
+                            Box(
                                 modifier = Modifier
                                     .align(Alignment.BottomStart)
+                                    .fillMaxWidth()
+                                    .background(theme.surface.copy(alpha = 0.9f))
                                     .padding(8.dp)
                             ) {
-                                Text(
-                                    text = tr(theme.regionTag),
-                                    color = AppThemeManager.readableSecondary(theme),
-                                    fontSize = 9.sp,
-                                    fontWeight = FontWeight.Bold
-                                )
-                                Text(
-                                    text = tr(theme.titleKey),
-                                    color = AppThemeManager.readablePrimary(theme),
-                                    fontSize = 12.sp,
-                                    fontWeight = FontWeight.Black,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis
-                                )
+                                Column {
+                                    Text(
+                                        text = tr(theme.regionTag),
+                                        color = AppThemeManager.readableSecondary(theme),
+                                        fontSize = 9.sp,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                    Text(
+                                        text = tr(theme.titleKey),
+                                        color = AppThemeManager.readablePrimary(theme),
+                                        fontSize = 12.sp,
+                                        fontWeight = FontWeight.Black,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis
+                                    )
+                                }
                             }
 
                             if (isSelected) {
@@ -598,14 +601,16 @@ private fun RegionVisualPreviewGridCard(
     val previewSecondary = inspectedTheme.secondary
     val previewGlow = inspectedTheme.primaryGlow
     val previewAlternate = inspectedTheme.surfaceVariant
-    val previewPrimaryLight = inspectedTheme.primaryLight
     val previewPrimaryDark = inspectedTheme.primaryDark
-    val previewSecondaryGlow = inspectedTheme.secondaryGlow
     val previewCardBorder = inspectedTheme.cardBorder
     val previewBackground = inspectedTheme.background
     val previewSurface = inspectedTheme.surface
     val previewTextPrimary = AppThemeManager.readablePrimary(inspectedTheme)
     val previewTextSecondary = AppThemeManager.readableSecondary(inspectedTheme)
+    val previewPrimaryReadable = AppThemeManager.readableAccent(previewPrimary, inspectedTheme)
+    val previewSecondaryReadable = AppThemeManager.readableAccent(previewSecondary, inspectedTheme)
+    val previewApplyBackground = if (isApplied) previewAlternate else previewPrimary
+    val previewApplyForeground = AppThemeManager.readableOn(previewApplyBackground)
 
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -712,7 +717,8 @@ private fun RegionVisualPreviewGridCard(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Section: Visual Swatch Grid (Primary & Secondary Focus)
+            // Section: Visual palette bar. Keep the presentation identical to
+            // the regional cards: four solid tones, never four gradients.
             Text(
                 text = tr("Paleta de colores del tema:"),
                 color = previewTextPrimary,
@@ -722,47 +728,43 @@ private fun RegionVisualPreviewGridCard(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // 4-Column Color Swatch Grid with Hex codes
+            FourTonePaletteBar(
+                theme = inspectedTheme,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(24.dp)
+                    .testTag("theme_preview_palette")
+            )
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
             ) {
-                ColorSwatchGridItem(
-                    modifier = Modifier.weight(1f),
-                    color = previewPrimary,
-                    glowColor = previewGlow,
-                    title = "Primario",
-                    subtitle = "Acciones / Draft",
-                    textColor = previewTextPrimary,
-                    isFeatured = true
-                )
-                ColorSwatchGridItem(
-                    modifier = Modifier.weight(1f),
-                    color = previewSecondary,
-                    glowColor = previewSecondaryGlow,
-                    title = "Secundario",
-                    subtitle = "Acentos / Oro",
-                    textColor = previewTextPrimary,
-                    isFeatured = true
-                )
-                ColorSwatchGridItem(
-                    modifier = Modifier.weight(1f),
-                    color = previewGlow,
-                    glowColor = previewPrimaryLight,
-                    title = "Resplandor",
-                    subtitle = "Aura Rúnica",
-                    textColor = previewTextPrimary,
-                    isFeatured = false
-                )
-                ColorSwatchGridItem(
-                    modifier = Modifier.weight(1f),
-                    color = previewAlternate,
-                    glowColor = previewCardBorder,
-                    title = "Suplente",
-                    subtitle = "Estados / soporte",
-                    textColor = previewTextPrimary,
-                    isFeatured = false
-                )
+                listOf(
+                    "Primario" to previewPrimary,
+                    "Secundario" to previewSecondary,
+                    "Resplandor" to previewGlow,
+                    "Suplente" to previewAlternate
+                ).forEach { (label, color) ->
+                    Row(
+                        modifier = Modifier.weight(1f),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(3.dp)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(7.dp)
+                                .clip(CircleShape)
+                                .background(color)
+                        )
+                        Text(
+                            text = tr(label),
+                            color = previewTextSecondary,
+                            fontSize = 8.sp,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+                }
             }
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -787,12 +789,12 @@ private fun RegionVisualPreviewGridCard(
                                 .size(28.dp)
                                 .clip(RoundedCornerShape(6.dp))
                                 .background(previewPrimary.copy(alpha = 0.25f))
-                                .border(1.dp, previewPrimary, RoundedCornerShape(6.dp)),
+                                .border(1.dp, previewPrimaryReadable, RoundedCornerShape(6.dp)),
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
                                 text = com.example.util.tr("WR"),
-                                color = previewPrimary,
+                                color = previewPrimaryReadable,
                                 fontSize = 10.sp,
                                 fontWeight = FontWeight.ExtraBold
                             )
@@ -810,12 +812,12 @@ private fun RegionVisualPreviewGridCard(
                                     modifier = Modifier
                                         .size(6.dp)
                                         .clip(CircleShape)
-                                        .background(previewSecondary)
+                                        .background(previewSecondaryReadable)
                                 )
                                 Spacer(modifier = Modifier.width(4.dp))
                                 Text(
                                     text = com.example.util.tr("Sinergia S+ / Nivel Soberano"),
-                                    color = previewSecondary,
+                                    color = previewSecondaryReadable,
                                     fontSize = 9.5.sp,
                                     fontWeight = FontWeight.SemiBold
                                 )
@@ -862,8 +864,8 @@ private fun RegionVisualPreviewGridCard(
                                 if (!isPremium && !isApplied) onShowPremiumAlert() else onApply()
                             },
                             enabled = canApply,
-                            backgroundColor = if (isApplied) previewAlternate else previewPrimary,
-                            borderColor = if (isApplied) previewSecondary else previewGlow,
+                            backgroundColor = previewApplyBackground,
+                            borderColor = if (isApplied) previewSecondaryReadable else previewGlow,
                             glowColor = if (isApplied) previewSecondary else previewPrimary,
                             shape = RoundedCornerShape(8.dp),
                             contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp),
@@ -875,14 +877,14 @@ private fun RegionVisualPreviewGridCard(
                                 Icon(
                                     Icons.Default.Check,
                                     contentDescription = null,
-                                    tint = previewSecondary,
+                                    tint = previewApplyForeground,
                                     modifier = Modifier.size(14.dp)
                                 )
                                 Spacer(modifier = Modifier.width(4.dp))
                                 Text(
                                     text = tr("Aplicado"),
                                     maxLines = 1,
-                                    color = previewSecondary,
+                                    color = previewApplyForeground,
                                     fontSize = 11.sp,
                                     fontWeight = FontWeight.Bold
                                 )
@@ -890,14 +892,14 @@ private fun RegionVisualPreviewGridCard(
                                 Icon(
                                     Icons.Default.FlashOn,
                                     contentDescription = null,
-                                    tint = if (canApply) inspectedTheme.background else TextMuted,
+                                    tint = if (canApply) previewApplyForeground else TextMuted,
                                     modifier = Modifier.size(14.dp)
                                 )
                                 Spacer(modifier = Modifier.width(4.dp))
                                 Text(
                                     text = tr("Aplicar"),
                                     maxLines = 1,
-                                    color = if (canApply) inspectedTheme.background else TextMuted,
+                                    color = if (canApply) previewApplyForeground else TextMuted,
                                     fontSize = 11.sp,
                                     fontWeight = FontWeight.Bold
                                 )
@@ -970,40 +972,45 @@ private fun ApplicationThemeSection(
                     colors = CardDefaults.cardColors(containerColor = theme.surface),
                     border = BorderStroke(
                         if (isApplied) 2.dp else if (isInspected) 1.5.dp else 0.8.dp,
-                        if (isApplied) HextechGold else if (isInspected) theme.primary else theme.cardBorder
+                        if (isApplied) HextechGold else if (isInspected) AppThemeManager.readableAccent(theme.primary, theme) else theme.cardBorder
                     )
                 ) {
                     Box(modifier = Modifier.fillMaxSize()) {
-                        Row(Modifier.fillMaxWidth().height(25.dp)) {
-                            listOf(theme.primary, theme.secondary, theme.primaryGlow, theme.surfaceVariant).forEach { color ->
-                                Spacer(Modifier.weight(1f).fillMaxHeight().background(color))
-                            }
-                        }
-                        Column(
+                        ThemeColorDots(
+                            theme = theme,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(25.dp)
+                        )
+                        Box(
                             modifier = Modifier
                                 .align(Alignment.BottomStart)
+                                .fillMaxWidth()
+                                .background(theme.surface.copy(alpha = 0.92f))
                                 .padding(8.dp)
                         ) {
-                            Text(
-                                text = tr(theme.regionTag),
-                                color = AppThemeManager.readableSecondary(theme),
-                                fontSize = 8.5.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                            Text(
-                                text = tr(theme.titleKey),
-                                color = AppThemeManager.readablePrimary(theme),
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.Black,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
-                            )
+                            Column {
+                                Text(
+                                    text = tr(theme.regionTag),
+                                    color = AppThemeManager.readableSecondary(theme),
+                                    fontSize = 8.5.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                                Text(
+                                    text = tr(theme.titleKey),
+                                    color = AppThemeManager.readablePrimary(theme),
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Black,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                            }
                         }
                         if (isApplied) {
                             Icon(
                                 imageVector = Icons.Default.CheckCircle,
                                 contentDescription = null,
-                                tint = theme.primary,
+                                tint = AppThemeManager.readableAccent(theme.primary, theme),
                                 modifier = Modifier
                                     .align(Alignment.BottomEnd)
                                     .padding(6.dp)
@@ -1025,11 +1032,10 @@ private fun ApplicationThemeSection(
 }
 
 @Composable
-private fun ThemeColorDots(theme: AppTheme, modifier: Modifier = Modifier) {
+private fun FourTonePaletteBar(theme: AppTheme, modifier: Modifier = Modifier) {
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .height(10.dp)
             .clip(RoundedCornerShape(4.dp)),
         horizontalArrangement = Arrangement.spacedBy(1.dp)
     ) {
@@ -1042,6 +1048,11 @@ private fun ThemeColorDots(theme: AppTheme, modifier: Modifier = Modifier) {
             )
         }
     }
+}
+
+@Composable
+private fun ThemeColorDots(theme: AppTheme, modifier: Modifier = Modifier) {
+    FourTonePaletteBar(theme, modifier)
 }
 
 @Composable
@@ -1064,71 +1075,6 @@ private fun PremiumThemeLockBadge(
             contentDescription = tr("Premium"),
             tint = HextechGold,
             modifier = Modifier.size(10.dp)
-        )
-    }
-}
-
-@Composable
-private fun ColorSwatchGridItem(
-    modifier: Modifier,
-    color: Color,
-    glowColor: Color,
-    title: String,
-    subtitle: String,
-    textColor: Color,
-    isFeatured: Boolean,
-    onClick: (() -> Unit)? = null,
-    testTag: String? = null
-) {
-    Column(
-        modifier = modifier
-            .clip(RoundedCornerShape(8.dp))
-            .background(textColor.copy(alpha = if (isLightAppTheme) 0.06f else 0.08f))
-            .border(
-                if (isFeatured) 1.2.dp else 0.5.dp,
-                if (isFeatured) color.copy(alpha = 0.8f) else HextechCardBorder.copy(alpha = 0.5f),
-                RoundedCornerShape(8.dp)
-            )
-            .padding(6.dp)
-            .then(
-                onClick?.let { click ->
-                    Modifier.clickable(role = Role.Button, onClick = click)
-                } ?: Modifier
-            )
-            .then(testTag?.let { Modifier.testTag(it) } ?: Modifier),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        // Swatch Pill with Glow
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(20.dp)
-                .clip(RoundedCornerShape(4.dp))
-                .background(
-                    Brush.horizontalGradient(
-                        listOf(color, glowColor)
-                    )
-                )
-                .border(0.5.dp, Color.White.copy(alpha = 0.4f), RoundedCornerShape(4.dp))
-        )
-
-        Spacer(modifier = Modifier.height(4.dp))
-
-        Text(
-            text = tr(title),
-            color = textColor,
-            fontSize = 10.sp,
-            fontWeight = FontWeight.Bold,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis
-        )
-
-        Text(
-            text = tr(subtitle),
-            color = textColor.copy(alpha = 0.72f),
-            fontSize = 8.sp,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis
         )
     }
 }

@@ -708,5 +708,13 @@
   "Español o Português se mostrará a usuarios de ambos idiomas. Español + Português permite elegir una vista previa y multimedia específica para cada idioma. Selecciona una opción.": "Espanhol ou Português será exibido para usuários dos dois idiomas. Espanhol + Português permite escolher uma prévia e uma mídia específica para cada idioma. Selecione uma opção.",
   "Selecciona Español, Português o Español + Português antes de guardar": "Selecione Espanhol, Português ou Espanhol + Português antes de salvar",
   "Idioma de la vista previa": "Idioma da prévia",
-  "Fecha y hora del reporte": "Data e hora do relatório"
+  "Fecha y hora del reporte": "Data e hora do relatório",
+  "Mejor oferta": "Melhor oferta",
+  "Solo usuarios con idioma Español verán este anuncio. El precio usa la audiencia y los clics esperados en Español.": "Somente usuários com idioma Espanhol verão este anúncio. O preço usa a audiência e os cliques esperados em Espanhol.",
+  "Solo usuarios con idioma Português verán este anuncio. El precio usa la audiencia y los clics esperados en Português.": "Somente usuários com idioma Português verão este anúncio. O preço usa a audiência e os cliques esperados em Português.",
+  "Usuarios con Español o Português verán este anuncio. El precio combina ambas audiencias y sus vistas y clics esperados.": "Usuários com Espanhol ou Português verão este anúncio. O preço combina as duas audiências e suas visualizações e cliques esperados.",
+  "Selecciona Español, Português o Español + Português para definir quién verá el anuncio.": "Selecione Espanhol, Português ou Espanhol + Português para definir quem verá o anúncio.",
+  "Solo los usuarios en Español verán este anuncio. La vista previa y los medios corresponderán a Español.": "Somente usuários em Espanhol verão este anúncio. A prévia e as mídias corresponderão ao Espanhol.",
+  "Solo los usuarios en Português verán este anuncio. La vista previa y los medios corresponderán a Português.": "Somente usuários em Português verão este anúncio. A prévia e as mídias corresponderão ao Português.",
+  "Los usuarios en Español y Português verán este anuncio. Puedes revisar la vista previa y los medios de cada idioma.": "Usuários em Espanhol e Português verão este anúncio. Você pode revisar a prévia e as mídias de cada idioma."
 }
