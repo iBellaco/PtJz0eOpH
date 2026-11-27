@@ -442,13 +442,13 @@ fun ThemeCustomizationBottomSheet(
                             ) {
                                 Text(
                                     text = tr(theme.regionTag),
-                                    color = theme.primaryLight,
+                                    color = AppThemeManager.readableSecondary(theme),
                                     fontSize = 9.sp,
                                     fontWeight = FontWeight.Bold
                                 )
                                 Text(
                                     text = tr(theme.titleKey),
-                                    color = theme.textPrimary,
+                                    color = AppThemeManager.readablePrimary(theme),
                                     fontSize = 12.sp,
                                     fontWeight = FontWeight.Black,
                                     maxLines = 1,
@@ -604,8 +604,8 @@ private fun RegionVisualPreviewGridCard(
     val previewCardBorder = inspectedTheme.cardBorder
     val previewBackground = inspectedTheme.background
     val previewSurface = inspectedTheme.surface
-    val previewTextPrimary = inspectedTheme.textPrimary
-    val previewTextSecondary = inspectedTheme.textSecondary
+    val previewTextPrimary = AppThemeManager.readablePrimary(inspectedTheme)
+    val previewTextSecondary = AppThemeManager.readableSecondary(inspectedTheme)
 
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -681,7 +681,7 @@ private fun RegionVisualPreviewGridCard(
                             ) {
                                 Text(
                                     text = tr(inspectedTheme.regionTag),
-                                    color = previewPrimaryLight,
+                                    color = AppThemeManager.readableSecondary(inspectedTheme),
                                     fontSize = 9.5.sp,
                                     fontWeight = FontWeight.Bold
                                 )
@@ -986,13 +986,13 @@ private fun ApplicationThemeSection(
                         ) {
                             Text(
                                 text = tr(theme.regionTag),
-                                color = theme.primaryLight,
+                                color = AppThemeManager.readableSecondary(theme),
                                 fontSize = 8.5.sp,
                                 fontWeight = FontWeight.Bold
                             )
                             Text(
                                 text = tr(theme.titleKey),
-                                color = theme.textPrimary,
+                                color = AppThemeManager.readablePrimary(theme),
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Black,
                                 maxLines = 1,
@@ -1027,16 +1027,18 @@ private fun ApplicationThemeSection(
 @Composable
 private fun ThemeColorDots(theme: AppTheme, modifier: Modifier = Modifier) {
     Row(
-        modifier = modifier,
-        horizontalArrangement = Arrangement.spacedBy(4.dp)
+        modifier = modifier
+            .fillMaxWidth()
+            .height(10.dp)
+            .clip(RoundedCornerShape(4.dp)),
+        horizontalArrangement = Arrangement.spacedBy(1.dp)
     ) {
-        listOf(theme.background, theme.primary, theme.secondary).forEach { color ->
-            Box(
+        listOf(theme.primary, theme.secondary, theme.primaryGlow, theme.surfaceVariant).forEach { color ->
+            Spacer(
                 modifier = Modifier
-                    .size(9.dp)
-                    .clip(CircleShape)
+                    .weight(1f)
+                    .fillMaxHeight()
                     .background(color)
-                    .border(0.6.dp, Color.White.copy(alpha = 0.35f), CircleShape)
             )
         }
     }

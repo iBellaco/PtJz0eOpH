@@ -227,7 +227,7 @@ fun SponsorCpmPanelDialog(
     var titleColor by remember { mutableStateOf("#FFD700") }
     var durationValueInput by remember { mutableStateOf("") }
     var selectedDurationUnit by remember { mutableStateOf("day") } // "hour", "day", "week", "month" (sin opción de 1 año)
-    var selectedLanguageScope by remember { mutableStateOf(com.example.data.SponsorReviewPolicy.LANGUAGE_ALL) }
+    var selectedLanguageScope by remember { mutableStateOf("") }
     var isUploadingMedia by remember { mutableStateOf(false) }
 
     var isHorizontalVideo by remember { mutableStateOf(false) }
@@ -272,6 +272,10 @@ fun SponsorCpmPanelDialog(
         }
     }
 
+    val audienceForecast = remember(selectedLanguageScope) {
+        com.example.data.SponsorAudiencePricing.forecast(selectedLanguageScope)
+    }
+
     // El presupuesto se calcula de forma justa y accesible para una aplicación en crecimiento
     val autoBudget = remember(
         selectedDurationUnit,
@@ -292,12 +296,13 @@ fun SponsorCpmPanelDialog(
         activeAdsCount,
         selectedLanguageScope
     ) {
+        val dailyRate = com.example.data.SponsorAudiencePricing.dailyRate(selectedLanguageScope)
         val unitPrice = when (selectedDurationUnit) {
-            "hour" -> 0.50
-            "day" -> 2.50
-            "week" -> 10.00
-            "month" -> 30.00
-            else -> 2.50
+            "hour" -> dailyRate / 24.0
+            "day" -> dailyRate
+            "week" -> dailyRate * 7.0
+            "month" -> dailyRate * 30.0
+            else -> dailyRate
         }
         var total = unitPrice * durationValueInt
 
@@ -314,11 +319,7 @@ fun SponsorCpmPanelDialog(
         // Más anuncios activos optimizan el costo en lugar de encarecerlo (eficiencia compartida de tráfico)
         val efficiencyDiscount = 1.0 / (1.0 + (activeAdsCount - 1).coerceIn(0, 10) * 0.1)
         total *= efficiencyDiscount
-        // Una campaña dirigida a los dos idiomas reserva inventario específico
-        // para ambos públicos; el servidor aplica el mismo multiplicador.
-        if (selectedLanguageScope == com.example.data.SponsorReviewPolicy.LANGUAGE_BOTH) total *= 2.0
-
-        String.format(Locale.US, "%.2f", total.coerceAtLeast(0.50))
+        String.format(Locale.US, "%.2f", total.coerceAtLeast(if (dailyRate > 0.0) 0.10 else 0.0))
     }
 
     // Launcher para seleccionar multimedia horizontal (imágenes PNG/JPG, videos solo MP4 máx 15s, validación estricta de tamaño recomendado)
@@ -522,7 +523,7 @@ fun SponsorCpmPanelDialog(
                             verticalMediaInput = ""
                             externalUrlInput = ""
                             selectedDurationUnit = "day"
-                            selectedLanguageScope = com.example.data.SponsorReviewPolicy.LANGUAGE_ALL
+                            selectedLanguageScope = ""
                             durationValueInput = "1"
                             showCreateDialog = true
                         },
@@ -935,9 +936,9 @@ fun SponsorCpmPanelDialog(
                     )
 
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text(tr("Idioma de segmentación (opcional)"), color = HextechCyan, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    Text(tr("Idioma de segmentación"), color = HextechCyan, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                     Text(
-                        tr("General o un solo idioma se muestra a todos; Español + Português aplica segmentación y tarifa doble."),
+                        tr("Español y Português se muestran a usuarios de ambos idiomas, pero el precio se calcula con sus vistas y clics esperados. Español + Português combina las dos audiencias y permite cargar medios para cada una. Selecciona una opción."),
                         color = TextSecondary, fontSize = 10.sp
                     )
                     FlowRow(
@@ -946,7 +947,6 @@ fun SponsorCpmPanelDialog(
                         verticalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
                         listOf(
-                            com.example.data.SponsorReviewPolicy.LANGUAGE_ALL to "General",
                             com.example.data.SponsorReviewPolicy.LANGUAGE_ES to "Español",
                             com.example.data.SponsorReviewPolicy.LANGUAGE_PT to "Português",
                             com.example.data.SponsorReviewPolicy.LANGUAGE_BOTH to "Español + Português"
@@ -1000,7 +1000,8 @@ fun SponsorCpmPanelDialog(
                     ) {
                         Text(tr("Desglose del cálculo real y accesible:"), color = HextechGold, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                         Spacer(modifier = Modifier.height(4.dp))
-                        Text(tr("• Tarifa base justa (%s): USD %s").format(selectedDurationUnit, String.format(Locale.US, "%.2f", when (selectedDurationUnit) { "hour" -> 0.50; "day" -> 2.50; "week" -> 10.00; "month" -> 30.00; else -> 2.50 } * durationValueInt)), color = TextSecondary, fontSize = 10.sp)
+                        Text(tr("• Tarifa según audiencia (%s): USD %s").format(selectedDurationUnit, autoBudget), color = TextSecondary, fontSize = 10.sp)
+                        Text(tr("• Audiencia estimada para la selección: ~%,d vistas y ~%,d clics").format(audienceForecast.expectedViews, audienceForecast.expectedClicks), color = TextSecondary, fontSize = 10.sp)
 
                         if (isHorizontalVideo || isHorizontalEsVideo || isHorizontalPtVideo || isVerticalVideo || isVerticalEsVideo || isVerticalPtVideo) {
                             Text(tr("• Costo de procesamiento multimedia: +$%s USD").format(String.format(Locale.US, "%.2f", 1.00 * durationValueInt)), color = TextSecondary, fontSize = 10.sp)
@@ -1014,9 +1015,8 @@ fun SponsorCpmPanelDialog(
 
                         Text(tr("• Eficiencia por anuncios activos (%d): tasa optimizada y competitiva").format(activeAdsCount), color = TextSecondary, fontSize = 10.sp)
 
-                        val estimatedBudgetFloat = autoBudget.toFloatOrNull() ?: 2.5f
-                        val estimatedVisits = (estimatedBudgetFloat * 45).toInt().coerceAtLeast(15)
-                        val estimatedClicks = (estimatedVisits * 0.04f).toInt().coerceAtLeast(1)
+                        val estimatedVisits = (audienceForecast.expectedViews * durationValueInt).coerceAtLeast(0)
+                        val estimatedClicks = (audienceForecast.expectedClicks * durationValueInt).coerceAtLeast(0)
 
                         androidx.compose.material3.Divider(modifier = Modifier.padding(vertical = 6.dp), color = Color(0xFF334155))
                         Text(tr("Rendimiento Estimado Realista:"), color = HextechCyan, fontSize = 11.sp, fontWeight = FontWeight.Bold)
@@ -1145,6 +1145,14 @@ fun SponsorCpmPanelDialog(
             confirmButton = {
                 Button(
                     onClick = {
+                        if (selectedLanguageScope !in setOf(
+                                com.example.data.SponsorReviewPolicy.LANGUAGE_ES,
+                                com.example.data.SponsorReviewPolicy.LANGUAGE_PT,
+                                com.example.data.SponsorReviewPolicy.LANGUAGE_BOTH
+                            )) {
+                            Toast.makeText(context, com.example.util.appTr("Selecciona Español, Português o Español + Português antes de publicar"), Toast.LENGTH_SHORT).show()
+                            return@Button
+                        }
                         val parsedBudget = autoBudget.replace(',', '.').toDoubleOrNull() ?: 10.0
                         val requiredEssences = (parsedBudget * 10).toLong()
                         val hasHorizontalMedia = when (selectedLanguageScope) {

@@ -55,11 +55,23 @@ data class GlobalAnnouncement(
 /** Selects only the broadcast addressed to the language chosen inside Coach. */
 object GlobalAnnouncementPolicy {
     const val TARGETED_SCHEMA = 1L
+    const val LANGUAGE_GLOBAL = "global"
+
+    fun normalizeTargetLanguage(value: String?): String = when {
+        value?.trim()?.lowercase(Locale.ROOT) in setOf("global", "all", "both", "todos") -> LANGUAGE_GLOBAL
+        value?.trim()?.lowercase(Locale.ROOT)?.startsWith("pt") == true -> "pt"
+        else -> "es"
+    }
 
     fun normalizeLanguage(value: String?): String =
-        if (value?.trim()?.lowercase(Locale.ROOT)?.startsWith("pt") == true) "pt" else "es"
+        if (normalizeTargetLanguage(value) == "pt") "pt" else "es"
 
     fun field(language: String): String = "announcement_${normalizeLanguage(language)}"
+
+    fun fieldsForTarget(language: String): List<String> = when (normalizeTargetLanguage(language)) {
+        LANGUAGE_GLOBAL -> listOf(field("es"), field("pt"))
+        else -> listOf(field(language))
+    }
 
     @Suppress("UNCHECKED_CAST")
     fun payloadForLanguage(data: Map<String, Any>, language: String): Map<String, Any>? {
@@ -362,8 +374,14 @@ object GlobalAnnouncementManager {
             val json = JSONObject(rawJson)
             val active = json.optBoolean("active", false)
             if (!active) return
-            val language = GlobalAnnouncementPolicy.normalizeLanguage(json.optString("language", "es"))
-            if (language != GlobalAnnouncementPolicy.normalizeLanguage(com.example.util.AppLanguage.current.value)) return
+            val storedTarget = GlobalAnnouncementPolicy.normalizeTargetLanguage(json.optString("language", "es"))
+            val language = if (storedTarget == GlobalAnnouncementPolicy.LANGUAGE_GLOBAL) {
+                GlobalAnnouncementPolicy.normalizeLanguage(com.example.util.AppLanguage.current.value)
+            } else {
+                GlobalAnnouncementPolicy.normalizeLanguage(storedTarget)
+            }
+            if (storedTarget != GlobalAnnouncementPolicy.LANGUAGE_GLOBAL &&
+                language != GlobalAnnouncementPolicy.normalizeLanguage(com.example.util.AppLanguage.current.value)) return
 
             val announcement = GlobalAnnouncement(
                 id = json.optString("id", ""),
@@ -468,7 +486,7 @@ object GlobalAnnouncementManager {
     ) {
         val newId = UUID.randomUUID().toString()
         val now = System.currentTimeMillis()
-        val targetLanguage = GlobalAnnouncementPolicy.normalizeLanguage(language)
+        val targetLanguage = GlobalAnnouncementPolicy.normalizeTargetLanguage(language)
         val announcementData = hashMapOf(
             "id" to newId,
             "title" to title.trim(),
@@ -479,10 +497,13 @@ object GlobalAnnouncementManager {
             "active" to true,
             "language" to targetLanguage
         )
-        val targetedUpdate = hashMapOf<String, Any>(
-            "targetedSchema" to GlobalAnnouncementPolicy.TARGETED_SCHEMA,
-            GlobalAnnouncementPolicy.field(targetLanguage) to announcementData
-        )
+        val targetedUpdate = hashMapOf<String, Any>("targetedSchema" to GlobalAnnouncementPolicy.TARGETED_SCHEMA)
+        if (targetLanguage == GlobalAnnouncementPolicy.LANGUAGE_GLOBAL) {
+            targetedUpdate[GlobalAnnouncementPolicy.field("es")] = HashMap(announcementData).apply { put("language", "es") }
+            targetedUpdate[GlobalAnnouncementPolicy.field("pt")] = HashMap(announcementData).apply { put("language", "pt") }
+        } else {
+            targetedUpdate[GlobalAnnouncementPolicy.field(targetLanguage)] = announcementData
+        }
 
         try {
             val db = FirebaseFirestore.getInstance()
@@ -500,7 +521,8 @@ object GlobalAnnouncementManager {
                         active = true,
                         language = targetLanguage
                     )
-                    if (targetLanguage == GlobalAnnouncementPolicy.normalizeLanguage(
+                    if (targetLanguage == GlobalAnnouncementPolicy.LANGUAGE_GLOBAL ||
+                        targetLanguage == GlobalAnnouncementPolicy.normalizeLanguage(
                             com.example.util.AppLanguage.current.value
                         )) {
                         saveToLocalStorage(context, announcement)
@@ -528,15 +550,14 @@ object GlobalAnnouncementManager {
     ) {
         try {
             val db = FirebaseFirestore.getInstance()
-            val targetLanguage = GlobalAnnouncementPolicy.normalizeLanguage(language)
+            val targetLanguage = GlobalAnnouncementPolicy.normalizeTargetLanguage(language)
             val updateData = hashMapOf<String, Any>(
                 "active" to false,
-                "targetedSchema" to GlobalAnnouncementPolicy.TARGETED_SCHEMA,
-                GlobalAnnouncementPolicy.field(targetLanguage) to mapOf(
-                    "active" to false,
-                    "language" to targetLanguage
-                )
+                "targetedSchema" to GlobalAnnouncementPolicy.TARGETED_SCHEMA
             )
+            GlobalAnnouncementPolicy.fieldsForTarget(targetLanguage).forEach { field ->
+                updateData[field] = mapOf("active" to false, "language" to targetLanguage)
+            }
             db.collection(FIRESTORE_COLLECTION).document(FIRESTORE_DOC_ANNOUNCEMENT)
                 .set(updateData, SetOptions.merge())
                 .addOnSuccessListener {

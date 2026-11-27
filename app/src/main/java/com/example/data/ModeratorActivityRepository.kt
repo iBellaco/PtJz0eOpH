@@ -12,11 +12,14 @@ object ModeratorActivityRepository {
 
     suspend fun changeSecondaryRole(uid: String, role: String) {
         require(role in rankRoles) { "Este rol secundario no se puede asignar desde moderación." }
-        changeAccount(uid, "SECONDARY_ROLE", role, mapOf("secondaryRole" to role, "last_secondary_role_update" to System.currentTimeMillis()))
+        changeAccount(uid, "SECONDARY_ROLE", role, mapOf("secondaryRole" to role, "last_secondary_role_update" to System.currentTimeMillis()),
+            "Se actualizó el rol secundario desde el panel de moderación.")
     }
 
     suspend fun changeVerification(uid: String, verified: Boolean) {
-        changeAccount(uid, "VERIFICATION", verified.toString(), mapOf("isVerified" to verified, "verified" to verified))
+        changeAccount(uid, "VERIFICATION", verified.toString(), mapOf("isVerified" to verified, "verified" to verified),
+            if (verified) "Se marcó el perfil como verificado desde el panel de moderación."
+            else "Se retiró la verificación desde el panel de moderación.")
     }
 
     /** Profile approval and ticket closure share one commit, so neither can be left half-finished. */
@@ -36,22 +39,29 @@ object ModeratorActivityRepository {
             check(report.getString("status") == "PENDING") { "Esta solicitud ya fue revisada" }
             check((report.get("photos") as? List<*>)?.size == 3) { "Faltan imágenes para la verificación" }
             check(account.exists() && account.getString("role") !in setOf("admin", "moderador", "banned")) { "Perfil no disponible" }
-            if (approved && account.getBoolean("isVerified") != true) {
+            val previousVerified = (account.getBoolean("isVerified") == true || account.getBoolean("verified") == true).toString()
+            if (approved && previousVerified != "true") {
                 transaction.update(accountRef, mapOf("isVerified" to true, "verified" to true, "lastModeratorActionId" to accountEvent.id))
-                transaction.set(accountEvent, mapOf("actorUid" to actor.uid, "targetUid" to uid,
-                    "action" to "VERIFICATION", "value" to "true", "createdAt" to FieldValue.serverTimestamp()))
             }
+            transaction.set(accountEvent, mapOf("actorUid" to actor.uid, "targetUid" to uid,
+                "action" to "VERIFICATION", "value" to approved.toString(), "previousValue" to previousVerified,
+                "detail" to if (approved) "Solicitud de verificación aprobada después de revisar tres imágenes."
+                else "Solicitud de verificación rechazada después de revisar tres imágenes.",
+                "reportId" to reportId, "createdAt" to FieldValue.serverTimestamp()))
             val changes = mapOf("status" to status, "isCompleted" to true, "staffRead" to true,
                 "updatedAt" to FieldValue.serverTimestamp(), "lastModeratorActionId" to statusEvent.id)
             transaction.update(reportRef, changes)
             transaction.set(db.collection("users").document(uid).collection("messages").document(reportId), changes, SetOptions.merge())
             transaction.set(statusEvent, mapOf("actorUid" to actor.uid, "targetUid" to uid,
                 "reportId" to reportId, "action" to "SUPPORT_STATUS", "value" to status,
+                "previousValue" to "PENDING",
+                "detail" to if (approved) "La solicitud quedó aceptada y el perfil fue actualizado."
+                else "La solicitud quedó rechazada y el perfil no fue verificado.",
                 "createdAt" to FieldValue.serverTimestamp()))
         }.await()
     }
 
-    private suspend fun changeAccount(uid: String, action: String, value: String, changes: Map<String, Any>) {
+    private suspend fun changeAccount(uid: String, action: String, value: String, changes: Map<String, Any>, detail: String) {
         val actor = FirebaseAuth.getInstance().currentUser ?: error("Inicia sesión para continuar")
         require(uid != actor.uid) { "No puedes modificar tu propia cuenta." }
         val db = FirebaseFirestore.getInstance()
@@ -62,12 +72,15 @@ object ModeratorActivityRepository {
             check(account.exists() && account.getString("role") !in setOf("admin", "moderador", "banned")) {
                 "Esta cuenta no está disponible para moderación."
             }
-            if (action == "SECONDARY_ROLE" && account.getString("secondaryRole").orEmpty() == value) return@runTransaction
-            if (action == "VERIFICATION" && account.getBoolean("isVerified") == (value == "true")) return@runTransaction
+            val previousValue = if (action == "SECONDARY_ROLE") account.getString("secondaryRole").orEmpty()
+            else (account.getBoolean("isVerified") == true || account.getBoolean("verified") == true).toString()
+            if (action == "SECONDARY_ROLE" && previousValue == value) return@runTransaction
+            if (action == "VERIFICATION" && previousValue == value) return@runTransaction
             transaction.update(target, changes + ("lastModeratorActionId" to event.id))
             transaction.set(event, mapOf(
                 "actorUid" to actor.uid, "targetUid" to uid, "action" to action,
-                "value" to value, "createdAt" to FieldValue.serverTimestamp()
+                "value" to value, "previousValue" to previousValue, "detail" to detail,
+                "createdAt" to FieldValue.serverTimestamp()
             ))
         }.await()
     }

@@ -5,6 +5,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.lerp
+import androidx.compose.ui.graphics.luminance
 
 /**
  * Temas de Coach inspirados en las regiones del Universo de Runaterra.
@@ -940,6 +942,37 @@ object AppThemeManager {
     }
 
     fun getNavBarUnselectedColor(): Color {
-        return currentTheme.textMuted.copy(alpha = 0.85f)
+        return readableMuted(currentTheme).copy(alpha = 0.85f)
+    }
+
+    /** Keeps regional palettes expressive while guaranteeing readable interface text. */
+    fun readablePrimary(theme: AppTheme = currentTheme): Color = readableColor(
+        theme.textPrimary, listOf(theme.background, theme.surface), 4.5f
+    )
+
+    fun readableSecondary(theme: AppTheme = currentTheme): Color = readableColor(
+        theme.textSecondary, listOf(theme.background, theme.surface, theme.surfaceVariant), 4.5f
+    )
+
+    fun readableMuted(theme: AppTheme = currentTheme): Color = readableColor(
+        theme.textMuted, listOf(theme.background, theme.surface, theme.surfaceVariant), 3.0f
+    )
+
+    private fun readableColor(candidate: Color, backgrounds: List<Color>, minimum: Float): Color {
+        fun contrast(foreground: Color, background: Color): Float {
+            val first = foreground.luminance()
+            val second = background.luminance()
+            val lighter = maxOf(first, second)
+            val darker = minOf(first, second)
+            return (lighter + 0.05f) / (darker + 0.05f)
+        }
+        if (backgrounds.all { contrast(candidate, it) >= minimum }) return candidate
+        val averageBackground = backgrounds.map { it.luminance() }.average().toFloat()
+        val target = if (averageBackground < 0.5f) Color.White else Color.Black
+        for (step in 1..20) {
+            val adjusted = lerp(candidate, target, step / 20f)
+            if (backgrounds.all { contrast(adjusted, it) >= minimum }) return adjusted
+        }
+        return target
     }
 }

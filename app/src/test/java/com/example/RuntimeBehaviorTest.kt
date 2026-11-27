@@ -242,6 +242,9 @@ class RuntimeBehaviorTest {
     }
 
     @Test fun `session replacement uses token ownership without clock gaps or role exceptions`() {
+        assertTrue(DeviceSessionPolicy.needsFreshRegistration(null, "remote"))
+        assertTrue(DeviceSessionPolicy.needsFreshRegistration("local", null))
+        assertFalse(DeviceSessionPolicy.needsFreshRegistration("local", "remote"))
         assertTrue(DeviceSessionPolicy.owns("new", "second", "new", "second"))
         assertFalse(DeviceSessionPolicy.displaced("new", "second", "new", "second", true))
         assertTrue(DeviceSessionPolicy.displaced("old", "first", "new", "second", true))

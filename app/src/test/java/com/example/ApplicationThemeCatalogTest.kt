@@ -4,6 +4,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.colorspace.ColorSpaces
 import androidx.compose.ui.graphics.luminance
 import com.example.ui.theme.AppTheme
+import com.example.ui.theme.AppThemeManager
 import com.example.util.ChampionMatchupCoaching
 import com.example.model.Champion
 import org.junit.Assert.assertEquals
@@ -60,6 +61,20 @@ class ApplicationThemeCatalogTest {
                     val b = foreground.luminance()
                     val contrast = (maxOf(a, b) + 0.05f) / (minOf(a, b) + 0.05f)
                     assertTrue("${theme.id} contrast ${contrast}", contrast >= 4.5f)
+                }
+            }
+        }
+    }
+
+    @Test
+    fun `regional text is adjusted when a palette would hide it`() {
+        for (theme in AppTheme.entries) {
+            for (background in listOf(theme.background, theme.surface, theme.surfaceVariant)) {
+                for (foreground in listOf(AppThemeManager.readablePrimary(theme), AppThemeManager.readableSecondary(theme), AppThemeManager.readableMuted(theme))) {
+                    val a = background.luminance()
+                    val b = foreground.luminance()
+                    val contrast = (maxOf(a, b) + 0.05f) / (minOf(a, b) + 0.05f)
+                    assertTrue("${theme.id} adjusted contrast ${contrast}", contrast >= 3.0f)
                 }
             }
         }
