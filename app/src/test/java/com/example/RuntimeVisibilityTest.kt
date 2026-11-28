@@ -613,15 +613,24 @@ class RuntimeVisibilityTest(private val screen: String) {
                 compose.onNodeWithText("Selecione seu campeão e o adversário para ver o confronto 1 contra 1.").assertExists()
                 compose.onNodeWithText("Selecione seu campeão").assertExists()
             }
-            "draft-own-only", "draft-rival-only", "draft-placeholder-own", "draft-placeholder-rival" -> {
+            "draft-rival-only", "draft-placeholder-own" -> {
                 compose.onNodeWithTag("open_matchup_preview_button").assertDoesNotExist()
                 compose.onNodeWithTag("draft_recommendations").assertExists()
+                compose.onNodeWithTag("draft_matchup_missing_selection").performScrollTo()
+            }
+            "draft-own-only", "draft-placeholder-rival" -> {
+                compose.onNodeWithTag("open_matchup_preview_button").assertDoesNotExist()
+                // Once the player's champion is known, unrelated alternatives
+                // must not be presented as a new recommendation.
+                compose.onNodeWithTag("draft_recommendations").assertDoesNotExist()
                 compose.onNodeWithTag("draft_matchup_missing_selection").performScrollTo()
             }
             "draft-both" -> {
                 compose.onNodeWithTag("draft_matchup_missing_selection").assertDoesNotExist()
                 compose.onNodeWithTag("open_matchup_preview_button").performScrollTo().assertExists()
-                compose.onNodeWithTag("draft_recommendations").assertExists()
+                // Ahri is selected in this fixture while the calculated list
+                // contains no Ahri entry, so generic alternatives stay hidden.
+                compose.onNodeWithTag("draft_recommendations").assertDoesNotExist()
             }
             "tier-registered", "tier-guest", "tier-registration" -> {
                 compose.onNodeWithTag("tier_trend_header").assertDoesNotExist()
