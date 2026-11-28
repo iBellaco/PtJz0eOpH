@@ -801,8 +801,15 @@ fun DraftAnalysisTab(
         val allAllyChamps = remember(selectedAllySlots.toList(), selectedOwnChampion) {
             (selectedAllySlots.map { it.champion } + listOfNotNull(selectedOwnChampion)).distinctBy { it.id }
         }
-        val womboCombos = remember(allAllyChamps) {
-            WomboComboSynergyDetector.detectWombos(allAllyChamps)
+        // A team combo belongs in the active answer only when the user's selected
+        // champion is part of it. Showing pairs from other lanes here made the
+        // draft advice look relevant when it was not.
+        val womboCombos = remember(allAllyChamps, selectedOwnChampion?.id) {
+            selectedOwnChampion?.let { selected ->
+                WomboComboSynergyDetector.detectWombos(allAllyChamps).filter { wombo ->
+                    wombo.champ1.id == selected.id || wombo.champ2.id == selected.id
+                }
+            }.orEmpty()
         }
         if (womboCombos.isNotEmpty()) {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -1207,11 +1214,8 @@ fun DraftAnalysisTab(
                                         fontWeight = FontWeight.Bold
                                     )
                                 }
-                                Text(
-                                    text = tr(topPick.advantageBadge),
-                                    color = HextechCyan,
-                                    fontSize = 11.5.sp,
-                                    fontWeight = FontWeight.SemiBold
+                                com.example.ui.components.DraftRecommendationBadge(
+                                    label = topPick.advantageBadge
                                 )
                             }
                         }
@@ -1330,7 +1334,9 @@ fun DraftAnalysisTab(
                                             fontSize = 14.sp, modifier = Modifier.weight(1f).padding(end = 8.dp))
                                         Text(com.example.util.tr(tr("Encaje:") + " ${rec.draftFitScore}/100"), color = HextechGold, fontSize = 11.5.sp, fontWeight = FontWeight.Bold)
                                     }
-                                    Text(tr(rec.advantageBadge), color = HextechCyan, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                    com.example.ui.components.DraftRecommendationBadge(
+                                        label = rec.advantageBadge
+                                    )
                                     Spacer(modifier = Modifier.height(2.dp))
                                 }
                                 Spacer(modifier = Modifier.width(6.dp))

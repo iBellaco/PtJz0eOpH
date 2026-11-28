@@ -282,6 +282,7 @@ fun AdminDashboardDialog(
                             MetaMonitoringCard()
                             if (isAdmin) {
                                 AppUpdateVerificationControl()
+                                SeasonalEffectsAdminCard()
                             }
                             AdminUserPresenceCard()
                         }

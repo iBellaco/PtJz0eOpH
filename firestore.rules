@@ -475,6 +475,12 @@ service cloud.firestore {
       allow get: if true;
       allow write: if isAdmin();
     }
+    // Seasonal decoration is a public, read-only schedule so every device can
+    // activate it from its own local calendar while publication stays restricted.
+    match /system_config/seasonal_effects {
+      allow get: if true;
+      allow write: if isAdmin();
+    }
     // China meta is a published, read-only snapshot. It must be available to
     // signed-out installations too, while publishing remains administrator-only.
     match /system_config/china_meta_snapshot {
