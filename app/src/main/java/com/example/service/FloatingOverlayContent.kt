@@ -184,6 +184,11 @@ internal fun FloatingOverlayContent(
     val detectedBans by DraftVisionScanner.bannedChampionIdsFlow.collectAsStateWithLifecycle()
     val banSlots by DraftVisionScanner.banSlotsFlow.collectAsStateWithLifecycle()
     val bannedIds = detectedBans
+    val confirmedBanSlots = remember(banSlots) {
+        banSlots.count { ban ->
+            ban.state == com.example.service.screen.BanState.CONFIRMED && !ban.championId.isNullOrBlank()
+        }
+    }
     val isAdmin = com.example.ui.components.sessionPanelAccess(com.example.model.RolePanel.MODERATION)
     val context = LocalContext.current
     val haptic = LocalHapticFeedback.current
@@ -390,7 +395,7 @@ internal fun FloatingOverlayContent(
 
     val diagnosticDraftDetails = remember(
         allies.toList(), enemies.toList(), activeRole, isFirstPick, isLegendaryQueue,
-        autoScanEnabled, isSavedRecently, bannedIds, analysis
+        autoScanEnabled, isSavedRecently, bannedIds, confirmedBanSlots, analysis
     ) {
         fun championNames(slots: List<Champion?>): String = slots.mapIndexedNotNull { index, champion ->
             champion?.let { "${defaultRoles[index].shortName}: ${it.name}" }
@@ -401,7 +406,7 @@ internal fun FloatingOverlayContent(
             appendLine("Rol: ${activeRole.displayName}; primer pick: ${if (isFirstPick) "sí" else "no"}; modo: ${if (isLegendaryQueue) "legendario" else "clasificatoria"}")
             appendLine("Aliados (${allies.count { it != null }}/5): ${championNames(allies)}")
             appendLine("Rivales (${enemies.count { it != null }}/5): ${championNames(enemies)}")
-            appendLine("Baneos detectados: ${bannedIds.size}; selección: $selectedCount/10; Auto-Scan activo: ${if (autoScanEnabled) "sí" else "no"}")
+            appendLine("Baneos confirmados: $confirmedBanSlots (${bannedIds.size} únicos); selección: $selectedCount/10; Auto-Scan activo: ${if (autoScanEnabled) "sí" else "no"}")
             val recommendation = analysis.bestOverallPick ?: analysis.recommendations.firstOrNull()
             appendLine("Recomendación principal: ${recommendation?.champion?.name ?: "N/D"}; WR estimado: ${recommendation?.estimatedWinrate?.let { "%.1f%%".format(java.util.Locale.US, it) } ?: "N/D"}")
             recommendation?.let {

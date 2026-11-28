@@ -9,9 +9,13 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import com.example.data.WildRiftRepository
 import com.example.model.LaneRole
 import com.example.model.DraftSlot
+import com.example.model.DraftRecommendation
 import com.example.ui.screens.DraftSessionManager
 import com.example.ui.screens.MetaAndDraftScreen
 import com.example.ui.screens.MetaScreenMode
+import com.example.ui.screens.draftRecommendationsForSelection
+import com.example.ui.screens.shouldShowDraftRecommendations
+import com.example.ui.components.DraftTeamPositionCard
 import com.example.ui.theme.MyApplicationTheme
 import com.example.util.AppLanguage
 import com.example.util.DynamicTranslations
@@ -279,6 +283,59 @@ class DraftChampionSelectionTest(private val language: String) {
             Assert.assertEquals(5, slots.size)
             Assert.assertEquals(restored.take(4), slots.take(4))
             Assert.assertEquals(name, slots.single { it.assignedRole == LaneRole.SUPPORT }.champion.name)
+        }
+    }
+
+    @Test fun `a selected champion only keeps a matching recommendation and its lane is preselected`() {
+        val ahri = WildRiftRepository.champions.first { it.name == "Ahri" }
+        val lux = WildRiftRepository.champions.first { it.name == "Lux" }
+        fun recommendation(champion: com.example.model.Champion) = DraftRecommendation(
+            champion = champion,
+            estimatedWinrate = 50.0,
+            advantageBadge = "Prueba",
+            tacticalReason = "Prueba",
+            runes = "Prueba"
+        )
+        val ahriRecommendation = recommendation(ahri)
+        val luxRecommendation = recommendation(lux)
+        assertTrue(draftRecommendationsForSelection(luxRecommendation, listOf(luxRecommendation), ahri).isEmpty())
+        assertFalse(shouldShowDraftRecommendations(LaneRole.MID, false, true, ahri, 0))
+        assertEquals(listOf(ahriRecommendation), draftRecommendationsForSelection(
+            luxRecommendation,
+            listOf(ahriRecommendation, luxRecommendation),
+            ahri
+        ))
+        assertTrue(shouldShowDraftRecommendations(LaneRole.MID, false, true, ahri, 1))
+
+        compose.setContent { MyApplicationTheme {
+            MetaAndDraftScreen(mode = MetaScreenMode.DRAFTING, userMainRole = LaneRole.MID, onNavigateBack = {})
+        } }
+        openField("ally", LaneRole.JUNGLE)
+        compose.onNodeWithTag("draft_picker_role_filter_jungle").assertIsSelected()
+        choose("Xin Zhao")
+        compose.runOnIdle {
+            assertEquals("Xin Zhao", DraftSessionManager.allySlots.single { it.assignedRole == LaneRole.JUNGLE }.champion.name)
+        }
+    }
+
+    @Test fun `selected champion has an accessible remove action`() {
+        var removedRole: LaneRole? = null
+        compose.setContent { MyApplicationTheme {
+            DraftTeamPositionCard(
+                title = "Equipo Aliado",
+                isEnemy = false,
+                slots = listOf(DraftSlot(WildRiftRepository.champions.first { it.name == "Xin Zhao" }, LaneRole.JUNGLE)),
+                activeUserRole = LaneRole.MID,
+                onPickChampionForRole = {},
+                onRemoveChampionForRole = { removedRole = it },
+                onChampionClick = {}
+            )
+        } }
+        val removeButton = compose.onNodeWithTag("draft_remove_ally_jungle")
+        removeButton.assertIsDisplayed()
+        removeButton.performClick()
+        compose.runOnIdle {
+            assertEquals(LaneRole.JUNGLE, removedRole)
         }
     }
 }

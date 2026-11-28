@@ -45,28 +45,32 @@ fun ReferenceCoachNavBar(items: List<CoachNavItem>, selectedIndex: Int, style: C
     val animatedWeights = weights.mapIndexed { i, weight ->
         animateFloatAsState(weight, spring(.8f, 400f), label = "reference_width_$i")
     }
-    Box(modifier.fillMaxWidth().height(76.dp)
+    // The visual marker belongs to the selected style below.  Do not add a
+    // second circular surface behind every icon: that obscures the identity of
+    // top-beacon, underline and orbit styles and makes the whole catalogue feel
+    // overly round.
+    Box(modifier.fillMaxWidth().height(72.dp)
         .clip(RoundedCornerShape(topStart = 22.dp, topEnd = 22.dp))
         .background(background)) {
         Canvas(Modifier.fillMaxSize()) {
             val slot = size.width / items.size
             val x = slot * (position.value + .5f)
-            val y = 28.dp.toPx()
+            val y = 24.dp.toPx()
             when (style) {
                 CoachNavStyle.RUNIC_TILE -> drawRoundRect(
                     Brush.verticalGradient(listOf(accent.copy(alpha = .38f), selectionContainer.copy(alpha = .88f))),
-                    Offset(x - 23.dp.toPx(), 5.dp.toPx()), Size(46.dp.toPx(), 46.dp.toPx()), CornerRadius(12.dp.toPx()))
-                CoachNavStyle.TOP_BEACON -> drawRoundRect(accent, Offset(x - 15.dp.toPx(), 0f),
+                    Offset(x - 20.dp.toPx(), 4.dp.toPx()), Size(40.dp.toPx(), 40.dp.toPx()), CornerRadius(10.dp.toPx()))
+                CoachNavStyle.TOP_BEACON -> drawRoundRect(accent, Offset(x - 15.dp.toPx(), 2.dp.toPx()),
                     Size(30.dp.toPx(), 4.dp.toPx()), CornerRadius(3.dp.toPx()))
                 CoachNavStyle.UNDERLINE -> {
-                    drawRoundRect(accent.copy(alpha = .18f), Offset(x - 28.dp.toPx(), 69.dp.toPx()),
+                    drawRoundRect(accent.copy(alpha = .18f), Offset(x - 28.dp.toPx(), 65.dp.toPx()),
                         Size(56.dp.toPx(), 6.dp.toPx()), CornerRadius(3.dp.toPx()))
-                    drawRoundRect(accent, Offset(x - 23.dp.toPx(), 71.dp.toPx()),
+                    drawRoundRect(accent, Offset(x - 23.dp.toPx(), 67.dp.toPx()),
                         Size(46.dp.toPx(), 2.dp.toPx()), CornerRadius(1.dp.toPx()))
                 }
                 CoachNavStyle.ORBIT -> {
-                    drawCircle(accent.copy(alpha = .1f), 24.dp.toPx(), Offset(x, y))
-                    drawCircle(accent, 22.dp.toPx(), Offset(x, y), style = Stroke(1.6.dp.toPx()))
+                    drawCircle(accent.copy(alpha = .1f), 20.dp.toPx(), Offset(x, y))
+                    drawCircle(accent, 18.dp.toPx(), Offset(x, y), style = Stroke(1.6.dp.toPx()))
                 }
                 else -> Unit
             }
@@ -75,21 +79,22 @@ fun ReferenceCoachNavBar(items: List<CoachNavItem>, selectedIndex: Int, style: C
             items.forEachIndexed { i, item ->
                 val selected = i == index
                 val tint = if (selected) selectedColor else inactive
+                val ownsPillSurface = expanded && selected
                 val itemModifier = Modifier.weight(animatedWeights[i].value).fillMaxHeight()
                     .clickable { onSelected(i) }.testTag("coach_nav_item_$i")
                 Column(itemModifier, horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center) {
-                    Row(Modifier.height(48.dp).padding(horizontal = 4.dp)
-                        .clip(RoundedCornerShape(24.dp))
-                        .background(if (selected) selectionContainer else Color.Transparent)
-                        .padding(horizontal = if (expanded && selected) 10.dp else 4.dp),
+                    Row(Modifier.height(42.dp).padding(horizontal = 4.dp)
+                        .clip(RoundedCornerShape(18.dp))
+                        .background(if (ownsPillSurface) selectionContainer else Color.Transparent)
+                        .padding(horizontal = if (ownsPillSurface) 10.dp else 4.dp),
                         verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center) {
                         if (i == 4 && items.size == 5) UserNotificationIcon(item.notificationCount ?: userPanelNotificationCount(), tint)
-                        else Icon(item.icon, tr(item.title), Modifier.size(24.dp), tint = tint)
+                        else Icon(item.icon, tr(item.title), Modifier.size(22.dp), tint = tint)
                         if (expanded && selected) Text(tr(item.title), modifier = Modifier.padding(start = 6.dp),
                             color = selectedColor, fontSize = 10.sp, maxLines = 1, fontWeight = FontWeight.Bold)
                     }
-                    if (!expanded) Text(tr(item.title), modifier = Modifier.height(20.dp), color = if (selected) selectedLabelColor else inactive,
+                    if (!expanded) Text(tr(item.title), modifier = Modifier.height(16.dp), color = if (selected) selectedLabelColor else inactive,
                         fontSize = 10.sp, fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium, maxLines = 1)
                 }
             }

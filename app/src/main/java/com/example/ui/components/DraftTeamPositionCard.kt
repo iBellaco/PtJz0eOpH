@@ -318,25 +318,6 @@ fun DraftTeamPositionCard(
                                             }
                                         }
 
-                                        // Botón pequeño 'X' en la esquina superior para deseleccionar
-                                        Box(
-                                            modifier = Modifier
-                                                .align(Alignment.TopEnd)
-                                                .size(16.dp)
-                                                .clip(CircleShape)
-                                                .background(Color.Black.copy(alpha = 0.75f))
-                                                .coachClickable {
-                                                    onRemoveChampionForRole(role)
-                                                },
-                                            contentAlignment = Alignment.Center
-                                        ) {
-                                            Icon(
-                                                imageVector = Icons.Default.Close,
-                                                contentDescription = tr("Quitar"),
-                                                tint = Color.White,
-                                                modifier = Modifier.size(10.dp)
-                                            )
-                                        }
                                     }
                                 } else {
                                     // Casilla vacía con botón "+" para añadir
@@ -360,6 +341,36 @@ fun DraftTeamPositionCard(
                                             )
                                         }
                                     }
+                                }
+                            }
+                        }
+
+                        if (displayChamp != null) {
+                            // Keep removal separate from the portrait: a large
+                            // touch target must not cover the action used to
+                            // replace the champion in this same position.
+                            Spacer(modifier = Modifier.height(2.dp))
+                            Box(
+                                modifier = Modifier
+                                    .size(48.dp)
+                                    .testTag("draft_remove_${if (isEnemy) "enemy" else "ally"}_${role.name.lowercase()}")
+                                    .coachClickable { onRemoveChampionForRole(role) },
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(32.dp)
+                                        .clip(CircleShape)
+                                        .background(DangerRed.copy(alpha = 0.92f))
+                                        .border(1.dp, Color.White.copy(alpha = 0.8f), CircleShape),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Close,
+                                        contentDescription = tr("Quitar"),
+                                        tint = Color.White,
+                                        modifier = Modifier.size(20.dp)
+                                    )
                                 }
                             }
                         }

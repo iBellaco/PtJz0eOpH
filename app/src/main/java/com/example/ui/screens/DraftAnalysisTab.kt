@@ -98,6 +98,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.data.WildRiftRepository
 import kotlinx.coroutines.launch
 import com.example.model.Champion
+import com.example.model.DraftRecommendation
 import com.example.util.SubscriptionManager
 import com.example.util.currentAppLanguage
 import com.example.util.DraftRecommendationText
@@ -950,8 +951,13 @@ fun DraftAnalysisTab(
                                 fontWeight = FontWeight.Bold
                             )
                         }
-                        IconButton(onClick = { onRemoveAllyRole(activeRole ?: myChamp.primaryRole) }, modifier = Modifier.size(28.dp)) {
-                            Icon(Icons.Default.Close, contentDescription = tr("Eliminar"), tint = TextMuted, modifier = Modifier.size(18.dp))
+                        IconButton(
+                            onClick = { onRemoveAllyRole(activeRole ?: myChamp.primaryRole) },
+                            modifier = Modifier
+                                .size(48.dp)
+                                .testTag("draft_remove_own_champion")
+                        ) {
+                            Icon(Icons.Default.Close, contentDescription = tr("Eliminar"), tint = DangerRed, modifier = Modifier.size(22.dp))
                         }
                     }
                     Spacer(modifier = Modifier.height(8.dp))
@@ -1059,7 +1065,21 @@ fun DraftAnalysisTab(
         // present. An entirely empty draft keeps the empty-state guidance.
         val hasDraftSelection = selectedOwnChampion != null || selectedEnemyChampion != null ||
             selectedAllySlots.isNotEmpty() || selectedEnemySlots.isNotEmpty()
-        if (shouldShowDraftRecommendations(activeRole, isFirstPick, hasDraftSelection)) {
+        // Once the player has chosen their champion, generic alternatives would
+        // imply that Coach is still asking them to change it. Keep a card only
+        // when the analysis explicitly recommends that same champion.
+        val visibleRecommendations = draftRecommendationsForSelection(
+            bestOverallPick = analysis.bestOverallPick,
+            recommendations = analysis.recommendations,
+            selectedOwnChampion = selectedOwnChampion
+        )
+        if (shouldShowDraftRecommendations(
+                activeRole = activeRole,
+                isFirstPick = isFirstPick,
+                hasDraftSelection = hasDraftSelection,
+                selectedOwnChampion = selectedOwnChampion,
+                matchingRecommendationCount = visibleRecommendations.size
+            )) {
             val recommendationRole = requireNotNull(activeRole)
             val favoriteFilterAvailable = favoriteRecommendationCount >= 5
             val favoriteMinimumMessage = tabContext.getString(com.example.R.string.draft_favorite_minimum)
@@ -1127,7 +1147,7 @@ fun DraftAnalysisTab(
             Spacer(modifier = Modifier.height(8.dp))
 
             // #1 Best Pick Hero Card
-            val topPick = analysis.bestOverallPick ?: analysis.recommendations.firstOrNull()
+            val topPick = visibleRecommendations.firstOrNull()
             if (topPick != null) {
                 Card(
                     modifier = Modifier
@@ -1251,11 +1271,17 @@ fun DraftAnalysisTab(
             }
 
             // Secondary Recommendations
-            val otherRecs = analysis.recommendations.filter { it.champion.id != topPick?.champion?.id }
+            val otherRecs = visibleRecommendations.drop(1)
             // Keep the floating assistant's existing rendering path. The application
             // loads alternatives progressively instead of laying out every long card
             // while the champion picker is being dismissed.
-            var visibleRecommendationCount by remember(activeRole, selectedAllySlots, selectedEnemySlots, isFirstPick) {
+            var visibleRecommendationCount by remember(
+                activeRole,
+                selectedAllySlots,
+                selectedEnemySlots,
+                isFirstPick,
+                selectedOwnChampion?.id
+            ) {
                 mutableIntStateOf(4)
             }
             val visibleOtherRecs = if (isOverlay) otherRecs else otherRecs.take(visibleRecommendationCount)
@@ -1359,8 +1385,29 @@ fun DraftAnalysisTab(
 internal fun shouldShowDraftRecommendations(
     activeRole: LaneRole?,
     isFirstPick: Boolean,
-    hasDraftSelection: Boolean
-): Boolean = activeRole != null && (isFirstPick || hasDraftSelection)
+    hasDraftSelection: Boolean,
+    selectedOwnChampion: Champion? = null,
+    matchingRecommendationCount: Int = 1
+): Boolean = activeRole != null &&
+    (isFirstPick || hasDraftSelection) &&
+    (selectedOwnChampion == null || matchingRecommendationCount > 0)
+
+/**
+ * The recommendation area is guidance for a champion that has not been
+ * chosen yet. After the player's pick is known, retain only evidence that
+ * confirms that exact pick instead of continuing to offer unrelated changes.
+ */
+internal fun draftRecommendationsForSelection(
+    bestOverallPick: DraftRecommendation?,
+    recommendations: List<DraftRecommendation>,
+    selectedOwnChampion: Champion?
+): List<DraftRecommendation> {
+    val ranked = (listOfNotNull(bestOverallPick) + recommendations)
+        .distinctBy { it.champion.id }
+    return selectedOwnChampion?.let { selected ->
+        ranked.filter { it.champion.id == selected.id }
+    } ?: ranked
+}
 
 @Composable
 private fun TeamChampionSlot(
@@ -1544,7 +1591,9 @@ internal fun DraftChampionPickerSheet(
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     var search by remember { mutableStateOf("") }
-    var selectedRoleFilter by remember { mutableStateOf<LaneRole?>(null) }
+    // Opening a slot is an intent to fill that lane. Start there so the
+    // picker neither hides the target lane nor makes a later assignment drift.
+    var selectedRoleFilter by remember(suggestedRole) { mutableStateOf(suggestedRole) }
     val dragHandleLabel = tr("Arrastra para cerrar")
 
     val availableChamps = remember(search, alreadySelected, selectedRoleFilter, WildRiftRepository.champions.toList()) {
@@ -1638,6 +1687,7 @@ internal fun DraftChampionPickerSheet(
                 FilterChip(
                     selected = selectedRoleFilter == null,
                     onClick = { selectedRoleFilter = null },
+                    modifier = Modifier.testTag("draft_picker_role_filter_all"),
                     label = { Text(tr("Todos"), fontSize = 11.sp) },
                     colors = FilterChipDefaults.filterChipColors(
                         selectedContainerColor = HextechCyan,
@@ -1648,6 +1698,7 @@ internal fun DraftChampionPickerSheet(
                     FilterChip(
                         selected = selectedRoleFilter == role,
                         onClick = { selectedRoleFilter = if (selectedRoleFilter == role) null else role },
+                        modifier = Modifier.testTag("draft_picker_role_filter_${role.name.lowercase()}"),
                         leadingIcon = {
                             Image(
                                 painter = painterResource(id = role.iconResId),

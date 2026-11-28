@@ -102,16 +102,16 @@ object DeviceAndSessionManager {
     }
 
     // Registrar sesión y dispositivo en Firestore de manera segura y sin desconexiones accidentales
-    fun registerDeviceAndSession(context: Context, onSuccess: () -> Unit = {}, onError: (String) -> Unit = {}) {
+    fun registerDeviceAndSession(context: Context, onSuccess: () -> Unit = {}, onError: (String) -> Unit = {}): Boolean {
         val user = AuthManager.getAuth()?.currentUser
         if (AuthManager.isGuestOrUnauthenticated(user)) {
             onError("Usuario no logueado")
-            return
+            return false
         }
 
         val deviceId = runCatching { getDeviceId(context) }.getOrElse {
             onError("No se pudo identificar este dispositivo. Vuelve a intentarlo.")
-            return
+            return false
         }
         val sessionToken = UUID.randomUUID().toString()
         registrationPending = true
@@ -139,6 +139,7 @@ object DeviceAndSessionManager {
                 .firstOrNull { it.contains("Límite de dispositivos") } ?: "No se pudo registrar el dispositivo. Vuelve a intentarlo."
             onError(message)
         }
+        return true
     }
 
     fun handleSessionChanged(remoteSessionToken: String?, remoteDeviceId: String?,
