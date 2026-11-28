@@ -115,7 +115,7 @@ class NavigationCustomizationRenderedTest {
     }
 
     @OptIn(com.github.takahirom.roborazzi.ExperimentalRoborazziApi::class)
-    @Test fun liquidIndicatorIsCenteredOnTheSelectedIcon() {
+    @Test fun liquidIndicatorStaysAlignedWithTheCompactIconRow() {
         var density = 1f
         compose.setContent {
             density = androidx.compose.ui.platform.LocalDensity.current.density
@@ -144,8 +144,39 @@ class NavigationCustomizationRenderedTest {
         }
         assertTrue("Indicator must be visible", rows.isNotEmpty())
         val center = (rows.first() + rows.last()) / 2f
-        assertTrue("Indicator $center must be centered in ${bitmap.height}px", kotlin.math.abs(center - bitmap.height / 2f) <= 2 * density)
+        val iconRowCenter = 24 * density
+        assertTrue("Indicator $center must stay in the icon row at $iconRowCenter px",
+            kotlin.math.abs(center - iconRowCenter) <= 3 * density)
         bitmap.recycle()
+    }
+
+    @Test fun everyNavigationPreviewIsCompactAndKeepsAllFiveTargetsVisible() {
+        var style by mutableStateOf(CoachNavStyle.ORIGINAL)
+        var density = 1f
+        compose.setContent {
+            density = androidx.compose.ui.platform.LocalDensity.current.density
+            MyApplicationTheme {
+                com.example.ui.components.CoachNavStyleRenderer(
+                    style = style,
+                    items = com.example.ui.components.CoachNavPreviewItems(),
+                    selectedIndex = 0,
+                    onSelected = {},
+                    particlesEnabled = false,
+                    modifier = androidx.compose.ui.Modifier.testTag("compact_nav_preview")
+                )
+            }
+        }
+        for (option in CoachNavStyle.entries) {
+            compose.runOnIdle { style = option }
+            compose.waitForIdle()
+            val bounds = compose.onNodeWithTag("compact_nav_preview").fetchSemanticsNode().boundsInRoot
+            assertTrue("$option must not add a tall empty strip: $bounds", bounds.height <= 88 * density)
+            for (index in 0..4) {
+                val target = compose.onNodeWithTag("coach_nav_item_$index", useUnmergedTree = true)
+                    .fetchSemanticsNode().boundsInRoot
+                assertTrue("$option item $index must remain visible: $target", target.width > 0 && target.height > 0)
+            }
+        }
     }
 
     @Test fun bansUseFiveCompactSlotsPerTeamAndPreserveDuplicateChampions() {

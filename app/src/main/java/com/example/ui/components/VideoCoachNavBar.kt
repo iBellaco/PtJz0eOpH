@@ -3,10 +3,8 @@ package com.example.ui.components
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.selection.selectable
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.Text
@@ -14,8 +12,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
@@ -58,7 +54,7 @@ fun VideoCoachNavBar(items: List<CoachNavItem>, selectedIndex: Int, style: Coach
     val measurer = rememberTextMeasurer()
     val labelStyle = LocalTextStyle.current.merge(TextStyle(fontSize = 10.sp, lineHeight = 13.sp,
         textAlign = TextAlign.Center))
-    BoxWithConstraints(modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 4.dp)) {
+    BoxWithConstraints(modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 2.dp)) {
       // Measure the narrowest rounded slot with the same font, locale and scale as Text.
       // Portuguese labels can need three lines at accessibility sizes.
       val labelWidth = with(density) { (floor(maxWidth.toPx() / items.size).toInt() - 2.dp.roundToPx()).coerceAtLeast(1) }
@@ -70,15 +66,15 @@ fun VideoCoachNavBar(items: List<CoachNavItem>, selectedIndex: Int, style: Coach
           }
       }
       val labelHeight = with(density) { labelPixels.toDp() } + 4.dp
-      val barHeight = 64.dp + labelHeight
+      val barHeight = 56.dp + labelHeight
       Box(Modifier.fillMaxWidth().height(barHeight).testTag("video_nav_surface")) {
         Canvas(Modifier.fillMaxSize()) {
             val slot = size.width / items.size
             val x = slot * (position + .5f)
-            val top = 16.dp.toPx()
-            val radius = min(22.dp.toPx(), slot * .36f)
-            val center = Offset(x, top + 24.dp.toPx())
-            val round = 26.dp.toPx()
+            val top = 8.dp.toPx()
+            val radius = min(20.dp.toPx(), slot * .34f)
+            val center = Offset(x, top + 20.dp.toPx())
+            val round = 22.dp.toPx()
             val bodyColor = when (style) {
                 CoachNavStyle.PURPLE_MESSAGES -> androidx.compose.ui.graphics.lerp(background, accent, .18f)
                 else -> background
@@ -103,9 +99,22 @@ fun VideoCoachNavBar(items: List<CoachNavItem>, selectedIndex: Int, style: Coach
                 }
                 drawPath(body, bodyColor)
                 drawPath(body, selectionContainer.copy(alpha = .78f), style = Stroke(1.dp.toPx()))
-                val bead = Offset(x, top + 2.dp.toPx())
-                drawCircle(Brush.radialGradient(listOf(accent.copy(alpha = .5f), Color.Transparent), bead, radius * 1.7f), radius * 1.7f, bead)
-                drawCircle(accent, radius * .78f, bead)
+                val capWidth = min(slot * .5f, 40.dp.toPx())
+                val capHeight = 12.dp.toPx()
+                val capTop = top + 1.dp.toPx()
+                drawRoundRect(
+                    Brush.horizontalGradient(listOf(accent.copy(alpha = .3f), accent.copy(alpha = .78f), accent.copy(alpha = .3f))),
+                    Offset(x - capWidth / 2f, capTop),
+                    Size(capWidth, capHeight),
+                    CornerRadius(capHeight / 2f)
+                )
+                drawRoundRect(
+                    Color.White.copy(alpha = .32f),
+                    Offset(x - capWidth / 2f, capTop),
+                    Size(capWidth, capHeight),
+                    CornerRadius(capHeight / 2f),
+                    style = Stroke(1.dp.toPx())
+                )
             } else {
                 drawRoundRect(bodyColor, Offset(0f, top), Size(size.width, size.height - top), CornerRadius(round))
                 drawRoundRect(selectionContainer.copy(alpha = .78f), Offset(0f, top), Size(size.width, size.height - top),
@@ -117,21 +126,47 @@ fun VideoCoachNavBar(items: List<CoachNavItem>, selectedIndex: Int, style: Coach
                             Offset(x - w / 2, top + 5.dp.toPx()), Size(w, 42.dp.toPx()), CornerRadius(21.dp.toPx()))
                     }
                     CoachNavStyle.TABS_V2 -> {
-                        val lifted = Offset(x, top + 5.dp.toPx())
-                        drawCircle(Brush.radialGradient(listOf(accent.copy(alpha = .45f), Color.Transparent), lifted, radius * 1.4f), radius * 1.4f, lifted)
-                        drawCircle(accent.copy(alpha = .3f), radius, lifted)
-                        drawCircle(accent, radius, lifted, style = Stroke(1.5.dp.toPx()))
+                        val width = min(slot * .62f, 46.dp.toPx())
+                        val height = 34.dp.toPx()
+                        val tabTop = center.y - height / 2f
+                        drawRoundRect(
+                            Brush.verticalGradient(listOf(accent.copy(alpha = .4f), selectionContainer.copy(alpha = .84f))),
+                            Offset(x - width / 2f, tabTop),
+                            Size(width, height),
+                            CornerRadius(10.dp.toPx())
+                        )
+                        drawRoundRect(
+                            accent.copy(alpha = .86f),
+                            Offset(x - width / 2f, tabTop),
+                            Size(width, height),
+                            CornerRadius(10.dp.toPx()),
+                            style = Stroke(1.4.dp.toPx())
+                        )
                     }
                     CoachNavStyle.PURPLE_MESSAGES -> {
-                        val floor = size.height - 3.dp.toPx()
-                        val crest = Path().apply {
-                            moveTo(x - radius, floor)
-                            cubicTo(x - radius * .5f, floor, x - radius * .5f, floor - 9.dp.toPx(), x, floor - 9.dp.toPx())
-                            cubicTo(x + radius * .5f, floor - 9.dp.toPx(), x + radius * .5f, floor, x + radius, floor)
+                        val bubbleWidth = min(slot * .72f, 52.dp.toPx())
+                        val bubbleHeight = 32.dp.toPx()
+                        val bubbleTop = center.y - bubbleHeight / 2f
+                        drawRoundRect(
+                            accent.copy(alpha = .26f),
+                            Offset(x - bubbleWidth / 2f, bubbleTop),
+                            Size(bubbleWidth, bubbleHeight),
+                            CornerRadius(11.dp.toPx())
+                        )
+                        drawRoundRect(
+                            accent.copy(alpha = .9f),
+                            Offset(x - bubbleWidth / 2f, bubbleTop),
+                            Size(bubbleWidth, bubbleHeight),
+                            CornerRadius(11.dp.toPx()),
+                            style = Stroke(1.2.dp.toPx())
+                        )
+                        val tail = Path().apply {
+                            moveTo(x + 4.dp.toPx(), bubbleTop + bubbleHeight)
+                            lineTo(x + 12.dp.toPx(), bubbleTop + bubbleHeight)
+                            lineTo(x + 7.dp.toPx(), bubbleTop + bubbleHeight + 6.dp.toPx())
                             close()
                         }
-                        drawCircle(accent.copy(alpha = .16f), radius, center)
-                        drawPath(crest, accent)
+                        drawPath(tail, accent)
                     }
                     else -> Unit
                 }
@@ -141,24 +176,22 @@ fun VideoCoachNavBar(items: List<CoachNavItem>, selectedIndex: Int, style: Coach
             items.forEachIndexed { i, item ->
                 val selected = i == index
                 val lift = when (style) {
-                    CoachNavStyle.TABS_V2 -> -19f
-                    CoachNavStyle.MENISCUS -> -22f
+                    CoachNavStyle.TABS_V2 -> -4f
+                    CoachNavStyle.MENISCUS -> -14f
                     else -> 0f
                 }
                 val offset by animateFloatAsState(if (selected) lift else 0f, spring(.75f, 380f), label = "video_nav_lift_$i")
                 val tint = if (selected) active else inactive
                 val labelTint = if (selected) selectedLabel else inactive
-                Column(Modifier.weight(1f).fillMaxHeight().clip(RoundedCornerShape(20.dp))
+                Column(Modifier.weight(1f).fillMaxHeight()
                     .selectable(selected = selected, role = Role.Tab, onClick = { onSelected(i) })
                     .testTag("coach_nav_item_$i"), horizontalAlignment = Alignment.CenterHorizontally) {
-                    Spacer(Modifier.height(16.dp))
-                    Box(Modifier.height(48.dp).fillMaxWidth().graphicsLayer { translationY = offset.dp.toPx() },
+                    Spacer(Modifier.height(8.dp))
+                    Box(Modifier.height(40.dp).fillMaxWidth().graphicsLayer { translationY = offset.dp.toPx() },
                         contentAlignment = Alignment.Center) {
                         Box(
                             modifier = Modifier
-                                .size(42.dp)
-                                .clip(CircleShape)
-                                .background(if (selected) selectionContainer else Color.Transparent),
+                                .size(40.dp),
                             contentAlignment = Alignment.Center
                         ) {
                             if (i == 4 && items.size == 5) {

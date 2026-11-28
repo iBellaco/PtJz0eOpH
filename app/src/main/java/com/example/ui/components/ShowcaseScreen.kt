@@ -50,11 +50,17 @@ fun ShowcaseScreen(onClose: () -> Unit = {}, modifier: Modifier = Modifier) {
 @Composable
 fun CoachNavStyleRenderer(style: CoachNavStyle, items: List<CoachNavItem>, selectedIndex: Int,
                           onSelected: (Int) -> Unit, modifier: Modifier = Modifier,
-                          particlesEnabled: Boolean = com.example.ui.theme.AppThemeManager.isParticlesEnabled) {
+                          particlesEnabled: Boolean = com.example.ui.theme.AppThemeManager.isParticlesEnabled,
+                          respectNavigationInsets: Boolean = false) {
     val background = com.example.ui.theme.AppThemeManager.getNavBarBackgroundColor()
     val selected = com.example.ui.theme.AppThemeManager.getNavBarSelectedIconColor()
     val unselected = com.example.ui.theme.AppThemeManager.getNavBarUnselectedColor()
-    val safeModifier = if (style == CoachNavStyle.ORIGINAL) Modifier else Modifier.windowInsetsPadding(WindowInsets.navigationBars)
+    // The real bottom bar needs the bottom gesture inset.  A preview is already
+    // inside a sheet/card, so inheriting all navigation-bar insets there created
+    // a large empty strip and squeezed the icons in landscape.
+    val safeModifier = if (respectNavigationInsets && style != CoachNavStyle.ORIGINAL) {
+        Modifier.windowInsetsPadding(WindowInsets.navigationBars.only(WindowInsetsSides.Bottom))
+    } else Modifier
     Box(modifier) {
         when (style) {
             CoachNavStyle.ORIGINAL -> OriginalCoachNavBar(items, selectedIndex, onSelected)
@@ -72,7 +78,7 @@ fun CoachNavStyleRenderer(style: CoachNavStyle, items: List<CoachNavItem>, selec
             CoachNavStyle.RIBBON_MATRIX, CoachNavStyle.PRISM_LATTICE ->
                 VideoReferenceCoachNavBar(items, selectedIndex, style, onSelected, safeModifier)
             else -> ReferenceCoachNavBar(items, selectedIndex, style, onSelected,
-                Modifier.windowInsetsPadding(WindowInsets.navigationBars))
+                safeModifier)
         }
         if (particlesEnabled) com.example.RunicNavBarParticleAnimation(
             modifier = Modifier.matchParentSize().testTag("nav_particles"),

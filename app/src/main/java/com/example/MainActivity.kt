@@ -533,6 +533,7 @@ fun DashboardScreen(
                         items = navDestinations,
                         selectedIndex = pagerState.currentPage,
                         particlesEnabled = AppThemeManager.isParticlesEnabled && isPremium,
+                        respectNavigationInsets = true,
                         onSelected = { page -> coroutineScope.launch { pagerState.scrollToPage(page) } }
                     )
                 }
