@@ -78,6 +78,47 @@ object DraftDamagePolicy {
     }
 }
 
+/**
+ * Small, role-aware set of pairings that are worth surfacing in a draft answer.
+ * A candidate is only rewarded when one of the champions already selected by the
+ * team completes that candidate's own combo. This prevents an unrelated pair in
+ * the roster from changing a recommendation for another lane.
+ */
+object DraftWomboPolicy {
+    private data class Link(val champions: Set<String>, val partners: Set<String>)
+
+    private val links = listOf(
+        Link(setOf("yasuo"), setOf("malphite", "diana", "alistar", "yone", "wukong", "rakan", "gragas", "vi", "nautilus", "lee_sin", "xin_zhao", "nunu", "sett", "braum")),
+        Link(setOf("orianna"), setOf("malphite", "jarvan_iv", "rakan", "diana", "amumu", "sett", "vi", "hecarim", "alistar", "wukong", "camille", "kennen")),
+        Link(setOf("miss_fortune", "samira", "katarina", "kennen", "fiddlesticks"), setOf("amumu", "malphite", "leona", "seraphine", "sona", "galio", "jarvan_iv")),
+        Link(setOf("vayne", "jinx", "kogmaw", "twitch", "tristana", "zeri", "samira", "kaisa"), setOf("lulu", "yuumi", "milio", "janna", "karma", "nami")),
+        Link(setOf("samira", "lucian", "draven", "kalista", "nilah", "tristana", "kaisa", "xayah"), setOf("nautilus", "leona", "thresh", "pyke", "blitzcrank", "braum", "alistar", "rakan")),
+        Link(setOf("lucian"), setOf("nami", "braum")),
+        Link(setOf("xayah"), setOf("rakan")),
+        Link(setOf("jarvan_iv"), setOf("galio")),
+        Link(setOf("ashe"), setOf("braum")),
+        Link(setOf("caitlyn"), setOf("morgana")),
+        Link(setOf("hwei"), setOf("amumu", "malphite", "jarvan_iv", "leona", "nautilus"))
+    )
+
+    private fun normalized(id: String) = id.lowercase().replace('-', '_')
+
+    fun linkedAllies(candidate: Champion, allies: List<Champion>): List<Champion> {
+        val candidateId = normalized(candidate.id)
+        val activeAllies = allies.filter { it.id != "empty" && normalized(it.id) != candidateId }
+        return activeAllies.filter { ally ->
+            val allyId = normalized(ally.id)
+            links.any { link ->
+                (candidateId in link.champions && allyId in link.partners) ||
+                    (candidateId in link.partners && allyId in link.champions)
+            }
+        }.distinctBy { it.id }
+    }
+
+    fun scoreGain(candidate: Champion, allies: List<Champion>): Double =
+        (linkedAllies(candidate, allies).size * 7.0).coerceAtMost(14.0)
+}
+
 object DraftScoringPolicy {
     private val assassins = setOf("akali", "diana", "ekko", "evelynn", "fizz", "katarina", "kayn", "khazix", "rengar", "talon", "zed")
     private val engage = setOf("amumu", "alistar", "jarvan_iv", "leona", "malphite", "nautilus", "rell", "vi", "wukong", "hecarim", "rakan")
@@ -107,6 +148,9 @@ object DraftScoringPolicy {
         score += others.count { MatchupKnowledge.relation(champion,it,role) == MatchupRelation.FAVORABLE } * 5.0
         score -= others.count { MatchupKnowledge.relation(champion,it,role) == MatchupRelation.UNFAVORABLE } * 6.0
         score += (MatchupKnowledge.synergies(champion,activeAllies).size * 5.0).coerceAtMost(15.0)
+        // Candidate-specific only: a combo elsewhere in the allied team must not
+        // promote an unrelated champion or lane.
+        score += DraftWomboPolicy.scoreGain(champion, activeAllies)
         score += DraftDamagePolicy.balanceGain(champion,activeAllies)
         val allyHasEngage = activeAllies.any { it.isIn(engage) }
         val allyHasAreaControl = activeAllies.any { it.isIn(areaControl) }

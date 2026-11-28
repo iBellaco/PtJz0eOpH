@@ -498,10 +498,14 @@ try {
   await test('guests read published channels but cannot read private configuration or history', async () => {
     const guest = env.unauthenticatedContext().firestore();
     await env.withSecurityRulesDisabled(async context=>setDoc(doc(context.firestore(),'system_config/app_update_verification'),{enabled:true}));
+    await env.withSecurityRulesDisabled(async context=>setDoc(doc(context.firestore(),'system_config/seasonal_effects'),{christmasEnabled:true,newYearEnabled:false}));
     await assertSucceeds(getDoc(doc(guest,'system_config','streamer_live')));
     await assertSucceeds(getDoc(doc(guest,'system_config','app_update_verification')));
+    await assertSucceeds(getDoc(doc(guest,'system_config','seasonal_effects')));
     await assertSucceeds(updateDoc(doc(admin,'system_config','app_update_verification'),{enabled:false}));
+    await assertSucceeds(updateDoc(doc(admin,'system_config','seasonal_effects'),{newYearEnabled:true}));
     await assertFails(updateDoc(doc(user,'system_config','app_update_verification'),{enabled:true}));
+    await assertFails(updateDoc(doc(user,'system_config','seasonal_effects'),{christmasEnabled:false}));
     await assertFails(getDoc(doc(guest,'system_config','app_notice_analytics')));
     await assertFails(getDocs(collection(guest,'system_config')));
     await assertFails(getDocs(collection(guest,'streamer_requests/s2/history')));

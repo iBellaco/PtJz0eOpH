@@ -120,6 +120,10 @@ import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.withContext
 import kotlin.math.roundToInt
 
+/** The Hub picker opens on the lane represented by the tapped draft slot. */
+internal fun overlayDraftPickerDefaultRole(slotIndex: Int): LaneRole? =
+    listOf(LaneRole.TOP, LaneRole.JUNGLE, LaneRole.MID, LaneRole.ADC, LaneRole.SUPPORT).getOrNull(slotIndex)
+
 private data class AutoScanPulse(
     val alpha: androidx.compose.runtime.State<Float>,
     val scale: androidx.compose.runtime.State<Float>
@@ -1684,9 +1688,11 @@ internal fun FloatingOverlayContent(
     // Modal de selección rápida de campeón si el usuario toca un slot manual
     if (showChampionPickerForSlot != null) {
         val (isAllySlot, slotIndex) = showChampionPickerForSlot!!
-        val targetRole = defaultRoles.getOrNull(slotIndex)
-        var selectedRoleFilter by remember { mutableStateOf<LaneRole?>(null) }
-        var searchChampQuery by remember { mutableStateOf("") }
+        val targetRole = overlayDraftPickerDefaultRole(slotIndex)
+        // Reset both controls when a different slot is opened. The former
+        // unkeyed state kept "Todos" (or the previous lane) across selections.
+        var selectedRoleFilter by remember(isAllySlot, slotIndex) { mutableStateOf(targetRole) }
+        var searchChampQuery by remember(isAllySlot, slotIndex) { mutableStateOf("") }
         val currentChampInSlot = if (isAllySlot) allies.getOrNull(slotIndex)?.id else enemies.getOrNull(slotIndex)?.id
         val alreadySelectedIds = remember(allies.toList(), enemies.toList(), slotIndex, isAllySlot) {
             val set = (allies.filterNotNull().map { it.id } + enemies.filterNotNull().map { it.id }).toMutableSet()
@@ -1805,7 +1811,8 @@ internal fun FloatingOverlayContent(
                                     .background(if (isSel) HextechCyan else HextechSurface)
                                     .border(0.5.dp, if (isSel) HextechGold else HextechCardBorder, RoundedCornerShape(4.dp))
                                     .clickable { selectedRoleFilter = lane }
-                                    .padding(vertical = 3.dp, horizontal = 2.dp),
+                                    .padding(vertical = 3.dp, horizontal = 2.dp)
+                                    .testTag("overlay_draft_picker_role_filter_${lane?.name?.lowercase() ?: "all"}"),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Row(

@@ -2,6 +2,7 @@ package com.example
 
 import android.app.Application
 import com.example.data.DraftScoringPolicy
+import com.example.data.DraftWomboPolicy
 import com.example.data.MatchupKnowledge
 import com.example.data.MatchupRelation
 import com.example.data.WildRiftRepository
@@ -49,6 +50,29 @@ class DraftRecommendationQualityTest {
         val withoutAlly = DraftScoringPolicy.score(orianna, LaneRole.MID, emptyList(), emptyList(), null, false, roster)
         val withCombo = DraftScoringPolicy.score(orianna, LaneRole.MID, listOf(malphite), emptyList(), null, false, roster)
         assertTrue("Orianna should gain value from Malphite's engage", withCombo > withoutAlly)
+    }
+
+    @Test
+    fun `wombo recommendations stay tied to the candidate and its allies`() {
+        val orianna = WildRiftRepository.champions.first { it.id == "orianna" }
+        val malphite = WildRiftRepository.champions.first { it.id == "malphite" }
+        val ahri = WildRiftRepository.champions.first { it.id == "ahri" }
+        val yasuo = WildRiftRepository.champions.first { it.id == "yasuo" }
+
+        assertEquals(listOf(malphite.id), DraftWomboPolicy.linkedAllies(orianna, listOf(malphite)).map { it.id })
+        assertTrue(DraftWomboPolicy.linkedAllies(ahri, listOf(yasuo, malphite)).isEmpty())
+    }
+
+    @Test
+    fun `recommendation labels are plain text rendered as colored tags`() {
+        val result = WildRiftRepository.analyzeDraft(
+            myRole = LaneRole.MID,
+            allies = listOf(WildRiftRepository.champions.first { it.id == "malphite" }),
+            enemies = listOf(WildRiftRepository.champions.first { it.id == "garen" })
+        )
+        result.recommendations.forEach { recommendation ->
+            assertFalse(recommendation.advantageBadge.any { it in "💥🔥⭐⚔️🛡️🤝👑❤️" })
+        }
     }
 
     @Test

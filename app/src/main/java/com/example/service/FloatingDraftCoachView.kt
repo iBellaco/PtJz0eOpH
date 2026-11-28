@@ -57,7 +57,6 @@ import com.example.data.WildRiftItemsData
 import com.example.data.WildRiftSpellsAndRunes
 import com.example.ui.components.AppAssetImage
 import com.example.ui.components.ChampionAvatar
-import com.example.ui.components.WomboComboSynergyDetector
 import com.example.ui.theme.AllyBlue
 import com.example.ui.theme.DangerRed
 import com.example.ui.theme.HextechCardBorder
@@ -626,7 +625,7 @@ private fun DraftAvatarBox(
 
     Box(
         modifier = Modifier
-            .size(34.dp)
+            .size(42.dp)
             .clip(RoundedCornerShape(8.dp))
             .background(
                 when {
@@ -666,12 +665,19 @@ private fun DraftAvatarBox(
             Box(
                 modifier = Modifier
                     .align(Alignment.TopEnd)
-                    .size(15.dp)
-                    .background(Color.Black.copy(alpha = 0.75f), RoundedCornerShape(bottomStart = 6.dp))
-                    .clickable { onRemove() },
+                    .size(28.dp)
+                    .background(Color.Black.copy(alpha = 0.84f), CircleShape)
+                    .border(1.dp, if (isEnemy) DangerRed else HextechGold, CircleShape)
+                    .clickable { onRemove() }
+                    .testTag("overlay_draft_remove_${if (isEnemy) "enemy" else "ally"}_${slot?.assignedRole?.name?.lowercase() ?: "unknown"}"),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(Icons.Default.Close, contentDescription = com.example.util.trNullable("Quitar"), tint = Color.White, modifier = Modifier.size(11.dp))
+                Icon(
+                    Icons.Default.Close,
+                    contentDescription = com.example.util.tr("Quitar ${champ.name}"),
+                    tint = Color.White,
+                    modifier = Modifier.size(18.dp)
+                )
             }
         } else if (!placeholderInitial.isNullOrBlank()) {
             Box(
@@ -787,24 +793,6 @@ private fun CoachContent(
                     .clickable { onFirstPickToggle() }
                     .padding(horizontal = 5.dp, vertical = 2.dp)
             )
-        }
-
-        // Sinergias (Wombos)
-        val allyWombos = remember(allies.toList()) { WomboComboSynergyDetector.detectWombos(allies.filterNotNull()) }
-
-        if (allyWombos.isNotEmpty()) {
-            Spacer(modifier = Modifier.height(4.dp))
-            Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
-                allyWombos.forEach { wombo ->
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(containerColor = HextechDarkBg.copy(alpha = 0.6f)),
-                        border = BorderStroke(0.5.dp, AllyBlue)
-                    ) {
-                        Text(text = com.example.util.tr("${wombo.title}: ${wombo.description}"), color = AllyBlue, fontSize = 8.5.sp, modifier = Modifier.padding(3.dp))
-                    }
-                }
-            }
         }
 
         // Distribución de Daño del Draft (Aliados vs Enemigos)
@@ -962,10 +950,11 @@ private fun CoachContent(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
+                .heightIn(min = 60.dp)
                 .clip(RoundedCornerShape(6.dp))
                 .background(if (favoriteOnlyRecommendations && favoriteFilterAvailable) HextechCyan.copy(alpha = 0.10f) else HextechSurface)
                 .border(1.dp, if (favoriteOnlyRecommendations && favoriteFilterAvailable) HextechCyan.copy(alpha = 0.65f) else HextechCardBorder, RoundedCornerShape(6.dp))
-                .padding(start = 6.dp, end = 2.dp, top = 3.dp, bottom = 3.dp)
+                .padding(start = 8.dp, end = 4.dp, top = 5.dp, bottom = 5.dp)
                 .testTag("overlay_favorite_recommendations_filter"),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(4.dp)
@@ -976,7 +965,8 @@ private fun CoachContent(
                     color = if (favoriteFilterAvailable) HextechCyan else TextMuted,
                     fontSize = 9.sp,
                     fontWeight = FontWeight.Bold,
-                    maxLines = 1,
+                    lineHeight = 11.sp,
+                    maxLines = 2,
                     overflow = TextOverflow.Ellipsis
                 )
                 Text(
@@ -987,31 +977,34 @@ private fun CoachContent(
                     },
                     color = TextMuted,
                     fontSize = 7.5.sp,
+                    lineHeight = 9.sp,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis
                 )
             }
-            androidx.compose.material3.Switch(
-                checked = favoriteOnlyRecommendations && favoriteFilterAvailable,
-                onCheckedChange = { requested ->
-                    if (requested && !favoriteFilterAvailable) {
-                        android.widget.Toast.makeText(
-                            coachContext,
-                            coachContext.getString(com.example.R.string.draft_favorite_minimum),
-                            android.widget.Toast.LENGTH_LONG
-                        ).show()
-                    } else {
-                        onToggleFavoriteOnlyRecommendations(requested)
-                    }
-                },
-                modifier = Modifier.size(40.dp).testTag("overlay_favorite_recommendations_toggle"),
-                colors = androidx.compose.material3.SwitchDefaults.colors(
-                    checkedThumbColor = Color.White,
-                    checkedTrackColor = HextechCyan,
-                    uncheckedThumbColor = TextMuted,
-                    uncheckedTrackColor = HextechSurfaceVariant
+            Box(modifier = Modifier.size(48.dp), contentAlignment = Alignment.Center) {
+                androidx.compose.material3.Switch(
+                    checked = favoriteOnlyRecommendations && favoriteFilterAvailable,
+                    onCheckedChange = { requested ->
+                        if (requested && !favoriteFilterAvailable) {
+                            android.widget.Toast.makeText(
+                                coachContext,
+                                coachContext.getString(com.example.R.string.draft_favorite_minimum),
+                                android.widget.Toast.LENGTH_LONG
+                            ).show()
+                        } else {
+                            onToggleFavoriteOnlyRecommendations(requested)
+                        }
+                    },
+                    modifier = Modifier.testTag("overlay_favorite_recommendations_toggle"),
+                    colors = androidx.compose.material3.SwitchDefaults.colors(
+                        checkedThumbColor = Color.White,
+                        checkedTrackColor = HextechCyan,
+                        uncheckedThumbColor = TextMuted,
+                        uncheckedTrackColor = HextechSurfaceVariant
+                    )
                 )
-            )
+            }
         }
         Spacer(modifier = Modifier.height(5.dp))
         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -1046,7 +1039,10 @@ private fun CoachContent(
                                 Spacer(modifier = Modifier.width(4.dp))
                                 Text(com.example.util.tr("WR: ${pick.estimatedWinrate}%"), color = HextechGold, fontSize = 9.sp, fontWeight = FontWeight.Bold)
                             }
-                            Text(tr(pick.advantageBadge), color = HextechCyan, fontSize = 8.5.sp, fontWeight = FontWeight.SemiBold)
+                            com.example.ui.components.DraftRecommendationBadge(
+                                label = pick.advantageBadge,
+                                compact = true
+                            )
                             Text(
                                 tr(DraftRecommendationText.compact(pick.tacticalReason, maxChars = 150, maxSentences = 1)),
                                 color = TextMuted,
