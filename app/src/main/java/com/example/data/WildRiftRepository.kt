@@ -703,35 +703,43 @@ object WildRiftRepository {
             val comboSynergies = mutableListOf<String>()
             if (champ.id == "yasuo" && (allyIds.any { it in listOf("malphite", "diana", "nautilus", "alistar", "wukong", "aatrox", "rakan", "vi") })) {
                 val knockupEnabler = allies.firstOrNull { it.id in listOf("malphite", "diana", "nautilus", "alistar", "wukong", "aatrox", "rakan", "vi") }?.name ?: "Iniciador"
-                comboSynergies.add(t(lang, "💥 Combo Aéreo: Arremesso com $knockupEnabler + Ultimate do Yasuo", "💥 Combo Aéreo: Levantamiento con $knockupEnabler + Definitiva de Yasuo"))
+                comboSynergies.add(t(lang, "Combo aéreo: Arremesso com $knockupEnabler + Ultimate do Yasuo", "Combo aéreo: Levantamiento con $knockupEnabler + Definitiva de Yasuo"))
             }
             if (champ.id in listOf("malphite", "wukong", "jarvan_iv", "diana") && allyIds.contains("orianna")) {
-                comboSynergies.add(t(lang, "💥 Wombocombo Ultimate: Você carrega a esfera de Orianna para Onda de Choque massiva", "💥 Wombocombo Definitiva: Llevas la bola de Orianna para Onda de Choque masiva"))
+                comboSynergies.add(t(lang, "Wombo-combo definitivo: Você carrega a esfera de Orianna para Onda de Choque massiva", "Wombo-combo definitivo: Llevas la bola de Orianna para Onda de Choque masiva"))
             }
             if (champ.id == "orianna" && allyIds.any { it in listOf("malphite", "jarvan_iv", "wukong", "vi", "hecarim") }) {
                 val carrier = allies.firstOrNull { it.id in listOf("malphite", "jarvan_iv", "wukong", "vi", "hecarim") }?.name ?: "Iniciador"
-                comboSynergies.add(t(lang, "💥 Esfera Transportada: Proteja $carrier com Habilidade 3 para iniciar com Ultimate", "💥 Balón Transportado: Protege a $carrier con Habilidad 3 para iniciar con Definitiva"))
+                comboSynergies.add(t(lang, "Esfera transportada: Proteja $carrier com Habilidade 3 para iniciar com Ultimate", "Balón transportado: Protege a $carrier con Habilidad 3 para iniciar con Definitiva"))
             }
             if (champ.id in listOf("miss_fortune", "samira", "katarina") && allyIds.any { it in listOf("amumu", "leona", "nautilus", "malphite", "seraphine") }) {
                 val ccChamp = allies.firstOrNull { it.id in listOf("amumu", "leona", "nautilus", "malphite", "seraphine") }?.name ?: "CC"
-                comboSynergies.add(t(lang, "💥 CC em Cadeia: Ultimate em área sobre o controle de grupo de $ccChamp", "💥 CC en Cadena: Definitiva en área sobre el control de masas de $ccChamp"))
+                comboSynergies.add(t(lang, "CC en cadena: Ultimate em área sobre o controle de grupo de $ccChamp", "CC en cadena: Definitiva en área sobre el control de masas de $ccChamp"))
             }
             if (champ.id in listOf("jinx", "vayne", "twitch", "zeri", "kogmaw") && allyIds.any { it in listOf("lulu", "yuumi", "milio", "janna", "nami") }) {
                 val enchanter = allies.firstOrNull { it.id in listOf("lulu", "yuumi", "milio", "janna", "nami") }?.name ?: "Support"
-                comboSynergies.add(t(lang, "🛡️ Hipercarregador Peel: Máxima sobrevivência e fortalecimento de dano com $enchanter", "🛡️ Hipercarry Peel: Máxima supervivencia y esteroides de daño con $enchanter"))
+                comboSynergies.add(t(lang, "Proteção de hipercarregador: Máxima sobrevivência e fortalecimento de dano com $enchanter", "Protección de hipercarry: Máxima supervivencia y esteroides de daño con $enchanter"))
             }
             if (champ.id == "braum" && allyIds.contains("lucian")) {
-                comboSynergies.add(t(lang, "💥 Passiva Rápida: Lucian ativa suas 4 marcas de atordoamento em 0,5s", "💥 Pasiva Rápida: Lucian activa tus 4 marcas de aturdimiento en 0.5s"))
+                comboSynergies.add(t(lang, "Pasiva rápida: Lucian ativa suas 4 marcas de atordoamento em 0,5s", "Pasiva rápida: Lucian activa tus 4 marcas de aturdimiento en 0.5s"))
             }
             if (champ.id == "lucian" && allyIds.any { it in listOf("braum", "nami") }) {
-                comboSynergies.add(t(lang, "💥 Sinergia Bot: Ativação instantânea de Bênção/Golpe Concussivo", "💥 Sinergia Bot: Activación instantánea de Bendición/Golpe Conmocionante"))
+                comboSynergies.add(t(lang, "Sinergia de dúo: Ativação instantânea de Bênção/Golpe Concussivo", "Sinergia de dúo: Activación instantánea de Bendición/Golpe Conmocionante"))
             }
             if (champ.id == "xayah" && allyIds.contains("rakan") || (champ.id == "rakan" && allyIds.contains("xayah"))) {
-                comboSynergies.add(t(lang, "❤️ Dupla Sagrada: Maior alcance na Dança da Batalha e retorno conjunto", "❤️ Dúo Sagrado: Mayor alcance en Danza de Batalla y retirada conjunta"))
+                comboSynergies.add(t(lang, "Dúo coordinado: Maior alcance na Dança da Batalha e retorno conjunto", "Dúo coordinado: Mayor alcance en Danza de Batalla y retirada conjunta"))
             }
             if (champ.id == "hwei" && allyIds.any { it in listOf("amumu", "malphite", "jarvan_iv", "leona", "nautilus") }) {
                 val ccChamp = allies.firstOrNull { it.id in listOf("amumu", "malphite", "jarvan_iv", "leona", "nautilus") }?.name ?: "Iniciador"
-                comboSynergies.add(t(lang, "💥 Tormento Artístico: Ultimate (H4) sobre o controle de grupo de $ccChamp para detonação da Passiva em área", "💥 Tormento Artístico: Definitiva (H4) sobre el control de masas de $ccChamp para detonación de Pasiva en área"))
+                comboSynergies.add(t(lang, "Tormento artístico: Ultimate (H4) sobre o controle de grupo de $ccChamp para detonação da Passiva em área", "Tormento artístico: Definitiva (H4) sobre el control de masas de $ccChamp para detonación de Pasiva en área"))
+            }
+
+            val linkedWomboAllies = DraftWomboPolicy.linkedAllies(champ, activeAllies)
+            if (comboSynergies.isEmpty() && linkedWomboAllies.isNotEmpty()) {
+                val partners = linkedWomboAllies.joinToString { it.getLocalizedName(lang) }
+                comboSynergies.add(t(lang,
+                    "Sinergia de equipe com $partners para esta rota.",
+                    "Sinergia de equipo con $partners para esta línea."))
             }
 
             if (isFirstPickEffective) {
@@ -773,13 +781,13 @@ object WildRiftRepository {
                     lane != null && MatchupKnowledge.relation(champ,lane,effectiveRole) == MatchupRelation.UNFAVORABLE -> t(lang,"CONFRONTO DESFAVORÁVEL", "ENFRENTAMIENTO DESFAVORABLE")
                     lane != null && MatchupKnowledge.relation(champ,lane,effectiveRole) == MatchupRelation.VARIABLE -> t(lang,"CONFRONTO VARIÁVEL", "ENFRENTAMIENTO VARIABLE")
                     directWeaknesses.isNotEmpty() -> t(lang,"RISCO CONTRA ${directWeaknesses.joinToString()}","RIESGO CONTRA ${directWeaknesses.joinToString()}")
-                    comboSynergies.isNotEmpty() && directCounters.isNotEmpty() -> t(lang, "🔥 COMBO + COUNTER (+${directCounters.size})", "🔥 COMBO + COUNTER (+${directCounters.size})")
-                    comboSynergies.isNotEmpty() -> t(lang, "💥 WOMBO-COMBO ALIADO", "💥 WOMBO-COMBO ALIADO")
-                    directCounters.isNotEmpty() && directSynergies.isNotEmpty() -> t(lang, "⭐ #1 SINERGIA + COUNTER", "⭐ #1 SINERGIA + COUNTER")
-                    directCounters.isNotEmpty() && champ.tier == "S+" -> t(lang, "⚔️ COUNTER TIER S+ (+${directCounters.size})", "⚔️ COUNTER TIER S+ (+${directCounters.size})")
-                    directCounters.isNotEmpty() -> t(lang, "🛡️ COUNTER DIRETO (+${directCounters.size})", "🛡️ COUNTER DIRECTO (+${directCounters.size})")
-                    directSynergies.isNotEmpty() -> t(lang, "🤝 SINERGIA DE EQUIPE (+${directSynergies.size})", "🤝 SINERGIA CON EQUIPO (+${directSynergies.size})")
-                    champ.tier == "S+" -> t(lang, "👑 PRIORIDADE S+ ($serverLabel)", "👑 PRIORIDAD S+ ($serverLabel)")
+                    comboSynergies.isNotEmpty() && directCounters.isNotEmpty() -> t(lang, "COMBO + COUNTER (+${directCounters.size})", "COMBO + COUNTER (+${directCounters.size})")
+                    comboSynergies.isNotEmpty() -> t(lang, "WOMBO-COMBO ALIADO", "WOMBO-COMBO ALIADO")
+                    directCounters.isNotEmpty() && directSynergies.isNotEmpty() -> t(lang, "SINERGIA + COUNTER", "SINERGIA + COUNTER")
+                    directCounters.isNotEmpty() && champ.tier == "S+" -> t(lang, "COUNTER TIER S+ (+${directCounters.size})", "COUNTER TIER S+ (+${directCounters.size})")
+                    directCounters.isNotEmpty() -> t(lang, "COUNTER DIRECTO (+${directCounters.size})", "COUNTER DIRECTO (+${directCounters.size})")
+                    directSynergies.isNotEmpty() -> t(lang, "SINERGIA DE EQUIPE (+${directSynergies.size})", "SINERGIA CON EQUIPO (+${directSynergies.size})")
+                    champ.tier == "S+" -> t(lang, "PRIORIDADE S+ ($serverLabel)", "PRIORIDAD S+ ($serverLabel)")
                     else -> t(lang, "Escolha Balanceada ($serverLabel)", "Elección Balanceada ($serverLabel)")
                 }
 

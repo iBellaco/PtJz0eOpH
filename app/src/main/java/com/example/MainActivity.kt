@@ -360,6 +360,7 @@ class MainActivity : ComponentActivity() {
         askNotificationPermission()
         com.example.data.GlobalAnnouncementManager.init(this)
         com.example.util.CreatorSubscriptionManager.init(this)
+        com.example.data.SeasonalEffectsManager.initialize()
         if (intent.getBooleanExtra("extra_open_global_announcement", false)) {
             com.example.data.GlobalAnnouncementManager.showAnnouncementModal()
             intent.removeExtra("extra_open_global_announcement")
@@ -375,10 +376,15 @@ class MainActivity : ComponentActivity() {
                 com.example.ui.components.BlurredMeshBackground(
                     modifier = Modifier.fillMaxSize()
                 ) {
-                    com.example.ui.components.SafeDisplayContent {
-                        DraftingApp()
-
-
+                    Box(modifier = Modifier.fillMaxSize()) {
+                        com.example.ui.components.SafeDisplayContent {
+                            DraftingApp()
+                        }
+                        // Decorative application-only layer; the floating assistant
+                        // uses a separate window and is intentionally unchanged.
+                        com.example.ui.components.SeasonalEffectsLayer(
+                            modifier = Modifier.matchParentSize()
+                        )
                     }
                 }
             }
@@ -390,6 +396,7 @@ class MainActivity : ComponentActivity() {
         com.example.util.SubscriptionManager.init(this)
         com.example.data.GlobalAnnouncementManager.init(this)
         com.example.util.CreatorSubscriptionManager.init(this)
+        com.example.data.SeasonalEffectsManager.initialize()
         if (intent.getBooleanExtra("extra_open_global_announcement", false)) {
             com.example.data.GlobalAnnouncementManager.showAnnouncementModal()
             intent.removeExtra("extra_open_global_announcement")

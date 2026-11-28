@@ -61,7 +61,7 @@ object WomboComboSynergyDetector {
         val knockupper = find("malphite", "diana", "alistar", "yone", "wukong", "rakan", "gragas", "vi", "nautilus", "lee sin", "xin zhao", "nunu", "sett", "braum")
         if (yasuo != null && knockupper != null && yasuo.id != knockupper.id) {
             detected.add(WomboCombo(
-                title = "💥 Wombo-Combo Aéreo Imparable", type = "KNOCKUP", champ1 = knockupper, champ2 = yasuo,
+                title = "Wombo-combo aéreo imparable", type = "KNOCKUP", champ1 = knockupper, champ2 = yasuo,
                 description = "Iniciación de ${knockupper.name} con Derribo Aéreo masivo activa instantáneamente la Definitiva (H4 - Último Aliento) de Yasuo para prolongar la suspensión.",
                 executionTip = "Esperar a que ${knockupper.name} conecte su derribo aéreo sobre 2 o más enemigos antes de presionar la Definitiva de Yasuo para maximizar la penetración de armadura."
             ))
@@ -72,7 +72,7 @@ object WomboComboSynergyDetector {
         val ballCarrier = find("malphite", "jarvan", "rakan", "diana", "amumu", "sett", "vi", "hecarim", "alistar", "rengar", "wukong", "camille", "kennen")
         if (orianna != null && ballCarrier != null && orianna.id != ballCarrier.id) {
             detected.add(WomboCombo(
-                title = "🌀 Balón de Choque & Erradicación", type = "SHOCKWAVE", champ1 = ballCarrier, champ2 = orianna,
+                title = "Balón de choque y erradicación", type = "SHOCKWAVE", champ1 = ballCarrier, champ2 = orianna,
                 description = "El balón de Orianna colocado sobre ${ballCarrier.name} permite ejecutar una Definitiva (H4 - Orden: Onda de Choque) en el epicentro del salto.",
                 executionTip = "Colocar H3 (Proteger) sobre ${ballCarrier.name} justo antes del dive; activar H4 inmediatamente al momento del impacto."
             ))
@@ -83,7 +83,7 @@ object WomboComboSynergyDetector {
         val aoeExecutioner = find("miss fortune", "samira", "katarina", "kennen", "fiddlesticks")
         if (aoeLockdown != null && aoeExecutioner != null && aoeLockdown.id != aoeExecutioner.id) {
             detected.add(WomboCombo(
-                title = "🔥 Tormenta en Área & Encierro Masivo", type = "AREA_CURSE", champ1 = aoeLockdown, champ2 = aoeExecutioner,
+                title = "Tormenta en área y encierro masivo", type = "AREA_CURSE", champ1 = aoeLockdown, champ2 = aoeExecutioner,
                 description = "El aturdimiento masivo en área de ${aoeLockdown.name} congela al equipo rival dentro de la Definitiva (H4) destructiva de ${aoeExecutioner.name}.",
                 executionTip = "Pelear en zonas cerradas (fosas de Dragón/Barón o cuellos de botella de la jungla). ${aoeExecutioner.name} debe esperar a que se gasten las interrupciones rivales."
             ))
@@ -94,7 +94,7 @@ object WomboComboSynergyDetector {
         val aoeFollowUp = find("yasuo", "kennen", "sett", "miss fortune", "samira")
         if (diana != null && aoeFollowUp != null && diana.id != aoeFollowUp.id && aoeFollowUp.id != knockupper?.id) {
             detected.add(WomboCombo(
-                title = "🌙 Atracción Lunar & Aniquilación", type = "SHOCKWAVE", champ1 = diana, champ2 = aoeFollowUp,
+                title = "Atracción lunar y aniquilación", type = "SHOCKWAVE", champ1 = diana, champ2 = aoeFollowUp,
                 description = "La Definitiva (H4 - Lluvia de Luna) de Diana agrupa y derriba a todos los enemigos cercanos hacia el centro, creando el agrupamiento perfecto para ${aoeFollowUp.name}.",
                 executionTip = "Diana entra con H3 (Impulso Lunar), canaliza H4 y ${aoeFollowUp.name} descarga todo su arsenal en el centro."
             ))
@@ -105,7 +105,7 @@ object WomboComboSynergyDetector {
         val hypercarry = find("vayne", "jinx", "kog'maw", "twitch", "tristana", "zeri", "samira", "kaisa", "kai'sa")
         if (enchanter != null && hypercarry != null && enchanter.id != hypercarry.id) {
             detected.add(WomboCombo(
-                title = "🛡️ Hypercarry Blindado & Velocidad Letal", type = "HYPERCARRY", champ1 = enchanter, champ2 = hypercarry,
+                title = "Hypercarry blindado y velocidad letal", type = "HYPERCARRY", champ1 = enchanter, champ2 = hypercarry,
                 description = "Buffs de velocidad de ataque, escudos y utilidad de ${enchanter.name} transforman a ${hypercarry.name} en una máquina imparable de daño sostenido.",
                 executionTip = "Reservar la Definitiva (H4) del soporte exclusivamente para contrarrestar el dive o flanqueo enemigo sobre el tirador."
             ))
@@ -116,7 +116,7 @@ object WomboComboSynergyDetector {
         val hardCcSupport = find("nautilus", "leona", "thresh", "pyke", "blitzcrank", "braum", "alistar", "rakan")
         if (aggressiveAdc != null && hardCcSupport != null && aggressiveAdc.id != hardCcSupport.id) {
             detected.add(WomboCombo(
-                title = "⛓️ Cadena de CC & All-In Explosivo", type = "CC_BURST", champ1 = hardCcSupport, champ2 = aggressiveAdc,
+                title = "Cadena de CC y all-in explosivo", type = "CC_BURST", champ1 = hardCcSupport, champ2 = aggressiveAdc,
                 description = "El control de masas encadenado de ${hardCcSupport.name} garantiza el combo completo de burst de ${aggressiveAdc.name}.",
                 executionTip = "En niveles 2, 3 y 5 buscar all-in inmediato tras el primer gancho o aturdimiento acertado."
             ))
@@ -127,7 +127,7 @@ object WomboComboSynergyDetector {
         val nami = find("nami")
         if (lucian != null && nami != null) {
             detected.add(WomboCombo(
-                title = "🌊 Electro-Ráfaga Acuática", type = "ENCHANTER", champ1 = nami, champ2 = lucian,
+                title = "Electro-ráfaga acuática", type = "ENCHANTER", champ1 = nami, champ2 = lucian,
                 description = "La Habilidad 3 (Bendición de la Marea) de Nami se activa de golpe con los dobles disparos pasivos de Lucian, infligiendo daño mágico devastador.",
                 executionTip = "Nami aplica H3 sobre Lucian justo cuando este usa su desplazamiento (H3) hacia adelante para un intercambio rápido."
             ))
@@ -138,7 +138,7 @@ object WomboComboSynergyDetector {
         val rakan = find("rakan")
         if (xayah != null && rakan != null) {
             detected.add(WomboCombo(
-                title = "💖 Pareja Letal: Baile de Plumas", type = "DUO_SYNERGY", champ1 = rakan, champ2 = xayah,
+                title = "Pareja letal: baile de plumas", type = "DUO_SYNERGY", champ1 = rakan, champ2 = xayah,
                 description = "Interacciones únicas: Rakan obtiene mayor rango de salto hacia Xayah con H3 y comparten el regreso a base acelerado.",
                 executionTip = "Rakan inicia desde larga distancia con H2 o Definitiva (H4), mientras Xayah despliega plumas con H1 y H2 para encadenar enraizamiento con H3."
             ))
@@ -149,7 +149,7 @@ object WomboComboSynergyDetector {
         val galio = find("galio")
         if (jarvan != null && galio != null) {
             detected.add(WomboCombo(
-                title = "⚔️ Entrada Heroica & Cataclismo", type = "AREA_CURSE", champ1 = jarvan, champ2 = galio,
+                title = "Entrada heroica y cataclismo", type = "AREA_CURSE", champ1 = jarvan, champ2 = galio,
                 description = "Jarvan encierra a múltiples enemigos en su arena con Definitiva (H4 - Cataclismo), creando el aterrizaje perfecto para la Definitiva de Galio.",
                 executionTip = "Jarvan inicia con su combo H3+H1 seguido de H4; Galio lanza su Definitiva (H4) sobre Jarvan para encadenar provocación con H2."
             ))
@@ -160,7 +160,7 @@ object WomboComboSynergyDetector {
         val braum = find("braum")
         if (ashe != null && braum != null) {
             detected.add(WomboCombo(
-                title = "❄️ Freljord: Hielo Eterno", type = "CC_BURST", champ1 = braum, champ2 = ashe,
+                title = "Freljord: hielo eterno", type = "CC_BURST", champ1 = braum, champ2 = ashe,
                 description = "La pasiva de Braum (Golpes Conmocionantes) se acumula a máxima velocidad con la Habilidad 1 (Concentración Máxima) de Ashe.",
                 executionTip = "Braum aplica la primera marca con H1 o básico; Ashe activa H1 para aturdir al instante."
             ))
@@ -171,7 +171,7 @@ object WomboComboSynergyDetector {
         val morgana = find("morgana")
         if (caitlyn != null && morgana != null) {
             detected.add(WomboCombo(
-                title = "🎯 Trampas Encadenadas (Snare City)", type = "CC_BURST", champ1 = morgana, champ2 = caitlyn,
+                title = "Trampas encadenadas", type = "CC_BURST", champ1 = morgana, champ2 = caitlyn,
                 description = "Si Morgana conecta su H1 (Hechizo Oscuro), Caitlyn coloca su H2 (Trampa para Yordles) bajo los pies del enemigo para duplicar la inmovilización.",
                 executionTip = "Morgana lanza H1; Caitlyn coloca inmediatamente su H2 bajo el objetivo inmovilizado y descarga Disparo a la Cabeza."
             ))
@@ -182,7 +182,7 @@ object WomboComboSynergyDetector {
         val yuumi = find("yuumi")
         if (invisible != null && yuumi != null) {
             detected.add(WomboCombo(
-                title = "👻 Submarino Invisible", type = "DIVE", champ1 = yuumi, champ2 = invisible,
+                title = "Submarino invisible", type = "DIVE", champ1 = yuumi, champ2 = invisible,
                 description = "Yuumi se vuelve invisible junto al portador, permitiendo canalizar su Definitiva (H4) desde el sigilo absoluto.",
                 executionTip = "El asesino flanquea en sigilo; Yuumi activa H4 (Últimas Páginas) para inmovilizar a la retaguardia enemiga sin previo aviso."
             ))
@@ -193,7 +193,7 @@ object WomboComboSynergyDetector {
         val aoeMage = find("kennen", "brand", "ziggs", "vex")
         if (sett != null && aoeMage != null) {
             detected.add(WomboCombo(
-                title = "⚡ El Gran Espectáculo & Tormenta", type = "SHOCKWAVE", champ1 = sett, champ2 = aoeMage,
+                title = "El gran espectáculo y tormenta", type = "SHOCKWAVE", champ1 = sett, champ2 = aoeMage,
                 description = "Sett estrella al tanque rival sobre los carries enemigos con su Definitiva (H4), mientras ${aoeMage.name} desata su tormenta en área.",
                 executionTip = "Sett ultea al tanque enemigo hacia la retaguardia rival; ${aoeMage.name} entra con H4 para aniquilar al grupo aturdido."
             ))
@@ -204,7 +204,7 @@ object WomboComboSynergyDetector {
         val sona = find("sona", "amumu")
         if (seraphine != null && sona != null) {
             detected.add(WomboCombo(
-                title = "🎶 Armonía Sinfónica & Encanto Infinito", type = "AREA_CURSE", champ1 = sona, champ2 = seraphine,
+                title = "Armonía sinfónica y encanto infinito", type = "AREA_CURSE", champ1 = sona, champ2 = seraphine,
                 description = "La Definitiva (H4) de ${sona.name} inmoviliza al equipo enemigo, permitiendo a Seraphine extender el alcance de su Definitiva (H4) a través de todos ellos.",
                 executionTip = "Lanzar la Definitiva de ${sona.name} primero; Seraphine apunta su Definitiva a través de los aliados y enemigos para duplicar el alcance y encanto."
             ))
@@ -215,7 +215,7 @@ object WomboComboSynergyDetector {
         val lillia = find("lillia")
         if (yone != null && lillia != null) {
             detected.add(WomboCombo(
-                title = "💤 Sueño Inevitable & Destino Sellado", type = "AREA_CURSE", champ1 = lillia, champ2 = yone,
+                title = "Sueño inevitable y destino sellado", type = "AREA_CURSE", champ1 = lillia, champ2 = yone,
                 description = "Lillia duerme a múltiples enemigos con su Definitiva (H4 - Arrullo Rítmico), dejando el blanco inmóvil para el Destino Sellado (H4) de Yone.",
                 executionTip = "Lillia activa H4 sobre los enemigos marcados; Yone carga su H4 para impactar a todos los objetivos dormidos simultáneamente."
             ))
@@ -226,7 +226,7 @@ object WomboComboSynergyDetector {
         val protector = find("galio", "shen")
         if (camille != null && protector != null) {
             detected.add(WomboCombo(
-                title = "⛓️ Aislamiento Hextech & Caída Heroica", type = "DIVE", champ1 = protector, champ2 = camille,
+                title = "Aislamiento Hextech y caída heroica", type = "DIVE", champ1 = protector, champ2 = camille,
                 description = "Camille aísla al carry rival en su Ultimátum Hextech (H4) sin permitirle escapar, mientras ${protector.name} aterriza sobre ella para asegurarlo.",
                 executionTip = "Camille encierra al tirador con H4; ${protector.name} lanza su Definitiva global sobre Camille al instante."
             ))
@@ -237,7 +237,7 @@ object WomboComboSynergyDetector {
         val diveEngage = find("alistar", "leona", "nautilus")
         if (tristana != null && diveEngage != null) {
             detected.add(WomboCombo(
-                title = "💣 Bomba Explosiva & Derribo Coordinado", type = "CC_BURST", champ1 = diveEngage, champ2 = tristana,
+                title = "Bomba explosiva y derribo coordinado", type = "CC_BURST", champ1 = diveEngage, champ2 = tristana,
                 description = "El control de masas de ${diveEngage.name} le da a Tristana el tiempo exacto para cargar al 100% su H3 (Carga Explosiva) y reiniciar su H2 (Salto Cohete).",
                 executionTip = "El soporte inicia el CC; Tristana coloca H3, descarga 4 ataques básicos y salta con H2 para rematar y reiniciar el salto."
             ))
@@ -316,7 +316,7 @@ fun DraftWomboSynergyCard(
                             )
                             Spacer(modifier = Modifier.width(4.dp))
                             Text(
-                                text = tr("💥 Sinergia Letal"),
+                                text = tr("Sinergia letal"),
                                 color = HextechGold,
                                 fontSize = 10.5.sp,
                                 fontWeight = FontWeight.Black
