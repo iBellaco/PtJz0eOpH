@@ -4,10 +4,8 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.MenuBook
@@ -34,6 +32,7 @@ import androidx.compose.ui.unit.sp
 import com.example.ui.theme.AppThemeManager
 import com.example.ui.theme.CoachNavStyle
 import com.example.util.tr
+import kotlin.math.min
 
 data class CoachNavItem(val title: String, val icon: ImageVector, val accentColor: Color, val notificationCount: Int? = null)
 
@@ -46,76 +45,97 @@ internal fun CoachNavBarCore(
     if (items.isEmpty()) return
     val index = selectedIndex.coerceIn(items.indices)
     val position = animateFloatAsState(index.toFloat(), spring(dampingRatio = .72f, stiffness = 380f), label = "coach_nav_position")
-    // The moving decoration keeps the item's accent; the icon itself uses a
-    // separate contrast-safe surface below.
     val activeIndicator = items[index].accentColor
     val selectionContainer = AppThemeManager.getNavBarSelectionContainerColor()
     val selectedLabelColor = AppThemeManager.getNavBarSelectedTextColor()
-    val selectionBorder = AppThemeManager.getNavBarAccentColor().copy(alpha = .72f)
     val barShape = RoundedCornerShape(topStart = 22.dp, topEnd = 22.dp)
-    BoxWithConstraints(modifier.fillMaxWidth().height(76.dp).clip(barShape).background(backgroundColor)) {
-        val density = androidx.compose.ui.platform.LocalDensity.current
-        val widthPx = with(density) { maxWidth.toPx() }
-        val heightPx = with(density) { maxHeight.toPx() }
+    // Each variant owns its indicator.  A former generic circular icon surface
+    // was being painted on top of every variant, which made otherwise distinct
+    // styles look identical and added unnecessary height to the bar.
+    BoxWithConstraints(modifier.fillMaxWidth().height(72.dp).clip(barShape).background(backgroundColor)) {
         Canvas(Modifier.fillMaxSize()) {
             val slotWidth = size.width / items.size
             val centerX = slotWidth * (position.value + .5f)
-            val centerY = if (style == CoachNavStyle.LIQUID) size.height / 2f else 28.dp.toPx()
+            val centerY = 24.dp.toPx()
             when (style) {
                 CoachNavStyle.ORIGINAL -> Unit
                 CoachNavStyle.ARC_GLOWING -> {
-                    drawCircle(activeIndicator.copy(alpha = .12f), 22.dp.toPx(), Offset(centerX, centerY))
-                    drawCircle(activeIndicator.copy(alpha = .48f), 17.dp.toPx(), Offset(centerX, centerY), style = Stroke(6.dp.toPx()))
-                    drawCircle(Color.White.copy(alpha = .9f), 13.dp.toPx(), Offset(centerX, centerY), style = Stroke(1.4.dp.toPx()))
+                    val radius = 18.dp.toPx()
+                    drawCircle(selectionContainer.copy(alpha = .52f), radius, Offset(centerX, centerY))
+                    drawArc(
+                        color = activeIndicator,
+                        startAngle = -215f,
+                        sweepAngle = 250f,
+                        useCenter = false,
+                        topLeft = Offset(centerX - radius, centerY - radius),
+                        size = Size(radius * 2f, radius * 2f),
+                        style = Stroke(2.dp.toPx(), cap = StrokeCap.Round)
+                    )
                 }
                 CoachNavStyle.LIQUID -> {
-                    val w = 46.dp.toPx(); val h = 26.dp.toPx()
-                    val path = Path().apply {
-                        moveTo(centerX - w / 2, centerY)
-                        cubicTo(centerX - w / 2, centerY - h, centerX + w / 2, centerY - h, centerX + w / 2, centerY)
-                        cubicTo(centerX + w / 2, centerY + h, centerX - w / 2, centerY + h, centerX - w / 2, centerY)
-                        close()
-                    }
-                    drawPath(path, activeIndicator.copy(alpha = .2f)); drawPath(path, activeIndicator.copy(alpha = .85f), style = Stroke(1.5.dp.toPx()))
+                    val width = min(slotWidth * .84f, 64.dp.toPx())
+                    val height = 34.dp.toPx()
+                    val top = centerY - height / 2f
+                    drawRoundRect(
+                        selectionContainer.copy(alpha = .92f),
+                        Offset(centerX - width / 2f, top),
+                        Size(width, height),
+                        androidx.compose.ui.geometry.CornerRadius(height / 2f)
+                    )
+                    drawRoundRect(
+                        activeIndicator.copy(alpha = .86f),
+                        Offset(centerX - width / 2f, top),
+                        Size(width, height),
+                        androidx.compose.ui.geometry.CornerRadius(height / 2f),
+                        style = Stroke(1.5.dp.toPx())
+                    )
+                    drawLine(
+                        Color.White.copy(alpha = .28f),
+                        Offset(centerX - width * .26f, top + 7.dp.toPx()),
+                        Offset(centerX + width * .2f, top + 7.dp.toPx()),
+                        1.dp.toPx(),
+                        StrokeCap.Round
+                    )
                 }
                 CoachNavStyle.NEON_WAVE -> {
+                    val width = min(slotWidth * .76f, 58.dp.toPx())
+                    val top = centerY - 16.dp.toPx()
+                    drawRoundRect(
+                        selectionContainer.copy(alpha = .68f),
+                        Offset(centerX - width / 2f, top),
+                        Size(width, 32.dp.toPx()),
+                        androidx.compose.ui.geometry.CornerRadius(14.dp.toPx())
+                    )
                     val path = Path().apply {
-                        moveTo(0f, size.height - 3.dp.toPx())
-                        cubicTo(centerX - slotWidth * .28f, size.height - 3.dp.toPx(), centerX - slotWidth * .22f, size.height - 28.dp.toPx(), centerX, size.height - 28.dp.toPx())
-                        cubicTo(centerX + slotWidth * .22f, size.height - 28.dp.toPx(), centerX + slotWidth * .28f, size.height - 3.dp.toPx(), size.width, size.height - 3.dp.toPx())
+                        val base = size.height - 5.dp.toPx()
+                        moveTo(0f, base)
+                        cubicTo(centerX - slotWidth * .28f, base, centerX - slotWidth * .22f, base - 18.dp.toPx(), centerX, base - 18.dp.toPx())
+                        cubicTo(centerX + slotWidth * .22f, base - 18.dp.toPx(), centerX + slotWidth * .28f, base, size.width, base)
                     }
                     drawPath(path, activeIndicator.copy(alpha = .25f), style = Stroke(8.dp.toPx(), cap = StrokeCap.Round))
                     drawPath(path, activeIndicator, style = Stroke(2.dp.toPx(), cap = StrokeCap.Round))
                 }
-                else -> {
-                    drawCircle(activeIndicator.copy(alpha = .15f), 22.dp.toPx(), Offset(centerX, centerY))
-                }
+                else -> Unit
             }
         }
-        Row(Modifier.fillMaxSize(), verticalAlignment = Alignment.CenterVertically) {
+        Row(Modifier.fillMaxSize(), verticalAlignment = Alignment.Top) {
             items.forEachIndexed { itemIndex, item ->
                 val selected = itemIndex == index
                 val iconScale by animateFloatAsState(if (selected) 1.1f else 1f, spring(dampingRatio = .62f), label = "nav_icon_scale_$itemIndex")
                 Column(
                     modifier = Modifier.weight(1f).fillMaxHeight()
                         .clickable { onSelected(itemIndex) }.testTag("coach_nav_item_$itemIndex")
-                        .padding(top = if (style == CoachNavStyle.LIQUID) 0.dp else 4.dp),
+                        .padding(top = 4.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Top
                 ) {
                     Box(
-                        modifier = if (style == CoachNavStyle.LIQUID) Modifier.fillMaxSize() else Modifier.fillMaxWidth().height(48.dp),
+                        modifier = Modifier.fillMaxWidth().height(40.dp),
                         contentAlignment = Alignment.Center
                     ) {
                         Box(
                             modifier = Modifier
-                                .size(42.dp)
-                                .clip(CircleShape)
-                                .background(if (selected) selectionContainer else Color.Transparent)
-                                .then(
-                                    if (selected) Modifier.border(1.dp, selectionBorder, CircleShape)
-                                    else Modifier
-                                ),
+                                .size(40.dp),
                             contentAlignment = Alignment.Center
                         ) {
                             if (itemIndex == 4 && items.size == 5) {
@@ -136,10 +156,14 @@ internal fun CoachNavBarCore(
                             }
                         }
                     }
-                    if (style != CoachNavStyle.LIQUID) {
-                        Text(tr(item.title), color = if (selected) selectedLabelColor else unselectedColor, fontSize = 10.sp,
-                            fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium, maxLines = 1)
-                    }
+                    Text(
+                        tr(item.title),
+                        modifier = Modifier.height(18.dp),
+                        color = if (selected) selectedLabelColor else unselectedColor,
+                        fontSize = 10.sp,
+                        fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium,
+                        maxLines = 1
+                    )
                 }
             }
         }

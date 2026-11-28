@@ -3,11 +3,8 @@ package com.example.ui.components
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.selection.selectable
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.Text
@@ -15,7 +12,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
@@ -72,7 +68,7 @@ fun VideoReferenceCoachNavBar(
         TextStyle(fontSize = 10.sp, lineHeight = 13.sp, textAlign = TextAlign.Center)
     )
 
-    BoxWithConstraints(modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 4.dp)) {
+    BoxWithConstraints(modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 2.dp)) {
         val labelWidth = with(density) {
             (floor(maxWidth.toPx() / items.size).toInt() - 2.dp.roundToPx()).coerceAtLeast(1)
         }
@@ -86,25 +82,25 @@ fun VideoReferenceCoachNavBar(
             }
         }
         val labelHeight = with(density) { labelPixels.toDp() } + 4.dp
-        val barHeight = 64.dp + labelHeight
+        val barHeight = 56.dp + labelHeight
         Box(Modifier.fillMaxWidth().height(barHeight).testTag("video_nav_surface")) {
             Canvas(Modifier.fillMaxSize()) {
                 val slot = size.width / items.size
                 val x = slot * (position + .5f)
-                val top = 16.dp.toPx()
-                val iconCenter = top + 24.dp.toPx()
-                val round = 26.dp.toPx()
+                val top = 8.dp.toPx()
+                val iconCenter = top + 20.dp.toPx()
+                val round = 22.dp.toPx()
                 drawReferenceBase(style, background, accent, top, round)
                 when (style) {
-                    CoachNavStyle.VIDEO_LIQUID_GLASS -> drawLiquidGlass(slot, x, top, iconCenter, background, accent, selectionContainer)
+                    CoachNavStyle.VIDEO_LIQUID_GLASS -> drawLiquidGlass(slot, x, top, background, accent, selectionContainer)
                     CoachNavStyle.VIDEO_DARK_NEON_LENS -> drawDarkNeonLens(x, iconCenter, size.width, size.height, top, background, accent, selectionContainer)
-                    CoachNavStyle.VIDEO_BOUNCE -> drawBounce(x, iconCenter, top, accent, selectionContainer)
+                    CoachNavStyle.VIDEO_BOUNCE -> drawBounce(x, slot, iconCenter, top, accent, selectionContainer)
                     CoachNavStyle.VIDEO_NEON_WAVE -> drawNeonWave(x, top, size.width, size.height, round, accent, selectionContainer)
                     CoachNavStyle.VIDEO_SPOTLIGHT -> drawVideoSpotlight(x, slot, top, iconCenter, size.height, accent, selectionContainer)
-                    CoachNavStyle.VIDEO_FLOATING_BUTTON -> drawFloatingButton(x, top, iconCenter, accent, selectionContainer)
+                    CoachNavStyle.VIDEO_FLOATING_BUTTON -> drawFloatingButton(x, top, accent, selectionContainer)
                     CoachNavStyle.GLASS_WAVE -> drawGlassWave(x, slot, top, size.height, background, accent, selectionContainer)
-                    CoachNavStyle.GLASS_CONE -> drawGlassCone(x, top, iconCenter, accent, selectionContainer)
-                    CoachNavStyle.GLASS_BEAD -> drawGlassBead(x, top, size.width, size.height, accent, selectionContainer)
+                    CoachNavStyle.GLASS_CONE -> drawGlassCone(x, slot, top, iconCenter, accent, selectionContainer)
+                    CoachNavStyle.GLASS_BEAD -> drawGlassBead(x, slot, top, size.width, size.height, accent, selectionContainer)
                     CoachNavStyle.WARM_TABS -> drawWarmTabs(x, slot, top, size.width, size.height, background, accent, selectionContainer)
                     CoachNavStyle.RIBBON_MATRIX -> drawRibbonMatrix(items.size, slot, x, top, size.height, background, accent, selectionContainer)
                     CoachNavStyle.PRISM_LATTICE -> drawPrismLattice(items.size, slot, x, top, size.height, background, accent, selectionContainer)
@@ -115,10 +111,9 @@ fun VideoReferenceCoachNavBar(
                 items.forEachIndexed { itemIndex, item ->
                     val selected = itemIndex == index
                     val lift = when (style) {
-                        CoachNavStyle.VIDEO_BOUNCE -> -17f
-                        CoachNavStyle.VIDEO_FLOATING_BUTTON -> -24f
-                        CoachNavStyle.GLASS_BEAD -> -21f
-                        CoachNavStyle.GLASS_CONE -> -2f
+                        CoachNavStyle.VIDEO_BOUNCE -> -10f
+                        CoachNavStyle.VIDEO_FLOATING_BUTTON -> -13f
+                        CoachNavStyle.GLASS_BEAD -> -13f
                         else -> 0f
                     }
                     val offset by animateFloatAsState(
@@ -129,21 +124,19 @@ fun VideoReferenceCoachNavBar(
                     val tint = if (selected) active else inactive
                     val labelTint = if (selected) selectedLabel else inactive
                     Column(
-                        Modifier.weight(1f).fillMaxHeight().clip(RoundedCornerShape(20.dp))
+                        Modifier.weight(1f).fillMaxHeight()
                             .selectable(selected = selected, role = Role.Tab, onClick = { onSelected(itemIndex) })
                             .testTag("coach_nav_item_$itemIndex"),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Spacer(Modifier.height(16.dp))
+                        Spacer(Modifier.height(8.dp))
                         Box(
-                            Modifier.height(48.dp).fillMaxWidth().graphicsLayer { translationY = offset.dp.toPx() },
+                            Modifier.height(40.dp).fillMaxWidth().graphicsLayer { translationY = offset.dp.toPx() },
                             contentAlignment = Alignment.Center
                         ) {
                             Box(
                                 modifier = Modifier
-                                    .size(42.dp)
-                                    .clip(CircleShape)
-                                    .background(if (selected) selectionContainer else Color.Transparent),
+                                    .size(40.dp),
                                 contentAlignment = Alignment.Center
                             ) {
                                 if (itemIndex == 4 && items.size == 5) {
@@ -205,7 +198,7 @@ private fun DrawScope.drawReferenceBase(
 }
 
 private fun DrawScope.drawLiquidGlass(
-    slot: Float, x: Float, top: Float, iconCenter: Float,
+    slot: Float, x: Float, top: Float,
     background: Color, accent: Color, active: Color
 ) {
     val width = min(slot * .82f, 82.dp.toPx())
@@ -219,7 +212,6 @@ private fun DrawScope.drawLiquidGlass(
         Size(slot * .72f, 32.dp.toPx()), CornerRadius(16.dp.toPx()))
     drawLine(Color.White.copy(alpha = .4f), Offset(x - slot * .22f, top + 13.dp.toPx()),
         Offset(x + slot * .2f, top + 13.dp.toPx()), 1.dp.toPx(), StrokeCap.Round)
-    drawCircle(active.copy(alpha = .12f), 22.dp.toPx(), Offset(x, iconCenter))
 }
 
 private fun DrawScope.drawDarkNeonLens(
@@ -239,18 +231,24 @@ private fun DrawScope.drawDarkNeonLens(
         Offset(x + 17.dp.toPx(), top + 8.dp.toPx()), 1.dp.toPx(), StrokeCap.Round)
 }
 
-private fun DrawScope.drawBounce(x: Float, iconCenter: Float, top: Float, accent: Color, active: Color) {
-    drawOval(Color.Black.copy(alpha = .38f), Offset(x - 17.dp.toPx(), iconCenter + 16.dp.toPx()),
-        Size(34.dp.toPx(), 5.dp.toPx()))
-    val bubble = Offset(x, iconCenter - 15.dp.toPx())
-    drawCircle(Brush.radialGradient(listOf(active.copy(alpha = .7f), accent.copy(alpha = .12f), Color.Transparent)),
-        21.dp.toPx(), bubble)
-    drawCircle(active.copy(alpha = .28f), 15.dp.toPx(), bubble)
-    drawCircle(active, 13.dp.toPx(), bubble, style = Stroke(1.5.dp.toPx()))
-    drawLine(accent.copy(alpha = .55f), Offset(x - 12.dp.toPx(), top + 48.dp.toPx()),
-        Offset(x - 4.dp.toPx(), top + 48.dp.toPx()), 1.dp.toPx(), StrokeCap.Round)
-    drawLine(accent.copy(alpha = .55f), Offset(x + 4.dp.toPx(), top + 48.dp.toPx()),
-        Offset(x + 12.dp.toPx(), top + 48.dp.toPx()), 1.dp.toPx(), StrokeCap.Round)
+private fun DrawScope.drawBounce(x: Float, slot: Float, iconCenter: Float, top: Float, accent: Color, active: Color) {
+    val width = min(slot * .5f, 34.dp.toPx())
+    val height = 30.dp.toPx()
+    val tileTop = iconCenter - 10.dp.toPx() - height / 2f
+    drawOval(Color.Black.copy(alpha = .32f), Offset(x - width * .38f, iconCenter + 12.dp.toPx()),
+        Size(width * .76f, 4.dp.toPx()))
+    drawRoundRect(
+        Brush.verticalGradient(listOf(active.copy(alpha = .68f), accent.copy(alpha = .18f))),
+        Offset(x - width / 2f, tileTop),
+        Size(width, height),
+        CornerRadius(10.dp.toPx())
+    )
+    drawRoundRect(active.copy(alpha = .9f), Offset(x - width / 2f, tileTop), Size(width, height),
+        CornerRadius(10.dp.toPx()), style = Stroke(1.4.dp.toPx()))
+    drawLine(accent.copy(alpha = .55f), Offset(x - width * .35f, top + 43.dp.toPx()),
+        Offset(x - width * .1f, top + 43.dp.toPx()), 1.dp.toPx(), StrokeCap.Round)
+    drawLine(accent.copy(alpha = .55f), Offset(x + width * .1f, top + 43.dp.toPx()),
+        Offset(x + width * .35f, top + 43.dp.toPx()), 1.dp.toPx(), StrokeCap.Round)
 }
 
 private fun DrawScope.drawNeonWave(
@@ -294,13 +292,20 @@ private fun DrawScope.drawVideoSpotlight(
         2.dp.toPx(), StrokeCap.Round)
 }
 
-private fun DrawScope.drawFloatingButton(x: Float, top: Float, iconCenter: Float, accent: Color, active: Color) {
-    drawRoundRect(accent.copy(alpha = .6f), Offset(x - 3.dp.toPx(), top + 2.dp.toPx()),
-        Size(6.dp.toPx(), 30.dp.toPx()), CornerRadius(3.dp.toPx()))
-    val button = Offset(x, iconCenter - 23.dp.toPx())
-    drawCircle(Brush.radialGradient(listOf(active.copy(alpha = .7f), Color.Transparent)), 22.dp.toPx(), button)
-    drawCircle(accent.copy(alpha = .4f), 17.dp.toPx(), button)
-    drawCircle(active, 14.dp.toPx(), button, style = Stroke(1.5.dp.toPx()))
+private fun DrawScope.drawFloatingButton(x: Float, top: Float, accent: Color, active: Color) {
+    val width = 32.dp.toPx()
+    val height = 28.dp.toPx()
+    val buttonCenter = Offset(x, top + 7.dp.toPx())
+    drawRoundRect(accent.copy(alpha = .55f), Offset(x - 2.dp.toPx(), top + 2.dp.toPx()),
+        Size(4.dp.toPx(), 20.dp.toPx()), CornerRadius(2.dp.toPx()))
+    drawRoundRect(
+        Brush.verticalGradient(listOf(active.copy(alpha = .72f), accent.copy(alpha = .28f))),
+        Offset(buttonCenter.x - width / 2f, buttonCenter.y - height / 2f),
+        Size(width, height),
+        CornerRadius(10.dp.toPx())
+    )
+    drawRoundRect(active.copy(alpha = .9f), Offset(buttonCenter.x - width / 2f, buttonCenter.y - height / 2f),
+        Size(width, height), CornerRadius(10.dp.toPx()), style = Stroke(1.4.dp.toPx()))
 }
 
 private fun DrawScope.drawGlassWave(
@@ -324,34 +329,40 @@ private fun DrawScope.drawGlassWave(
         Offset(x + half - 5.dp.toPx(), height - 8.dp.toPx()), 1.dp.toPx(), StrokeCap.Round)
 }
 
-private fun DrawScope.drawGlassCone(x: Float, top: Float, iconCenter: Float, accent: Color, active: Color) {
+private fun DrawScope.drawGlassCone(x: Float, slot: Float, top: Float, iconCenter: Float, accent: Color, active: Color) {
+    val halfBase = min(slot * .42f, 28.dp.toPx())
     val cone = Path().apply {
         moveTo(x - 9.dp.toPx(), top + 3.dp.toPx())
         lineTo(x + 9.dp.toPx(), top + 3.dp.toPx())
-        lineTo(x + 34.dp.toPx(), iconCenter + 20.dp.toPx())
-        lineTo(x - 34.dp.toPx(), iconCenter + 20.dp.toPx())
+        lineTo(x + halfBase, iconCenter + 18.dp.toPx())
+        lineTo(x - halfBase, iconCenter + 18.dp.toPx())
         close()
     }
     drawPath(cone, Brush.verticalGradient(listOf(active.copy(alpha = .5f), accent.copy(alpha = .03f))))
     drawLine(active.copy(alpha = .8f), Offset(x - 9.dp.toPx(), top + 3.dp.toPx()),
-        Offset(x - 34.dp.toPx(), iconCenter + 20.dp.toPx()), 1.dp.toPx(), StrokeCap.Round)
+        Offset(x - halfBase, iconCenter + 18.dp.toPx()), 1.dp.toPx(), StrokeCap.Round)
     drawLine(active.copy(alpha = .8f), Offset(x + 9.dp.toPx(), top + 3.dp.toPx()),
-        Offset(x + 34.dp.toPx(), iconCenter + 20.dp.toPx()), 1.dp.toPx(), StrokeCap.Round)
-    drawCircle(active.copy(alpha = .24f), 15.dp.toPx(), Offset(x, iconCenter))
-    drawCircle(active, 13.dp.toPx(), Offset(x, iconCenter), style = Stroke(1.5.dp.toPx()))
+        Offset(x + halfBase, iconCenter + 18.dp.toPx()), 1.dp.toPx(), StrokeCap.Round)
 }
 
-private fun DrawScope.drawGlassBead(x: Float, top: Float, width: Float, height: Float, accent: Color, active: Color) {
+private fun DrawScope.drawGlassBead(x: Float, slot: Float, top: Float, width: Float, height: Float, accent: Color, active: Color) {
     drawRect(Color.Transparent, Offset.Zero, Size.Zero)
     drawRect(accent.copy(alpha = .16f), Offset(0f, top + 8.dp.toPx()), Size(width, 1.dp.toPx()))
     drawLine(accent.copy(alpha = .38f), Offset(10.dp.toPx(), height - 7.dp.toPx()),
         Offset(x - 24.dp.toPx(), height - 7.dp.toPx()), 1.dp.toPx(), StrokeCap.Round)
     drawLine(accent.copy(alpha = .38f), Offset(x + 24.dp.toPx(), height - 7.dp.toPx()),
         Offset(width - 10.dp.toPx(), height - 7.dp.toPx()), 1.dp.toPx(), StrokeCap.Round)
-    val bead = Offset(x, top + 3.dp.toPx())
-    drawCircle(Brush.radialGradient(listOf(active.copy(alpha = .72f), Color.Transparent)), 23.dp.toPx(), bead)
-    drawCircle(accent.copy(alpha = .35f), 17.dp.toPx(), bead)
-    drawCircle(active, 14.dp.toPx(), bead, style = Stroke(1.5.dp.toPx()))
+    val beadWidth = min(slot * .46f, 30.dp.toPx())
+    val beadHeight = 14.dp.toPx()
+    val beadTop = top
+    drawRoundRect(
+        Brush.horizontalGradient(listOf(accent.copy(alpha = .32f), active.copy(alpha = .74f), accent.copy(alpha = .32f))),
+        Offset(x - beadWidth / 2f, beadTop),
+        Size(beadWidth, beadHeight),
+        CornerRadius(beadHeight / 2f)
+    )
+    drawRoundRect(active.copy(alpha = .9f), Offset(x - beadWidth / 2f, beadTop), Size(beadWidth, beadHeight),
+        CornerRadius(beadHeight / 2f), style = Stroke(1.2.dp.toPx()))
 }
 
 private fun DrawScope.drawWarmTabs(

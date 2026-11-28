@@ -102,8 +102,9 @@ fun AuthFlowContainer(
 
     DisposableEffect(auth) {
         val listener = com.google.firebase.auth.FirebaseAuth.AuthStateListener { changed ->
-            // A new login waits for hardware/session registration before showing the profile.
             // A remotely displaced session must immediately show the signed-out flow.
+            // Successful sign-ins set currentUser below after their replacement
+            // session has started, without waiting for its network completion.
             if (AuthManager.isGuestOrUnauthenticated(changed.currentUser)) currentUser = changed.currentUser
         }
         auth?.addAuthStateListener(listener)
@@ -147,25 +148,32 @@ fun AuthFlowContainer(
             viewModel.resetSuccessState()
             viewModel.navigateTo(AuthScreenType.LOGIN)
         } else {
-            com.example.util.DeviceAndSessionManager.registerDeviceAndSession(
-            context = context,
-            onSuccess = {
-                currentUser = auth?.currentUser
+            val registrationStarted = com.example.util.DeviceAndSessionManager.registerDeviceAndSession(
+                context = context,
+                onSuccess = {
+                    // The new profile is already visible. The committed token now
+                    // makes the previous device close on its next session check.
+                },
+                onError = { errorMessage ->
+                    // Do not let an old asynchronous registration sign out a
+                    // newer successful login for the same screen.
+                    if (auth?.currentUser?.uid == authenticated?.uid) {
+                        auth?.signOut()
+                        currentUser = null
+                        android.widget.Toast.makeText(context, com.example.util.appTr(errorMessage), android.widget.Toast.LENGTH_LONG).show()
+                        viewModel.resetSuccessState()
+                    }
+                }
+            )
+            if (registrationStarted) {
+                // Start the takeover first so observers cannot mistake the old
+                // session token for this newly authenticated device. Navigation
+                // no longer waits for remote cleanup or profile bookkeeping.
+                currentUser = authenticated
                 com.example.util.SubscriptionManager.init(context)
-                if (uiState.deletionCancelled) Toast.makeText(context,
-                    context.createConfigurationContext(android.content.res.Configuration(context.resources.configuration).apply {
-                        setLocale(com.example.util.AppLanguage.locale(com.example.util.AppLanguage.current.value))
-                    }).getString(com.example.R.string.account_delete_cancelled), Toast.LENGTH_LONG).show()
                 viewModel.resetSuccessState()
                 onLoginSuccess?.invoke()
-            },
-            onError = { errorMessage ->
-                auth?.signOut()
-                currentUser = null
-                android.widget.Toast.makeText(context, com.example.util.appTr(errorMessage), android.widget.Toast.LENGTH_LONG).show()
-                viewModel.resetSuccessState()
             }
-            )
         }
     }
 

@@ -2,7 +2,12 @@ package com.example.ui.auth
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import android.util.Log
 import com.example.util.AuthManager
+import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.SetOptions
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -112,40 +117,61 @@ class AuthViewModel : ViewModel() {
                         firebaseUser.sendEmailVerification().await()
                         throw IllegalStateException("Debes confirmar tu correo electrónico antes de entrar. Te hemos enviado un nuevo enlace.")
                     }
-                    val cancelled = try { com.example.data.AccountDeletionRepository.cancelAfterSignIn() }
-                    catch (failure: Exception) {
-                        if (failure is kotlinx.coroutines.CancellationException) throw failure
-                        throw IllegalStateException("No se pudo comprobar la solicitud de eliminación. Revisa tu conexión o contacta a soporte.")
-                    }
-                    _uiState.update { it.copy(deletionCancelled = cancelled) }
-                    val db = com.google.firebase.firestore.FirebaseFirestore.getInstance()
-                    val userDocRef = db.collection("users").document(firebaseUser.uid)
-                    val snap = userDocRef.get().await()
-                    val userData = mutableMapOf<String, Any>(
-                        "uid" to firebaseUser.uid,
-                        "email" to (firebaseUser.email ?: _email.value.trim()),
-                        "name" to (firebaseUser.displayName ?: firebaseUser.email?.substringBefore("@") ?: "Usuario"),
-                        "last_active" to System.currentTimeMillis(),
-                        "is_online" to false
-                    )
-                    if (!snap.exists()) {
-                        userData["role"] = "free"
-                        userData["createdAt"] = System.currentTimeMillis()
-                        userData["blueEssence"] = 0L
-                        userData["orangeEssence"] = 0L
-                        userDocRef.set(userData, com.google.firebase.firestore.SetOptions.merge()).await()
-                    } else {
-                        // The confirmed session transaction owns presence updates.
-                    }
+                    // The credential and verification checks are complete. Let
+                    // the profile appear now; maintenance work continues without
+                    // holding up a valid sign-in or overwriting session presence.
+                    startPostSignInMaintenance(firebaseUser, _email.value.trim())
                 }
                 _uiState.update { it.copy(isLoading = false, isSuccess = true) }
             } catch (e: Exception) {
-                // Do not leave an authenticated session when a deletion cannot be cancelled.
+                if (e is CancellationException) throw e
                 auth.signOut()
                 val errorMsg = localizedAuthError(e)
                 _uiState.update { it.copy(isLoading = false, error = errorMsg) }
             }
         }
+    }
+
+    /**
+     * Cleanup and profile defaults are useful, but neither is allowed to keep
+     * a verified account on the sign-in screen. The session transaction owns
+     * online/session fields, so this maintenance deliberately never writes them.
+     */
+    private fun startPostSignInMaintenance(firebaseUser: FirebaseUser, fallbackEmail: String) {
+        viewModelScope.launch {
+            try {
+                com.example.data.AccountDeletionRepository.cancelAfterSignIn()
+            } catch (error: Exception) {
+                if (error is CancellationException) throw error
+                Log.w("AuthViewModel", "No se pudo cancelar la eliminación pendiente tras iniciar sesión", error)
+            }
+
+            try {
+                ensureSignedInProfile(firebaseUser, fallbackEmail)
+            } catch (error: Exception) {
+                if (error is CancellationException) throw error
+                Log.w("AuthViewModel", "No se pudo completar el perfil tras iniciar sesión", error)
+            }
+        }
+    }
+
+    private suspend fun ensureSignedInProfile(firebaseUser: FirebaseUser, fallbackEmail: String) {
+        val userRef = FirebaseFirestore.getInstance().collection("users").document(firebaseUser.uid)
+        FirebaseFirestore.getInstance().runTransaction { transaction ->
+            val snapshot = transaction.get(userRef)
+            val now = System.currentTimeMillis()
+            val updates = mutableMapOf<String, Any>(
+                "uid" to firebaseUser.uid,
+                "email" to (firebaseUser.email ?: fallbackEmail),
+                "name" to (firebaseUser.displayName ?: firebaseUser.email?.substringBefore("@") ?: "Usuario"),
+                "last_active" to now
+            )
+            if (!snapshot.exists() || snapshot.getString("role").isNullOrBlank()) updates["role"] = "free"
+            if (!snapshot.exists() || snapshot.get("createdAt") == null) updates["createdAt"] = now
+            if (!snapshot.exists() || snapshot.get("blueEssence") == null) updates["blueEssence"] = 0L
+            if (!snapshot.exists() || snapshot.get("orangeEssence") == null) updates["orangeEssence"] = 0L
+            transaction.set(userRef, updates, SetOptions.merge())
+        }.await()
     }
 
     fun register() {
